@@ -2,18 +2,16 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NLog.Web;
 using AutoMapper;
-using MediatR;
+using MediatR;  // Это правильное пространство имен
 using FluentValidation.AspNetCore;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Настройка строки подключения к базе данных
+// Настройка строки подключения к базе данных PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Настройка ASP.NET Core Identity
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -22,12 +20,22 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 // Настройка AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 
-// Настройка MediatR
-builder.Services.AddMediatR(typeof(Program));
+// Настройка MediatR - исправлено
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
 // Настройка FluentValidation
 builder.Services.AddControllers()
     .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<Program>());
+
+// Настройка CORS (разрешение взаимодействия с Angular)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder => builder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
 
 // Настройка Swagger для документации API
 builder.Services.AddEndpointsApiExplorer();
@@ -53,9 +61,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // Добавить аутентификацию
-app.UseAuthorization(); // Добавить авторизацию
+app.UseCors("AllowAllOrigins"); // Включение CORS для поддержки запросов от клиента Angular
 
-app.MapControllers(); // Маршрутизация контроллеров API
+app.UseAuthentication(); // Включение аутентификации
+app.UseAuthorization(); // Включение авторизации
+
+app.MapControllers(); // Маршрутизация для контроллеров API
 
 app.Run();
