@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-public class ApplicationUser : IdentityUser
+namespace EmployeeManagementServer.Models
 {
-    // Дополнительные свойства пользователя могут быть добавлены здесь.
+    public class ApplicationUser : IdentityUser
+    {
+        // Дополнительные свойства пользователя, если необходимо
+        // public string CustomProperty { get; set; }
+    }
 }

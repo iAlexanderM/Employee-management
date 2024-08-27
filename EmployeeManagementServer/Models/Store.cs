@@ -1,10 +1,12 @@
-﻿public class Store
+﻿namespace EmployeeManagementServer.Models
 {
-    public int Id { get; set; }
-    public string Building { get; set; }
-    public string Floor { get; set; }
-    public string Line { get; set; }
-    public string StoreNumber { get; set; }
-    public int ContractorId { get; set; }
-    public Contractor Contractor { get; set; }
+    public class Store
+    {
+        public int Id { get; set; }
+        public string Building { get; set; }
+        public int Floor { get; set; }
+        public string Line { get; set; }
+        public string StoreNumber { get; set; }
+        public bool IsArchived { get; set; } = false; 
+    }
 }

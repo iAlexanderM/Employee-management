@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "gOJ4g0sy8Cunsxpj30JyNjmay8SpQ+P83WGHZnqmxTI=",
+  "Hash": "8K6iEV8RQFXlqaqTwPl1SDLKvEZEuCVyd/ukmsNYDw8=",
   "Source": "EmployeeManagementServer",
   "BasePath": "_content/EmployeeManagementServer",
   "Mode": "Default",
@@ -1193,6 +1193,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\favicon.ico"
+    },
+    {
+      "Identity": "C:\\Users\\Alexander\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\wwwroot\\index.html",
+      "SourceId": "EmployeeManagementServer",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\Alexander\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\wwwroot\\",
+      "BasePath": "_content/EmployeeManagementServer",
+      "RelativePath": "index.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\index.html"
     },
     {
       "Identity": "C:\\Users\\Alexander\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\wwwroot\\js\\site.js",

@@ -1,10 +1,18 @@
 ﻿using AutoMapper;
+using EmployeeManagementServer.Models;
+using EmployeeManagementServer.Models.DTOs;
 
-public class MappingProfile : Profile
+namespace EmployeeManagementServer.Mappings
 {
-    public MappingProfile()
+    public class MappingProfile : Profile
     {
-        CreateMap<Contractor, ContractorDto>().ReverseMap();
-        // Добавьте другие маппинги по мере необходимости
+        public MappingProfile()
+        {
+            // Маппинг между Contractor и ContractorDto
+            CreateMap<Contractor, ContractorDto>().ReverseMap();
+
+            // Маппинг между Store и StoreDto
+            CreateMap<Store, StoreDto>().ReverseMap();
+        }
     }
 }

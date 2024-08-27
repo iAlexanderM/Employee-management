@@ -1,14 +1,34 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using EmployeeManagementServer.Models;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+namespace EmployeeManagementServer.Data
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-    }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+        }
 
-    public DbSet<Contractor> Contractors { get; set; }
-    public DbSet<Store> Stores { get; set; }
-    public DbSet<ContractorPhoto> ContractorPhotos { get; set; }
+        public ApplicationDbContext() { }
+
+        public DbSet<Contractor> Contractors { get; set; }
+        public DbSet<ContractorPhoto> ContractorPhotos { get; set; }
+        public DbSet<Store> Stores { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<Contractor>()
+                .HasIndex(c => c.PassportSerialNumber)
+                .IsUnique();
+
+            builder.Entity<ContractorPhoto>()
+                .HasOne(cp => cp.Contractor)
+                .WithMany(c => c.Photos)
+                .HasForeignKey(cp => cp.ContractorId);
+        }
+    }
 }

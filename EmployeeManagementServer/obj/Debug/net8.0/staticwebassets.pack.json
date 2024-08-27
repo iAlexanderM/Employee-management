@@ -9,6 +9,10 @@
       "PackagePath": "staticwebassets\\favicon.ico"
     },
     {
+      "Id": "C:\\Users\\Alexander\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
       "Id": "C:\\Users\\Alexander\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\wwwroot\\js\\site.js",
       "PackagePath": "staticwebassets\\js\\site.js"
     },

@@ -2,10 +2,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NLog.Web;
 using AutoMapper;
-using MediatR;  // Это правильное пространство имен
+using MediatR;
 using FluentValidation.AspNetCore;
 using Microsoft.OpenApi.Models;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
+using EmployeeManagementServer.Data;
+using EmployeeManagementServer.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,10 +19,10 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Настройка AutoMapper
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-// Настройка MediatR - исправлено
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
+// Настройка MediatR
+builder.Services.AddMediatR(typeof(Program));
 
 // Настройка FluentValidation
 builder.Services.AddControllers()

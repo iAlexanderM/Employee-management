@@ -1,18 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class Contractor
+namespace EmployeeManagementServer.Models
 {
-    public int Id { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public string MiddleName { get; set; }
-    public DateTime BirthDate { get; set; }
-    public string DocumentType { get; set; }
-    public string PassportSerialNumber { get; set; }
-    public string PassportIssuedBy { get; set; }
-    public DateTime PassportIssueDate { get; set; }
-    public string ProductType { get; set; }
-    public List<ContractorPhoto> Photos { get; set; } = new List<ContractorPhoto>();
-    public bool IsArchived { get; set; } = false; // Для архивации контрагентов
+    public class Contractor
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string MiddleName { get; set; }
+        public DateTime BirthDate { get; set; }
+        public string DocumentType { get; set; }
+        public string PassportSerialNumber { get; set; }
+        public string PassportIssuedBy { get; set; }
+        public DateTime PassportIssueDate { get; set; }
+        public string ProductType { get; set; }
+        public bool IsArchived { get; set; } = false; // По умолчанию не в архиве
+
+        // Связь с фотографиями
+        public ICollection<ContractorPhoto> Photos { get; set; }
+    }
 }
