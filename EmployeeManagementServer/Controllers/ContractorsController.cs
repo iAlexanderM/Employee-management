@@ -3,7 +3,6 @@ using EmployeeManagementServer.Models.DTOs;
 using EmployeeManagementServer.Models;
 using EmployeeManagementServer.Services;
 using AutoMapper;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 
 namespace EmployeeManagementServer.Controllers

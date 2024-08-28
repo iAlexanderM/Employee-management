@@ -1,34 +1,32 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using EmployeeManagementServer.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using EmployeeManagementServer.Models;
 
-namespace EmployeeManagementServer.Data
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-        }
+    }
 
-        public ApplicationDbContext() { }
+    // Определение DbSet для моделей
+    public DbSet<Contractor> Contractors { get; set; }
+    public DbSet<ContractorPhoto> ContractorPhotos { get; set; }
+    public DbSet<Store> Stores { get; set; }
 
-        public DbSet<Contractor> Contractors { get; set; }
-        public DbSet<ContractorPhoto> ContractorPhotos { get; set; }
-        public DbSet<Store> Stores { get; set; }
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
 
-        protected override void OnModelCreating(ModelBuilder builder)
-        {
-            base.OnModelCreating(builder);
+        builder.HasDefaultSchema("public");
 
-            builder.Entity<Contractor>()
-                .HasIndex(c => c.PassportSerialNumber)
-                .IsUnique();
+        builder.Entity<Contractor>()
+            .HasIndex(c => c.PassportSerialNumber)
+            .IsUnique();
 
-            builder.Entity<ContractorPhoto>()
-                .HasOne(cp => cp.Contractor)
-                .WithMany(c => c.Photos)
-                .HasForeignKey(cp => cp.ContractorId);
-        }
+        builder.Entity<ContractorPhoto>()
+            .HasOne(cp => cp.Contractor)
+            .WithMany(c => c.Photos)
+            .HasForeignKey(cp => cp.ContractorId);
     }
 }

@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NLog.Web;
 using AutoMapper;
-using MediatR;
 using FluentValidation.AspNetCore;
 using Microsoft.OpenApi.Models;
 using EmployeeManagementServer.Data;
@@ -20,9 +19,6 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 
 // Настройка AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
-// Настройка MediatR
-builder.Services.AddMediatR(typeof(Program));
 
 // Настройка FluentValidation
 builder.Services.AddControllers()

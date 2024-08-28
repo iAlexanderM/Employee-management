@@ -1,3 +1,11 @@
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.csproj.AssemblyReference.cache
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.AssemblyInfoInputs.cache
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.AssemblyInfo.cs
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.csproj.CoreCompileInputs.cache
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.sourcelink.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\appsettings.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\EmployeeManagementServer.staticwebassets.runtime.json
@@ -13,9 +21,6 @@ C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bi
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\FluentValidation.AspNetCore.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\FluentValidation.DependencyInjectionExtensions.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\Humanizer.dll
-C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\MediatR.dll
-C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\MediatR.Contracts.dll
-C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\MediatR.Extensions.Microsoft.DependencyInjection.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.Internal.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
@@ -135,14 +140,6 @@ C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bi
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
-C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.csproj.AssemblyReference.cache
-C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.AssemblyInfoInputs.cache
-C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.AssemblyInfo.cs
-C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.csproj.CoreCompileInputs.cache
-C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.MvcApplicationPartsAssemblyInfo.cs
-C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.sourcelink.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\staticwebassets\msbuild.EmployeeManagementServer.Microsoft.AspNetCore.StaticWebAssets.props
