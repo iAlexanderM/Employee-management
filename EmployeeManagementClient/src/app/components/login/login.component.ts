@@ -10,19 +10,17 @@ import { Router } from '@angular/router';
 export class LoginComponent {
 	username: string = '';
 	password: string = '';
-	errorMessage: string = '';
 
 	constructor(private authService: AuthService, private router: Router) { }
 
 	login(): void {
-		this.authService.login(this.username, this.password).subscribe(
-			(response: any) => {
-				this.authService.setToken(response.token);
+		this.authService.login({ username: this.username, password: this.password }).subscribe(
+			response => {
+				localStorage.setItem('token', response.token);
 				this.router.navigate(['/']);
 			},
-			(error: any) => {
-				console.error('Login failed', error);
-				this.errorMessage = 'Ошибка входа. Пожалуйста, проверьте свои учетные данные.';
+			error => {
+				console.error('Ошибка входа', error);
 			}
 		);
 	}

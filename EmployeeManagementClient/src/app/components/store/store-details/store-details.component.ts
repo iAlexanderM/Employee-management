@@ -1,5 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { StoreService } from '../../../services/store.service';
+import { Store } from '../../../models/store.model';
 
 @Component({
 	selector: 'app-store-details',
@@ -7,25 +9,20 @@ import { StoreService } from '../../../services/store.service';
 	styleUrls: ['./store-details.component.css']
 })
 export class StoreDetailsComponent implements OnInit {
-	@Input() storeId!: number;
-	store: any;
-	errorMessage: string = '';
+	store: Store | null = null;
 
-	constructor(private storeService: StoreService) { }
+	constructor(
+		private route: ActivatedRoute,
+		private storeService: StoreService
+	) { }
 
 	ngOnInit(): void {
-		this.fetchStoreDetails();
-	}
-
-	fetchStoreDetails(): void {
-		this.storeService.getStoreById(this.storeId).subscribe(
-			(data) => {
-				this.store = data;
-			},
-			(error) => {
-				console.error('Error fetching store details', error);
-				this.errorMessage = 'Не удалось загрузить данные торговой точки. Пожалуйста, попробуйте позже.';
-			}
-		);
+		const id = this.route.snapshot.paramMap.get('id');
+		if (id) {
+			this.storeService.getStoreById(id).subscribe(
+				(data: Store) => this.store = data,
+				error => console.error('Ошибка при загрузке данных торговой точки', error)
+			);
+		}
 	}
 }

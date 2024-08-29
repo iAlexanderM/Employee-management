@@ -1,0 +1,8 @@
+<div class="container">
+	<h2>Архивировать контрагента</h2>
+	<div *ngIf="contractor">
+		<p>Вы уверены, что хотите архивировать контрагента: {{ contractor.firstName }} {{ contractor.lastName }}?</p>
+		<button class="btn btn-danger" (click)="archiveContractor()">Архивировать</button>
+		<a routerLink="/contractors" class="btn btn-secondary">Отмена</a>
+	</div>
+</div>

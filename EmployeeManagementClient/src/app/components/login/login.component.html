@@ -1,14 +1,14 @@
-<h2>Вход</h2>
-<form (ngSubmit)="login()">
-	<label for="username">Имя пользователя:</label>
-	<input id="username" [(ngModel)]="username" name="username" required>
-
-	<label for="password">Пароль:</label>
-	<input id="password" type="password" [(ngModel)]="password" name="password" required>
-
-	<button type="submit">Войти</button>
-</form>
-
-<div *ngIf="errorMessage" class="error-message">
-	{{ errorMessage }}
+<div class="container">
+	<h2>Вход</h2>
+	<form (ngSubmit)="login()">
+		<div class="form-group">
+			<label for="username">Имя пользователя</label>
+			<input type="text" id="username" [(ngModel)]="username" name="username" class="form-control" required />
+		</div>
+		<div class="form-group">
+			<label for="password">Пароль</label>
+			<input type="password" id="password" [(ngModel)]="password" name="password" class="form-control" required />
+		</div>
+		<button type="submit" class="btn btn-primary">Войти</button>
+	</form>
 </div>

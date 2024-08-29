@@ -1,22 +1,22 @@
-<form [formGroup]="storeForm" (ngSubmit)="onSubmit()">
-	<div *ngIf="errorMessage" class="error-message">
-		{{ errorMessage }}
-	</div>
-
-	<label for="building">Здание:</label>
-	<input id="building" formControlName="building">
-
-	<label for="floor">Этаж:</label>
-	<input id="floor" formControlName="floor">
-
-	<label for="line">Линия:</label>
-	<input id="line" formControlName="line">
-
-	<label for="number">Номер торговой точки:</label>
-	<input id="number" formControlName="number">
-
-	<label for="contractorId">Закрепленный контрагент (ID):</label>
-	<input id="contractorId" formControlName="contractorId">
-
-	<button type="submit" [disabled]="storeForm.invalid">Сохранить</button>
-</form>
+<div class="container">
+	<h2>{{ isEditMode ? 'Редактировать торговую точку' : 'Создать новую торговую точку' }}</h2>
+	<form [formGroup]="storeForm" (ngSubmit)="onSubmit()">
+		<div class="form-group">
+			<label for="building">Здание</label>
+			<input id="building" formControlName="building" class="form-control" required />
+		</div>
+		<div class="form-group">
+			<label for="floor">Этаж</label>
+			<input id="floor" formControlName="floor" class="form-control" required />
+		</div>
+		<div class="form-group">
+			<label for="line">Линия</label>
+			<input id="line" formControlName="line" class="form-control" required />
+		</div>
+		<div class="form-group">
+			<label for="storeNumber">Номер торговой точки</label>
+			<input id="storeNumber" formControlName="storeNumber" class="form-control" required />
+		</div>
+		<button type="submit" class="btn btn-primary">{{ isEditMode ? 'Сохранить изменения' : 'Создать' }}</button>
+	</form>
+</div>

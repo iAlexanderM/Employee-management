@@ -1,6 +1,8 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ContractorService } from '../../../services/contractor.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Contractor } from '../../../models/contractor.model';
 
 @Component({
 	selector: 'app-contractor-form',
@@ -8,67 +10,66 @@ import { ContractorService } from '../../../services/contractor.service';
 	styleUrls: ['./contractor-form.component.css']
 })
 export class ContractorFormComponent implements OnInit {
-	@Input() contractor: any;
-	@Output() formSubmit = new EventEmitter<void>();
-
 	contractorForm: FormGroup;
-	errorMessage: string = '';
+	isEditMode: boolean = false;
+	contractorId: string | null = null;
 
-	constructor(private fb: FormBuilder, private contractorService: ContractorService) {
+	constructor(
+		private fb: FormBuilder,
+		private contractorService: ContractorService,
+		private route: ActivatedRoute,
+		private router: Router
+	) {
 		this.contractorForm = this.fb.group({
 			firstName: ['', Validators.required],
 			lastName: ['', Validators.required],
 			middleName: [''],
-			birthDate: [''],
-			documentType: [''],
-			passportSeries: [''],
-			passportNumber: [''],
-			issuedBy: [''],
-			issueDate: [''],
-			productType: ['']
+			dateOfBirth: ['', Validators.required],
+			documentType: ['', Validators.required],
+			passportSeries: ['', Validators.required],
+			passportNumber: ['', Validators.required],
+			passportIssuedBy: ['', Validators.required],
+			passportIssueDate: ['', Validators.required],
+			productType: ['', Validators.required],
+			photo: [null],
+			documentPhotos: [null],
 		});
 	}
 
 	ngOnInit(): void {
-		if (this.contractor) {
-			this.contractorForm.patchValue(this.contractor);
+		this.contractorId = this.route.snapshot.paramMap.get('id');
+		if (this.contractorId) {
+			this.isEditMode = true;
+			this.contractorService.getContractorById(this.contractorId).subscribe(
+				(contractor: Contractor) => {
+					this.contractorForm.patchValue(contractor);
+				},
+				error => console.error('Ошибка при загрузке контрагента', error)
+			);
 		}
 	}
 
-	submitForm(): void {
+	onSubmit(): void {
 		if (this.contractorForm.valid) {
-			if (this.contractor) {
-				this.contractorService.updateContractor(this.contractor.id, this.contractorForm.value).subscribe(
-					() => {
-						this.formSubmit.emit();
-					},
-					(error) => {
-						console.error('Error updating contractor', error);
-						this.errorMessage = 'Ошибка при обновлении контрагента. Пожалуйста, попробуйте позже.';
-					}
+			if (this.isEditMode) {
+				this.contractorService.updateContractor(this.contractorId!, this.contractorForm.value).subscribe(
+					() => this.router.navigate(['/contractors']),
+					error => console.error('Ошибка при обновлении контрагента', error)
 				);
 			} else {
 				this.contractorService.createContractor(this.contractorForm.value).subscribe(
-					() => {
-						this.formSubmit.emit();
-					},
-					(error) => {
-						console.error('Error creating contractor', error);
-						this.errorMessage = 'Ошибка при создании контрагента. Пожалуйста, попробуйте позже.';
-					}
+					() => this.router.navigate(['/contractors']),
+					error => console.error('Ошибка при создании контрагента', error)
 				);
 			}
 		}
 	}
 
-	onFileChange(event: any, field: string): void {
-		const files = event.target.files;
-		if (files.length > 0) {
-			const formData = new FormData();
-			for (let file of files) {
-				formData.append(field, file);
-			}
-			// Загрузите файлы на сервер или обработайте их здесь
+	// Метод для загрузки фото
+	onFileChange(event: any, fieldName: string) {
+		const file = event.target.files[0];
+		if (file) {
+			this.contractorForm.get(fieldName)?.setValue(file);
 		}
 	}
 }

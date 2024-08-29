@@ -1,35 +1,33 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environment/environment';
+import { Store } from '../models/store.model';
 
 @Injectable({
 	providedIn: 'root'
 })
 export class StoreService {
-
-	private apiUrl = `${environment.apiUrl}/stores`;
+	private apiUrl = 'http://localhost:5290/api/Stores';  // Обновленный URL API бэкенда
 
 	constructor(private http: HttpClient) { }
 
-	getStores(): Observable<any[]> {
-		return this.http.get<any[]>(this.apiUrl);
+	// Получение списка всех торговых точек
+	getAllStores(): Observable<Store[]> {
+		return this.http.get<Store[]>(`${this.apiUrl}`);
 	}
 
-	getStoreById(id: number): Observable<any> {
-		return this.http.get<any>(`${this.apiUrl}/${id}`);
+	// Получение торговой точки по ID
+	getStoreById(id: string): Observable<Store> {
+		return this.http.get<Store>(`${this.apiUrl}/${id}`);
 	}
 
-	createStore(store: any): Observable<any> {
-		return this.http.post<any>(this.apiUrl, store);
+	// Создание новой торговой точки
+	createStore(store: Store): Observable<Store> {
+		return this.http.post<Store>(`${this.apiUrl}`, store);
 	}
 
-	updateStore(id: number, store: any): Observable<any> {
-		return this.http.put<any>(`${this.apiUrl}/${id}`, store);
-	}
-
-	// Добавляем метод archiveStore
-	archiveStore(id: number): Observable<any> {
-		return this.http.patch<any>(`${this.apiUrl}/${id}/archive`, {});
+	// Обновление данных торговой точки
+	updateStore(id: string, store: Store): Observable<void> {
+		return this.http.put<void>(`${this.apiUrl}/${id}`, store);
 	}
 }

@@ -1,7 +1,6 @@
-// src/app/components/contractor/contractor-list/contractor-list.component.ts
-
 import { Component, OnInit } from '@angular/core';
 import { ContractorService } from '../../../services/contractor.service';
+import { Contractor } from '../../../models/contractor.model';
 
 @Component({
 	selector: 'app-contractor-list',
@@ -9,20 +8,14 @@ import { ContractorService } from '../../../services/contractor.service';
 	styleUrls: ['./contractor-list.component.css']
 })
 export class ContractorListComponent implements OnInit {
-	contractors: any[] = [];
-	errorMessage: string = '';
+	contractors: Contractor[] = [];
 
 	constructor(private contractorService: ContractorService) { }
 
 	ngOnInit(): void {
-		this.contractorService.getContractors().subscribe(
-			(data) => {
-				this.contractors = data;
-			},
-			(error) => {
-				console.error('Error fetching contractors', error);
-				this.errorMessage = 'Не удалось загрузить список контрагентов. Пожалуйста, попробуйте позже.';
-			}
+		this.contractorService.getAllContractors().subscribe(
+			data => this.contractors = data,
+			error => console.error('Ошибка при получении списка контрагентов', error)
 		);
 	}
 }

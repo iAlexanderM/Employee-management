@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { StoreService } from '../../../services/store.service';
-import { HttpErrorResponse } from '@angular/common/http';
+import { Store } from '../../../models/store.model';
 
 @Component({
 	selector: 'app-store-list',
@@ -8,36 +8,14 @@ import { HttpErrorResponse } from '@angular/common/http';
 	styleUrls: ['./store-list.component.css']
 })
 export class StoreListComponent implements OnInit {
-	stores: any[] = [];
-	errorMessage: string = '';
+	stores: Store[] = [];
 
 	constructor(private storeService: StoreService) { }
 
 	ngOnInit(): void {
-		this.loadStores();
-	}
-
-	loadStores(): void {
-		this.storeService.getStores().subscribe(
-			(data) => {
-				this.stores = data;
-			},
-			(error: HttpErrorResponse) => {  // Указан тип error
-				console.error('Error fetching stores', error);
-				this.errorMessage = 'Не удалось загрузить торговые точки. Пожалуйста, попробуйте позже.';
-			}
-		);
-	}
-
-	archiveStore(storeId: number): void {
-		this.storeService.archiveStore(storeId).subscribe(
-			() => {
-				this.loadStores();
-			},
-			(error: HttpErrorResponse) => {  // Указан тип error
-				console.error('Error archiving store', error);
-				this.errorMessage = 'Не удалось архивировать торговую точку. Пожалуйста, попробуйте позже.';
-			}
+		this.storeService.getAllStores().subscribe(
+			data => this.stores = data,
+			error => console.error('Ошибка при получении списка торговых точек', error)
 		);
 	}
 }

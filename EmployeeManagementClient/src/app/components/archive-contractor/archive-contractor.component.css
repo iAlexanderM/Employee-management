@@ -1,15 +1,12 @@
 .container {
-	max-width: 600px;
+	max-width: 500px;
 	margin: 20px auto;
 	padding: 15px;
 	border: 1px solid #ccc;
 	border-radius: 5px;
-}
-
-.form-group {
-	margin-bottom: 15px;
+	text-align: center;
 }
 
 .btn {
-	margin-right: 10px;
+	margin: 5px;
 }

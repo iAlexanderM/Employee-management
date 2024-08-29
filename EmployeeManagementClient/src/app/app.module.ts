@@ -1,46 +1,54 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
 import { ContractorListComponent } from './components/contractor/contractor-list/contractor-list.component';
-import { ContractorDetailsComponent } from './components/contractor/contractor-details/contractor-details.component';
 import { ContractorFormComponent } from './components/contractor/contractor-form/contractor-form.component';
+import { ContractorDetailsComponent } from './components/contractor/contractor-details/contractor-details.component';
 import { StoreListComponent } from './components/store/store-list/store-list.component';
-import { StoreDetailsComponent } from './components/store/store-details/store-details.component';
 import { StoreFormComponent } from './components/store/store-form/store-form.component';
+import { StoreDetailsComponent } from './components/store/store-details/store-details.component';
 import { LoginComponent } from './components/login/login.component';
 import { AuthService } from './services/auth.service';
-import { RouterModule } from '@angular/router';
+import { ContractorService } from './services/contractor.service';
+import { StoreService } from './services/store.service';
 import { AuthGuard } from './guards/auth.guard';
+import { FormatNamePipe } from '../app/components/pipes/format-name.pipe';
+import { ArchiveContractorComponent } from './components/archive-contractor/archive-contractor.component';
+import { PrintPassComponent } from './components/print-pass/print-pass.component';
+import { RoleDirective } from './directives/role.directive';
 import { AuthInterceptor } from './interceptor/auth.interceptor';
 
 @NgModule({
 	declarations: [
 		AppComponent,
 		ContractorListComponent,
-		ContractorDetailsComponent,
 		ContractorFormComponent,
+		ContractorDetailsComponent,
 		StoreListComponent,
-		StoreDetailsComponent,
 		StoreFormComponent,
-		LoginComponent
+		StoreDetailsComponent,
+		LoginComponent,
+		FormatNamePipe,
+		ArchiveContractorComponent,
+		PrintPassComponent,
+		RoleDirective,
 	],
 	imports: [
 		BrowserModule,
-		CommonModule,
 		AppRoutingModule,
 		HttpClientModule,
 		ReactiveFormsModule,
 		FormsModule,
-		RouterModule,
-		BrowserAnimationsModule
+		BrowserAnimationsModule,
 	],
 	providers: [
 		AuthService,
+		ContractorService,
+		StoreService,
 		AuthGuard,
 		{
 			provide: HTTP_INTERCEPTORS,

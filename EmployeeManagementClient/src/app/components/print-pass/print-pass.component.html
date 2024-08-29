@@ -1,0 +1,7 @@
+<div class="container">
+	<h2>Печать пропусков</h2>
+	<div *ngFor="let contractor of contractors" class="contractor-card">
+		<p>{{ contractor.lastName }} {{ contractor.firstName }} {{ contractor.middleName }}</p>
+		<button class="btn btn-primary" (click)="printPass(contractor)">Печать пропуска</button>
+	</div>
+</div>

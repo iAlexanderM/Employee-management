@@ -1,6 +1,8 @@
 export interface Store {
-	id: number;
-	name: string;
-	address: string;
-	phone: string;
+	id: string;
+	building: string;
+	floor: string;
+	line: string;
+	storeNumber: string;
+	assignedContractorId?: string;
 }

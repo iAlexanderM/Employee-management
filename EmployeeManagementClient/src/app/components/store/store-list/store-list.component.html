@@ -1,26 +1,27 @@
-<h2>Список торговых точек</h2>
-<div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
-<table>
-	<thead>
-		<tr>
-			<th>ID</th>
-			<th>Здание</th>
-			<th>Этаж</th>
-			<th>Линия</th>
-			<th>Номер</th>
-			<th>Действия</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr *ngFor="let store of stores">
-			<td>{{ store.id }}</td>
-			<td>{{ store.building }}</td>
-			<td>{{ store.floor }}</td>
-			<td>{{ store.line }}</td>
-			<td>{{ store.number }}</td>
-			<td>
-				<button (click)="archiveStore(store.id)">Архивировать</button>
-			</td>
-		</tr>
-	</tbody>
-</table>
+<div class="container">
+	<h2>Список торговых точек</h2>
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th>Здание</th>
+				<th>Этаж</th>
+				<th>Линия</th>
+				<th>Номер торговой точки</th>
+				<th>Действия</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let store of stores">
+				<td>{{ store.building }}</td>
+				<td>{{ store.floor }}</td>
+				<td>{{ store.line }}</td>
+				<td>{{ store.storeNumber }}</td>
+				<td>
+					<a [routerLink]="['/stores/details', store.id]" class="btn btn-info">Просмотр</a>
+					<a [routerLink]="['/stores/edit', store.id]" class="btn btn-warning">Редактировать</a>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<a routerLink="/stores/new" class="btn btn-success">Добавить торговую точку</a>
+</div>

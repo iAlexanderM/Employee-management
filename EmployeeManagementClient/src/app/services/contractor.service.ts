@@ -1,50 +1,38 @@
-// src/app/services/contractor.service.ts
-
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Contractor } from '../models/contractor.model';
 
 @Injectable({
 	providedIn: 'root'
 })
 export class ContractorService {
-	private apiUrl = 'http://localhost:5290/api/contractors';
+	private apiUrl = 'http://localhost:5290/api/Contractors';  // Обновленный URL API бэкенда
 
 	constructor(private http: HttpClient) { }
 
-	getContractors(): Observable<any[]> {
-		return this.http.get<any[]>(this.apiUrl).pipe(
-			catchError(this.handleError)
-		);
+	// Получение списка всех контрагентов
+	getAllContractors(): Observable<Contractor[]> {
+		return this.http.get<Contractor[]>(`${this.apiUrl}`);
 	}
 
-	getContractorById(id: number): Observable<any> {
-		return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
-			catchError(this.handleError)
-		);
+	// Получение контрагента по ID
+	getContractorById(id: string): Observable<Contractor> {
+		return this.http.get<Contractor>(`${this.apiUrl}/${id}`);
 	}
 
-	createContractor(contractor: any): Observable<any> {
-		return this.http.post<any>(this.apiUrl, contractor).pipe(
-			catchError(this.handleError)
-		);
+	// Создание нового контрагента
+	createContractor(contractor: Contractor): Observable<Contractor> {
+		return this.http.post<Contractor>(`${this.apiUrl}`, contractor);
 	}
 
-	updateContractor(id: number, contractor: any): Observable<any> {
-		return this.http.put<any>(`${this.apiUrl}/${id}`, contractor).pipe(
-			catchError(this.handleError)
-		);
+	// Обновление данных контрагента
+	updateContractor(id: string, contractor: Contractor): Observable<void> {
+		return this.http.put<void>(`${this.apiUrl}/${id}`, contractor);
 	}
 
-	archiveContractor(id: number): Observable<any> {
-		return this.http.delete<any>(`${this.apiUrl}/archive/${id}`).pipe(
-			catchError(this.handleError)
-		);
-	}
-
-	private handleError(error: HttpErrorResponse): Observable<never> {
-		console.error('An error occurred:', error.message);
-		return throwError(() => new Error('Что-то пошло не так; пожалуйста, попробуйте позже.'));
+	// Архивирование контрагента
+	archiveContractor(id: string): Observable<void> {
+		return this.http.patch<void>(`${this.apiUrl}/archive/${id}`, {});
 	}
 }
