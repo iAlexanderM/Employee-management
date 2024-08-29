@@ -1,9 +1,13 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
 	selector: 'app-login',
+	standalone: true,
+	imports: [FormsModule, CommonModule],
 	templateUrl: './login.component.html',
 	styleUrls: ['./login.component.css']
 })
@@ -14,14 +18,15 @@ export class LoginComponent {
 	constructor(private authService: AuthService, private router: Router) { }
 
 	login(): void {
-		this.authService.login({ username: this.username, password: this.password }).subscribe(
-			response => {
-				localStorage.setItem('token', response.token);
-				this.router.navigate(['/']);
+		this.authService.login(this.username, this.password).subscribe(
+			(success: boolean) => {
+				if (success) {
+					this.router.navigate(['/contractors']);
+				} else {
+					alert('Ошибка входа. Проверьте логин и пароль.');
+				}
 			},
-			error => {
-				console.error('Ошибка входа', error);
-			}
+			error => console.error('Ошибка при входе', error)
 		);
 	}
 }

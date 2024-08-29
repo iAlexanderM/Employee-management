@@ -1,5 +1,4 @@
 <div *ngIf="contractor">
-	<h2>Детали контрагента</h2>
 	<p><strong>ID:</strong> {{ contractor.id }}</p>
 	<p><strong>Фамилия:</strong> {{ contractor.lastName }}</p>
 	<p><strong>Имя:</strong> {{ contractor.firstName }}</p>
@@ -10,18 +9,16 @@
 	<p><strong>Кем выдан паспорт:</strong> {{ contractor.passportIssuedBy }}</p>
 	<p><strong>Дата выдачи паспорта:</strong> {{ contractor.passportIssueDate | date:'dd.MM.yyyy' }}</p>
 	<p><strong>Тип продукции:</strong> {{ contractor.productType }}</p>
+	<p><strong>Фото:</strong> <img *ngIf="contractor.photo" [src]="contractor.photo" alt="Фото" width="100"></p>
 
-	<div>
-		<strong>Фото:</strong>
-		<img *ngIf="contractor.photo" [src]="contractor.photo" alt="Фото" width="100">
-	</div>
-
-	<div>
-		<strong>Фото документов:</strong>
-		<ng-container *ngFor="let documentPhoto of contractor.documentPhotos">
-			<img [src]="documentPhoto" alt="Фото документа" width="100">
-		</ng-container>
+	<div *ngIf="contractor.documentPhotos?.length">
+		<p><strong>Фото документов:</strong></p>
+		<div *ngFor="let photo of contractor.documentPhotos">
+			<img [src]="photo" alt="Фото документа" width="100">
+		</div>
 	</div>
 
 	<p><strong>Архивирован:</strong> {{ contractor.isArchived ? 'Да' : 'Нет' }}</p>
+
+	<button class="btn btn-warning" (click)="archiveContractor()" *ngIf="!contractor.isArchived">Архивировать</button>
 </div>

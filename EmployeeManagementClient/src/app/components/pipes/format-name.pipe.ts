@@ -1,12 +1,11 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-	name: 'formatName'
+	name: 'formatName',
+	standalone: true
 })
 export class FormatNamePipe implements PipeTransform {
-
-	transform(firstName: string, lastName: string, middleName?: string): string {
-		return `${lastName} ${firstName} ${middleName ? middleName : ''}`.trim();
+	transform(value: { firstName: string; lastName: string; middleName?: string }): string {
+		return `${value.lastName} ${value.firstName} ${value.middleName || ''}`.trim();
 	}
-
 }

@@ -1,68 +1,49 @@
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using EmployeeManagementServer.Data; // Импорт вашего DbContext
+using EmployeeManagementServer.Models; // Импорт вашей модели User
 using Microsoft.EntityFrameworkCore;
-using NLog.Web;
-using AutoMapper;
-using FluentValidation.AspNetCore;
-using Microsoft.OpenApi.Models;
-using EmployeeManagementServer.Data;
-using EmployeeManagementServer.Models;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Настройка строки подключения к базе данных PostgreSQL
+// Добавление конфигурации аутентификации JWT
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
+
+// Добавление Identity
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Настройка ASP.NET Core Identity
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
-
-// Настройка AutoMapper
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
-// Настройка FluentValidation
-builder.Services.AddControllers()
-    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<Program>());
-
-// Настройка CORS (разрешение взаимодействия с Angular)
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAllOrigins",
-        builder => builder
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader());
-});
-
-// Настройка Swagger для документации API
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Employee Management API", Version = "v1" });
-});
-
-// Настройка NLog для логирования
-builder.Logging.ClearProviders();
-builder.Host.UseNLog();
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Middleware настройки
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage(); // Страница разработки для ошибок
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Employee Management API v1"));
-}
-
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.UseCors("AllowAllOrigins"); // Включение CORS для поддержки запросов от клиента Angular
-
-app.UseAuthentication(); // Включение аутентификации
-app.UseAuthorization(); // Включение авторизации
-
-app.MapControllers(); // Маршрутизация для контроллеров API
+app.MapControllers();
 
 app.Run();

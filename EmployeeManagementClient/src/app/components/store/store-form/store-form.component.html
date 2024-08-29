@@ -1,22 +1,23 @@
-<div class="container">
-	<h2>{{ isEditMode ? 'Редактировать торговую точку' : 'Создать новую торговую точку' }}</h2>
-	<form [formGroup]="storeForm" (ngSubmit)="onSubmit()">
-		<div class="form-group">
-			<label for="building">Здание</label>
-			<input id="building" formControlName="building" class="form-control" required />
-		</div>
-		<div class="form-group">
-			<label for="floor">Этаж</label>
-			<input id="floor" formControlName="floor" class="form-control" required />
-		</div>
-		<div class="form-group">
-			<label for="line">Линия</label>
-			<input id="line" formControlName="line" class="form-control" required />
-		</div>
-		<div class="form-group">
-			<label for="storeNumber">Номер торговой точки</label>
-			<input id="storeNumber" formControlName="storeNumber" class="form-control" required />
-		</div>
-		<button type="submit" class="btn btn-primary">{{ isEditMode ? 'Сохранить изменения' : 'Создать' }}</button>
-	</form>
-</div>
+<form [formGroup]="storeForm" (ngSubmit)="onSubmit()">
+	<div class="form-group">
+		<label for="building">Здание</label>
+		<input id="building" formControlName="building" class="form-control" required>
+	</div>
+	<div class="form-group">
+		<label for="floor">Этаж</label>
+		<input id="floor" formControlName="floor" class="form-control" required>
+	</div>
+	<div class="form-group">
+		<label for="line">Линия</label>
+		<input id="line" formControlName="line" class="form-control" required>
+	</div>
+	<div class="form-group">
+		<label for="number">Номер торговой точки</label>
+		<input id="number" formControlName="number" class="form-control" required>
+	</div>
+	<div class="form-group">
+		<label for="contractorId">ID Контрагента</label>
+		<input id="contractorId" formControlName="contractorId" class="form-control">
+	</div>
+	<button type="submit" class="btn btn-primary">Сохранить</button>
+</form>

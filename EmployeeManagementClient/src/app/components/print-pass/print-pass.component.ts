@@ -1,40 +1,42 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ContractorService } from '../../services/contractor.service';
 import { Contractor } from '../../models/contractor.model';
+import { CommonModule } from '@angular/common';
 
 @Component({
 	selector: 'app-print-pass',
+	standalone: true,
+	imports: [CommonModule],
 	templateUrl: './print-pass.component.html',
 	styleUrls: ['./print-pass.component.css']
 })
-export class PrintPassComponent {
+export class PrintPassComponent implements OnInit {
 	contractors: Contractor[] = [];
 
 	constructor(private contractorService: ContractorService) { }
 
 	ngOnInit(): void {
-		this.contractorService.getAllContractors().subscribe(
-			data => this.contractors = data,
-			error => console.error('Ошибка при получении списка контрагентов', error)
+		this.contractorService.getContractors().subscribe(
+			(data: Contractor[]) => this.contractors = data,
+			error => console.error('Ошибка при загрузке списка контрагентов', error)
 		);
 	}
 
 	printPass(contractor: Contractor): void {
-		const printContent = `
+		const printContents = `
       <div>
-        <h1>Пропуск</h1>
-        <p><strong>ФИО:</strong> ${contractor.lastName} ${contractor.firstName} ${contractor.middleName || ''}</p>
-        <p><strong>Дата рождения:</strong> ${new Date(contractor.dateOfBirth).toLocaleDateString()}</p>
-        <p><strong>Тип документа:</strong> ${contractor.documentType}</p>
-        <p><strong>Серия и номер паспорта:</strong> ${contractor.passportSeries} ${contractor.passportNumber}</p>
+        <h3>Пропуск</h3>
+        <p>Имя: ${contractor.firstName}</p>
+        <p>Фамилия: ${contractor.lastName}</p>
+        <p>Дата Рождения: ${contractor.dateOfBirth}</p>
+        <p>Тип продукции: ${contractor.productType}</p>
       </div>
     `;
-
-		const newWindow = window.open('', '_blank', 'width=600,height=400');
-		if (newWindow) {
-			newWindow.document.write(printContent);
-			newWindow.document.close();
-			newWindow.print();
+		const printWindow = window.open('', '_blank');
+		if (printWindow) {
+			printWindow.document.write(printContents);
+			printWindow.document.close();
+			printWindow.print();
 		}
 	}
 }

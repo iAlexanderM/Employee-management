@@ -1,52 +1,58 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Router } from '@angular/router';
+import { Observable, of } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 
 @Injectable({
 	providedIn: 'root'
 })
 export class AuthService {
-	private apiUrl = 'http://localhost:5290/api/Account';  // URL API бэкенда
+	private isAuthenticatedFlag = false;
+	private token: string | null = null;
 
-	constructor(private http: HttpClient, private router: Router) { }
+	constructor(private http: HttpClient) { }
 
-	// Метод регистрации пользователя
-	register(userData: any): Observable<any> {
-		return this.http.post(`${this.apiUrl}/Register`, userData);
+	login(username: string, password: string): Observable<boolean> {
+		return this.http.post<any>('/api/login', { username, password }).pipe(
+			tap(response => {
+				this.isAuthenticatedFlag = true;
+				this.token = response.token;
+			}),
+			catchError(error => {
+				console.error('Ошибка при логине', error);
+				return of(false);
+			})
+		);
 	}
 
-	// Метод входа пользователя
-	login(credentials: any): Observable<any> {
-		return this.http.post(`${this.apiUrl}/Login`, credentials);
+	register(username: string, password: string): Observable<boolean> {
+		return this.http.post<any>('/api/register', { username, password }).pipe(
+			tap(response => true),
+			catchError(error => {
+				console.error('Ошибка при регистрации', error);
+				return of(false);
+			})
+		);
 	}
 
-	// Метод выхода пользователя
-	logout(): void {
-		localStorage.removeItem('token');
-		this.router.navigate(['/login']);
+	logout(): Observable<void> {
+		return this.http.post<void>('/api/logout', {}).pipe(
+			tap(() => {
+				this.isAuthenticatedFlag = false;
+				this.token = null;
+			}),
+			catchError(error => {
+				console.error('Ошибка при выходе из системы', error);
+				return of();
+			})
+		);
 	}
 
-	// Проверка, залогинен ли пользователь
 	isAuthenticated(): boolean {
-		return !!localStorage.getItem('token');
+		return this.isAuthenticatedFlag;
 	}
 
-	// Метод для получения текущего пользователя из токена
-	getCurrentUser(): any {
-		const token = localStorage.getItem('token');
-		if (!token) return null;
-
-		try {
-			const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-			return {
-				id: tokenPayload.id,
-				username: tokenPayload.username,
-				roles: tokenPayload.roles || []
-			};
-		} catch (e) {
-			console.error('Ошибка при декодировании токена', e);
-			return null;
-		}
+	getToken(): string | null {
+		return this.token;
 	}
 }

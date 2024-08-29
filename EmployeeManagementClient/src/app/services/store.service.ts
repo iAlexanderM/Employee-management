@@ -7,27 +7,22 @@ import { Store } from '../models/store.model';
 	providedIn: 'root'
 })
 export class StoreService {
-	private apiUrl = 'http://localhost:5290/api/Stores';  // Обновленный URL API бэкенда
 
 	constructor(private http: HttpClient) { }
 
-	// Получение списка всех торговых точек
-	getAllStores(): Observable<Store[]> {
-		return this.http.get<Store[]>(`${this.apiUrl}`);
+	getStores(): Observable<Store[]> {
+		return this.http.get<Store[]>('/api/stores');
 	}
 
-	// Получение торговой точки по ID
 	getStoreById(id: string): Observable<Store> {
-		return this.http.get<Store>(`${this.apiUrl}/${id}`);
+		return this.http.get<Store>(`/api/stores/${id}`);
 	}
 
-	// Создание новой торговой точки
-	createStore(store: Store): Observable<Store> {
-		return this.http.post<Store>(`${this.apiUrl}`, store);
+	addStore(store: Store): Observable<Store> {
+		return this.http.post<Store>('/api/stores', store);
 	}
 
-	// Обновление данных торговой точки
-	updateStore(id: string, store: Store): Observable<void> {
-		return this.http.put<void>(`${this.apiUrl}/${id}`, store);
+	updateStore(id: string, store: Store): Observable<Store> {
+		return this.http.put<Store>(`/api/stores/${id}`, store);
 	}
 }

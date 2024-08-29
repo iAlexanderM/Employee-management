@@ -1,9 +1,8 @@
 <div *ngIf="store">
-	<h2>Детали торговой точки</h2>
+	<p><strong>ID:</strong> {{ store.id }}</p>
 	<p><strong>Здание:</strong> {{ store.building }}</p>
 	<p><strong>Этаж:</strong> {{ store.floor }}</p>
 	<p><strong>Линия:</strong> {{ store.line }}</p>
 	<p><strong>Номер торговой точки:</strong> {{ store.number }}</p>
 	<p><strong>Контрагент:</strong> {{ store.contractorId }}</p>
 </div>
-<div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>

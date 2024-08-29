@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { StoreService } from '../../../services/store.service';
 import { Store } from '../../../models/store.model';
+import { CommonModule } from '@angular/common';
 
 @Component({
 	selector: 'app-store-details',
+	standalone: true,
+	imports: [CommonModule],
 	templateUrl: './store-details.component.html',
 	styleUrls: ['./store-details.component.css']
 })
@@ -13,6 +16,7 @@ export class StoreDetailsComponent implements OnInit {
 
 	constructor(
 		private route: ActivatedRoute,
+		private router: Router,
 		private storeService: StoreService
 	) { }
 

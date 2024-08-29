@@ -7,32 +7,26 @@ import { Contractor } from '../models/contractor.model';
 	providedIn: 'root'
 })
 export class ContractorService {
-	private apiUrl = 'http://localhost:5290/api/Contractors';  // Обновленный URL API бэкенда
 
 	constructor(private http: HttpClient) { }
 
-	// Получение списка всех контрагентов
-	getAllContractors(): Observable<Contractor[]> {
-		return this.http.get<Contractor[]>(`${this.apiUrl}`);
+	getContractors(): Observable<Contractor[]> {
+		return this.http.get<Contractor[]>('/api/contractors');
 	}
 
-	// Получение контрагента по ID
 	getContractorById(id: string): Observable<Contractor> {
-		return this.http.get<Contractor>(`${this.apiUrl}/${id}`);
+		return this.http.get<Contractor>(`/api/contractors/${id}`);
 	}
 
-	// Создание нового контрагента
-	createContractor(contractor: Contractor): Observable<Contractor> {
-		return this.http.post<Contractor>(`${this.apiUrl}`, contractor);
+	addContractor(contractor: Contractor): Observable<Contractor> {
+		return this.http.post<Contractor>('/api/contractors', contractor);
 	}
 
-	// Обновление данных контрагента
-	updateContractor(id: string, contractor: Contractor): Observable<void> {
-		return this.http.put<void>(`${this.apiUrl}/${id}`, contractor);
+	updateContractor(id: string, contractor: Contractor): Observable<Contractor> {
+		return this.http.put<Contractor>(`/api/contractors/${id}`, contractor);
 	}
 
-	// Архивирование контрагента
 	archiveContractor(id: string): Observable<void> {
-		return this.http.patch<void>(`${this.apiUrl}/archive/${id}`, {});
+		return this.http.post<void>(`/api/contractors/${id}/archive`, {});
 	}
 }

@@ -1,40 +1,41 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { StoreService } from '../../../services/store.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '../../../models/store.model';
+import { CommonModule } from '@angular/common';
 
 @Component({
 	selector: 'app-store-form',
+	standalone: true,
+	imports: [ReactiveFormsModule, CommonModule, RouterModule],
 	templateUrl: './store-form.component.html',
 	styleUrls: ['./store-form.component.css']
 })
 export class StoreFormComponent implements OnInit {
 	storeForm: FormGroup;
-	isEditMode: boolean = false;
 	storeId: string | null = null;
 
 	constructor(
 		private fb: FormBuilder,
 		private storeService: StoreService,
-		private route: ActivatedRoute,
-		private router: Router
+		private router: Router,
+		private route: ActivatedRoute
 	) {
 		this.storeForm = this.fb.group({
 			building: ['', Validators.required],
 			floor: ['', Validators.required],
 			line: ['', Validators.required],
-			storeNumber: ['', Validators.required],
-			assignedContractorId: ['']
+			number: ['', Validators.required],
+			contractorId: ['']
 		});
 	}
 
 	ngOnInit(): void {
 		this.storeId = this.route.snapshot.paramMap.get('id');
 		if (this.storeId) {
-			this.isEditMode = true;
 			this.storeService.getStoreById(this.storeId).subscribe(
-				(store: Store) => this.storeForm.patchValue(store),
+				(data: Store) => this.storeForm.patchValue(data),
 				error => console.error('Ошибка при загрузке данных торговой точки', error)
 			);
 		}
@@ -42,15 +43,17 @@ export class StoreFormComponent implements OnInit {
 
 	onSubmit(): void {
 		if (this.storeForm.valid) {
-			if (this.isEditMode) {
-				this.storeService.updateStore(this.storeId!, this.storeForm.value).subscribe(
+			const storeData = this.storeForm.value;
+
+			if (this.storeId) {
+				this.storeService.updateStore(this.storeId, storeData).subscribe(
 					() => this.router.navigate(['/stores']),
-					error => console.error('Ошибка при обновлении данных торговой точки', error)
+					error => console.error('Ошибка при обновлении торговой точки', error)
 				);
 			} else {
-				this.storeService.createStore(this.storeForm.value).subscribe(
+				this.storeService.addStore(storeData).subscribe(
 					() => this.router.navigate(['/stores']),
-					error => console.error('Ошибка при создании торговой точки', error)
+					error => console.error('Ошибка при добавлении торговой точки', error)
 				);
 			}
 		}

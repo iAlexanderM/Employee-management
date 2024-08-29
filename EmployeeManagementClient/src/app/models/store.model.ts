@@ -1,8 +1,8 @@
 export interface Store {
 	id: string;
 	building: string;
-	floor: string;
+	floor: number;
 	line: string;
-	storeNumber: string;
-	assignedContractorId?: string;
+	number: number;
+	contractorId?: string;
 }

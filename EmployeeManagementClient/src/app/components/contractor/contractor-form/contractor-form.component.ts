@@ -1,24 +1,28 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ContractorService } from '../../../services/contractor.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Contractor } from '../../../models/contractor.model';
+import { CommonModule } from '@angular/common';
 
 @Component({
 	selector: 'app-contractor-form',
+	standalone: true,
+	imports: [ReactiveFormsModule, CommonModule, RouterModule],
 	templateUrl: './contractor-form.component.html',
 	styleUrls: ['./contractor-form.component.css']
 })
 export class ContractorFormComponent implements OnInit {
 	contractorForm: FormGroup;
-	isEditMode: boolean = false;
 	contractorId: string | null = null;
+	documentPhotos: string[] = [];
+	isEditMode: boolean = false;
 
 	constructor(
 		private fb: FormBuilder,
 		private contractorService: ContractorService,
-		private route: ActivatedRoute,
-		private router: Router
+		private router: Router,
+		private route: ActivatedRoute
 	) {
 		this.contractorForm = this.fb.group({
 			firstName: ['', Validators.required],
@@ -31,45 +35,54 @@ export class ContractorFormComponent implements OnInit {
 			passportIssuedBy: ['', Validators.required],
 			passportIssueDate: ['', Validators.required],
 			productType: ['', Validators.required],
-			photo: [null],
-			documentPhotos: [null],
+			photo: [''],
+			documentPhotos: ['']
 		});
 	}
 
 	ngOnInit(): void {
 		this.contractorId = this.route.snapshot.paramMap.get('id');
+		this.isEditMode = !!this.contractorId;
+
 		if (this.contractorId) {
-			this.isEditMode = true;
 			this.contractorService.getContractorById(this.contractorId).subscribe(
-				(contractor: Contractor) => {
-					this.contractorForm.patchValue(contractor);
+				(data: Contractor) => {
+					this.contractorForm.patchValue(data);
+					this.documentPhotos = data.documentPhotos || [];
 				},
-				error => console.error('Ошибка при загрузке контрагента', error)
+				error => console.error('Ошибка при загрузке данных контрагента', error)
 			);
+		}
+	}
+
+	onFileChange(event: any): void {
+		const files = event.target.files;
+		if (files) {
+			for (let i = 0; i < files.length; i++) {
+				const reader = new FileReader();
+				reader.onload = (e: any) => {
+					this.documentPhotos.push(e.target.result);
+				};
+				reader.readAsDataURL(files[i]);
+			}
 		}
 	}
 
 	onSubmit(): void {
 		if (this.contractorForm.valid) {
-			if (this.isEditMode) {
-				this.contractorService.updateContractor(this.contractorId!, this.contractorForm.value).subscribe(
+			const contractorData = { ...this.contractorForm.value, documentPhotos: this.documentPhotos };
+
+			if (this.contractorId) {
+				this.contractorService.updateContractor(this.contractorId, contractorData).subscribe(
 					() => this.router.navigate(['/contractors']),
 					error => console.error('Ошибка при обновлении контрагента', error)
 				);
 			} else {
-				this.contractorService.createContractor(this.contractorForm.value).subscribe(
+				this.contractorService.addContractor(contractorData).subscribe(
 					() => this.router.navigate(['/contractors']),
-					error => console.error('Ошибка при создании контрагента', error)
+					error => console.error('Ошибка при добавлении контрагента', error)
 				);
 			}
-		}
-	}
-
-	// Метод для загрузки фото
-	onFileChange(event: any, fieldName: string) {
-		const file = event.target.files[0];
-		if (file) {
-			this.contractorForm.get(fieldName)?.setValue(file);
 		}
 	}
 }

@@ -1,38 +1,36 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
 import { ContractorService } from '../../services/contractor.service';
 import { Contractor } from '../../models/contractor.model';
+import { CommonModule } from '@angular/common';
 
 @Component({
 	selector: 'app-archive-contractor',
+	standalone: true,
+	imports: [CommonModule],
 	templateUrl: './archive-contractor.component.html',
 	styleUrls: ['./archive-contractor.component.css']
 })
 export class ArchiveContractorComponent implements OnInit {
-	contractor: Contractor | null = null;
+	contractors: Contractor[] = [];
 
-	constructor(
-		private contractorService: ContractorService,
-		private route: ActivatedRoute,
-		private router: Router
-	) { }
+	constructor(private contractorService: ContractorService) { }
 
 	ngOnInit(): void {
-		const id = this.route.snapshot.paramMap.get('id');
-		if (id) {
-			this.contractorService.getContractorById(id).subscribe(
-				(data: Contractor) => this.contractor = data,
-				error => console.error('Ошибка при загрузке данных контрагента', error)
-			);
-		}
+		this.contractorService.getContractors().subscribe(
+			(data: Contractor[]) => this.contractors = data,
+			error => console.error('Ошибка при загрузке списка контрагентов', error)
+		);
 	}
 
-	archiveContractor(): void {
-		if (this.contractor && this.contractor.id) {
-			this.contractorService.archiveContractor(this.contractor.id).subscribe(
-				() => this.router.navigate(['/contractors']),
-				error => console.error('Ошибка при архивации контрагента', error)
-			);
-		}
+	archiveContractor(id: string): void {
+		this.contractorService.archiveContractor(id).subscribe(
+			() => {
+				this.contractors = this.contractors.map(contractor =>
+					contractor.id === id ? { ...contractor, isArchived: true } : contractor
+				);
+				alert('Контрагент успешно архивирован');
+			},
+			error => console.error('Ошибка при архивировании контрагента', error)
+		);
 	}
 }
