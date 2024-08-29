@@ -1,0 +1,51 @@
+<!-- src/app/components/contractor/contractor-list/contractor-list.component.html -->
+
+<h2>Список контрагентов</h2>
+
+<!-- Отображение ошибки -->
+<div *ngIf="errorMessage" class="error-message">
+	{{ errorMessage }}
+</div>
+
+<table>
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>Фамилия</th>
+			<th>Имя</th>
+			<th>Отчество</th>
+			<th>Дата Рождения</th>
+			<th>Тип Документа</th>
+			<th>Серия и Номер Паспорта</th>
+			<th>Кем выдан паспорт</th>
+			<th>Дата выдачи паспорта</th>
+			<th>Тип продукции</th>
+			<th>Фото</th>
+			<th>Фото документов</th>
+			<th>Архивирован</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr *ngFor="let contractor of contractors">
+			<td>{{ contractor.id }}</td>
+			<td>{{ contractor.lastName }}</td>
+			<td>{{ contractor.firstName }}</td>
+			<td>{{ contractor.middleName }}</td>
+			<td>{{ contractor.dateOfBirth | date:'dd.MM.yyyy' }}</td>
+			<td>{{ contractor.documentType }}</td>
+			<td>{{ contractor.passportSeries }} {{ contractor.passportNumber }}</td>
+			<td>{{ contractor.passportIssuedBy }}</td>
+			<td>{{ contractor.passportIssueDate | date:'dd.MM.yyyy' }}</td>
+			<td>{{ contractor.productType }}</td>
+			<td>
+				<img *ngIf="contractor.photo" [src]="contractor.photo" alt="Фото" width="50">
+			</td>
+			<td>
+				<ng-container *ngFor="let documentPhoto of contractor.documentPhotos">
+					<img [src]="documentPhoto" alt="Фото документа" width="50">
+				</ng-container>
+			</td>
+			<td>{{ contractor.isArchived ? 'Да' : 'Нет' }}</td>
+		</tr>
+	</tbody>
+</table>

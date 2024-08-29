@@ -1,0 +1,48 @@
+<h2>{{ contractor ? 'Редактировать Контрагента' : 'Добавить Контрагента' }}</h2>
+<form [formGroup]="contractorForm" (ngSubmit)="submitForm()">
+	<label for="firstName">Имя:</label>
+	<input id="firstName" formControlName="firstName">
+	<div *ngIf="contractorForm.get('firstName')?.invalid && contractorForm.get('firstName')?.touched">
+		Имя обязательно.
+	</div>
+
+	<label for="lastName">Фамилия:</label>
+	<input id="lastName" formControlName="lastName">
+	<div *ngIf="contractorForm.get('lastName')?.invalid && contractorForm.get('lastName')?.touched">
+		Фамилия обязательна.
+	</div>
+
+	<label for="middleName">Отчество:</label>
+	<input id="middleName" formControlName="middleName">
+
+	<label for="birthDate">Дата Рождения:</label>
+	<input id="birthDate" type="date" formControlName="birthDate">
+
+	<label for="documentType">Тип документа:</label>
+	<input id="documentType" formControlName="documentType">
+
+	<label for="passportSeries">Серия паспорта:</label>
+	<input id="passportSeries" formControlName="passportSeries">
+
+	<label for="passportNumber">Номер паспорта:</label>
+	<input id="passportNumber" formControlName="passportNumber">
+
+	<label for="issuedBy">Кем выдан:</label>
+	<input id="issuedBy" formControlName="issuedBy">
+
+	<label for="issueDate">Дата выдачи:</label>
+	<input id="issueDate" type="date" formControlName="issueDate">
+
+	<label for="productType">Тип продукции:</label>
+	<input id="productType" formControlName="productType">
+
+	<!-- Поля для загрузки фото и фото документов -->
+	<label for="photos">Фото:</label>
+	<input id="photos" type="file" (change)="onFileChange($event, 'photos')" multiple>
+
+	<label for="documentPhotos">Фото документов:</label>
+	<input id="documentPhotos" type="file" (change)="onFileChange($event, 'documentPhotos')" multiple>
+
+	<button type="submit">Сохранить</button>
+</form>
+<div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
