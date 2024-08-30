@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: EmployeeManagementServer/dockerfile
+    ports:
+      - "5290:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - app-network
+
+  client:
+    build:
+      context: .
+      dockerfile: EmployeeManagementClient/dockerfile
+    ports:
+      - "4200:80"
+    networks:
+      - app-network
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: R2wEG9
+      POSTGRES_DB: EmployeeManagementDB
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  pgdata:
