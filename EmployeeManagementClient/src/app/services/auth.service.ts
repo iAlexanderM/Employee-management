@@ -7,7 +7,7 @@ import { tap, catchError } from 'rxjs/operators';
 	providedIn: 'root'
 })
 export class AuthService {
-	private apiUrl = 'http://localhost:5290/api';
+	private apiUrl = 'http://localhost:5290/api/auth';
 	private isAuthenticatedFlag = false;
 	private token: string | null = null;
 
@@ -21,16 +21,6 @@ export class AuthService {
 			}),
 			catchError(error => {
 				console.error('Ошибка при логине', error);
-				return of(false);
-			})
-		);
-	}
-
-	register(username: string, password: string): Observable<boolean> {
-		return this.http.post<any>(`${this.apiUrl}/register`, { username, password }).pipe(
-			tap(response => true),
-			catchError(error => {
-				console.error('Ошибка при регистрации', error);
 				return of(false);
 			})
 		);

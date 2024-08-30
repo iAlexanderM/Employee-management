@@ -74,7 +74,6 @@ C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bi
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\System.Runtime.Caching.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\System.Security.Permissions.dll
-C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\System.Text.Json.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\System.Windows.Extensions.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.resources.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\de\Microsoft.CodeAnalysis.resources.dll
@@ -148,7 +147,6 @@ C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\ob
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.EmployeeManagementServer.props
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\staticwebassets.pack.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\scopedcss\bundle\EmployeeManagementServer.styles.css
-C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.csproj.CopyComplete
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\refint\EmployeeManagementServer.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.pdb
@@ -157,3 +155,4 @@ C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\ob
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\package-lock.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\package.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\Employee.11AA4889.Up2Date

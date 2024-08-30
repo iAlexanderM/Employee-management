@@ -6,12 +6,10 @@ import { StoreListComponent } from './components/store/store-list/store-list.com
 import { StoreFormComponent } from './components/store/store-form/store-form.component';
 import { StoreDetailsComponent } from './components/store/store-details/store-details.component';
 import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
 import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
 	{ path: 'login', component: LoginComponent },
-	{ path: 'register', component: RegisterComponent },
 	{ path: 'contractors', component: ContractorListComponent, canActivate: [AuthGuard] },
 	{ path: 'contractors/new', component: ContractorFormComponent, canActivate: [AuthGuard] },
 	{ path: 'contractors/edit/:id', component: ContractorFormComponent, canActivate: [AuthGuard] },
