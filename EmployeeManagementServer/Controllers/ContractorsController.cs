@@ -9,7 +9,7 @@ namespace EmployeeManagementServer.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Добавляем авторизацию
+    [Authorize]
     public class ContractorsController : ControllerBase
     {
         private readonly IContractorService _contractorService;
@@ -21,7 +21,6 @@ namespace EmployeeManagementServer.Controllers
             _mapper = mapper;
         }
 
-        // GET: api/Contractors
         [HttpGet]
         public async Task<IActionResult> GetContractors()
         {
@@ -29,7 +28,6 @@ namespace EmployeeManagementServer.Controllers
             return Ok(contractors);
         }
 
-        // GET: api/Contractors/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetContractor(int id)
         {
@@ -42,7 +40,6 @@ namespace EmployeeManagementServer.Controllers
             return Ok(contractor);
         }
 
-        // POST: api/Contractors
         [HttpPost]
         public async Task<IActionResult> CreateContractor([FromBody] ContractorDto contractorDto)
         {
@@ -56,7 +53,6 @@ namespace EmployeeManagementServer.Controllers
             return CreatedAtAction(nameof(GetContractor), new { id = contractor.Id }, contractor);
         }
 
-        // PUT: api/Contractors/5
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateContractor(int id, [FromBody] ContractorDto contractorDto)
         {
@@ -76,7 +72,6 @@ namespace EmployeeManagementServer.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Contractors/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteContractor(int id)
         {

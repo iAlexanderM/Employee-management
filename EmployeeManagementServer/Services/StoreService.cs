@@ -26,12 +26,12 @@ namespace EmployeeManagementServer.Services
 
         public async Task<IEnumerable<Store>> GetAllStoresAsync()
         {
-            return await _context.Stores.ToListAsync();
+            return await _context.Stores.Where(s => !s.IsArchived).ToListAsync();
         }
 
         public async Task<Store> GetStoreByIdAsync(int id)
         {
-            return await _context.Stores.FirstOrDefaultAsync(s => s.Id == id);
+            return await _context.Stores.FirstOrDefaultAsync(s => s.Id == id && !s.IsArchived);
         }
 
         public async Task AddStoreAsync(Store store)

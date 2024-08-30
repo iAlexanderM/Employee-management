@@ -7,13 +7,14 @@ import { tap, catchError } from 'rxjs/operators';
 	providedIn: 'root'
 })
 export class AuthService {
+	private apiUrl = 'http://localhost:5290/api';
 	private isAuthenticatedFlag = false;
 	private token: string | null = null;
 
 	constructor(private http: HttpClient) { }
 
 	login(username: string, password: string): Observable<boolean> {
-		return this.http.post<any>('/api/login', { username, password }).pipe(
+		return this.http.post<any>(`${this.apiUrl}/login`, { username, password }).pipe(
 			tap(response => {
 				this.isAuthenticatedFlag = true;
 				this.token = response.token;
@@ -26,7 +27,7 @@ export class AuthService {
 	}
 
 	register(username: string, password: string): Observable<boolean> {
-		return this.http.post<any>('/api/register', { username, password }).pipe(
+		return this.http.post<any>(`${this.apiUrl}/register`, { username, password }).pipe(
 			tap(response => true),
 			catchError(error => {
 				console.error('Ошибка при регистрации', error);
@@ -36,7 +37,7 @@ export class AuthService {
 	}
 
 	logout(): Observable<void> {
-		return this.http.post<void>('/api/logout', {}).pipe(
+		return this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
 			tap(() => {
 				this.isAuthenticatedFlag = false;
 				this.token = null;

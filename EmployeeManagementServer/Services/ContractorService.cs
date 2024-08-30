@@ -26,12 +26,12 @@ namespace EmployeeManagementServer.Services
 
         public async Task<IEnumerable<Contractor>> GetAllContractorsAsync()
         {
-            return await _context.Contractors.Include(c => c.Photos).ToListAsync();
+            return await _context.Contractors.Include(c => c.Photos).Where(c => !c.IsArchived).ToListAsync();
         }
 
         public async Task<Contractor> GetContractorByIdAsync(int id)
         {
-            return await _context.Contractors.Include(c => c.Photos).FirstOrDefaultAsync(c => c.Id == id);
+            return await _context.Contractors.Include(c => c.Photos).FirstOrDefaultAsync(c => c.Id == id && !c.IsArchived);
         }
 
         public async Task AddContractorAsync(Contractor contractor)

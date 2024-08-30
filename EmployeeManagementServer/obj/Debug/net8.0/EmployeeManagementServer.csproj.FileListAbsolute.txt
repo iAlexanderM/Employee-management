@@ -154,3 +154,6 @@ C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\ob
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.pdb
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.genruntimeconfig.cache
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\ref\EmployeeManagementServer.dll
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\package-lock.json
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\package.json
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

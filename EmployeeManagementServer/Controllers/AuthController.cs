@@ -25,35 +25,9 @@ namespace EmployeeManagementServer.Controllers
             _configuration = configuration;
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] UserRegisterDto request)
-        {
-            // Проверка на null и валидность данных
-            if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
-                return BadRequest("Invalid user registration request.");
-
-            // Проверка, существует ли пользователь
-            if (await UserExists(request.Username))
-                return BadRequest("Пользователь уже существует.");
-
-            var user = new ApplicationUser
-            {
-                UserName = request.Username
-            };
-
-            var result = await _userManager.CreateAsync(user, request.Password);
-            if (!result.Succeeded)
-            {
-                return BadRequest(result.Errors);
-            }
-
-            return Ok(new { message = "Пользователь успешно зарегистрирован." });
-        }
-
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto request)
         {
-            // Проверка на null и валидность данных
             if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
                 return BadRequest("Invalid login request.");
 
@@ -62,15 +36,9 @@ namespace EmployeeManagementServer.Controllers
             if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
                 return Unauthorized("Invalid credentials.");
 
-            // Генерация JWT токена
             var token = GenerateJwtToken(user);
 
             return Ok(new { token });
-        }
-
-        private async Task<bool> UserExists(string username)
-        {
-            return await _userManager.Users.AnyAsync(u => u.UserName == username);
         }
 
         private string GenerateJwtToken(ApplicationUser user)

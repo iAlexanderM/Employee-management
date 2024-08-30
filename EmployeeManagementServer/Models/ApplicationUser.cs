@@ -1,10 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace EmployeeManagementServer.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        // Дополнительные свойства пользователя, если необходимо
-        // public string CustomProperty { get; set; }
+        [Required]
+        public override string UserName { get; set; }
+
+        [Required]
+        public string PasswordHash { get; set; }
     }
 }

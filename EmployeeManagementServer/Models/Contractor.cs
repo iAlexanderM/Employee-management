@@ -15,9 +15,7 @@ namespace EmployeeManagementServer.Models
         public string PassportIssuedBy { get; set; }
         public DateTime PassportIssueDate { get; set; }
         public string ProductType { get; set; }
-        public bool IsArchived { get; set; } = false; // По умолчанию не в архиве
-
-        // Связь с фотографиями
+        public bool IsArchived { get; set; } = false;        
         public ICollection<ContractorPhoto> Photos { get; set; }
     }
 }

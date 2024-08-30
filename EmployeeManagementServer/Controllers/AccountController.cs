@@ -20,32 +20,6 @@ namespace EmployeeManagementServer.Controllers
             _signInManager = signInManager;
         }
 
-        // POST: api/Account/Register
-        [HttpPost("Register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-            var result = await _userManager.CreateAsync(user, model.Password);
-
-            if (result.Succeeded)
-            {
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                return Ok();
-            }
-
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(string.Empty, error.Description);
-            }
-
-            return BadRequest(ModelState);
-        }
-
         // POST: api/Account/Login
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
@@ -55,20 +29,27 @@ namespace EmployeeManagementServer.Controllers
                 return BadRequest(ModelState);
             }
 
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+            // Поиск пользователя по email
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return Unauthorized(new { message = "Пользователь не найден." });
+            }
+
+            // Попытка входа
+            var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
 
             if (result.Succeeded)
             {
-                return Ok();
+                return Ok(new { message = "Успешный вход." });
             }
 
             if (result.IsLockedOut)
             {
-                return Forbid();
+                return BadRequest("Invalid login attempt.");
             }
 
-            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-            return BadRequest(ModelState);
+            return Unauthorized(new { message = "Неправильный логин или пароль." });
         }
 
         // POST: api/Account/Logout
@@ -77,7 +58,7 @@ namespace EmployeeManagementServer.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return Ok();
+            return Ok(new { message = "Вы успешно вышли из системы." });
         }
     }
 }
