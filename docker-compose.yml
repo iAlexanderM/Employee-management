@@ -4,7 +4,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: EmployeeManagementServer/dockerfile
+      dockerfile: EmployeeManagementServer/Dockerfile
     ports:
       - "5290:80"
     environment:
@@ -15,7 +15,7 @@ services:
   client:
     build:
       context: .
-      dockerfile: EmployeeManagementClient/dockerfile
+      dockerfile: EmployeeManagementClient/Dockerfile
     ports:
       - "4200:80"
     networks:
@@ -33,6 +33,22 @@ services:
       - app-network
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d EmployeeManagementDB" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  usermanagementapp:
+    build:
+      context: .
+      dockerfile: UserManagementApp/Dockerfile
+    depends_on:
+      - db
+    networks:
+      - app-network
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
 
 networks:
   app-network:
