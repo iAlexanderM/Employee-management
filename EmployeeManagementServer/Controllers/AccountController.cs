@@ -7,58 +7,58 @@ using System.Threading.Tasks;
 
 namespace EmployeeManagementServer.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AccountController : ControllerBase
-    {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
+	[Route("api/[controller]")]
+	[ApiController]
+	public class AccountController : ControllerBase
+	{
+		private readonly UserManager<ApplicationUser> _userManager;
+		private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-        }
+		public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+		{
+			_userManager = userManager;
+			_signInManager = signInManager;
+		}
 
-        // POST: api/Account/Login
-        [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+		// POST: api/Account/Login
+		[HttpPost("Login")]
+		public async Task<IActionResult> Login([FromBody] LoginDto model)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
 
-            // Поиск пользователя по email
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
-            {
-                return Unauthorized(new { message = "Пользователь не найден." });
-            }
+			// Поиск пользователя по email
+			var user = await _userManager.FindByEmailAsync(model.Email);
+			if (user == null)
+			{
+				return Unauthorized(new { message = "Пользователь не найден." });
+			}
 
-            // Попытка входа
-            var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
+			// Попытка входа
+			var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
 
-            if (result.Succeeded)
-            {
-                return Ok(new { message = "Успешный вход." });
-            }
+			if (result.Succeeded)
+			{
+				return Ok(new { message = "Успешный вход." });
+			}
 
-            if (result.IsLockedOut)
-            {
-                return BadRequest("Invalid login attempt.");
-            }
+			if (result.IsLockedOut)
+			{
+				return BadRequest("Invalid login attempt.");
+			}
 
-            return Unauthorized(new { message = "Неправильный логин или пароль." });
-        }
+			return Unauthorized(new { message = "Неправильный логин или пароль." });
+		}
 
-        // POST: api/Account/Logout
-        [HttpPost("Logout")]
-        [Authorize]
-        public async Task<IActionResult> Logout()
-        {
-            await _signInManager.SignOutAsync();
-            return Ok(new { message = "Вы успешно вышли из системы." });
-        }
-    }
+		// POST: api/Account/Logout        
+		[HttpPost("logout")]
+		[Authorize]
+		public async Task<IActionResult> Logout()
+		{
+			await _signInManager.SignOutAsync();
+			return Ok(new { message = "Вы успешно вышли из системы." });
+		}
+	}
 }

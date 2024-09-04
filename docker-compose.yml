@@ -1,26 +1,6 @@
 version: '3.8'
 
 services:
-  api:
-    build:
-      context: .
-      dockerfile: EmployeeManagementServer/Dockerfile
-    ports:
-      - "5290:80"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-    networks:
-      - app-network
-
-  client:
-    build:
-      context: .
-      dockerfile: EmployeeManagementClient/Dockerfile
-    ports:
-      - "4200:80"
-    networks:
-      - app-network
-
   db:
     image: postgres:15
     environment:
@@ -39,12 +19,36 @@ services:
       timeout: 5s
       retries: 5
 
+  api:
+    build:
+      context: .
+      dockerfile: EmployeeManagementServer/Dockerfile
+    ports:
+      - "5290:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  client:
+    build:
+      context: .
+      dockerfile: EmployeeManagementClient/Dockerfile
+    ports:
+      - "4200:80"
+    networks:
+      - app-network
+
   usermanagementapp:
     build:
       context: .
       dockerfile: UserManagementApp/Dockerfile
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - app-network
     environment:

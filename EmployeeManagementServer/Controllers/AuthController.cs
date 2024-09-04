@@ -8,59 +8,70 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using EmployeeManagementServer.Models.DTOs;
 
 namespace EmployeeManagementServer.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AuthController : ControllerBase
-    {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IConfiguration _configuration;
+	[Route("api/[controller]")]
+	[ApiController]
+	public class AuthController : ControllerBase
+	{
+		private readonly UserManager<ApplicationUser> _userManager;
+		private readonly SignInManager<ApplicationUser> _signInManager;
+		private readonly IConfiguration _configuration;
 
-        public AuthController(UserManager<ApplicationUser> userManager, IConfiguration configuration)
-        {
-            _userManager = userManager;
-            _configuration = configuration;
-        }
+		public AuthController(UserManager<ApplicationUser> userManager, IConfiguration configuration)
+		{
+			_userManager = userManager;
+			_configuration = configuration;
+		}
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserLoginDto request)
-        {
-            if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
-                return BadRequest("Invalid login request.");
+		[HttpPost("login")]
+		public async Task<IActionResult> Login([FromBody] UserLoginDto request)
+		{
+			if (request == null || string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
+				return BadRequest("Invalid login request.");
 
-            var user = await _userManager.FindByNameAsync(request.Username);
+			var user = await _userManager.FindByNameAsync(request.Username);
 
-            if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
-                return Unauthorized("Invalid credentials.");
+			if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
+				return Unauthorized("Invalid credentials.");
 
-            var token = GenerateJwtToken(user);
+			var token = GenerateJwtToken(user);
 
-            return Ok(new { token });
-        }
+			return Ok(new { token });
+		}
 
-        private string GenerateJwtToken(ApplicationUser user)
-        {
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
+		[HttpPost("logout")]
+		[Authorize]
+		public async Task<IActionResult> Logout()
+		{
+			await _signInManager.SignOutAsync();
+			return Ok(new { message = "Вы успешно вышли из системы." });
+		}
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:Token"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+		private string GenerateJwtToken(ApplicationUser user)
+		{
+			var claims = new[]
+			{
+				new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+				new Claim(JwtRegisteredClaimNames.Exp, DateTime.UtcNow.AddMinutes(30).ToString())
+			};
 
-            var token = new JwtSecurityToken(
-                issuer: _configuration["AppSettings:Issuer"],
-                audience: _configuration["AppSettings:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds
-            );
+			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:Token"]));
+			var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-    }
+			var token = new JwtSecurityToken(
+				issuer: _configuration["AppSettings:Issuer"],
+				audience: _configuration["AppSettings:Audience"],
+				claims: claims,
+				expires: DateTime.UtcNow.AddMinutes(30),
+				signingCredentials: creds
+			);
+
+			return new JwtSecurityTokenHandler().WriteToken(token);
+		}
+	}
 }

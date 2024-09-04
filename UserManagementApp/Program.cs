@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder; // Добавьте этот импорт
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -49,15 +49,15 @@ class Program
 			// Получаем сервис UserManager из контейнера сервисов
 			var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-			string userName = "user1";
-			string password = "user1@user123";
+			string userName = "User1";
+			string password = "User1@user123";
 
 			if (await userManager.FindByNameAsync(userName) == null)
 			{
 				var user = new ApplicationUser
 				{
 					UserName = userName,
-					Email = "user1@example.com"
+					Email = "user1@example.com",
 				};
 
 				var result = await userManager.CreateAsync(user, password);
@@ -65,6 +65,13 @@ class Program
 				if (result.Succeeded)
 				{
 					Console.WriteLine("User created successfully!");
+
+					// Дополнительная проверка: убедимся, что пароль хэшируется
+					var createdUser = await userManager.FindByNameAsync(userName);
+					if (createdUser != null)
+					{
+						Console.WriteLine($"PasswordHash for {createdUser.UserName}: {createdUser.PasswordHash}");
+					}
 				}
 				else
 				{

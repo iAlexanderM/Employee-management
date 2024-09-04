@@ -5,6 +5,9 @@
     {
       "AbsoluteMoniker": "D:0:0:{343AE52A-202D-4C41-AFD0-02B247305D03}|UserManagementApp.csproj|c:\\users\\alexander\\desktop\\burop\\employee-management\\usermanagementapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{343AE52A-202D-4C41-AFD0-02B247305D03}|UserManagementApp.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{73A86D70-4602-4FEB-8122-D5FA124404A3}|..\\EmployeeManagementServer\\EmployeeManagementServer.csproj|c:\\users\\alexander\\desktop\\burop\\employee-management\\employeemanagementserver\\models\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -14,8 +17,21 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ApplicationUser.cs",
+              "DocumentMoniker": "C:\\Users\\Alexander\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\ApplicationUser.cs",
+              "RelativeDocumentMoniker": "..\\EmployeeManagementServer\\Models\\ApplicationUser.cs",
+              "ToolTip": "C:\\Users\\Alexander\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\ApplicationUser.cs",
+              "RelativeToolTip": "..\\EmployeeManagementServer\\Models\\ApplicationUser.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-03T17:23:41.482Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
@@ -24,7 +40,7 @@
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\Users\\Alexander\\Desktop\\buroP\\Employee-management\\UserManagementApp\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB4AAAAhAAAAAAAAAA==",
+              "ViewState": "AgIAABMAAAAAAAAAAAAgwDoAAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-09-02T07:56:48.602Z",
               "EditorCaption": ""

@@ -1,6 +1,5 @@
 C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\bin\Debug\net8.0\EmployeeManagementServer.deps.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\bin\Debug\net8.0\EmployeeManagementServer.runtimeconfig.json
-C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\bin\Debug\net8.0\appsettings.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\bin\Debug\net8.0\package-lock.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\bin\Debug\net8.0\package.json
@@ -151,3 +150,9 @@ C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\obj\Debug
 C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\obj\Debug\net8.0\UserManagementApp.pdb
 C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\obj\Debug\net8.0\UserManagementApp.genruntimeconfig.cache
 C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\obj\Debug\net8.0\ref\UserManagementApp.dll
+C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\bin\Debug\net8.0\Microsoft.AspNetCore.DataProtection.dll
+C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\bin\Debug\net8.0\Microsoft.AspNetCore.DataProtection.Abstractions.dll
+C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\bin\Debug\net8.0\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.dll
+C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\Alexander\Desktop\buroP\Employee-management\UserManagementApp\bin\Debug\net8.0\System.Security.Cryptography.Xml.dll

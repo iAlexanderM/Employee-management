@@ -6,7 +6,6 @@ C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\ob
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.sourcelink.json
-C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\appsettings.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\EmployeeManagementServer.staticwebassets.runtime.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\EmployeeManagementServer.exe
@@ -156,3 +155,9 @@ C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bi
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\package.json
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\Employee.11AA4889.Up2Date
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\Microsoft.AspNetCore.DataProtection.dll
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\Microsoft.AspNetCore.DataProtection.Abstractions.dll
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.dll
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\Alexander\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\System.Security.Cryptography.Xml.dll
