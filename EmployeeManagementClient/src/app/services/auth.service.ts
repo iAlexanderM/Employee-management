@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, EMPTY } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 
 @Injectable({
@@ -54,13 +54,9 @@ export class AuthService {
 	 * @returns Observable<void> - Возвращает Observable
 	 */
 	logout(): Observable<void> {
-		return this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
+		return EMPTY.pipe(
 			tap(() => {
-				this.clearAuthData(); // Очищаем данные аутентификации после успешного запроса
-			}),
-			catchError(error => {
-				console.error('Ошибка при выходе из системы', error); // Обрабатываем ошибки
-				return of(); // Возвращаем пустое значение в случае ошибки
+				this.clearAuthData();
 			})
 		);
 	}

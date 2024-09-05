@@ -57,7 +57,7 @@ class Program
 				var user = new ApplicationUser
 				{
 					UserName = userName,
-					Email = "user1@example.com",
+					Email = "user1@example.com"
 				};
 
 				var result = await userManager.CreateAsync(user, password);
@@ -88,7 +88,6 @@ class Program
 			}
 		}
 
-		// Запуск приложения
 		app.Run();
 	}
 }
