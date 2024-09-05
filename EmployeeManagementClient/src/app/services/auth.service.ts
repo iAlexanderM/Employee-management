@@ -1,3 +1,5 @@
+// auth.service.ts
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, EMPTY } from 'rxjs';
@@ -22,7 +24,7 @@ export class AuthService {
 			this.token = token;
 			this.isAuthenticatedFlag = true; // Устанавливаем флаг аутентификации в true, если токен найден и не истек
 		} else {
-			this.clearAuthData(); // Очищаем данные аутентификации локально
+			this.logout().subscribe(); // Выходим из системы, если токен отсутствует или истек
 		}
 	}
 
@@ -56,7 +58,14 @@ export class AuthService {
 	logout(): Observable<void> {
 		return EMPTY.pipe(
 			tap(() => {
-				this.clearAuthData();
+				this.isAuthenticatedFlag = false; // Сбрасываем флаг аутентификации
+				this.token = null; // Очищаем локальный токен
+				localStorage.removeItem(this.tokenKey); // Удаляем токен из LocalStorage
+				localStorage.removeItem(this.tokenExpiryKey); // Удаляем время истечения срока действия токена
+			}),
+			catchError(error => {
+				console.error('Ошибка при выходе из системы', error); // Обрабатываем ошибки
+				return of(); // Возвращаем пустое значение в случае ошибки
 			})
 		);
 	}
@@ -75,15 +84,5 @@ export class AuthService {
 	 */
 	getToken(): string | null {
 		return this.token;
-	}
-
-	/**
-	 * Метод для очистки данных аутентификации
-	 */
-	private clearAuthData(): void {
-		this.isAuthenticatedFlag = false; // Сбрасываем флаг аутентификации
-		this.token = null; // Очищаем локальный токен
-		localStorage.removeItem(this.tokenKey); // Удаляем токен из LocalStorage
-		localStorage.removeItem(this.tokenExpiryKey); // Удаляем время истечения срока действия токена
 	}
 }
