@@ -56,8 +56,7 @@ namespace EmployeeManagementServer.Controllers
 			var claims = new[]
 			{
 				new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-				new Claim(JwtRegisteredClaimNames.Exp, DateTime.UtcNow.AddMinutes(30).ToString())
+				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
 			};
 
 			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:Token"]));

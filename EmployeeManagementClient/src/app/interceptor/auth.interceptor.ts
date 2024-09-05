@@ -1,5 +1,3 @@
-// auth.interceptor.ts
-
 import { Injectable } from '@angular/core';
 import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
@@ -22,18 +20,17 @@ export class AuthInterceptor implements HttpInterceptor {
 			return next.handle(cloned).pipe(
 				catchError(error => {
 					if (error.status === 401) {
-						this.authService.logout();
-						window.location.href = '/login';
+						this.authService.logout().subscribe(() => {
+							window.location.href = '/login';
+						});
 					}
 					return throwError(error);
 				})
 			);
 		} else {
-			// Если токен истек или отсутствует, делаем logout и перенаправляем на страницу входа
 			this.authService.logout().subscribe(() => {
-				window.location.href = '/login'; // Перенаправляем на страницу входа
+				window.location.href = '/login';
 			});
-			// Вы можете также бросить ошибку или предотвращать выполнение запроса, если нужно
 			return throwError(() => new Error('Пользователь не аутентифицирован или токен истек.'));
 		}
 	}

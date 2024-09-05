@@ -1,5 +1,3 @@
-// auth.service.ts
-
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, EMPTY } from 'rxjs';
@@ -24,7 +22,7 @@ export class AuthService {
 			this.token = token;
 			this.isAuthenticatedFlag = true; // Устанавливаем флаг аутентификации в true, если токен найден и не истек
 		} else {
-			this.logout().subscribe(); // Выходим из системы, если токен отсутствует или истек
+			this.logout(); // Выходим из системы, если токен отсутствует или истек
 		}
 	}
 
@@ -56,7 +54,7 @@ export class AuthService {
 	 * @returns Observable<void> - Возвращает Observable
 	 */
 	logout(): Observable<void> {
-		return EMPTY.pipe(
+		return this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
 			tap(() => {
 				this.isAuthenticatedFlag = false; // Сбрасываем флаг аутентификации
 				this.token = null; // Очищаем локальный токен
