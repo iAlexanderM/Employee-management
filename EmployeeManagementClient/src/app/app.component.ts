@@ -22,7 +22,10 @@ export class AppComponent {
 
 	logout(): void {
 		this.authService.logout().subscribe(() => {
+			console.log('Successfully logged out');
 			this.router.navigate(['/login']);
+		}, error => {
+			console.error('Ошибка при выходе из системы:', error);
 		});
 	}
 }
