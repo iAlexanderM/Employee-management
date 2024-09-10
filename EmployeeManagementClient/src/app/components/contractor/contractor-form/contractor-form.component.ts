@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
 export class ContractorFormComponent implements OnInit {
 	contractorForm: FormGroup;
 	contractorId: string | null = null;
-	documentPhotos: string[] = [];
+	documentPhotos: string[] = [];  // Хранение base64 представления фото
 	isEditMode: boolean = false;
 
 	constructor(
@@ -35,8 +35,8 @@ export class ContractorFormComponent implements OnInit {
 			passportIssuedBy: ['', Validators.required],
 			passportIssueDate: ['', Validators.required],
 			productType: ['', Validators.required],
-			photo: [''],
-			documentPhotos: ['']
+			photo: [''],  // Для хранения base64 фото
+			documentPhotos: ['']  // Для хранения base64 файлов документов
 		});
 	}
 
@@ -45,25 +45,30 @@ export class ContractorFormComponent implements OnInit {
 		this.isEditMode = !!this.contractorId;
 
 		if (this.contractorId) {
-			this.contractorService.getContractorById(this.contractorId).subscribe(
-				(data: Contractor) => {
+			this.contractorService.getContractorById(this.contractorId).subscribe({
+				next: (data: Contractor) => {
 					this.contractorForm.patchValue(data);
 					this.documentPhotos = data.documentPhotos || [];
 				},
-				error => console.error('Ошибка при загрузке данных контрагента', error)
-			);
+				error: (error) => {
+					console.error('Ошибка при загрузке данных контрагента', error);
+				}
+			});
 		}
 	}
 
 	onFileChange(event: any): void {
 		const files = event.target.files;
-		if (files) {
+		if (files && files.length > 0) {
 			for (let i = 0; i < files.length; i++) {
+				const file = files[i];
+
+				// Для отображения предварительного просмотра и хранения base64
 				const reader = new FileReader();
 				reader.onload = (e: any) => {
-					this.documentPhotos.push(e.target.result);
+					this.documentPhotos.push(e.target.result);  // Добавляем base64 в массив documentPhotos
 				};
-				reader.readAsDataURL(files[i]);
+				reader.readAsDataURL(file);
 			}
 		}
 	}
@@ -72,16 +77,30 @@ export class ContractorFormComponent implements OnInit {
 		if (this.contractorForm.valid) {
 			const contractorData = { ...this.contractorForm.value, documentPhotos: this.documentPhotos };
 
-			if (this.contractorId) {
-				this.contractorService.updateContractor(this.contractorId, contractorData).subscribe(
-					() => this.router.navigate(['/contractors']),
-					error => console.error('Ошибка при обновлении контрагента', error)
-				);
+			// Функция для форматирования даты
+			const formatDate = (dateString: string) => {
+				const date = new Date(dateString);
+				const day = date.getDate().toString().padStart(2, '0');
+				const month = (date.getMonth() + 1).toString().padStart(2, '0');
+				const year = date.getFullYear().toString();
+				return `${day}.${month}.${year}`;
+			};
+
+			// Форматируем даты перед отправкой на сервер
+			contractorData.dateOfBirth = formatDate(this.contractorForm.value.dateOfBirth);
+			contractorData.passportIssueDate = formatDate(this.contractorForm.value.passportIssueDate);
+
+			// Определяем, обновляем ли данные или добавляем нового контрагента
+			if (this.contractorId != null) {
+				this.contractorService.updateContractor(this.contractorId, contractorData).subscribe({
+					next: () => this.router.navigate(['/contractors']),
+					error: (error) => console.error('Ошибка при обновлении контрагента', error),
+				});
 			} else {
-				this.contractorService.addContractor(contractorData).subscribe(
-					() => this.router.navigate(['/contractors']),
-					error => console.error('Ошибка при добавлении контрагента', error)
-				);
+				this.contractorService.addContractor(contractorData).subscribe({
+					next: () => this.router.navigate(['/contractors']),
+					error: (error) => console.error('Ошибка при добавлении контрагента', error),
+				});
 			}
 		}
 	}

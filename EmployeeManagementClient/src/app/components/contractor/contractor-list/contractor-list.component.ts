@@ -17,9 +17,9 @@ export class ContractorListComponent implements OnInit {
 	constructor(private contractorService: ContractorService) { }
 
 	ngOnInit(): void {
-		this.contractorService.getContractors().subscribe(
-			(data: Contractor[]) => this.contractors = data,
-			error => console.error('Ошибка при загрузке списка контрагентов', error)
-		);
+		this.contractorService.getContractors().subscribe({
+			next: (data: Contractor[]) => this.contractors = data,
+			error: (error) => console.error('Ошибка при загрузке списка контрагентов', error)
+		});
 	}
 }

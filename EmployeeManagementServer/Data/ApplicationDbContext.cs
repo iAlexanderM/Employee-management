@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace EmployeeManagementServer.Data
 {
@@ -32,6 +33,11 @@ namespace EmployeeManagementServer.Data
                 .HasOne(cp => cp.Contractor)
                 .WithMany(c => c.Photos)
                 .HasForeignKey(cp => cp.ContractorId);
+
+            builder.Entity<ContractorDocumentPhoto>()
+                .HasOne(cdp => cdp.Contractor)
+                .WithMany(c => c.DocumentPhotos)
+                .HasForeignKey(cdp => cdp.ContractorId);
         }
     }
 }

@@ -18,8 +18,22 @@ export class ContractorService {
 		return this.http.get<Contractor>(`/api/contractors/${id}`);
 	}
 
-	addContractor(contractor: Contractor): Observable<Contractor> {
-		return this.http.post<Contractor>('/api/contractors', contractor);
+	addContractor(contractorData: any): Observable<any> {
+		const formData = new FormData();
+
+		for (const key in contractorData) {
+			if (contractorData.hasOwnProperty(key)) {
+				if (key === 'photos') {
+					contractorData.photos.forEach((photo: File) => {
+						formData.append('photos', photo);
+					});
+				} else {
+					formData.append(key, contractorData[key]);
+				}
+			}
+		}
+
+		return this.http.post('/api/contractors', formData);
 	}
 
 	updateContractor(id: string, contractor: Contractor): Observable<Contractor> {
