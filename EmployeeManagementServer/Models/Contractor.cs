@@ -17,6 +17,5 @@ namespace EmployeeManagementServer.Models
 		public string ProductType { get; set; }
 		public bool IsArchived { get; set; } = false;
         public ICollection<ContractorPhoto> Photos { get; set; } = new List<ContractorPhoto>();
-        public ICollection<ContractorDocumentPhoto> DocumentPhotos { get; set; } = new List<ContractorDocumentPhoto>();
     }
 }

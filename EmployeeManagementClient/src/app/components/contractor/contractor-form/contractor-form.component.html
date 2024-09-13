@@ -14,20 +14,16 @@
 		<input id="middleName" formControlName="middleName" class="form-control">
 	</div>
 	<div class="form-group">
-		<label for="dateOfBirth">Дата Рождения</label>
-		<input id="dateOfBirth" formControlName="dateOfBirth" type="date" class="form-control" required>
+		<label for="birthDate">Дата Рождения</label>
+		<input id="birthDate" formControlName="birthDate" type="date" class="form-control" required>>
 	</div>
 	<div class="form-group">
 		<label for="documentType">Тип Документа</label>
 		<input id="documentType" formControlName="documentType" class="form-control" required>
 	</div>
 	<div class="form-group">
-		<label for="passportSeries">Серия Паспорта</label>
-		<input id="passportSeries" formControlName="passportSeries" class="form-control" required>
-	</div>
-	<div class="form-group">
-		<label for="passportNumber">Номер Паспорта</label>
-		<input id="passportNumber" formControlName="passportNumber" class="form-control" required>
+		<label for="passportSerialNumber">Серия и номер паспорта</label>
+		<input id="passportSerialNumber" formControlName="passportSerialNumber" class="form-control">
 	</div>
 	<div class="form-group">
 		<label for="passportIssuedBy">Кем выдан паспорт</label>
@@ -35,19 +31,20 @@
 	</div>
 	<div class="form-group">
 		<label for="passportIssueDate">Дата выдачи паспорта</label>
-		<input id="passportIssueDate" formControlName="passportIssueDate" type="date" class="form-control" required>
+		<input id="passportIssueDate" formControlName="passportIssueDate" type="date" class="form-control" required>>
 	</div>
 	<div class="form-group">
 		<label for="productType">Тип продукции</label>
 		<input id="productType" formControlName="productType" class="form-control" required>
 	</div>
 	<div class="form-group">
-		<label for="photo">Фото</label>
-		<input id="photo" type="file" (change)="onFileChange($event)" class="form-control" />
+		<label for="photos">Фото</label>
+		<input id="photo" type="file" (change)="onPhotoChange($event)" class="form-control" />
 	</div>
 	<div class="form-group">
 		<label for="documentPhotos">Фото документов</label>
-		<input id="documentPhotos" type="file" (change)="onFileChange($event)" multiple class="form-control" />
+		<input id="documentPhotos" type="file" (change)="onDocumentPhotosChange($event)" multiple
+			class="form-control" />
 	</div>
 	<button type="submit" class="btn btn-primary">{{ isEditMode ? 'Сохранить изменения' : 'Добавить контрагента'
 		}}</button>

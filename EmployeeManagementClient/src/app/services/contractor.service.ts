@@ -27,6 +27,10 @@ export class ContractorService {
 					contractorData.photos.forEach((photo: File) => {
 						formData.append('photos', photo);
 					});
+				} else if (key === 'documentPhotos') {
+					contractorData.documentPhotos.forEach((photo: File) => {
+						formData.append('documentPhotos', photo);
+					});
 				} else {
 					formData.append(key, contractorData[key]);
 				}
@@ -36,8 +40,26 @@ export class ContractorService {
 		return this.http.post('/api/contractors', formData);
 	}
 
-	updateContractor(id: string, contractor: Contractor): Observable<Contractor> {
-		return this.http.put<Contractor>(`/api/contractors/${id}`, contractor);
+	updateContractor(id: string, contractorData: any): Observable<any> {
+		const formData = new FormData();
+
+		for (const key in contractorData) {
+			if (contractorData.hasOwnProperty(key)) {
+				if (key === 'photos') {
+					contractorData.photos.forEach((photo: File) => {
+						formData.append('photos', photo);
+					});
+				} else if (key === 'documentPhotos') {
+					contractorData.documentPhotos.forEach((photo: File) => {
+						formData.append('documentPhotos', photo);
+					});
+				} else {
+					formData.append(key, contractorData[key]);
+				}
+			}
+		}
+
+		return this.http.put(`/api/contractors/${id}`, formData);
 	}
 
 	archiveContractor(id: string): Observable<void> {

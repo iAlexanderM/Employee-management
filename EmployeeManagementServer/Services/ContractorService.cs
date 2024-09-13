@@ -10,14 +10,16 @@ namespace EmployeeManagementServer.Services
     {
         Task<IEnumerable<Contractor>> GetAllContractorsAsync();
         Task<Contractor> GetContractorByIdAsync(int id);
-        Task AddContractorAsync(Contractor contractor);
+        Task AddContractorWithTransactionAsync(Contractor contractor);
         Task UpdateContractorAsync(Contractor contractor);
         Task ArchiveContractorAsync(Contractor contractor);
+        Task<Contractor> FindContractorByPassportSerialNumberAsync(string passportSerialNumber);
     }
 
     public class ContractorService : IContractorService
     {
         private readonly ApplicationDbContext _context;
+
 
         public ContractorService(ApplicationDbContext context)
         {
@@ -29,15 +31,35 @@ namespace EmployeeManagementServer.Services
             return await _context.Contractors.Include(c => c.Photos).Where(c => !c.IsArchived).ToListAsync();
         }
 
+        public async Task<Contractor> FindContractorByPassportSerialNumberAsync(string passportSerialNumber)
+        {
+            return await _context.Contractors.FirstOrDefaultAsync(c => c.PassportSerialNumber == passportSerialNumber);
+        }
+
         public async Task<Contractor> GetContractorByIdAsync(int id)
         {
             return await _context.Contractors.Include(c => c.Photos).FirstOrDefaultAsync(c => c.Id == id && !c.IsArchived);
         }
 
-        public async Task AddContractorAsync(Contractor contractor)
+        public async Task AddContractorWithTransactionAsync(Contractor contractor)
         {
-            _context.Contractors.Add(contractor);
-            await _context.SaveChangesAsync();
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    contractor.BirthDate = contractor.BirthDate.ToUniversalTime();
+                    contractor.PassportIssueDate = contractor.PassportIssueDate.ToUniversalTime();
+
+                    _context.Contractors.Add(contractor);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
         }
 
         public async Task UpdateContractorAsync(Contractor contractor)

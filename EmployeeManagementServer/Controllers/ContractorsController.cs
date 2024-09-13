@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using System.Globalization;
 using System.IO;
+using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeManagementServer.Controllers
 {
@@ -42,69 +43,81 @@ namespace EmployeeManagementServer.Controllers
 			return Ok(contractor);
 		}
 
-		[HttpPost]
-		public async Task<IActionResult> CreateContractor([FromForm] ContractorDto contractorDto)
-		{
-			if (!ModelState.IsValid)
-			{
-				return BadRequest(ModelState);
-			}
+        [HttpPost]
+        public async Task<IActionResult> CreateContractor([FromForm] ContractorDto contractorDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-			var contractor = _mapper.Map<Contractor>(contractorDto);
+            var existingContractor = await _contractorService.FindContractorByPassportSerialNumberAsync(contractorDto.PassportSerialNumber);
+            if (existingContractor != null)
+            {
+                return BadRequest("Контрагент с таким номером паспорта уже существует.");
+            }
 
-			// Преобразование даты
-			if (!DateTime.TryParseExact(contractorDto.BirthDate, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var birthDate))
-			{
-				return BadRequest("Invalid birth date format. Please use dd.MM.yyyy.");
-			}
+            // Маппинг простых полей
+            var contractor = _mapper.Map<Contractor>(contractorDto);
 
-			if (!DateTime.TryParseExact(contractorDto.PassportIssueDate, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var passportIssueDate))
-			{
-				return BadRequest("Invalid passport issue date format. Please use dd.MM.yyyy.");
-			}
+            // Убедимся, что коллекции не null
+            contractor.Photos = contractor.Photos ?? new List<ContractorPhoto>();
 
-			contractor.BirthDate = DateTime.SpecifyKind(birthDate, DateTimeKind.Utc);
-			contractor.PassportIssueDate = DateTime.SpecifyKind(passportIssueDate, DateTimeKind.Utc);
+            try
+            {
+                // Обработка обычных фотографий
+                if (contractorDto.Photos != null)
+                {
+                    foreach (var photo in contractorDto.Photos)
+                    {
+                        if (photo.Length > 0)
+                        {
+                            var filePath = Path.Combine("wwwroot/uploads/photos", Path.GetRandomFileName() + Path.GetExtension(photo.FileName));
+                            using (var stream = new FileStream(filePath, FileMode.Create))
+                            {
+                                await photo.CopyToAsync(stream);
+                            }
+                            contractor.Photos.Add(new ContractorPhoto { FilePath = filePath, IsDocumentPhoto = false });
+                        }
+                    }
+                }
 
-			// Обработка обычных фотографий
-			if (contractorDto.Photos != null)
-			{
-				foreach (var photo in contractorDto.Photos)
-				{
-					if (photo.Length > 0)
-					{
-						var filePath = Path.Combine("wwwroot/uploads/photos", photo.FileName);
-						using (var stream = new FileStream(filePath, FileMode.Create))
-						{
-							await photo.CopyToAsync(stream);
-						}
-						contractor.Photos.Add(new ContractorPhoto { FilePath = filePath, IsDocumentPhoto = false });
-					}
-				}
-			}
+                // Обработка фото документов
+                if (contractorDto.DocumentPhotos != null)
+                {
+                    foreach (var documentPhoto in contractorDto.DocumentPhotos)
+                    {
+                        if (documentPhoto.Length > 0)
+                        {
+                            var filePath = Path.Combine("wwwroot/uploads/documents", Path.GetRandomFileName() + Path.GetExtension(documentPhoto.FileName));
+                            using (var stream = new FileStream(filePath, FileMode.Create))
+                            {
+                                await documentPhoto.CopyToAsync(stream);
+                            }
+                            contractor.Photos.Add(new ContractorPhoto { FilePath = filePath, IsDocumentPhoto = true });
+                        }
+                    }
+                }
 
-			// Обработка фото документов
-			if (contractorDto.DocumentPhotos != null)
-			{
-				foreach (var documentPhoto in contractorDto.DocumentPhotos)
-				{
-					if (documentPhoto.Length > 0)
-					{
-						var filePath = Path.Combine("wwwroot/uploads/documents", documentPhoto.FileName);
-						using (var stream = new FileStream(filePath, FileMode.Create))
-						{
-							await documentPhoto.CopyToAsync(stream);
-						}
-						contractor.Photos.Add(new ContractorPhoto { FilePath = filePath, IsDocumentPhoto = true });
-					}
-				}
-			}
+                // Добавление контрагента с транзакцией
+                await _contractorService.AddContractorWithTransactionAsync(contractor);
 
-			await _contractorService.AddContractorAsync(contractor);
-			return CreatedAtAction(nameof(GetContractor), new { id = contractor.Id }, contractor);
-		}
+                return CreatedAtAction(nameof(GetContractor), new { id = contractor.Id }, contractor);
+            }
+            catch (Exception ex)
+            {
+                // Логируем и возвращаем ошибку
+                Console.WriteLine($"Ошибка при сохранении контрагента: {ex.Message}, StackTrace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Внутреннее исключение: {ex.InnerException.Message}, StackTrace: {ex.InnerException.StackTrace}");
+                }
 
-		[HttpPut("{id}")]
+                return StatusCode(500, "Ошибка при сохранении контрагента");
+            }
+        }
+
+        [HttpPut("{id}")]
 		public async Task<IActionResult> UpdateContractor(int id, [FromForm] ContractorDto contractorDto)
 		{
 			if (!ModelState.IsValid)
@@ -120,14 +133,14 @@ namespace EmployeeManagementServer.Controllers
 
 			_mapper.Map(contractorDto, contractor);
 
-			// Обработка фото для обновления
+			// Обработка фотографий для обновления
 			if (contractorDto.Photos != null)
 			{
 				foreach (var photo in contractorDto.Photos)
 				{
 					if (photo.Length > 0)
 					{
-						var filePath = Path.Combine("wwwroot/uploads/photos", photo.FileName);
+						var filePath = Path.Combine("wwwroot/uploads/photos", Path.GetRandomFileName() + Path.GetExtension(photo.FileName));
 						using (var stream = new FileStream(filePath, FileMode.Create))
 						{
 							await photo.CopyToAsync(stream);
@@ -143,7 +156,7 @@ namespace EmployeeManagementServer.Controllers
 				{
 					if (documentPhoto.Length > 0)
 					{
-						var filePath = Path.Combine("wwwroot/uploads/documents", documentPhoto.FileName);
+						var filePath = Path.Combine("wwwroot/uploads/documents", Path.GetRandomFileName() + Path.GetExtension(documentPhoto.FileName));
 						using (var stream = new FileStream(filePath, FileMode.Create))
 						{
 							await documentPhoto.CopyToAsync(stream);

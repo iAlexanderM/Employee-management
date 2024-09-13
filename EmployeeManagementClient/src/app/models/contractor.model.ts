@@ -3,7 +3,7 @@ export interface Contractor {
 	firstName: string;
 	lastName: string;
 	middleName?: string;
-	dateOfBirth: Date;
+	birthDate: Date;
 	documentType: string;
 	passportSeries: string;
 	passportNumber: string;

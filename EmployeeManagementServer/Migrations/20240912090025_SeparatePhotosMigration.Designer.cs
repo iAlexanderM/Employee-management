@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EmployeeManagementServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240910115844_SeparatePhotosMigration")]
+    [Migration("20240912090025_SeparatePhotosMigration")]
     partial class SeparatePhotosMigration
     {
         /// <inheritdoc />
@@ -141,28 +141,6 @@ namespace EmployeeManagementServer.Migrations
                         .IsUnique();
 
                     b.ToTable("Contractors", "public");
-                });
-
-            modelBuilder.Entity("EmployeeManagementServer.Models.ContractorDocumentPhoto", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ContractorId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContractorId");
-
-                    b.ToTable("ContractorDocumentPhoto", "public");
                 });
 
             modelBuilder.Entity("EmployeeManagementServer.Models.ContractorPhoto", b =>
@@ -372,17 +350,6 @@ namespace EmployeeManagementServer.Migrations
                     b.ToTable("AspNetUserTokens", "public");
                 });
 
-            modelBuilder.Entity("EmployeeManagementServer.Models.ContractorDocumentPhoto", b =>
-                {
-                    b.HasOne("EmployeeManagementServer.Models.Contractor", "Contractor")
-                        .WithMany("DocumentPhotos")
-                        .HasForeignKey("ContractorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Contractor");
-                });
-
             modelBuilder.Entity("EmployeeManagementServer.Models.ContractorPhoto", b =>
                 {
                     b.HasOne("EmployeeManagementServer.Models.Contractor", "Contractor")
@@ -447,8 +414,6 @@ namespace EmployeeManagementServer.Migrations
 
             modelBuilder.Entity("EmployeeManagementServer.Models.Contractor", b =>
                 {
-                    b.Navigation("DocumentPhotos");
-
                     b.Navigation("Photos");
                 });
 #pragma warning restore 612, 618

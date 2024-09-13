@@ -28,7 +28,7 @@ export class PrintPassComponent implements OnInit {
         <h3>Пропуск</h3>
         <p>Имя: ${contractor.firstName}</p>
         <p>Фамилия: ${contractor.lastName}</p>
-        <p>Дата Рождения: ${contractor.dateOfBirth}</p>
+        <p>Дата Рождения: ${contractor.birthDate}</p>
         <p>Тип продукции: ${contractor.productType}</p>
       </div>
     `;

@@ -15,7 +15,7 @@
 				<td>{{ contractor.firstName }}</td>
 				<td>{{ contractor.lastName }}</td>
 				<td>{{ contractor.middleName }}</td>
-				<td>{{ contractor.dateOfBirth | date:'dd.MM.yyyy' }}</td>
+				<td>{{ contractor.birthDate| date:'dd.MM.yyyy' }}</td>
 				<td>
 					<a [routerLink]="['/contractors/details', contractor.id]" class="btn btn-info">Просмотр</a>
 					<a [routerLink]="['/contractors/edit', contractor.id]" class="btn btn-warning">Редактировать</a>

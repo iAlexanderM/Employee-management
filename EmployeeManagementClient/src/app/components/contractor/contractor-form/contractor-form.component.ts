@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
 export class ContractorFormComponent implements OnInit {
 	contractorForm: FormGroup;
 	contractorId: string | null = null;
-	documentPhotos: string[] = [];  // Хранение base64 представления фото
+	documentPhotos: string[] = [];
 	isEditMode: boolean = false;
 
 	constructor(
@@ -28,15 +28,14 @@ export class ContractorFormComponent implements OnInit {
 			firstName: ['', Validators.required],
 			lastName: ['', Validators.required],
 			middleName: [''],
-			dateOfBirth: ['', Validators.required],
+			birthDate: ['', Validators.required],
 			documentType: ['', Validators.required],
-			passportSeries: ['', Validators.required],
-			passportNumber: ['', Validators.required],
+			passportSerialNumber: ['', Validators.required],
 			passportIssuedBy: ['', Validators.required],
 			passportIssueDate: ['', Validators.required],
 			productType: ['', Validators.required],
-			photo: [''],  // Для хранения base64 фото
-			documentPhotos: ['']  // Для хранения base64 файлов документов
+			photos: [''],
+			documentPhotos: ['']
 		});
 	}
 
@@ -57,19 +56,39 @@ export class ContractorFormComponent implements OnInit {
 		}
 	}
 
-	onFileChange(event: any): void {
+	onPhotoChange(event: any): void {
 		const files = event.target.files;
 		if (files && files.length > 0) {
+			const photos: string[] = [];
 			for (let i = 0; i < files.length; i++) {
 				const file = files[i];
-
-				// Для отображения предварительного просмотра и хранения base64
 				const reader = new FileReader();
-				reader.onload = (e: any) => {
-					this.documentPhotos.push(e.target.result);  // Добавляем base64 в массив documentPhotos
+				reader.onload = () => {
+					photos.push(reader.result as string);
 				};
 				reader.readAsDataURL(file);
 			}
+			this.contractorForm.patchValue({
+				photos: photos
+			});
+		}
+	}
+
+	onDocumentPhotosChange(event: any): void {
+		const files = event.target.files;
+		if (files && files.length > 0) {
+			const documentPhotos: string[] = [];
+			for (let i = 0; i < files.length; i++) {
+				const file = files[i];
+				const reader = new FileReader();
+				reader.onload = (e: any) => {
+					this.documentPhotos.push(e.target.result);
+				};
+				reader.readAsDataURL(file);
+			}
+			this.contractorForm.patchValue({
+				documentPhotos: documentPhotos
+			});
 		}
 	}
 
@@ -77,29 +96,30 @@ export class ContractorFormComponent implements OnInit {
 		if (this.contractorForm.valid) {
 			const contractorData = { ...this.contractorForm.value, documentPhotos: this.documentPhotos };
 
-			// Функция для форматирования даты
-			const formatDate = (dateString: string) => {
-				const date = new Date(dateString);
-				const day = date.getDate().toString().padStart(2, '0');
-				const month = (date.getMonth() + 1).toString().padStart(2, '0');
-				const year = date.getFullYear().toString();
-				return `${day}.${month}.${year}`;
-			};
+			const formattedBirthDate = new Date(this.contractorForm.value.birthDate).toISOString();
+			const formattedPassportIssueDate = new Date(this.contractorForm.value.passportIssueDate).toISOString();
 
-			// Форматируем даты перед отправкой на сервер
-			contractorData.dateOfBirth = formatDate(this.contractorForm.value.dateOfBirth);
-			contractorData.passportIssueDate = formatDate(this.contractorForm.value.passportIssueDate);
+			this.contractorForm.patchValue({
+				birthDate: formattedBirthDate,
+				passportIssueDate: formattedPassportIssueDate
+			});
 
-			// Определяем, обновляем ли данные или добавляем нового контрагента
 			if (this.contractorId != null) {
 				this.contractorService.updateContractor(this.contractorId, contractorData).subscribe({
 					next: () => this.router.navigate(['/contractors']),
-					error: (error) => console.error('Ошибка при обновлении контрагента', error),
+					error: (error) => {
+						console.error('Ошибка при обновлении контрагента', error);
+						console.log('Детали ошибки:', error.error.errors);
+					},
 				});
 			} else {
 				this.contractorService.addContractor(contractorData).subscribe({
 					next: () => this.router.navigate(['/contractors']),
-					error: (error) => console.error('Ошибка при добавлении контрагента', error),
+					error: (error) => {
+						console.error('Ошибка при добавлении контрагента', error);
+						console.log('Детали ошибки:', error.error.errors);
+						console.log(contractorData)
+					},
 				});
 			}
 		}

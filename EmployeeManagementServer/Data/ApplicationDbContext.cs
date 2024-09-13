@@ -33,11 +33,6 @@ namespace EmployeeManagementServer.Data
                 .HasOne(cp => cp.Contractor)
                 .WithMany(c => c.Photos)
                 .HasForeignKey(cp => cp.ContractorId);
-
-            builder.Entity<ContractorDocumentPhoto>()
-                .HasOne(cdp => cdp.Contractor)
-                .WithMany(c => c.DocumentPhotos)
-                .HasForeignKey(cdp => cdp.ContractorId);
         }
     }
 }
