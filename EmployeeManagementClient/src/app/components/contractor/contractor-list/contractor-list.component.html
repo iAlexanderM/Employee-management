@@ -1,12 +1,13 @@
 <div class="container">
 	<h2>Список контрагентов</h2>
-	<table class="table table-bordered">
+	<table class="table table-bordered" *ngIf="contractors && contractors.length > 0">
 		<thead>
 			<tr>
 				<th>Имя</th>
 				<th>Фамилия</th>
 				<th>Отчество</th>
 				<th>Дата рождения</th>
+				<th>Фото</th>
 				<th>Действия</th>
 			</tr>
 		</thead>
@@ -15,7 +16,11 @@
 				<td>{{ contractor.firstName }}</td>
 				<td>{{ contractor.lastName }}</td>
 				<td>{{ contractor.middleName }}</td>
-				<td>{{ contractor.birthDate| date:'dd.MM.yyyy' }}</td>
+				<td>{{ contractor.birthDate | date:'dd.MM.yyyy' }}</td>
+				<td>
+					<img *ngIf="getFirstPhoto(contractor)" [src]="getFirstPhoto(contractor)" alt="Фото контрагента"
+						style="width: 50px; height: 50px; object-fit: cover;">
+				</td>
 				<td>
 					<a [routerLink]="['/contractors/details', contractor.id]" class="btn btn-info">Просмотр</a>
 					<a [routerLink]="['/contractors/edit', contractor.id]" class="btn btn-warning">Редактировать</a>
@@ -23,5 +28,8 @@
 			</tr>
 		</tbody>
 	</table>
+
+	<p *ngIf="contractors.length === 0">Нет контрагентов для отображения.</p>
+
 	<a routerLink="/contractors/new" class="btn btn-success">Добавить контрагента</a>
 </div>

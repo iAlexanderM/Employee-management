@@ -9,9 +9,11 @@
 	<p><strong>Кем выдан паспорт:</strong> {{ contractor.passportIssuedBy }}</p>
 	<p><strong>Дата выдачи паспорта:</strong> {{ contractor.passportIssueDate | date:'dd.MM.yyyy' }}</p>
 	<p><strong>Тип продукции:</strong> {{ contractor.productType }}</p>
-	<p><strong>Фото:</strong> <img *ngIf="contractor.photo" [src]="contractor.photo" alt="Фото" width="100"></p>
 
-	<div *ngIf="contractor.documentPhotos?.length">
+	<p><strong>Фото:</strong></p>
+	<img *ngIf="getFirstPhoto()" [src]="getFirstPhoto()" alt="Фото контрагента" width="100">
+
+	<div *ngIf="contractor.documentPhotos && contractor.documentPhotos.length > 0">
 		<p><strong>Фото документов:</strong></p>
 		<div *ngFor="let photo of contractor.documentPhotos">
 			<img [src]="photo" alt="Фото документа" width="100">

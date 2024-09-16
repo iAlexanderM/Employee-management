@@ -10,7 +10,7 @@ export interface Contractor {
 	passportIssuedBy: string;
 	passportIssueDate: Date;
 	productType: string;
-	photo: string;
+	photos: string[] | { $values: string[] };
 	documentPhotos: string[];
 	isArchived: boolean;
 }

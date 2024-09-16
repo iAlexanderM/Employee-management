@@ -24,10 +24,29 @@ export class ContractorDetailsComponent implements OnInit {
 		const id = this.route.snapshot.paramMap.get('id');
 		if (id) {
 			this.contractorService.getContractorById(id).subscribe(
-				(data: Contractor) => this.contractor = data,
+				(data: Contractor) => {
+					// Нормализуем данные контрагента
+					this.contractor = this.normalizePhotos(data);
+				},
 				error => console.error('Ошибка при загрузке данных контрагента', error)
 			);
 		}
+	}
+
+	// Метод для нормализации поля photos
+	normalizePhotos(contractor: Contractor): Contractor {
+		if (contractor.photos && contractor.photos.hasOwnProperty('$values')) {
+			contractor.photos = (contractor.photos as any).$values;
+		}
+		return contractor;
+	}
+
+	// Метод для получения первой фотографии контрагента
+	getFirstPhoto(): string | null {
+		if (this.contractor?.photos && Array.isArray(this.contractor.photos) && this.contractor.photos.length > 0) {
+			return this.contractor.photos[0];
+		}
+		return null; // Если нет фото, возвращаем null
 	}
 
 	archiveContractor(): void {

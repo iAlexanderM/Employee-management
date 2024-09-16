@@ -43,10 +43,19 @@ export class ContractorFormComponent implements OnInit {
 		this.contractorId = this.route.snapshot.paramMap.get('id');
 		this.isEditMode = !!this.contractorId;
 
+		// Если это режим редактирования, загружаем данные контрагента
 		if (this.contractorId) {
 			this.contractorService.getContractorById(this.contractorId).subscribe({
 				next: (data: Contractor) => {
-					this.contractorForm.patchValue(data);
+					// Преобразуем дату в строку и используем slice для формата yyyy-MM-dd
+					const birthDate = data.birthDate ? new Date(data.birthDate).toISOString().slice(0, 10) : null;
+					const passportIssueDate = data.passportIssueDate ? new Date(data.passportIssueDate).toISOString().slice(0, 10) : null;
+
+					this.contractorForm.patchValue({
+						...data,
+						birthDate: birthDate,
+						passportIssueDate: passportIssueDate,
+					});
 					this.documentPhotos = data.documentPhotos || [];
 				},
 				error: (error) => {
@@ -56,6 +65,7 @@ export class ContractorFormComponent implements OnInit {
 		}
 	}
 
+	// Обработчик изменения фото
 	onPhotoChange(event: any): void {
 		const files = event.target.files;
 		if (files && files.length > 0) {
@@ -74,6 +84,7 @@ export class ContractorFormComponent implements OnInit {
 		}
 	}
 
+	// Обработчик изменения фотографий документов
 	onDocumentPhotosChange(event: any): void {
 		const files = event.target.files;
 		if (files && files.length > 0) {
@@ -81,8 +92,8 @@ export class ContractorFormComponent implements OnInit {
 			for (let i = 0; i < files.length; i++) {
 				const file = files[i];
 				const reader = new FileReader();
-				reader.onload = (e: any) => {
-					this.documentPhotos.push(e.target.result);
+				reader.onload = () => {
+					documentPhotos.push(reader.result as string);
 				};
 				reader.readAsDataURL(file);
 			}
@@ -92,24 +103,26 @@ export class ContractorFormComponent implements OnInit {
 		}
 	}
 
+	// Метод для обработки отправки формы
 	onSubmit(): void {
 		if (this.contractorForm.valid) {
+			// Подготовка данных перед отправкой
 			const contractorData = { ...this.contractorForm.value, documentPhotos: this.documentPhotos };
 
+			// Преобразование дат в формат ISO
 			const formattedBirthDate = new Date(this.contractorForm.value.birthDate).toISOString();
 			const formattedPassportIssueDate = new Date(this.contractorForm.value.passportIssueDate).toISOString();
 
-			this.contractorForm.patchValue({
-				birthDate: formattedBirthDate,
-				passportIssueDate: formattedPassportIssueDate
-			});
+			// Обновление формы с отформатированными датами
+			contractorData.birthDate = formattedBirthDate;
+			contractorData.passportIssueDate = formattedPassportIssueDate;
 
+			// В зависимости от режима, добавляем или обновляем контрагента
 			if (this.contractorId != null) {
 				this.contractorService.updateContractor(this.contractorId, contractorData).subscribe({
 					next: () => this.router.navigate(['/contractors']),
 					error: (error) => {
 						console.error('Ошибка при обновлении контрагента', error);
-						console.log('Детали ошибки:', error.error.errors);
 					},
 				});
 			} else {
@@ -117,8 +130,6 @@ export class ContractorFormComponent implements OnInit {
 					next: () => this.router.navigate(['/contractors']),
 					error: (error) => {
 						console.error('Ошибка при добавлении контрагента', error);
-						console.log('Детали ошибки:', error.error.errors);
-						console.log(contractorData)
 					},
 				});
 			}
