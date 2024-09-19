@@ -1,3 +1,10 @@
+export interface Photo {
+	id: number;
+	filePath: string;
+	isDocumentPhoto: boolean;
+	contractorId: number;
+}
+
 export interface Contractor {
 	id: string;
 	firstName: string;
@@ -10,7 +17,7 @@ export interface Contractor {
 	passportIssuedBy: string;
 	passportIssueDate: Date;
 	productType: string;
-	photos: string[] | { $values: string[] };
-	documentPhotos: string[];
+	photos: Photo[];  
+	documentPhotos: Photo[]; 
 	isArchived: boolean;
 }

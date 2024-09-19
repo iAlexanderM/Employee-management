@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ContractorService } from '../../../services/contractor.service';
-import { Contractor } from '../../../models/contractor.model';
+import { Contractor, Photo } from '../../../models/contractor.model'; // Импортируем Photo
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -38,13 +38,18 @@ export class ContractorDetailsComponent implements OnInit {
 		if (contractor.photos && contractor.photos.hasOwnProperty('$values')) {
 			contractor.photos = (contractor.photos as any).$values;
 		}
+		if (contractor.documentPhotos && contractor.documentPhotos.hasOwnProperty('$values')) {
+			contractor.documentPhotos = (contractor.documentPhotos as any).$values;
+		}
 		return contractor;
 	}
 
 	// Метод для получения первой фотографии контрагента
 	getFirstPhoto(): string | null {
 		if (this.contractor?.photos && Array.isArray(this.contractor.photos) && this.contractor.photos.length > 0) {
-			return this.contractor.photos[0];
+			// Предполагаем, что `filePath` хранит путь к фото
+			const firstPhoto: Photo = this.contractor.photos[0] as Photo;
+			return firstPhoto.filePath || null;
 		}
 		return null; // Если нет фото, возвращаем null
 	}

@@ -4,6 +4,7 @@ import { ContractorService } from '../../../services/contractor.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Contractor } from '../../../models/contractor.model';
 import { CommonModule } from '@angular/common';
+import { Photo } from '../../../models/contractor.model'; 
 
 @Component({
 	selector: 'app-contractor-form',
@@ -15,7 +16,10 @@ import { CommonModule } from '@angular/common';
 export class ContractorFormComponent implements OnInit {
 	contractorForm: FormGroup;
 	contractorId: string | null = null;
-	documentPhotos: string[] = [];
+	photos: File[] = []; // Для загружаемых файлов
+	existingPhotos: Photo[] = []; // Для уже существующих фотографий
+	documentPhotos: File[] = []; // Для загружаемых файлов документов
+	existingDocumentPhotos: Photo[] = []; // Для уже существующих фотографий документов
 	isEditMode: boolean = false;
 
 	constructor(
@@ -34,8 +38,8 @@ export class ContractorFormComponent implements OnInit {
 			passportIssuedBy: ['', Validators.required],
 			passportIssueDate: ['', Validators.required],
 			productType: ['', Validators.required],
-			photos: [''],
-			documentPhotos: ['']
+			photos: [''], // Для хранения загружаемых файлов фото
+			documentPhotos: [''] // Для хранения загружаемых файлов документов
 		});
 	}
 
@@ -56,7 +60,9 @@ export class ContractorFormComponent implements OnInit {
 						birthDate: birthDate,
 						passportIssueDate: passportIssueDate,
 					});
-					this.documentPhotos = data.documentPhotos || [];
+					// Заполняем существующие фото и документ-фото
+					this.existingPhotos = data.photos || [];
+					this.existingDocumentPhotos = data.documentPhotos || [];
 				},
 				error: (error) => {
 					console.error('Ошибка при загрузке данных контрагента', error);
@@ -69,17 +75,9 @@ export class ContractorFormComponent implements OnInit {
 	onPhotoChange(event: any): void {
 		const files = event.target.files;
 		if (files && files.length > 0) {
-			const photos: string[] = [];
-			for (let i = 0; i < files.length; i++) {
-				const file = files[i];
-				const reader = new FileReader();
-				reader.onload = () => {
-					photos.push(reader.result as string);
-				};
-				reader.readAsDataURL(file);
-			}
+			this.photos = Array.from(files); // Сохраняем выбранные файлы
 			this.contractorForm.patchValue({
-				photos: photos
+				photos: this.photos
 			});
 		}
 	}
@@ -88,17 +86,9 @@ export class ContractorFormComponent implements OnInit {
 	onDocumentPhotosChange(event: any): void {
 		const files = event.target.files;
 		if (files && files.length > 0) {
-			const documentPhotos: string[] = [];
-			for (let i = 0; i < files.length; i++) {
-				const file = files[i];
-				const reader = new FileReader();
-				reader.onload = () => {
-					documentPhotos.push(reader.result as string);
-				};
-				reader.readAsDataURL(file);
-			}
+			this.documentPhotos = Array.from(files); // Сохраняем выбранные файлы документов
 			this.contractorForm.patchValue({
-				documentPhotos: documentPhotos
+				documentPhotos: this.documentPhotos
 			});
 		}
 	}
@@ -107,18 +97,18 @@ export class ContractorFormComponent implements OnInit {
 	onSubmit(): void {
 		if (this.contractorForm.valid) {
 			// Подготовка данных перед отправкой
-			const contractorData = { ...this.contractorForm.value, documentPhotos: this.documentPhotos };
+			const contractorData = { ...this.contractorForm.value };
 
 			// Преобразование дат в формат ISO
-			const formattedBirthDate = new Date(this.contractorForm.value.birthDate).toISOString();
-			const formattedPassportIssueDate = new Date(this.contractorForm.value.passportIssueDate).toISOString();
-
-			// Обновление формы с отформатированными датами
-			contractorData.birthDate = formattedBirthDate;
-			contractorData.passportIssueDate = formattedPassportIssueDate;
+			contractorData.birthDate = new Date(this.contractorForm.value.birthDate).toISOString();
+			contractorData.passportIssueDate = new Date(this.contractorForm.value.passportIssueDate).toISOString();
 
 			// В зависимости от режима, добавляем или обновляем контрагента
 			if (this.contractorId != null) {
+				// Добавляем фото и документ-фото к объекту contractorData
+				contractorData.photos = this.photos;
+				contractorData.documentPhotos = this.documentPhotos;
+
 				this.contractorService.updateContractor(this.contractorId, contractorData).subscribe({
 					next: () => this.router.navigate(['/contractors']),
 					error: (error) => {
@@ -126,6 +116,10 @@ export class ContractorFormComponent implements OnInit {
 					},
 				});
 			} else {
+				// Добавляем фото и документ-фото к объекту contractorData
+				contractorData.photos = this.photos;
+				contractorData.documentPhotos = this.documentPhotos;
+
 				this.contractorService.addContractor(contractorData).subscribe({
 					next: () => this.router.navigate(['/contractors']),
 					error: (error) => {

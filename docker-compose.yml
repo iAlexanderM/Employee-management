@@ -27,7 +27,19 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_started  # Запускается после старта db
+    networks:
+      - app-network
+
+  client:
+    build:
+      context: .
+      dockerfile: EmployeeManagementClient/Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      api:
+        condition: service_started  # Запускается после успешного старта api
     networks:
       - app-network
 
@@ -37,23 +49,11 @@ services:
       dockerfile: UserManagementApp/Dockerfile
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_started  # Запускается после старта db
     networks:
       - app-network
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-
-  client:
-    build:
-      context: .
-      dockerfile: EmployeeManagementClient/Dockerfile
-    ports:
-      - "4200:80"
-    networks:
-      - app-network
-    depends_on:
-      api:
-        condition: service_healthy
 
 networks:
   app-network:
