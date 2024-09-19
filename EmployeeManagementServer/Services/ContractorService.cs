@@ -1,78 +1,113 @@
-﻿using EmployeeManagementServer.Data;
-using EmployeeManagementServer.Models;
+﻿using EmployeeManagementServer.Models;
+using EmployeeManagementServer.Data;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace EmployeeManagementServer.Services
 {
-    public interface IContractorService
-    {
-        Task<IEnumerable<Contractor>> GetAllContractorsAsync();
-        Task<Contractor> GetContractorByIdAsync(int id);
-        Task AddContractorWithTransactionAsync(Contractor contractor);
-        Task UpdateContractorAsync(Contractor contractor);
-        Task ArchiveContractorAsync(Contractor contractor);
-        Task<Contractor> FindContractorByPassportSerialNumberAsync(string passportSerialNumber);
-    }
-
-    public class ContractorService : IContractorService
+    public class ContractorService
     {
         private readonly ApplicationDbContext _context;
-
 
         public ContractorService(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        public async Task<IEnumerable<Contractor>> GetAllContractorsAsync()
+        // Получение всех контрагентов
+        public async Task<List<Contractor>> GetAllContractorsAsync()
         {
-            return await _context.Contractors.Include(c => c.Photos).Where(c => !c.IsArchived).ToListAsync();
+            return await _context.Contractors
+                .Include(c => c.Photos)  // Включаем связанные фотографии
+                .ToListAsync();
         }
 
-        public async Task<Contractor> FindContractorByPassportSerialNumberAsync(string passportSerialNumber)
-        {
-            return await _context.Contractors.FirstOrDefaultAsync(c => c.PassportSerialNumber == passportSerialNumber);
-        }
-
+        // Получение контрагента по идентификатору
         public async Task<Contractor> GetContractorByIdAsync(int id)
         {
-            return await _context.Contractors.Include(c => c.Photos).FirstOrDefaultAsync(c => c.Id == id && !c.IsArchived);
+            return await _context.Contractors
+                .Include(c => c.Photos)  // Включаем связанные фотографии
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        public async Task AddContractorWithTransactionAsync(Contractor contractor)
+        // Создание нового контрагента
+        public async Task CreateContractorAsync(Contractor contractor)
         {
-            using (var transaction = await _context.Database.BeginTransactionAsync())
-            {
-                try
-                {
-                    contractor.BirthDate = contractor.BirthDate.ToUniversalTime();
-                    contractor.PassportIssueDate = contractor.PassportIssueDate.ToUniversalTime();
+            _context.Contractors.Add(contractor);
+            await _context.SaveChangesAsync();
+        }
 
-                    _context.Contractors.Add(contractor);
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
-                }
-                catch (Exception)
+        // Поиск контрагента по номеру паспорта
+        public async Task<Contractor> FindContractorByPassportSerialNumberAsync(string passportSerialNumber)
+        {
+            return await _context.Contractors
+                .Include(c => c.Photos)  // Включаем связанные фотографии
+                .FirstOrDefaultAsync(c => c.PassportSerialNumber == passportSerialNumber);
+        }
+
+        // Метод для добавления новых фотографий
+        public async Task AddNewPhotosAsync(int contractorId, List<IFormFile> contractorPhotos, List<IFormFile> documentPhotos)
+        {
+            var contractor = await _context.Contractors
+                .Include(c => c.Photos)
+                .FirstOrDefaultAsync(c => c.Id == contractorId);
+
+            if (contractor != null)
+            {
+                // Добавляем обычные фотографии
+                if (contractorPhotos != null)
                 {
-                    await transaction.RollbackAsync();
-                    throw;
+                    foreach (var photo in contractorPhotos)
+                    {
+                        var photoPath = await SavePhoto(photo, false);  // Не документные фотографии
+                        contractor.Photos.Add(new ContractorPhoto
+                        {
+                            FilePath = photoPath,
+                            IsDocumentPhoto = false
+                        });
+                    }
                 }
+
+                // Добавляем фотографии документов
+                if (documentPhotos != null)
+                {
+                    foreach (var docPhoto in documentPhotos)
+                    {
+                        var docPhotoPath = await SavePhoto(docPhoto, true);  // Документные фотографии
+                        contractor.Photos.Add(new ContractorPhoto
+                        {
+                            FilePath = docPhotoPath,
+                            IsDocumentPhoto = true
+                        });
+                    }
+                }
+
+                await _context.SaveChangesAsync();
             }
         }
 
-        public async Task UpdateContractorAsync(Contractor contractor)
+        // Метод для сохранения фотографий
+        public async Task<string> SavePhoto(IFormFile photo, bool isDocumentPhoto)
         {
-            _context.Contractors.Update(contractor);
-            await _context.SaveChangesAsync();
-        }
+            var folder = isDocumentPhoto ? "wwwroot/uploads/documents" : "wwwroot/uploads/photos";
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + photo.FileName;
+            var filePath = Path.Combine(folder, uniqueFileName);
 
-        public async Task ArchiveContractorAsync(Contractor contractor)
-        {
-            contractor.IsArchived = true;
-            _context.Contractors.Update(contractor);
-            await _context.SaveChangesAsync();
+            // Проверяем, существует ли директория, и создаём её при необходимости
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await photo.CopyToAsync(fileStream);
+            }
+
+            return filePath;
         }
     }
 }

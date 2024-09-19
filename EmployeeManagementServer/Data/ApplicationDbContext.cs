@@ -14,7 +14,7 @@ namespace EmployeeManagementServer.Data
         }
 
         public DbSet<Contractor> Contractors { get; set; }
-        public DbSet<ContractorPhoto> ContractorPhotos { get; set; }
+        public DbSet<ContractorPhoto> ContractorPhoto { get; set; }
         public DbSet<Store> Stores { get; set; }
 
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
@@ -30,6 +30,7 @@ namespace EmployeeManagementServer.Data
                 .IsUnique();
 
             builder.Entity<ContractorPhoto>()
+                .ToTable("ContractorPhotos") 
                 .HasOne(cp => cp.Contractor)
                 .WithMany(c => c.Photos)
                 .HasForeignKey(cp => cp.ContractorId);

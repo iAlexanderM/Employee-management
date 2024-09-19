@@ -21,20 +21,27 @@
     "ngx-toastr": "^19.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
-    "webpack": "^5.94.0",
     "zone.js": "~0.14.10"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^18.2.1",
-    "@angular/cli": "^18.2.1",
+    "@angular/cli": "^18.2.4",
     "@angular/compiler-cli": "^18.2.0",
+    "@types/bonjour": "^3.5.13",
+    "@types/eslint": "^9.6.1",
+    "@types/estree": "^1.0.6",
     "@types/jasmine": "~5.1.0",
+    "@types/json-schema": "^7.0.15",
+    "@types/node": "^22.5.5",
+    "@types/retry": "^0.12.5",
     "jasmine-core": "~5.2.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.5.2"
+    "typescript": "5.5",
+    "vite": "^5.4.6",
+    "webpack": "^5.94.0"
   }
 }

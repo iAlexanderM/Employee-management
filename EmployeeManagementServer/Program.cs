@@ -65,7 +65,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddScoped<IContractorService, ContractorService>();
+builder.Services.AddScoped<ContractorService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

@@ -5335,40 +5335,32 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Alexander\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "/root/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Alexander\\Desktop\\buroP\\Employee-management\\UserManagementApp\\UserManagementApp.csproj",
+      "projectUniqueName": "/home/alexander/Рабочий стол/buroP/Employee-management/UserManagementApp/UserManagementApp.csproj",
       "projectName": "UserManagementApp",
-      "projectPath": "C:\\Users\\Alexander\\Desktop\\buroP\\Employee-management\\UserManagementApp\\UserManagementApp.csproj",
-      "packagesPath": "C:\\Users\\Alexander\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Alexander\\Desktop\\buroP\\Employee-management\\UserManagementApp\\obj\\",
+      "projectPath": "/home/alexander/Рабочий стол/buroP/Employee-management/UserManagementApp/UserManagementApp.csproj",
+      "packagesPath": "/root/.nuget/packages/",
+      "outputPath": "/home/alexander/Рабочий стол/buroP/Employee-management/UserManagementApp/obj/",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\Alexander\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/root/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\Alexander\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\EmployeeManagementServer.csproj": {
-              "projectPath": "C:\\Users\\Alexander\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\EmployeeManagementServer.csproj"
+            "/home/alexander/Рабочий стол/buroP/Employee-management/EmployeeManagementServer/EmployeeManagementServer.csproj": {
+              "projectPath": "/home/alexander/Рабочий стол/buroP/Employee-management/EmployeeManagementServer/EmployeeManagementServer.csproj"
             }
           }
         }
@@ -5377,11 +5369,6 @@
         "warnAsError": [
           "NU1605"
         ]
-      },
-      "restoreAuditProperties": {
-        "enableAudit": "true",
-        "auditLevel": "low",
-        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -5418,12 +5405,18 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[8.0.7, 8.0.7]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.107/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

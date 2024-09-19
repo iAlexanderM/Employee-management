@@ -36,6 +36,10 @@ namespace EmployeeManagementServer.Models.DTOs
 		public string ProductType { get; set; }
 
 		public List<IFormFile> Photos { get; set; } = new List<IFormFile>();
-		public List<IFormFile> DocumentPhotos { get; set; } = new List<IFormFile>();
-	}
+        public List<IFormFile> DocumentPhotos { get; set; } = new List<IFormFile>();
+
+        // Поля для отображения уже загруженных фотографий
+        public List<string> ExistingPhotoUrls { get; set; } = new List<string>();
+        public List<string> ExistingDocumentPhotoUrls { get; set; } = new List<string>();
+    }
 }
