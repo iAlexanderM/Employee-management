@@ -5335,7 +5335,7 @@
     ]
   },
   "packageFolders": {
-    "/root/.nuget/packages/": {}
+    "/home/alexander/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
@@ -5343,11 +5343,11 @@
       "projectUniqueName": "/home/alexander/Рабочий стол/buroP/Employee-management/UserManagementApp/UserManagementApp.csproj",
       "projectName": "UserManagementApp",
       "projectPath": "/home/alexander/Рабочий стол/buroP/Employee-management/UserManagementApp/UserManagementApp.csproj",
-      "packagesPath": "/root/.nuget/packages/",
+      "packagesPath": "/home/alexander/.nuget/packages/",
       "outputPath": "/home/alexander/Рабочий стол/buroP/Employee-management/UserManagementApp/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/root/.nuget/NuGet/NuGet.Config"
+        "/home/alexander/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"

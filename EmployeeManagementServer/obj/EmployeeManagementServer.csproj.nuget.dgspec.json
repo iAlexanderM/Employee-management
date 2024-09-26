@@ -10,11 +10,11 @@
         "projectUniqueName": "/home/alexander/Рабочий стол/buroP/Employee-management/EmployeeManagementServer/EmployeeManagementServer.csproj",
         "projectName": "EmployeeManagementServer",
         "projectPath": "/home/alexander/Рабочий стол/buroP/Employee-management/EmployeeManagementServer/EmployeeManagementServer.csproj",
-        "packagesPath": "/root/.nuget/packages/",
+        "packagesPath": "/home/alexander/.nuget/packages/",
         "outputPath": "/home/alexander/Рабочий стол/buroP/Employee-management/EmployeeManagementServer/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/root/.nuget/NuGet/NuGet.Config"
+          "/home/alexander/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"

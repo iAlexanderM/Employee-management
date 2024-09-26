@@ -1,73 +1,106 @@
-<h2>{{ isEditMode ? 'Редактировать контрагента' : 'Добавить нового контрагента' }}</h2>
-
 <form [formGroup]="contractorForm" (ngSubmit)="onSubmit()">
-	<!-- Поле для имени -->
-	<div class="form-group">
-		<label for="firstName">Имя</label>
-		<input id="firstName" formControlName="firstName" class="form-control" required>
+	<div>
+		<label for="firstName">First Name:</label>
+		<input id="firstName" formControlName="firstName" type="text" />
+		<div *ngIf="contractorForm.get('firstName')?.invalid && contractorForm.get('firstName')?.touched">
+			<span>First Name is required.</span>
+		</div>
 	</div>
 
-	<!-- Поле для фамилии -->
-	<div class="form-group">
-		<label for="lastName">Фамилия</label>
-		<input id="lastName" formControlName="lastName" class="form-control" required>
+	<div>
+		<label for="lastName">Last Name:</label>
+		<input id="lastName" formControlName="lastName" type="text" />
+		<div *ngIf="contractorForm.get('lastName')?.invalid && contractorForm.get('lastName')?.touched">
+			<span>Last Name is required.</span>
+		</div>
 	</div>
 
-	<!-- Поле для отчества -->
-	<div class="form-group">
-		<label for="middleName">Отчество</label>
-		<input id="middleName" formControlName="middleName" class="form-control">
+	<div>
+		<label for="middleName">Middle Name:</label>
+		<input id="middleName" formControlName="middleName" type="text" />
+		<div *ngIf="contractorForm.get('middleName')?.invalid && contractorForm.get('middleName')?.touched">
+			<span>Middle Name is required.</span>
+		</div>
 	</div>
 
-	<!-- Поле для даты рождения с типом date -->
-	<div class="form-group">
-		<label for="birthDate">Дата Рождения</label>
-		<input id="birthDate" formControlName="birthDate" type="date" class="form-control" required>
+	<div>
+		<label for="birthDate">Birth Date:</label>
+		<input id="birthDate" formControlName="birthDate" type="date" />
+		<div *ngIf="contractorForm.get('birthDate')?.invalid && contractorForm.get('birthDate')?.touched">
+			<span>Birth Date is required.</span>
+		</div>
 	</div>
 
-	<!-- Поле для типа документа -->
-	<div class="form-group">
-		<label for="documentType">Тип Документа</label>
-		<input id="documentType" formControlName="documentType" class="form-control" required>
+	<div>
+		<label for="documentType">Document Type:</label>
+		<input id="documentType" formControlName="documentType" type="text" />
+		<div *ngIf="contractorForm.get('documentType')?.invalid && contractorForm.get('documentType')?.touched">
+			<span>Document Type is required.</span>
+		</div>
 	</div>
 
-	<!-- Поле для серии и номера паспорта -->
-	<div class="form-group">
-		<label for="passportSerialNumber">Серия и номер паспорта</label>
-		<input id="passportSerialNumber" formControlName="passportSerialNumber" class="form-control">
+	<div>
+		<label for="passportSerialNumber">Passport Serial Number:</label>
+		<input id="passportSerialNumber" formControlName="passportSerialNumber" type="text" />
+		<div
+			*ngIf="contractorForm.get('passportSerialNumber')?.invalid && contractorForm.get('passportSerialNumber')?.touched">
+			<span>Passport Serial Number is required.</span>
+		</div>
 	</div>
 
-	<!-- Поле для кем выдан паспорт -->
-	<div class="form-group">
-		<label for="passportIssuedBy">Кем выдан паспорт</label>
-		<input id="passportIssuedBy" formControlName="passportIssuedBy" class="form-control" required>
+	<div>
+		<label for="passportIssuedBy">Passport Issued By:</label>
+		<input id="passportIssuedBy" formControlName="passportIssuedBy" type="text" />
+		<div *ngIf="contractorForm.get('passportIssuedBy')?.invalid && contractorForm.get('passportIssuedBy')?.touched">
+			<span>Passport Issued By is required.</span>
+		</div>
 	</div>
 
-	<!-- Поле для даты выдачи паспорта с типом date -->
-	<div class="form-group">
-		<label for="passportIssueDate">Дата выдачи паспорта</label>
-		<input id="passportIssueDate" formControlName="passportIssueDate" type="date" class="form-control" required>
+	<div>
+		<label for="passportIssueDate">Passport Issue Date:</label>
+		<input id="passportIssueDate" formControlName="passportIssueDate" type="date" />
+		<div
+			*ngIf="contractorForm.get('passportIssueDate')?.invalid && contractorForm.get('passportIssueDate')?.touched">
+			<span>Passport Issue Date is required.</span>
+		</div>
 	</div>
 
-	<!-- Поле для типа продукции -->
-	<div class="form-group">
-		<label for="productType">Тип продукции</label>
-		<input id="productType" formControlName="productType" class="form-control" required>
+	<div>
+		<label for="productType">Product Type:</label>
+		<input id="productType" formControlName="productType" type="text" />
+		<div *ngIf="contractorForm.get('productType')?.invalid && contractorForm.get('productType')?.touched">
+			<span>Product Type is required.</span>
+		</div>
 	</div>
 
-	<!-- Поле для загрузки фото -->
-	<div class="form-group">
-		<label for="photo">Фото</label>
-		<input id="photo" type="file" (change)="onPhotoChange($event)" class="form-control" />
+	<div>
+		<label for="isArchived">Is Archived:</label>
+		<input id="isArchived" formControlName="isArchived" type="checkbox" />
 	</div>
 
-	<!-- Поле для загрузки фото документов (множественный выбор) -->
-	<div class="form-group">
-		<label for="documentPhotos">Фото документов</label>
-		<input id="documentPhotos" type="file" (change)="onDocumentPhotosChange($event)" multiple
-			class="form-control" />
+	<!-- Загрузка фотографий -->
+	<div>
+		<label>Photos:</label>
+		<ngx-dropzone (addedFiles)="onPhotoSelect($event)">
+			<ngx-dropzone-label>Drag and drop photos here, or click to upload</ngx-dropzone-label>
+		</ngx-dropzone>
+		<div *ngFor="let file of photoFiles">
+			<span>{{ file.name }}</span>
+			<button (click)="onPhotoRemove(file)">Remove</button>
+		</div>
 	</div>
 
-	<button type="submit" class="btn btn-primary">{{ isEditMode ? 'Сохранить изменения' : 'Добавить контрагента'
-		}}</button>
+	<!-- Загрузка фотографий документов -->
+	<div>
+		<label>Document Photos:</label>
+		<ngx-dropzone (addedFiles)="onDocumentSelect($event)" [multiple]="true">
+			<ngx-dropzone-label>Drag and drop document photos here, or click to upload</ngx-dropzone-label>
+		</ngx-dropzone>
+		<div *ngFor="let file of documentFiles">
+			<span>{{ file.name }}</span>
+			<button (click)="onDocumentRemove(file)">Remove</button>
+		</div>
+	</div>
+
+	<button type="submit" [disabled]="contractorForm.invalid">Submit</button>
 </form>

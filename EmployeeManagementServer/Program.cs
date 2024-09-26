@@ -19,50 +19,49 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Чтение конфигурации
 builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+	.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 // Настройка базы данных
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+	options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Настройка Data Protection для Identity (хранение ключей шифрования)
 builder.Services.AddDataProtection()
-    .PersistKeysToDbContext<ApplicationDbContext>();
+	.PersistKeysToDbContext<ApplicationDbContext>();
 
-// Настройка Identity для работы с пользователями
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+	.AddEntityFrameworkStores<ApplicationDbContext>()
+	.AddDefaultTokenProviders();
 
 // Настройка аутентификации через JWT
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = "JwtBearer";
-    options.DefaultChallengeScheme = "JwtBearer";
+	options.DefaultAuthenticateScheme = "JwtBearer";
+	options.DefaultChallengeScheme = "JwtBearer";
 })
 .AddJwtBearer("JwtBearer", options =>
 {
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["AppSettings:Issuer"],
-        ValidAudience = builder.Configuration["AppSettings:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]))
-    };
+	options.TokenValidationParameters = new TokenValidationParameters
+	{
+		ValidateIssuer = true,
+		ValidateAudience = true,
+		ValidateLifetime = true,
+		ValidateIssuerSigningKey = true,
+		ValidIssuer = builder.Configuration["AppSettings:Issuer"],
+		ValidAudience = builder.Configuration["AppSettings:Audience"],
+		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]))
+	};
 });
 
 // Настройка Cors для разрешения запросов из любого источника
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins", builder =>
-    {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
-    });
+	options.AddPolicy("AllowAllOrigins", builder =>
+	{
+		builder.AllowAnyOrigin()
+			   .AllowAnyMethod()
+			   .AllowAnyHeader();
+	});
 });
 
 builder.Services.AddScoped<ContractorService>();
@@ -71,46 +70,46 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Добавляем контроллеры
 builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
-        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
-    });
+	.AddJsonOptions(options =>
+	{
+		options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+		options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+	});
 
 var app = builder.Build();
 
 // Обрабатываем миграции базы данных при старте приложения
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+	var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-    var retryCount = 5;
-    var delay = TimeSpan.FromSeconds(5);
-    for (int i = 0; i < retryCount; i++)
-    {
-        try
-        {
-            dbContext.Database.Migrate();
-            break;
-        }
-        catch (Exception ex)
-        {
-            if (i == retryCount - 1)
-                throw; // После всех попыток бросаем исключение
-            Console.WriteLine($"Не удалось подключиться к базе данных. Попытка {i + 1} из {retryCount}. Ожидание {delay.TotalSeconds} секунд.");
-            Thread.Sleep(delay);
-        }
-    }
+	var retryCount = 5;
+	var delay = TimeSpan.FromSeconds(5);
+	for (int i = 0; i < retryCount; i++)
+	{
+		try
+		{
+			dbContext.Database.Migrate();
+			break;
+		}
+		catch (Exception ex)
+		{
+			if (i == retryCount - 1)
+				throw; // После всех попыток бросаем исключение
+			Console.WriteLine($"Не удалось подключиться к базе данных. Попытка {i + 1} из {retryCount}. Ожидание {delay.TotalSeconds} секунд.");
+			Thread.Sleep(delay);
+		}
+	}
 }
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
+	app.UseDeveloperExceptionPage();
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+	app.UseExceptionHandler("/Home/Error");
+	app.UseHsts();
 }
 
 app.UseHttpsRedirection();

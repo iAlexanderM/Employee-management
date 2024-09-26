@@ -49,13 +49,13 @@ export class ContractorService {
 
 		for (const key in contractorData) {
 			if (contractorData.hasOwnProperty(key)) {
-				if (key === 'photos' && contractorData.photos.length > 0) {
+				if (key === 'Photos' && contractorData.photos.length > 0) {
 					contractorData.photos.forEach((photo: File) => {
-						formData.append('photos', photo);
+						formData.append('Photos', photo);
 					});
-				} else if (key === 'documentPhotos' && contractorData.documentPhotos.length > 0) {
+				} else if (key === 'DocumentPhotos' && contractorData.documentPhotos.length > 0) {
 					contractorData.documentPhotos.forEach((photo: File) => {
-						formData.append('documentPhotos', photo);
+						formData.append('DocumentPhotos', photo);
 					});
 				} else {
 					formData.append(key, contractorData[key]);
@@ -72,13 +72,13 @@ export class ContractorService {
 
 		for (const key in contractorData) {
 			if (contractorData.hasOwnProperty(key)) {
-				if (key === 'photos' && contractorData.photos.length > 0) {
+				if (key === 'Photos' && contractorData.photos.length > 0) {
 					contractorData.photos.forEach((photo: File) => {
-						formData.append('photos', photo);
+						formData.append('Photos', photo);
 					});
-				} else if (key === 'documentPhotos' && contractorData.documentPhotos.length > 0) {
+				} else if (key === 'DocumentPhotos' && contractorData.documentPhotos.length > 0) {
 					contractorData.documentPhotos.forEach((photo: File) => {
-						formData.append('documentPhotos', photo);
+						formData.append('DocumentPhotos', photo);
 					});
 				} else {
 					formData.append(key, contractorData[key]);
