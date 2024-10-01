@@ -1,34 +1,24 @@
 # Use the official .NET SDK image to build the application
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /app
-
 # Copy the solution file and project files
 COPY UserManagementApp/UserManagementApp.sln ./
 COPY UserManagementApp/*.csproj ./UserManagementApp/
 COPY EmployeeManagementServer/*.csproj ./EmployeeManagementServer/
-
 RUN dotnet restore ./UserManagementApp/UserManagementApp.csproj
-
 COPY UserManagementApp/. ./UserManagementApp/
 COPY EmployeeManagementServer/. ./EmployeeManagementServer/
 WORKDIR /app/UserManagementApp
-
 RUN dotnet publish -c Release -o out
-
 # Use the official ASP.NET Core runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
-
 # Install netcat (choose either netcat-openbsd or netcat-traditional)
 RUN apt-get update && apt-get install -y netcat-openbsd
-
 WORKDIR /app
 COPY --from=build-env /app/UserManagementApp/out .
-
 # Copy wait-for-it script
 COPY UserManagementApp/wait-for-it.sh .
-
 # Make script executable
 RUN chmod +x wait-for-it.sh
-
 # Use wait-for-it script to wait for the db to be ready, then start the application
 ENTRYPOINT ["./wait-for-it.sh", "db", "5432", "--", "dotnet", "UserManagementApp.dll"]

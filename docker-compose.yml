@@ -27,7 +27,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
       db:
-        condition: service_started  # Запускается после старта db
+        condition: service_started # Запускается после старта db
     networks:
       - app-network
 
@@ -39,7 +39,7 @@ services:
       - "4200:80"
     depends_on:
       api:
-        condition: service_started  # Запускается после успешного старта api
+        condition: service_started # Запускается после успешного старта api
     networks:
       - app-network
 
@@ -48,12 +48,10 @@ services:
       context: .
       dockerfile: UserManagementApp/Dockerfile
     depends_on:
-      db:
-        condition: service_started  # Запускается после старта db
+      api:
+        condition: service_started
     networks:
       - app-network
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
 
 networks:
   app-network:
