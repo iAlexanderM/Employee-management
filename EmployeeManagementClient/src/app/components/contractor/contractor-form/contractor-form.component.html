@@ -1,106 +1,51 @@
 <form [formGroup]="contractorForm" (ngSubmit)="onSubmit()">
-	<div>
-		<label for="firstName">First Name:</label>
-		<input id="firstName" formControlName="firstName" type="text" />
-		<div *ngIf="contractorForm.get('firstName')?.invalid && contractorForm.get('firstName')?.touched">
-			<span>First Name is required.</span>
-		</div>
-	</div>
+	<label for="FirstName">Имя:</label>
+	<input id="FirstName" formControlName="FirstName" type="text" />
+	<br /><br />
 
-	<div>
-		<label for="lastName">Last Name:</label>
-		<input id="lastName" formControlName="lastName" type="text" />
-		<div *ngIf="contractorForm.get('lastName')?.invalid && contractorForm.get('lastName')?.touched">
-			<span>Last Name is required.</span>
-		</div>
-	</div>
+	<label for="LastName">Фамилия:</label>
+	<input id="LastName" formControlName="LastName" type="text" />
+	<br /><br />
 
-	<div>
-		<label for="middleName">Middle Name:</label>
-		<input id="middleName" formControlName="middleName" type="text" />
-		<div *ngIf="contractorForm.get('middleName')?.invalid && contractorForm.get('middleName')?.touched">
-			<span>Middle Name is required.</span>
-		</div>
-	</div>
+	<label for="MiddleName">Отчество:</label>
+	<input id="MiddleName" formControlName="MiddleName" type="text" />
+	<br /><br />
 
-	<div>
-		<label for="birthDate">Birth Date:</label>
-		<input id="birthDate" formControlName="birthDate" type="date" />
-		<div *ngIf="contractorForm.get('birthDate')?.invalid && contractorForm.get('birthDate')?.touched">
-			<span>Birth Date is required.</span>
-		</div>
-	</div>
+	<label for="BirthDate">Дата рождения:</label>
+	<input id="BirthDate" formControlName="BirthDate" type="date" />
+	<br /><br />
 
-	<div>
-		<label for="documentType">Document Type:</label>
-		<input id="documentType" formControlName="documentType" type="text" />
-		<div *ngIf="contractorForm.get('documentType')?.invalid && contractorForm.get('documentType')?.touched">
-			<span>Document Type is required.</span>
-		</div>
-	</div>
+	<label for="DocumentType">Тип документа:</label>
+	<input id="DocumentType" formControlName="DocumentType" type="text" />
+	<br /><br />
 
-	<div>
-		<label for="passportSerialNumber">Passport Serial Number:</label>
-		<input id="passportSerialNumber" formControlName="passportSerialNumber" type="text" />
-		<div
-			*ngIf="contractorForm.get('passportSerialNumber')?.invalid && contractorForm.get('passportSerialNumber')?.touched">
-			<span>Passport Serial Number is required.</span>
-		</div>
-	</div>
+	<label for="PassportSerialNumber">Серия и номер паспорта:</label>
+	<input id="PassportSerialNumber" formControlName="PassportSerialNumber" type="text" />
+	<br /><br />
 
-	<div>
-		<label for="passportIssuedBy">Passport Issued By:</label>
-		<input id="passportIssuedBy" formControlName="passportIssuedBy" type="text" />
-		<div *ngIf="contractorForm.get('passportIssuedBy')?.invalid && contractorForm.get('passportIssuedBy')?.touched">
-			<span>Passport Issued By is required.</span>
-		</div>
-	</div>
+	<label for="PassportIssuedBy">Кем выдан:</label>
+	<input id="PassportIssuedBy" formControlName="PassportIssuedBy" type="text" />
+	<br /><br />
 
-	<div>
-		<label for="passportIssueDate">Passport Issue Date:</label>
-		<input id="passportIssueDate" formControlName="passportIssueDate" type="date" />
-		<div
-			*ngIf="contractorForm.get('passportIssueDate')?.invalid && contractorForm.get('passportIssueDate')?.touched">
-			<span>Passport Issue Date is required.</span>
-		</div>
-	</div>
+	<label for="PassportIssueDate">Дата выдачи:</label>
+	<input id="PassportIssueDate" formControlName="PassportIssueDate" type="date" />
+	<br /><br />
 
-	<div>
-		<label for="productType">Product Type:</label>
-		<input id="productType" formControlName="productType" type="text" />
-		<div *ngIf="contractorForm.get('productType')?.invalid && contractorForm.get('productType')?.touched">
-			<span>Product Type is required.</span>
-		</div>
-	</div>
+	<label for="ProductType">Тип продукции:</label>
+	<input id="ProductType" formControlName="ProductType" type="text" />
+	<br /><br />
 
-	<div>
-		<label for="isArchived">Is Archived:</label>
-		<input id="isArchived" formControlName="isArchived" type="checkbox" />
-	</div>
+	<label for="Photos">Фотографии:</label>
+	<input id="Photos" type="file" (change)="onPhotoChange($event)" multiple />
+	<br /><br />
 
-	<!-- Загрузка фотографий -->
-	<div>
-		<label>Photos:</label>
-		<ngx-dropzone (addedFiles)="onPhotoSelect($event)">
-			<ngx-dropzone-label>Drag and drop photos here, or click to upload</ngx-dropzone-label>
-		</ngx-dropzone>
-		<div *ngFor="let file of photoFiles">
-			<span>{{ file.name }}</span>
-			<button (click)="onPhotoRemove(file)">Remove</button>
-		</div>
-	</div>
+	<label for="DocumentPhotos">Документальные фото:</label>
+	<input id="DocumentPhotos" type="file" (change)="onDocumentPhotosChange($event)" multiple />
+	<br /><br />
 
-	<!-- Загрузка фотографий документов -->
-	<div>
-		<label>Document Photos:</label>
-		<ngx-dropzone (addedFiles)="onDocumentSelect($event)" [multiple]="true">
-			<ngx-dropzone-label>Drag and drop document photos here, or click to upload</ngx-dropzone-label>
-		</ngx-dropzone>
-		<div *ngFor="let file of documentFiles">
-			<span>{{ file.name }}</span>
-			<button (click)="onDocumentRemove(file)">Remove</button>
-		</div>
-	</div>
+	<label for="IsArchived">Архивировать:</label>
+	<input id="IsArchived" formControlName="IsArchived" type="checkbox" />
+	<br /><br />
 
-	<button type="submit" [disabled]="contractorForm.invalid">Submit</button>
+	<button type="submit">Сохранить</button>
 </form>

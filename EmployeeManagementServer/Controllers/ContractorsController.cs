@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace EmployeeManagementServer.Controllers
 {
@@ -16,11 +17,13 @@ namespace EmployeeManagementServer.Controllers
 	{
 		private readonly ContractorService _contractorService;
 		private readonly IMapper _mapper;
+		private readonly ILogger<ContractorsController> _logger;
 
-		public ContractorsController(ContractorService contractorService, IMapper mapper)
+		public ContractorsController(ContractorService contractorService, IMapper mapper, ILogger<ContractorsController> logger)
 		{
 			_contractorService = contractorService;
 			_mapper = mapper;
+			_logger = logger;
 		}
 
 		// Получение всех контрагентов
@@ -48,6 +51,9 @@ namespace EmployeeManagementServer.Controllers
 		[HttpPost]
 		public async Task<IActionResult> CreateContractor([FromForm] ContractorDto contractorDto)
 		{
+
+			_logger.LogInformation("Данные, полученные с фронтенда: {@contractorDto}", contractorDto);
+
 			if (!ModelState.IsValid)
 			{
 				return BadRequest(ModelState);
@@ -93,6 +99,8 @@ namespace EmployeeManagementServer.Controllers
 
 			// Сохранение контрагента
 			await _contractorService.CreateContractorAsync(contractor);
+
+			_logger.LogInformation($"Контрагент с {contractorDto.Id} успешно создан.");
 
 			return Ok(contractor);
 		}

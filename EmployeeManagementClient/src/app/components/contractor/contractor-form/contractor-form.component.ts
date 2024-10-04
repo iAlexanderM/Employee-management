@@ -1,81 +1,105 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { ContractorService } from '../../../services/contractor.service';
-import { Router } from '@angular/router';
-import { NgxDropzoneModule } from 'ngx-dropzone';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
 	selector: 'app-contractor-form',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule, NgxDropzoneModule],
+	imports: [ReactiveFormsModule, CommonModule, RouterModule],
 	templateUrl: './contractor-form.component.html',
 	styleUrls: ['./contractor-form.component.css']
 })
-export class ContractorFormComponent {
+export class ContractorFormComponent implements OnInit {
 	contractorForm: FormGroup;
-	photoFiles: File[] = []; // Для хранения фотографий
-	documentFiles: File[] = []; // Для хранения документов
+	contractorId: string | null = null;
+	DocumentPhotos: File[] = [];
+	Photos: File[] = [];
+	isEditMode: boolean = false;
 
-	constructor(private fb: FormBuilder, private contractorService: ContractorService, private router: Router) {
+	constructor(
+		private fb: FormBuilder,
+		private contractorService: ContractorService,
+		private router: Router,
+		private route: ActivatedRoute
+	) {
 		this.contractorForm = this.fb.group({
-			firstName: ['', Validators.required],
-			lastName: ['', Validators.required],
-			middleName: ['', Validators.required],
-			birthDate: ['', Validators.required],
-			documentType: ['', Validators.required],
-			passportSerialNumber: ['', Validators.required],
-			passportIssuedBy: ['', Validators.required],
-			passportIssueDate: ['', Validators.required],
-			productType: ['', Validators.required],
-			isArchived: [false, Validators.required],
-			photos: [null],
-			documentPhotos: [null],
+			FirstName: ['', Validators.required],
+			LastName: ['', Validators.required],
+			MiddleName: [''],
+			BirthDate: ['', Validators.required],
+			DocumentType: ['', Validators.required],
+			PassportSerialNumber: ['', Validators.required],
+			PassportIssuedBy: ['', Validators.required],
+			PassportIssueDate: ['', Validators.required],
+			ProductType: ['', Validators.required],
+			IsArchived: [false],
+			Photos: [''],
+			DocumentPhotos: ['']
 		});
 	}
 
-	// Метод для обработки выбора фотографий
-	onPhotoSelect(event: any): void {
-		const files: File[] = event.addedFiles; // Получаем файлы из события
-		this.photoFiles.push(...files); // Добавляем файлы в массив
+	ngOnInit(): void {
+		this.contractorId = this.route.snapshot.paramMap.get('id');
+		this.isEditMode = !!this.contractorId;
+		if (this.isEditMode && this.contractorId) {
+			this.loadContractorData(this.contractorId);
+		}
 	}
 
-	// Метод для удаления выбранной фотографии
-	onPhotoRemove(file: File): void {
-		this.photoFiles = this.photoFiles.filter(f => f !== file); // Удаляем файл из массива
+	loadContractorData(id: string) {
+		this.contractorService.getContractorById(id).subscribe({
+			next: (data) => {
+				const birthDate = new Date(data.birthDate).toISOString().slice(0, 10);
+				const passportIssueDate = new Date(data.passportIssueDate).toISOString().slice(0, 10);
+				this.contractorForm.patchValue({
+					...data,
+					BirthDate: birthDate,
+					PassportIssueDate: passportIssueDate
+				});
+			},
+			error: (err) => console.error('Ошибка при загрузке данных контрагента', err)
+		});
 	}
 
-	// Метод для обработки выбора документов
-	onDocumentSelect(event: any): void {
-		const files: File[] = event.addedFiles; // Получаем файлы из события
-		this.documentFiles.push(...files); // Добавляем файлы в массив документов
+	onPhotoChange(event: any): void {
+		const files = event.target.files;
+		if (files && files.length > 0) {
+			this.Photos = Array.from(files);
+		}
 	}
 
-	// Метод для удаления выбранного документа
-	onDocumentRemove(file: File): void {
-		this.documentFiles = this.documentFiles.filter(f => f !== file); // Удаляем файл из массива
+	onDocumentPhotosChange(event: any): void {
+		const files = event.target.files;
+		if (files && files.length > 0) {
+			this.DocumentPhotos = Array.from(files);
+		}
 	}
 
 	onSubmit(): void {
-		const contractorData = this.contractorForm.value;
+		if (this.contractorForm.valid) {
+			const contractorData = this.contractorForm.value;
 
-		// Преобразование дат в формат UTC
-		contractorData.birthDate = new Date(contractorData.birthDate).toISOString();
-		contractorData.passportIssueDate = new Date(contractorData.passportIssueDate).toISOString();
+			// Добавляем файлы в объект данных контрагента
+			contractorData.photos = this.Photos;
+			contractorData.documentPhotos = this.DocumentPhotos;
 
-		// Используем сервис для отправки данных
-		this.contractorService.addContractor({
-			...contractorData,
-			photos: this.photoFiles,
-			documentPhotos: this.documentFiles
-		}).subscribe({
-			next: (response) => {
-				console.log('Success!', response);
-				this.router.navigate(['/contractors']);
-			},
-			error: (err) => {
-				console.error('Error:', err);
-			},
-		});
+			// Преобразуем даты в формат UTC
+			contractorData.BirthDate = new Date(contractorData.BirthDate).toISOString();
+			contractorData.PassportIssueDate = new Date(contractorData.PassportIssueDate).toISOString();
+
+			if (this.isEditMode && this.contractorId) {
+				this.contractorService.updateContractor(this.contractorId, contractorData).subscribe({
+					next: () => this.router.navigate(['/contractors']),
+					error: (err) => console.error('Ошибка при обновлении контрагента', err)
+				});
+			} else {
+				this.contractorService.addContractor(contractorData).subscribe({
+					next: () => this.router.navigate(['/contractors']),
+					error: (err) => console.error('Ошибка при добавлении контрагента', err)
+				});
+			}
+		}
 	}
 }

@@ -92,8 +92,9 @@ namespace EmployeeManagementServer.Services
         // Метод для сохранения фотографий
         public async Task<string> SavePhoto(IFormFile photo, bool isDocumentPhoto)
         {
-            var folder = isDocumentPhoto ? "wwwroot/uploads/documents" : "wwwroot/uploads/photos";
-            var uniqueFileName = Guid.NewGuid().ToString() + "_" + photo.FileName;
+            // Используем Path.Combine для кроссплатформенного построения пути
+            var folder = isDocumentPhoto ? Path.Combine("wwwroot", "uploads", "documents") : Path.Combine("wwwroot", "uploads", "photos");
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(photo.FileName); 
             var filePath = Path.Combine(folder, uniqueFileName);
 
             // Проверяем, существует ли директория, и создаём её при необходимости

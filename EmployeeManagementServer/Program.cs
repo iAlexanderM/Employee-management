@@ -68,6 +68,8 @@ builder.Services.AddScoped<ContractorService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+builder.Logging.AddConsole();
+
 // Добавляем контроллеры
 builder.Services.AddControllers()
 	.AddJsonOptions(options =>

@@ -3,15 +3,15 @@
   "WorkspaceRootPath": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\UserManagementApp\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{343AE52A-202D-4C41-AFD0-02B247305D03}|UserManagementApp.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\usermanagementapp\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{343AE52A-202D-4C41-AFD0-02B247305D03}|UserManagementApp.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{343AE52A-202D-4C41-AFD0-02B247305D03}|UserManagementApp.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\usermanagementapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{343AE52A-202D-4C41-AFD0-02B247305D03}|UserManagementApp.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{73A86D70-4602-4FEB-8122-D5FA124404A3}|..\\EmployeeManagementServer\\EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{343AE52A-202D-4C41-AFD0-02B247305D03}|UserManagementApp.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\usermanagementapp\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{343AE52A-202D-4C41-AFD0-02B247305D03}|UserManagementApp.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Alexander\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
@@ -30,11 +30,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\appsettings.json",
               "RelativeDocumentMoniker": "..\\EmployeeManagementServer\\appsettings.json",
@@ -42,8 +42,7 @@
               "RelativeToolTip": "..\\EmployeeManagementServer\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2024-09-30T05:59:09.078Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-09-30T05:59:09.078Z"
             },
             {
               "$type": "Document",
@@ -69,7 +68,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\UserManagementApp\\appsettings.json",
               "RelativeDocumentMoniker": "appsettings.json",
@@ -77,7 +76,8 @@
               "RelativeToolTip": "appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2024-09-03T17:30:36.119Z"
+              "WhenOpened": "2024-09-03T17:30:36.119Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -92,13 +92,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\UserManagementApp\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\UserManagementApp\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAADoAAAAAAAAAAAAgwCIAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAABkAAAAAAAAAAAAgwDQAAAAjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-09-02T07:56:48.602Z",
               "EditorCaption": ""

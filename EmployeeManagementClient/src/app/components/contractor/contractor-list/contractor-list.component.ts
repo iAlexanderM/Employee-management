@@ -26,7 +26,7 @@ export class ContractorListComponent implements OnInit {
 					console.error('Ожидался массив контрагентов, но получен:', contractors);
 				}
 			},
-			error: (error) => console.error('Ошибка при загрузке списка контрагентов', error)
+			error: (error: any) => console.error('Ошибка при загрузке списка контрагентов', error)
 		});
 	}
 
