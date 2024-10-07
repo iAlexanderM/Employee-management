@@ -1,6 +1,8 @@
+version: "3.8"
+
 services:
   db:
-    image: postgres:15
+    image: postgres:17
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: R2wEG9
@@ -27,9 +29,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
       db:
-        condition: service_started # Запускается после старта db
+        condition: service_started
     networks:
       - app-network
+    volumes:
+      - ./local/uploads/photos:/app/wwwroot/uploads/photos
+      - ./local/uploads/documents:/app/wwwroot/uploads/documents
 
   client:
     build:

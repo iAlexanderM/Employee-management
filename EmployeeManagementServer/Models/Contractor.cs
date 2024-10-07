@@ -9,6 +9,8 @@ namespace EmployeeManagementServer.Models
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string MiddleName { get; set; }
+        public string Citizenship { get; set; }
+        public string Nationality { get; set; }
         public DateTime BirthDate { get; set; }
         public string DocumentType { get; set; }
         public string PassportSerialNumber { get; set; }

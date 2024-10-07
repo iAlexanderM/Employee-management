@@ -51,7 +51,6 @@ namespace EmployeeManagementServer.Controllers
 		[HttpPost]
 		public async Task<IActionResult> CreateContractor([FromForm] ContractorDto contractorDto)
 		{
-
 			_logger.LogInformation("Данные, полученные с фронтенда: {@contractorDto}", contractorDto);
 
 			if (!ModelState.IsValid)

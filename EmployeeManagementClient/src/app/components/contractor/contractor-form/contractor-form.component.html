@@ -35,6 +35,15 @@
 	<input id="ProductType" formControlName="ProductType" type="text" />
 	<br /><br />
 
+	<!-- Новые поля для гражданства и национальности -->
+	<label for="Citizenship">Гражданство:</label>
+	<input id="Citizenship" formControlName="Citizenship" type="text" />
+	<br /><br />
+
+	<label for="Nationality">Национальность:</label>
+	<input id="Nationality" formControlName="Nationality" type="text" />
+	<br /><br />
+
 	<label for="Photos">Фотографии:</label>
 	<input id="Photos" type="file" (change)="onPhotoChange($event)" multiple />
 	<br /><br />

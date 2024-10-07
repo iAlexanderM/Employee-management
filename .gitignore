@@ -1,3 +1,63 @@
+# Основные файлы и папки Visual Studio
+.vscode/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
 
-EmployeeManagementServer/obj/Debug/net8.0/EmployeeManagementServer.AssemblyInfo.cs
-EmployeeManagementServer/obj/Debug/net8.0/EmployeeManagementServer.AssemblyInfoInputs.cache
+# Build-папки
+bin/
+obj/
+[Bb]uild/
+[Ll]ogs/
+
+# Настройки рабочего окружения
+*.dbmdl
+*.jfm
+*.ide
+.idea/
+
+# Папки с тестами и пакетами
+TestResults/
+*.TestResults/
+*.vspscc
+*.vssscc
+
+# Файлы пакетов
+*.nupkg
+*.snupkg
+*.symbols.nupkg
+*.nuget/
+
+# Папки с NuGet-пакетами
+*.nuget/packages/
+packages/
+
+# Папки, связанные с Entity Framework
+*.mdf
+*.ldf
+*.sqlite
+*.db
+
+# Файлы конфигурации
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.json
+secrets.json
+
+# Файлы и папки пользователя
+*.RSUSER
+*.sln.DotSettings.user
+
+# Сертификаты HTTPS
+*.pfx
+*.cer
+
+# Другое
+*.DS_Store
+Thumbs.db
+*.log
+*.bak
+*.swp
+*.tmp

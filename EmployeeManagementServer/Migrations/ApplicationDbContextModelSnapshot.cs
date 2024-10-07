@@ -98,6 +98,10 @@ namespace EmployeeManagementServer.Migrations
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Citizenship")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("DocumentType")
                         .IsRequired()
                         .HasColumnType("text");
@@ -114,6 +118,10 @@ namespace EmployeeManagementServer.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("MiddleName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Nationality")
                         .IsRequired()
                         .HasColumnType("text");
 

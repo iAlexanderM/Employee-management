@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "orFyYLr0SmQ=",
+  "dgSpecHash": "ihvZJGASsvI=",
   "success": true,
   "projectFilePath": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\EmployeeManagementServer.csproj",
   "expectedPackageFiles": [
@@ -66,7 +66,7 @@
     "C:\\Users\\zelom\\.nuget\\packages\\nlog\\5.3.3\\nlog.5.3.3.nupkg.sha512",
     "C:\\Users\\zelom\\.nuget\\packages\\nlog.extensions.logging\\5.3.12\\nlog.extensions.logging.5.3.12.nupkg.sha512",
     "C:\\Users\\zelom\\.nuget\\packages\\nlog.web.aspnetcore\\5.3.12\\nlog.web.aspnetcore.5.3.12.nupkg.sha512",
-    "C:\\Users\\zelom\\.nuget\\packages\\npgsql\\8.0.3\\npgsql.8.0.3.nupkg.sha512",
+    "C:\\Users\\zelom\\.nuget\\packages\\npgsql\\8.0.4\\npgsql.8.0.4.nupkg.sha512",
     "C:\\Users\\zelom\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\8.0.4\\npgsql.entityframeworkcore.postgresql.8.0.4.nupkg.sha512",
     "C:\\Users\\zelom\\.nuget\\packages\\swashbuckle.aspnetcore\\6.7.3\\swashbuckle.aspnetcore.6.7.3.nupkg.sha512",
     "C:\\Users\\zelom\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.7.3\\swashbuckle.aspnetcore.swagger.6.7.3.nupkg.sha512",

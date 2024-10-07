@@ -34,6 +34,8 @@ export class ContractorFormComponent implements OnInit {
 			PassportIssuedBy: ['', Validators.required],
 			PassportIssueDate: ['', Validators.required],
 			ProductType: ['', Validators.required],
+			Citizenship: ['', Validators.required],
+			Nationality: ['', Validators.required],
 			IsArchived: [false],
 			Photos: [''],
 			DocumentPhotos: ['']
@@ -56,7 +58,9 @@ export class ContractorFormComponent implements OnInit {
 				this.contractorForm.patchValue({
 					...data,
 					BirthDate: birthDate,
-					PassportIssueDate: passportIssueDate
+					PassportIssueDate: passportIssueDate,
+					Citizenship: data.citizenship, // Обновление поля Citizenship
+					Nationality: data.nationality // Обновление поля Nationality
 				});
 			},
 			error: (err) => console.error('Ошибка при загрузке данных контрагента', err)

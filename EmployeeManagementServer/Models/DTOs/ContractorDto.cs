@@ -17,8 +17,13 @@ namespace EmployeeManagementServer.Models.DTOs
 
 		public string MiddleName { get; set; }
 
-		[Required(ErrorMessage = "Birth date is required")]
         public DateTime BirthDate { get; set; }
+
+        [Required(ErrorMessage = "Citizenship is required")]
+        public string Citizenship { get; set; }
+
+        [Required(ErrorMessage = "Nationality is required")]
+        public string Nationality { get; set; }
 
         [Required(ErrorMessage = "Document type is required")]
 		public string DocumentType { get; set; }
@@ -29,7 +34,6 @@ namespace EmployeeManagementServer.Models.DTOs
 		[Required(ErrorMessage = "Passport issued by is required")]
         public string PassportIssuedBy { get; set; }
 
-		[Required(ErrorMessage = "Passport issue date is required")]
 		public DateTime PassportIssueDate { get; set; }
 
 		[Required(ErrorMessage = "Product type is required")]

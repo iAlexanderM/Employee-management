@@ -1248,7 +1248,7 @@
           "Microsoft.AspNetCore.App"
         ]
       },
-      "Npgsql/8.0.3": {
+      "Npgsql/8.0.4": {
         "type": "package",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "8.0.0"
@@ -1992,6 +1992,7 @@
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.8",
           "NLog": "5.3.3",
           "NLog.Web.AspNetCore": "5.3.12",
+          "Npgsql": "8.0.4",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.4",
           "Swashbuckle.AspNetCore": "6.7.3"
         },
@@ -4087,10 +4088,10 @@
         "nlog.web.aspnetcore.nuspec"
       ]
     },
-    "Npgsql/8.0.3": {
-      "sha512": "6WEmzsQJCZAlUG1pThKg/RmeF6V+I0DmBBBE/8YzpRtEzhyZzKcK7ulMANDm5CkxrALBEC8H+5plxHWtIL7xnA==",
+    "Npgsql/8.0.4": {
+      "sha512": "vaYEUlF/pB9m8bs21wQv3Da0kMHT4A9USe47VfY/L2BO97xz5KfIxhEu22QS9d68ZrLxvtL3wQDfDLPr2OjbjA==",
       "type": "package",
-      "path": "npgsql/8.0.3",
+      "path": "npgsql/8.0.4",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -4105,7 +4106,7 @@
         "lib/netstandard2.0/Npgsql.xml",
         "lib/netstandard2.1/Npgsql.dll",
         "lib/netstandard2.1/Npgsql.xml",
-        "npgsql.8.0.3.nupkg.sha512",
+        "npgsql.8.0.4.nupkg.sha512",
         "npgsql.nuspec",
         "postgresql.png"
       ]
@@ -5331,6 +5332,7 @@
       "Microsoft.AspNetCore.Identity.EntityFrameworkCore >= 8.0.8",
       "Microsoft.EntityFrameworkCore.Design >= 8.0.5",
       "Microsoft.Extensions.DependencyInjection >= 8.0.0",
+      "Npgsql >= 8.0.4",
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 8.0.4"
     ]
   },
@@ -5401,6 +5403,10 @@
           "Microsoft.Extensions.DependencyInjection": {
             "target": "Package",
             "version": "[8.0.0, )"
+          },
+          "Npgsql": {
+            "target": "Package",
+            "version": "[8.0.4, )"
           },
           "Npgsql.EntityFrameworkCore.PostgreSQL": {
             "target": "Package",

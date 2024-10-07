@@ -26,7 +26,7 @@ namespace EmployeeManagementServer.Services
         }
 
         // Получение контрагента по идентификатору
-        public async Task<Contractor> GetContractorByIdAsync(int id)
+        public async Task<Contractor?> GetContractorByIdAsync(int id)
         {
             return await _context.Contractors
                 .Include(c => c.Photos)  // Включаем связанные фотографии
@@ -41,7 +41,7 @@ namespace EmployeeManagementServer.Services
         }
 
         // Поиск контрагента по номеру паспорта
-        public async Task<Contractor> FindContractorByPassportSerialNumberAsync(string passportSerialNumber)
+        public async Task<Contractor?> FindContractorByPassportSerialNumberAsync(string passportSerialNumber)
         {
             return await _context.Contractors
                 .Include(c => c.Photos)  // Включаем связанные фотографии
