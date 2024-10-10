@@ -1,57 +1,73 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ContractorService } from '../../../services/contractor.service';
-import { Contractor, Photo } from '../../../models/contractor.model'; // Импортируем Photo
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ContractorWatchService } from '../../../services/contractorWatch.service';
+import { Contractor, Photo } from '../../../models/contractor.model';
 import { CommonModule } from '@angular/common';
+import { TransformToUrlPipe } from '../../pipes/transform-to-url.pipe';
 
 @Component({
 	selector: 'app-contractor-details',
 	standalone: true,
-	imports: [CommonModule],
+	imports: [CommonModule, TransformToUrlPipe, RouterModule],
 	templateUrl: './contractor-details.component.html',
 	styleUrls: ['./contractor-details.component.css']
 })
 export class ContractorDetailsComponent implements OnInit {
 	contractor: Contractor | null = null;
+	documentPhotoUrls: string[] = [];
 
 	constructor(
 		private route: ActivatedRoute,
 		private router: Router,
-		private contractorService: ContractorService
+		private contractorService: ContractorWatchService
 	) { }
 
 	ngOnInit(): void {
 		const id = this.route.snapshot.paramMap.get('id');
 		if (id) {
-			this.contractorService.getContractorById(id).subscribe(
-				(data: Contractor) => {
-					// Нормализуем данные контрагента
-					this.contractor = this.normalizePhotos(data);
-				},
-				error => console.error('Ошибка при загрузке данных контрагента', error)
-			);
+			this.loadContractorData(id);
 		}
 	}
 
-	// Метод для нормализации поля photos
+	loadContractorData(id: string): void {
+		this.contractorService.getContractorById(id).subscribe({
+			next: (data: Contractor) => {
+				console.log('Полученные данные контрагента:', data);
+				this.contractor = this.normalizePhotos(data);
+				this.loadDocumentPhotos();
+			},
+			error: error => console.error('Ошибка при загрузке данных контрагента', error)
+		});
+	}
+
 	normalizePhotos(contractor: Contractor): Contractor {
-		if (contractor.photos && contractor.photos.hasOwnProperty('$values')) {
-			contractor.photos = (contractor.photos as any).$values;
-		}
-		if (contractor.documentPhotos && contractor.documentPhotos.hasOwnProperty('$values')) {
-			contractor.documentPhotos = (contractor.documentPhotos as any).$values;
-		}
+		contractor.photos = Array.isArray(contractor.photos)
+			? contractor.photos
+			: (contractor.photos?.['$values'] || []);
+		contractor.documentPhotos = Array.isArray(contractor.documentPhotos)
+			? contractor.documentPhotos
+			: (contractor.documentPhotos?.['$values'] || []);
 		return contractor;
 	}
 
-	// Метод для получения первой фотографии контрагента
-	getFirstPhoto(): string | null {
-		if (this.contractor?.photos && Array.isArray(this.contractor.photos) && this.contractor.photos.length > 0) {
-			// Предполагаем, что `filePath` хранит путь к фото
-			const firstPhoto: Photo = this.contractor.photos[0] as Photo;
-			return firstPhoto.filePath || null;
+	loadDocumentPhotos(): void {
+		if (this.contractor?.photos) {
+			// Фильтруем фотографии, которые являются документальными.
+			const documentPhotos = this.contractor.photos.filter(photo => photo.isDocumentPhoto);
+			this.documentPhotoUrls = documentPhotos.map(photo => this.transformToUrl(photo.filePath));
 		}
-		return null; // Если нет фото, возвращаем null
+	}
+
+	getFirstPhoto(): string | null {
+		if (this.contractor?.photos?.length) {
+			const firstPhoto: Photo = this.contractor.photos[0];
+			return this.transformToUrl(firstPhoto.filePath);
+		}
+		return null;
+	}
+
+	transformToUrl(filePath: string): string {
+		return `http://localhost:8080/${filePath.replace(/\\/g, '/').replace(/^.*wwwroot\//, '')}`;
 	}
 
 	archiveContractor(): void {
@@ -63,6 +79,13 @@ export class ContractorDetailsComponent implements OnInit {
 				},
 				error => console.error('Ошибка при архивировании контрагента', error)
 			);
+		}
+	}
+
+	editContractor(): void {
+		if (this.contractor?.id) {
+			console.log('Переход на редактирование контрагента с ID:', this.contractor.id);
+			this.router.navigate([`/contractors/edit/${this.contractor.id}`]);
 		}
 	}
 }

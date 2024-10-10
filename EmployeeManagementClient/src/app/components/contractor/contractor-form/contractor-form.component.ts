@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ContractorService } from '../../../services/contractor.service';
+import { ContractorCreateService } from '../../../services/contractorCreate.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
@@ -16,11 +16,12 @@ export class ContractorFormComponent implements OnInit {
 	contractorId: string | null = null;
 	DocumentPhotos: File[] = [];
 	Photos: File[] = [];
-	isEditMode: boolean = false;
+	photoPreviews: string[] = [];
+	documentPhotoPreviews: string[] = [];
 
 	constructor(
 		private fb: FormBuilder,
-		private contractorService: ContractorService,
+		private contractorService: ContractorCreateService,
 		private router: Router,
 		private route: ActivatedRoute
 	) {
@@ -42,43 +43,40 @@ export class ContractorFormComponent implements OnInit {
 		});
 	}
 
-	ngOnInit(): void {
-		this.contractorId = this.route.snapshot.paramMap.get('id');
-		this.isEditMode = !!this.contractorId;
-		if (this.isEditMode && this.contractorId) {
-			this.loadContractorData(this.contractorId);
-		}
-	}
-
-	loadContractorData(id: string) {
-		this.contractorService.getContractorById(id).subscribe({
-			next: (data) => {
-				const birthDate = new Date(data.birthDate).toISOString().slice(0, 10);
-				const passportIssueDate = new Date(data.passportIssueDate).toISOString().slice(0, 10);
-				this.contractorForm.patchValue({
-					...data,
-					BirthDate: birthDate,
-					PassportIssueDate: passportIssueDate,
-					Citizenship: data.citizenship, // Обновление поля Citizenship
-					Nationality: data.nationality // Обновление поля Nationality
-				});
-			},
-			error: (err) => console.error('Ошибка при загрузке данных контрагента', err)
-		});
-	}
+	ngOnInit(): void { }
 
 	onPhotoChange(event: any): void {
-		const files = event.target.files;
+		const input = event.target;
+		const files = input.files;
 		if (files && files.length > 0) {
-			this.Photos = Array.from(files);
+			this.Photos = this.Photos.concat(Array.from(files as FileList));
+			this.photoPreviews = this.photoPreviews.concat(
+				Array.from(files as FileList).map((file) => URL.createObjectURL(file))
+			);
 		}
+		input.value = '';
 	}
 
 	onDocumentPhotosChange(event: any): void {
-		const files = event.target.files;
+		const input = event.target;
+		const files = input.files;
 		if (files && files.length > 0) {
-			this.DocumentPhotos = Array.from(files);
+			this.DocumentPhotos = this.DocumentPhotos.concat(Array.from(files as FileList));
+			this.documentPhotoPreviews = this.documentPhotoPreviews.concat(
+				Array.from(files as FileList).map((file) => URL.createObjectURL(file))
+			);
 		}
+		input.value = '';
+	}
+
+	removePhoto(index: number): void {
+		this.Photos.splice(index, 1);
+		this.photoPreviews.splice(index, 1);
+	}
+
+	removeDocumentPhoto(index: number): void {
+		this.DocumentPhotos.splice(index, 1);
+		this.documentPhotoPreviews.splice(index, 1);
 	}
 
 	onSubmit(): void {
@@ -93,17 +91,10 @@ export class ContractorFormComponent implements OnInit {
 			contractorData.BirthDate = new Date(contractorData.BirthDate).toISOString();
 			contractorData.PassportIssueDate = new Date(contractorData.PassportIssueDate).toISOString();
 
-			if (this.isEditMode && this.contractorId) {
-				this.contractorService.updateContractor(this.contractorId, contractorData).subscribe({
-					next: () => this.router.navigate(['/contractors']),
-					error: (err) => console.error('Ошибка при обновлении контрагента', err)
-				});
-			} else {
-				this.contractorService.addContractor(contractorData).subscribe({
-					next: () => this.router.navigate(['/contractors']),
-					error: (err) => console.error('Ошибка при добавлении контрагента', err)
-				});
-			}
+			this.contractorService.addContractor(contractorData).subscribe({
+				next: () => this.router.navigate(['/contractors']),
+				error: (err) => console.error('Ошибка при добавлении контрагента', err)
+			});
 		}
 	}
 }

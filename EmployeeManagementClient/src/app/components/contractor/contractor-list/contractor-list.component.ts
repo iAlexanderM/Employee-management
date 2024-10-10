@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { ContractorService } from '../../../services/contractor.service';
+import { ContractorWatchService } from '../../../services/contractorWatch.service';
 import { Contractor } from '../../../models/contractor.model';
 import { CommonModule } from '@angular/common';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
 	selector: 'app-contractor-list',
@@ -14,14 +16,19 @@ import { CommonModule } from '@angular/common';
 export class ContractorListComponent implements OnInit {
 	contractors: Contractor[] = [];
 
-	constructor(private contractorService: ContractorService) { }
+	constructor(private contractorService: ContractorWatchService) { }
 
 	ngOnInit(): void {
+		this.loadContractors();
+	}
+
+	loadContractors(): void {
 		this.contractorService.getContractors().subscribe({
 			next: (contractors: Contractor[]) => {
+				console.log('Полученные контрагенты:', contractors);
 				if (Array.isArray(contractors)) {
-					// Нормализуем данные контрагентов
 					this.contractors = contractors.map(contractor => this.normalizePhotos(contractor));
+					console.log('Нормализованные данные контрагентов:', this.contractors);
 				} else {
 					console.error('Ожидался массив контрагентов, но получен:', contractors);
 				}
@@ -32,20 +39,21 @@ export class ContractorListComponent implements OnInit {
 
 	// Метод для нормализации поля photos
 	normalizePhotos(contractor: Contractor): Contractor {
-		// Проверяем, если photos возвращены с ключом $values, приводим их к массиву объектов Photo
 		if (contractor.photos && contractor.photos.hasOwnProperty('$values')) {
 			contractor.photos = (contractor.photos as any).$values;
 		}
-		// Возвращаем обновленного контрагента
+		console.log('Photos после нормализации:', contractor.photos);
 		return contractor;
 	}
 
-	// Метод для получения первой фотографии контрагента
 	getFirstPhoto(contractor: Contractor): string | null {
 		if (contractor.photos && Array.isArray(contractor.photos) && contractor.photos.length > 0) {
-			// Формируем полный путь к фото, предполагая, что сервер работает на порту 5290
-			return `http://localhost:5290/${contractor.photos[0].filePath}`;
+			const filePath = contractor.photos[0].filePath
+				.replace(/\\/g, '/') // Заменяем обратные слэши на прямые
+				.replace(/^.*wwwroot\//, ''); // Убираем все, что до 'wwwroot/'
+
+			return `http://localhost:8080/${filePath}`;
 		}
-		return null; // Если нет фото, возвращаем null
+		return null;
 	}
 }

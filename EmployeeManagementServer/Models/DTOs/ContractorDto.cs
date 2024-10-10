@@ -39,7 +39,12 @@ namespace EmployeeManagementServer.Models.DTOs
 		[Required(ErrorMessage = "Product type is required")]
 		public string ProductType { get; set; }
 
-		public List<IFormFile> Photos { get; set; } = new List<IFormFile>();
+        public bool IsArchived { get; set; }
+
+        public List<IFormFile> Photos { get; set; } = new List<IFormFile>();
         public List<IFormFile> DocumentPhotos { get; set; } = new List<IFormFile>();
+
+        public List<int> PhotosToRemove { get; set; } = new List<int>();
+        public List<int> DocumentPhotosToRemove { get; set; } = new List<int>();
     }
 }

@@ -1,0 +1,49 @@
+.container {
+	max-width: 600px;
+	margin: 20px auto;
+	padding: 15px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+}
+
+.form-group {
+	margin-bottom: 15px;
+}
+
+.btn {
+	margin-right: 10px;
+}
+
+.photo-previews,
+.document-photo-previews {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.photo-thumbnail,
+.document-photo-thumbnail {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.photo-thumbnail img,
+.document-photo-thumbnail img {
+	width: 180px;
+	height: 180px;
+	object-fit: cover;
+	border-radius: 4px;
+}
+
+.photo-thumbnail button,
+.document-photo-thumbnail button {
+	margin-top: 5px;
+}
+
+.img-cont {
+	width: 250px;
+	height: 250px;
+	object-fit: cover;
+	border-radius: 4px;
+}

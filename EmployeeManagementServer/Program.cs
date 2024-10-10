@@ -130,7 +130,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Чтение порта для запуска приложения
-var port = Environment.GetEnvironmentVariable("PORT") ?? "80";
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Urls.Add($"http://*:{port}");
 
 app.Run();

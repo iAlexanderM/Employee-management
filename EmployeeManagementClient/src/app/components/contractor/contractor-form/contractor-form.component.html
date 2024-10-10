@@ -44,17 +44,29 @@
 	<input id="Nationality" formControlName="Nationality" type="text" />
 	<br /><br />
 
-	<label for="Photos">Фотографии:</label>
-	<input id="Photos" type="file" (change)="onPhotoChange($event)" multiple />
-	<br /><br />
-
-	<label for="DocumentPhotos">Документальные фото:</label>
-	<input id="DocumentPhotos" type="file" (change)="onDocumentPhotosChange($event)" multiple />
-	<br /><br />
-
 	<label for="IsArchived">Архивировать:</label>
 	<input id="IsArchived" formControlName="IsArchived" type="checkbox" />
 	<br /><br />
 
-	<button type="submit">Сохранить</button>
+	<label for="Photos">Фотографии:</label>
+	<input id="Photos" type="file" (change)="onPhotoChange($event)" multiple />
+	<div class="photo-previews">
+		<div *ngFor="let photo of photoPreviews; let i = index" class="photo-thumbnail">
+			<img [src]="photo" alt="Миниатюра фото" />
+			<button type="button" (click)="removePhoto(i)">Удалить</button>
+		</div>
+	</div>
+	<br /><br />
+
+	<label for="DocumentPhotos">Документальные фото:</label>
+	<input id="DocumentPhotos" type="file" (change)="onDocumentPhotosChange($event)" multiple />
+	<div class="document-photo-previews">
+		<div *ngFor="let photo of documentPhotoPreviews; let i = index" class="photo-thumbnail">
+			<img [src]="photo" alt="Миниатюра документального фото" />
+			<button type="button" (click)="removeDocumentPhoto(i)">Удалить</button>
+		</div>
+	</div>
+	<br /><br />
+
+	<button type="button" (click)="onSubmit()">Сохранить</button>
 </form>

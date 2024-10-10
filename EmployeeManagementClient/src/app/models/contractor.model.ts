@@ -12,8 +12,7 @@ export interface Contractor {
 	middleName?: string;
 	birthDate: Date;
 	documentType: string;
-	passportSeries: string;
-	passportNumber: string;
+	passportSerialNumber: string;
 	passportIssuedBy: string;
 	citizenship: string;
 	nationality: string;
