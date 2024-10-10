@@ -64,35 +64,35 @@
 	<div class="form-group">
 		<label for="Photos">Фотографии:</label>
 		<input id="Photos" type="file" (change)="onPhotoChange($event, false)" multiple class="form-control" />
-		<div class="photo-previews">
+		<div class="photo-previews mt-2">
 			<ng-container *ngFor="let preview of photoPreviews; let i = index">
 				<div class="photo-thumbnail" *ngIf="preview.url && preview.url.trim() !== ''">
 					<img [src]="preview.url" alt="Миниатюра фото" class="img-thumbnail"
 						style="width: 100px; height: 100px;" />
-					<button type="button" class="btn btn-danger btn-sm" (click)="removePhoto(i, false)">Удалить</button>
+					<button type="button" class="btn btn-danger btn-sm mt-1"
+						(click)="removePhoto(i, false)">Удалить</button>
 				</div>
 			</ng-container>
 		</div>
 	</div>
 
-	<!-- Документальные фотографии -->
-	<div class="form-group">
+	<div class="form-group mt-4">
 		<label for="DocumentPhotos">Документальные фото:</label>
 		<input id="DocumentPhotos" type="file" (change)="onPhotoChange($event, true)" multiple class="form-control" />
-		<div class="document-photo-previews">
+		<div class="document-photo-previews mt-2">
 			<ng-container *ngFor="let preview of documentPhotoPreviews; let i = index">
 				<div class="photo-thumbnail" *ngIf="preview.url && preview.url.trim() !== ''">
 					<img [src]="preview.url" alt="Миниатюра документального фото" class="img-thumbnail"
 						style="width: 100px; height: 100px;" />
-					<button type="button" class="btn btn-danger btn-sm" (click)="removePhoto(i, true)">Удалить</button>
+					<button type="button" class="btn btn-danger btn-sm mt-1"
+						(click)="removePhoto(i, true)">Удалить</button>
 				</div>
 			</ng-container>
 		</div>
 	</div>
 
-	<br />
 	<!-- Кнопки сохранения и отмены -->
-	<div class="form-group">
+	<div class="form-group mt-4">
 		<button type="submit" class="btn btn-primary" [disabled]="contractorForm.invalid">Сохранить</button>
 		<button type="button" class="btn btn-secondary" (click)="router.navigate(['/contractors'])">Отмена</button>
 	</div>

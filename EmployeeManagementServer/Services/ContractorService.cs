@@ -24,34 +24,47 @@ namespace EmployeeManagementServer.Services
             await _context.SaveChangesAsync();
         }
 
-        // Метод для обновления контрагента, включающий добавление и удаление фотографий
         public async Task UpdateContractorAsync(
-            Contractor contractor,
-            List<IFormFile> newPhotos,
-            List<IFormFile> newDocumentPhotos,
-            List<int> deletedPhotoIds,
-            List<int> deletedDocumentPhotoIds)
+        Contractor contractor,
+        List<IFormFile> newPhotos,
+        List<IFormFile> newDocumentPhotos,
+        List<int> deletedPhotoIds)
         {
-            // Удаление старых фотографий
-            await RemovePhotosAsync(contractor, deletedPhotoIds, false);
-            await RemovePhotosAsync(contractor, deletedDocumentPhotoIds, true);
+            try
+            {
+                _logger.LogInformation("Начинаем обновление фотографий для контрагента с ID {Id}", contractor.Id);
 
-            // Добавление новых фотографий
-            await AddPhotosAsync(contractor, newPhotos, false);
-            await AddPhotosAsync(contractor, newDocumentPhotos, true);
+                // Удаление старых фотографий
+                await RemovePhotosAsync(contractor, deletedPhotoIds);
 
-            // Обновление данных контрагента в базе данных
-            _context.Contractors.Update(contractor);
-            await SaveChangesAsync();
+                _logger.LogInformation("Старые фотографии успешно удалены для контрагента с ID {Id}", contractor.Id);
+
+                // Добавление новых фотографий
+                await AddPhotosAsync(contractor, newPhotos, false);
+                await AddPhotosAsync(contractor, newDocumentPhotos, true);
+
+                _logger.LogInformation("Новые фотографии успешно добавлены для контрагента с ID {Id}", contractor.Id);
+
+                // Обновление данных контрагента в базе данных
+                _context.Contractors.Update(contractor);
+                await SaveChangesAsync();
+
+                _logger.LogInformation("Изменения для контрагента с ID {Id} успешно сохранены в базе данных.", contractor.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при обновлении контрагента с ID {Id}.", contractor.Id);
+                throw; // Перебрасываем исключение для обработки на уровне контроллера
+            }
         }
 
-        // Метод для удаления фотографий
-        private async Task RemovePhotosAsync(Contractor contractor, List<int> photoIds, bool isDocumentPhoto)
+
+        private async Task RemovePhotosAsync(Contractor contractor, List<int> photoIds)
         {
             if (photoIds == null || !photoIds.Any()) return;
 
             var photosToDelete = contractor.Photos
-                .Where(photo => photoIds.Contains(photo.Id) && photo.IsDocumentPhoto == isDocumentPhoto)
+                .Where(photo => photoIds.Contains(photo.Id))
                 .ToList();
 
             // Удаление файлов с диска
@@ -66,7 +79,6 @@ namespace EmployeeManagementServer.Services
             _context.ContractorPhoto.RemoveRange(photosToDelete);
         }
 
-        // Метод для добавления новых фотографий
         private async Task AddPhotosAsync(Contractor contractor, List<IFormFile> photos, bool isDocumentPhoto)
         {
             if (photos == null || !photos.Any()) return;
@@ -82,6 +94,7 @@ namespace EmployeeManagementServer.Services
                 });
             }
         }
+
 
         // Метод для сохранения фотографий
         public async Task<string> SavePhotoAsync(IFormFile photo, bool isDocumentPhoto)

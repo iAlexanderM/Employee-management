@@ -16,11 +16,12 @@ import { HttpClientModule } from '@angular/common/http';
 })
 export class ContractorEditComponent implements OnInit {
 	contractorForm!: FormGroup;
-	photoPreviews: { file: File | null, url: string }[] = [];
-	documentPhotoPreviews: { file: File | null, url: string }[] = [];
+	photoPreviews: { file: File | null, url: string, isDocumentPhoto: boolean }[] = [];
 	existingPhotos: Photo[] = [];
-	existingDocumentPhotos: Photo[] = [];
+	photosToRemove: number[] = [];
 	contractorId!: string;
+	documentPhotoPreviews: { file: File | null, url: string }[] = [];
+	existingDocumentPhotos: Photo[] = [];
 
 	private fb = inject(FormBuilder);
 	private contractorService = inject(ContractorEditService);
@@ -49,6 +50,11 @@ export class ContractorEditComponent implements OnInit {
 			ProductType: ['', Validators.required],
 			IsArchived: [false]
 		});
+
+		// Отслеживание изменений формы
+		this.contractorForm.valueChanges.subscribe((value) => {
+			console.log('Изменения в форме:', value);
+		});
 	}
 
 	loadContractor(): void {
@@ -56,7 +62,6 @@ export class ContractorEditComponent implements OnInit {
 			next: (contractor: Contractor) => {
 				console.log('Данные контрагента получены:', contractor);
 
-				// Заполнение полей формы данными контрагента с форматированием даты
 				this.contractorForm.patchValue({
 					FirstName: contractor.firstName,
 					LastName: contractor.lastName,
@@ -77,22 +82,20 @@ export class ContractorEditComponent implements OnInit {
 					photo.filePath = photo.filePath.replace(/\\/g, '/');
 				});
 
-				// Разделение фотографий на обычные и документальные
 				this.existingPhotos = photos.filter((photo: Photo) => !photo.isDocumentPhoto);
 				this.existingDocumentPhotos = photos.filter((photo: Photo) => photo.isDocumentPhoto);
 
 				this.photoPreviews = this.existingPhotos.map((photo: Photo) => ({
 					file: null,
-					url: this.getFilePath(photo.filePath)
+					url: this.getFilePath(photo.filePath),
+					isDocumentPhoto: false
 				}));
 
 				this.documentPhotoPreviews = this.existingDocumentPhotos.map((photo: Photo) => ({
 					file: null,
-					url: this.getFilePath(photo.filePath)
+					url: this.getFilePath(photo.filePath),
+					isDocumentPhoto: true
 				}));
-
-				console.log('Загруженные фото:', this.photoPreviews);
-				console.log('Загруженные документальные фото:', this.documentPhotoPreviews);
 			},
 			error: (err) => {
 				console.error('Ошибка при получении данных контрагента:', err);
@@ -107,10 +110,18 @@ export class ContractorEditComponent implements OnInit {
 				const file = files[i];
 				const reader = new FileReader();
 				reader.onload = (e: any) => {
+					const preview = {
+						file,
+						url: e.target.result,
+						isDocumentPhoto
+					};
+
 					if (isDocumentPhoto) {
-						this.documentPhotoPreviews.push({ file, url: e.target.result });
+						this.documentPhotoPreviews.push(preview);
+						console.log('Добавлено документальное фото:', preview);
 					} else {
-						this.photoPreviews.push({ file, url: e.target.result });
+						this.photoPreviews.push(preview);
+						console.log('Добавлено обычное фото:', preview);
 					}
 				};
 				reader.readAsDataURL(file);
@@ -125,81 +136,51 @@ export class ContractorEditComponent implements OnInit {
 
 	removePhoto(index: number, isDocumentPhoto: boolean): void {
 		if (isDocumentPhoto) {
-			this.documentPhotoPreviews.splice(index, 1);
+			const removedPhoto = this.documentPhotoPreviews.splice(index, 1)[0];
+			if (removedPhoto && removedPhoto.file === null) {
+				const photoToRemove = this.existingDocumentPhotos.find(p => this.getFilePath(p.filePath) === removedPhoto.url);
+				if (photoToRemove) {
+					this.photosToRemove.push(photoToRemove.id);
+				}
+			}
 		} else {
-			this.photoPreviews.splice(index, 1);
+			const removedPhoto = this.photoPreviews.splice(index, 1)[0];
+			if (removedPhoto && removedPhoto.file === null) {
+				const photoToRemove = this.existingPhotos.find(p => this.getFilePath(p.filePath) === removedPhoto.url);
+				if (photoToRemove) {
+					this.photosToRemove.push(photoToRemove.id);
+				}
+			}
 		}
+		console.log('PhotosToRemove:', this.photosToRemove);
 	}
 
 	saveChanges(): void {
-		if (this.contractorForm.valid && this.contractorId) {
-			const contractorData = this.contractorForm.value;
-			// Преобразуем даты в формат ISO
-			contractorData.BirthDate = new Date(contractorData.BirthDate).toISOString();
-			contractorData.PassportIssueDate = new Date(contractorData.PassportIssueDate).toISOString();
-
-			const formData = new FormData();
-
-			// Добавляем данные формы с учетом регистра ключей
-			Object.keys(contractorData).forEach(key => {
-				formData.append(key, contractorData[key]);
-			});
-
-			// Добавляем новые фотографии в FormData
-			this.photoPreviews.forEach(preview => {
-				if (preview.file) {
-					formData.append('Photos', preview.file);
-				}
-			});
-
-			this.documentPhotoPreviews.forEach(preview => {
-				if (preview.file) {
-					formData.append('DocumentPhotos', preview.file);
-				}
-			});
-
-			// Добавляем существующие фотографии (URL)
-			this.photoPreviews.forEach(preview => {
-				if (!preview.file) {
-					formData.append('ExistingPhotos', preview.url.replace(/\\/g, '/'));
-				}
-			});
-
-			this.documentPhotoPreviews.forEach(preview => {
-				if (!preview.file) {
-					formData.append('ExistingDocumentPhotos', preview.url.replace(/\\/g, '/'));
-				}
-			});
-
-			// Удаляем фотографии, которые были удалены пользователем
-			const deletedPhotoIds = this.existingPhotos
-				.filter(photo => !this.photoPreviews.some(preview => preview.url === photo.filePath))
-				.map(photo => photo.id);
-
-			const deletedDocumentPhotoIds = this.existingDocumentPhotos
-				.filter(photo => !this.documentPhotoPreviews.some(preview => preview.url === photo.filePath))
-				.map(photo => photo.id);
-
-			// Добавляем ID удаленных фотографий в FormData
-			formData.append('PhotosToRemove', JSON.stringify(deletedPhotoIds));
-			formData.append('DocumentPhotosToRemove', JSON.stringify(deletedDocumentPhotoIds));
-
-			// Логирование содержимого FormData для отладки
-			formData.forEach((value, key) => {
-				console.log(`${key}: ${value}`);
-			});
-
-			console.log('Данные формы перед отправкой:', this.contractorForm.value);
-
-			this.contractorService.updateContractor(this.contractorId, formData).subscribe({
-				next: () => this.router.navigate(['/contractors']),
-				error: (err) => {
-					console.error('Ошибка при обновлении контрагента', err);
-					if (err.error && err.error.errors) {
-						console.error('Детали ошибок:', err.error.errors);
-					}
-				}
-			});
+		if (this.contractorForm.invalid || !this.contractorId) {
+			console.error('Форма невалидна или отсутствует ID контрагента');
+			return;
 		}
+
+		const contractorData = { ...this.contractorForm.value };
+		contractorData.BirthDate = new Date(contractorData.BirthDate).toISOString();
+		contractorData.PassportIssueDate = new Date(contractorData.PassportIssueDate).toISOString();
+
+		this.contractorService.updateContractor(this.contractorId, {
+			...contractorData,
+			Photos: this.photoPreviews.map(preview => preview.file).filter(Boolean),
+			DocumentPhotos: this.documentPhotoPreviews.map(preview => preview.file).filter(Boolean),
+			PhotosToRemove: this.photosToRemove
+		}).subscribe({
+			next: () => {
+				console.log('Контрагент успешно обновлен.');
+				this.router.navigate(['/contractors']);
+			},
+			error: (err) => {
+				console.error('Ошибка при обновлении контрагента', err);
+				if (err.error && err.error.errors) {
+					console.error('Детали ошибок:', err.error.errors);
+				}
+			}
+		});
 	}
 }

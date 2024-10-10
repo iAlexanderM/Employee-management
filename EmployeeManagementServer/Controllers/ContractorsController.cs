@@ -101,7 +101,6 @@ namespace EmployeeManagementServer.Controllers
             return Ok(contractor);
         }
 
-        // Обновление контрагента
         [HttpPut("edit/{id}")]
         public async Task<IActionResult> UpdateContractor(int id, [FromForm] ContractorDto contractorDto)
         {
@@ -113,11 +112,23 @@ namespace EmployeeManagementServer.Controllers
                 return BadRequest(ModelState);
             }
 
+            // Получаем текущего контрагента из базы данных
             var contractor = await _contractorService.GetContractorByIdAsync(id);
             if (contractor == null)
             {
                 _logger.LogWarning("Контрагент с ID {Id} не найден.", id);
                 return NotFound($"Контрагент с ID {id} не найден.");
+            }
+
+            // Проверяем, изменился ли номер паспорта и проверяем уникальность только в случае изменения
+            if (contractor.PassportSerialNumber != contractorDto.PassportSerialNumber)
+            {
+                var existingContractor = await _contractorService.FindContractorByPassportSerialNumberAsync(contractorDto.PassportSerialNumber);
+                if (existingContractor != null && existingContractor.Id != id)
+                {
+                    _logger.LogWarning("Контрагент с таким номером паспорта уже существует: {PassportSerialNumber}", contractorDto.PassportSerialNumber);
+                    return BadRequest("Контрагент с таким номером паспорта уже существует.");
+                }
             }
 
             _logger.LogInformation("Контрагент с ID {Id} найден, обновление данных началось.", id);
@@ -127,13 +138,16 @@ namespace EmployeeManagementServer.Controllers
                 // Обновляем текстовые поля контрагента на основе данных из DTO
                 UpdateContractorDetails(contractor, contractorDto);
 
-                // Обновляем фотографии через сервис
+                // Обновляем фотографии через сервис, объединяя списки фотографий для удаления
+                var allPhotosToRemove = contractorDto.PhotosToRemove
+                    .Concat(contractorDto.DocumentPhotosToRemove ?? new List<int>())
+                    .ToList();
+
                 await _contractorService.UpdateContractorAsync(
                     contractor,
                     contractorDto.Photos,
                     contractorDto.DocumentPhotos,
-                    contractorDto.PhotosToRemove ?? new List<int>(),
-                    contractorDto.DocumentPhotosToRemove ?? new List<int>()
+                    allPhotosToRemove
                 );
 
                 _logger.LogInformation("Изменения контрагента с ID {Id} успешно сохранены в базе данных.", id);
@@ -152,12 +166,12 @@ namespace EmployeeManagementServer.Controllers
             contractor.LastName = contractorDto.LastName;
             contractor.MiddleName = contractorDto.MiddleName;
             contractor.BirthDate = contractorDto.BirthDate;
-            contractor.Citizenship = contractorDto.Citizenship;
-            contractor.Nationality = contractorDto.Nationality;
             contractor.DocumentType = contractorDto.DocumentType;
             contractor.PassportSerialNumber = contractorDto.PassportSerialNumber;
             contractor.PassportIssuedBy = contractorDto.PassportIssuedBy;
             contractor.PassportIssueDate = contractorDto.PassportIssueDate;
+            contractor.Citizenship = contractorDto.Citizenship;
+            contractor.Nationality = contractorDto.Nationality;
             contractor.ProductType = contractorDto.ProductType;
             contractor.IsArchived = contractorDto.IsArchived;
         }
