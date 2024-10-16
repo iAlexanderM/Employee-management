@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using EmployeeManagementServer.Services;
 using System;
+using EmployeeManagementServer.Models.DTOs;
 
 namespace EmployeeManagementServer.Controllers
 {
@@ -9,36 +10,19 @@ namespace EmployeeManagementServer.Controllers
     [ApiController]
     public class SearchContractorsController : ControllerBase
     {
-        private readonly ContractorSearchService _searchService;
+        private readonly IContractorSearchService _searchService;
 
-        public SearchContractorsController(ContractorSearchService searchService)
+        public SearchContractorsController(IContractorSearchService searchService)
         {
             _searchService = searchService;
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> SearchContractors(
-            [FromQuery] int? id,
-            [FromQuery] string? firstName,
-            [FromQuery] string? lastName,
-            [FromQuery] string? middleName,
-            [FromQuery] DateTime? birthDate,
-            [FromQuery] string? documentType,
-            [FromQuery] string? passportSerialNumber,
-            [FromQuery] string? passportIssuedBy,
-            [FromQuery] DateTime? passportIssueDate,
-            [FromQuery] string? productType,
-            [FromQuery] string? phoneNumber,
-            [FromQuery] string? citizenship,
-            [FromQuery] string? nationality)
+        public async Task<IActionResult> SearchContractors([FromQuery] ContractorSearchDto searchDto)
         {
             try
             {
-                var contractors = await _searchService.SearchContractorsAsync(
-                    id, firstName, lastName, middleName, birthDate, documentType,
-                    passportSerialNumber, passportIssuedBy, passportIssueDate,
-                    productType, citizenship, nationality, phoneNumber);
-
+                var contractors = await _searchService.SearchContractorsAsync(searchDto);
                 return Ok(contractors);
             }
             catch (Exception ex)

@@ -21,7 +21,7 @@ export class LoginComponent {
 		this.authService.login(this.username, this.password).subscribe(
 			(success: boolean) => {
 				if (success) {
-					this.router.navigate(['/contractors']);
+					this.router.navigate(['/contractors']); //после успешного логина поменять на поиск торговой точке
 				} else {
 					alert('Ошибка входа. Проверьте логин и пароль.');
 				}

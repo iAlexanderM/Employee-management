@@ -6,18 +6,18 @@ namespace EmployeeManagementServer.Models
     public class Contractor
     {
         public int Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string MiddleName { get; set; }
-        public string Citizenship { get; set; }
-        public string Nationality { get; set; }
+        public required string FirstName { get; set; }
+        public required string LastName { get; set; }
+        public required string MiddleName { get; set; }
+        public required string Citizenship { get; set; }
+        public required string Nationality { get; set; }
         public DateTime BirthDate { get; set; }
-        public string DocumentType { get; set; }
-        public string PassportSerialNumber { get; set; }
-        public string PassportIssuedBy { get; set; }
+        public required string DocumentType { get; set; }
+        public required string PassportSerialNumber { get; set; }
+        public required string PassportIssuedBy { get; set; }
         public DateTime PassportIssueDate { get; set; }
-        public string PhoneNumber { get; set; }
-        public string ProductType { get; set; }
+        public required string PhoneNumber { get; set; }
+        public required string ProductType { get; set; }
         public bool IsArchived { get; set; } = false;
 
         // Связь с фотографиями

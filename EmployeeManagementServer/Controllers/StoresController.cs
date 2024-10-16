@@ -9,7 +9,7 @@ namespace EmployeeManagementServer.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Добавляем авторизацию
+    [Authorize]
     public class StoresController : ControllerBase
     {
         private readonly IStoreService _storeService;

@@ -19,6 +19,7 @@ import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 export class ContractorListComponent implements OnInit {
 	contractors: Contractor[] = [];
 	searchForm: FormGroup;
+	isExpanded = false;
 
 	constructor(
 		private contractorService: ContractorWatchService,
@@ -35,10 +36,7 @@ export class ContractorListComponent implements OnInit {
 			PassportSerialNumber: [''],
 			PassportIssuedBy: [''],
 			PassportIssueDate: [''],
-			ProductType: [''],
-			PhoneNumber: [''],
-			Citizenship: [''],
-			Nationality: ['']
+			PhoneNumber: ['']
 		});
 	}
 
@@ -118,5 +116,9 @@ export class ContractorListComponent implements OnInit {
 			return `http://localhost:8080/${filePath}`;
 		}
 		return null;
+	}
+
+	toggleSearchForm() {
+		this.isExpanded = !this.isExpanded;
 	}
 }

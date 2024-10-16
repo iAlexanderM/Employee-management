@@ -33,6 +33,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 	.AddEntityFrameworkStores<ApplicationDbContext>()
 	.AddDefaultTokenProviders();
 
+builder.Services.AddScoped<JwtTokenService>();
+
 // Настройка аутентификации через JWT
 builder.Services.AddAuthentication(options =>
 {
@@ -49,7 +51,7 @@ builder.Services.AddAuthentication(options =>
 		ValidateIssuerSigningKey = true,
 		ValidIssuer = builder.Configuration["AppSettings:Issuer"],
 		ValidAudience = builder.Configuration["AppSettings:Audience"],
-		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]))
+		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"] ?? string.Empty))
 	};
 });
 
@@ -65,7 +67,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<ContractorService>();
-builder.Services.AddScoped<ContractorSearchService>();
+builder.Services.AddScoped<IContractorSearchService, ContractorSearchService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -95,10 +97,10 @@ using (var scope = app.Services.CreateScope())
 			dbContext.Database.Migrate();
 			break;
 		}
-		catch (Exception ex)
+		catch
 		{
 			if (i == retryCount - 1)
-				throw; // После всех попыток бросаем исключение
+				throw;
 			Console.WriteLine($"Не удалось подключиться к базе данных. Попытка {i + 1} из {retryCount}. Ожидание {delay.TotalSeconds} секунд.");
 			Thread.Sleep(delay);
 		}

@@ -1,10 +1,6 @@
 ﻿using EmployeeManagementServer.Models;
 using EmployeeManagementServer.Data;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
-using System.IO;
 
 namespace EmployeeManagementServer.Services
 {

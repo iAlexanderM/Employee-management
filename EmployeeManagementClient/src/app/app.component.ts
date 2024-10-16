@@ -12,12 +12,17 @@ import { RouterModule } from '@angular/router';
 	styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+	isReferencesExpanded = false;
 	title = 'Employee Management';
 
 	constructor(private authService: AuthService, private router: Router) { }
 
 	isAuthenticated(): boolean {
 		return this.authService.isAuthenticated();
+	}
+
+	toggleReferences() {
+		this.isReferencesExpanded = !this.isReferencesExpanded;
 	}
 
 	logout(): void {

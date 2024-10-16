@@ -1,11 +1,14 @@
 <div class="container">
 	<h2>Поиск контрагентов</h2>
 
-	<!-- Форма поиска контрагентов -->
-	<form [formGroup]="searchForm" (ngSubmit)="searchContractors()" class="mb-4">
+	<button type="button" class="btn btn-link mb-3" (click)="toggleSearchForm()">
+		{{ isExpanded ? 'Свернуть' : 'Развернуть' }}
+	</button>
+
+	<form *ngIf="isExpanded" [formGroup]="searchForm" (ngSubmit)="searchContractors()" class="mb-4">
 		<div class="row">
 			<div class="col-md-4">
-				<label for="Id">ID:</label>
+				<label for="Id">Код контрагента:</label>
 				<input id="Id" formControlName="Id" type="text" class="form-control" />
 			</div>
 
@@ -55,26 +58,9 @@
 			</div>
 
 			<div class="col-md-4">
-				<label for="ProductType">Тип продукции:</label>
-				<input id="ProductType" formControlName="ProductType" type="text" class="form-control" />
-			</div>
-
-			<div class="col-md-4">
 				<label for="PhoneNumber">Номер телефона:</label>
 				<input id="PhoneNumber" formControlName="PhoneNumber" type="text" mask="0 (000) 000-00-00"
-					placeholder="8 (___) ___-__-__" />
-			</div>
-		</div>
-
-		<div class="row mt-3">
-			<div class="col-md-4">
-				<label for="Citizenship">Гражданство:</label>
-				<input id="Citizenship" formControlName="Citizenship" type="text" class="form-control" />
-			</div>
-
-			<div class="col-md-4">
-				<label for="Nationality">Национальность:</label>
-				<input id="Nationality" formControlName="Nationality" type="text" class="form-control" />
+					placeholder="8 (___) ___-__-__" class="form-control" />
 			</div>
 		</div>
 
@@ -86,8 +72,8 @@
 		</div>
 	</form>
 
-	<!-- Таблица с контрагентами -->
 	<h2>Список контрагентов</h2>
+	<a routerLink="/contractors/new" class="btn btn-success">Добавить контрагента</a>
 	<table class="table table-bordered" *ngIf="contractors && contractors.length > 0">
 		<thead>
 			<tr>
@@ -121,7 +107,4 @@
 
 	<!-- Сообщение, если контрагентов нет -->
 	<p *ngIf="contractors && contractors.length === 0">Нет контрагентов для отображения.</p>
-
-	<!-- Кнопка для добавления нового контрагента -->
-	<a routerLink="/contractors/new" class="btn btn-success">Добавить контрагента</a>
 </div>

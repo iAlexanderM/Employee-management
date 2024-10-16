@@ -4,8 +4,6 @@ using EmployeeManagementServer.Models;
 using EmployeeManagementServer.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace EmployeeManagementServer.Controllers
 {

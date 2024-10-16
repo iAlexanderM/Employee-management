@@ -42,16 +42,15 @@ export class AuthService {
 					console.log('Token saved in localStorage:', response.token); // Лог токена
 					console.log('Token expiry at:', new Date(tokenExpiry).toLocaleString()); // Лог времени истечения
 
-					// Возвращаем true, если токен был успешно получен
 					return true;
 				} else {
 					console.error('No token in response');
-					return false; // Возвращаем false, если токен отсутствует
+					return false;
 				}
 			}),
 			catchError(error => {
 				console.error('Ошибка при логине', error);
-				return of(false); // Возвращаем false в случае ошибки
+				return of(false);
 			})
 		);
 	}
@@ -67,12 +66,11 @@ export class AuthService {
 			}),
 			catchError(error => {
 				console.error('Ошибка при выходе', error);
-				return of(); // Возвращаем пустое значение в случае ошибки
+				return of();
 			})
 		);
 	}
 
-	// Проверка аутентификации
 	isAuthenticated(): boolean {
 		const token = localStorage.getItem(this.tokenKey);
 		const tokenExpiry = localStorage.getItem(this.tokenExpiryKey);
@@ -83,7 +81,6 @@ export class AuthService {
 		return false;
 	}
 
-	// Получение токена
 	getToken(): string | null {
 		return this.token;
 	}
