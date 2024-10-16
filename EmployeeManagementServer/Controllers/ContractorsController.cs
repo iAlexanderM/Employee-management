@@ -173,6 +173,7 @@ namespace EmployeeManagementServer.Controllers
             contractor.Citizenship = contractorDto.Citizenship;
             contractor.Nationality = contractorDto.Nationality;
             contractor.ProductType = contractorDto.ProductType;
+            contractor.PhoneNumber = contractorDto.PhoneNumber;
             contractor.IsArchived = contractorDto.IsArchived;
         }
     }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { Contractor } from '../models/contractor.model';
@@ -27,5 +27,18 @@ export class ContractorWatchService {
 
 	archiveContractor(id: string): Observable<void> {
 		return this.http.post<void>(`/contractors/${id}/archive`, {});
+	}
+
+	searchContractors(params: any): Observable<Contractor[]> {
+		let httpParams = new HttpParams();
+
+		// Добавляем все параметры, если они существуют
+		Object.keys(params).forEach(key => {
+			if (params[key]) {
+				httpParams = httpParams.append(key, params[key]);
+			}
+		});
+
+		return this.http.get<Contractor[]>('/api/searchcontractors/search', { params: httpParams });
 	}
 }

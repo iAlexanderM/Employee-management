@@ -35,13 +35,17 @@
 	<input id="ProductType" formControlName="ProductType" type="text" />
 	<br /><br />
 
-	<!-- Новые поля для гражданства и национальности -->
 	<label for="Citizenship">Гражданство:</label>
 	<input id="Citizenship" formControlName="Citizenship" type="text" />
 	<br /><br />
 
 	<label for="Nationality">Национальность:</label>
 	<input id="Nationality" formControlName="Nationality" type="text" />
+	<br /><br />
+
+	<label for="PhoneNumber">Номер телефона:</label>
+	<input id="PhoneNumber" formControlName="PhoneNumber" type="text" mask="0 (000) 000-00-00"
+		placeholder="8 (___) ___-__-__" />
 	<br /><br />
 
 	<label for="IsArchived">Архивировать:</label>
@@ -68,5 +72,5 @@
 	</div>
 	<br /><br />
 
-	<button type="button" (click)="onSubmit()">Сохранить</button>
+	<button type="submit">Сохранить</button>
 </form>

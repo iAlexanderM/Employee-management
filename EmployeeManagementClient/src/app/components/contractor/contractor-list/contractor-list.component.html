@@ -1,10 +1,97 @@
 <div class="container">
-	<h2>Список контрагентов</h2>
+	<h2>Поиск контрагентов</h2>
+
+	<!-- Форма поиска контрагентов -->
+	<form [formGroup]="searchForm" (ngSubmit)="searchContractors()" class="mb-4">
+		<div class="row">
+			<div class="col-md-4">
+				<label for="Id">ID:</label>
+				<input id="Id" formControlName="Id" type="text" class="form-control" />
+			</div>
+
+			<div class="col-md-4">
+				<label for="FirstName">Имя:</label>
+				<input id="FirstName" formControlName="FirstName" type="text" class="form-control" />
+			</div>
+
+			<div class="col-md-4">
+				<label for="LastName">Фамилия:</label>
+				<input id="LastName" formControlName="LastName" type="text" class="form-control" />
+			</div>
+
+			<div class="col-md-4">
+				<label for="MiddleName">Отчество:</label>
+				<input id="MiddleName" formControlName="MiddleName" type="text" class="form-control" />
+			</div>
+		</div>
+
+		<div class="row mt-3">
+			<div class="col-md-4">
+				<label for="BirthDate">Дата рождения:</label>
+				<input id="BirthDate" formControlName="BirthDate" type="date" class="form-control" />
+			</div>
+
+			<div class="col-md-4">
+				<label for="DocumentType">Тип документа:</label>
+				<input id="DocumentType" formControlName="DocumentType" type="text" class="form-control" />
+			</div>
+
+			<div class="col-md-4">
+				<label for="PassportSerialNumber">Серия и номер паспорта:</label>
+				<input id="PassportSerialNumber" formControlName="PassportSerialNumber" type="text"
+					class="form-control" />
+			</div>
+		</div>
+
+		<div class="row mt-3">
+			<div class="col-md-4">
+				<label for="PassportIssuedBy">Кем выдан:</label>
+				<input id="PassportIssuedBy" formControlName="PassportIssuedBy" type="text" class="form-control" />
+			</div>
+
+			<div class="col-md-4">
+				<label for="PassportIssueDate">Дата выдачи:</label>
+				<input id="PassportIssueDate" formControlName="PassportIssueDate" type="date" class="form-control" />
+			</div>
+
+			<div class="col-md-4">
+				<label for="ProductType">Тип продукции:</label>
+				<input id="ProductType" formControlName="ProductType" type="text" class="form-control" />
+			</div>
+
+			<div class="col-md-4">
+				<label for="PhoneNumber">Номер телефона:</label>
+				<input id="PhoneNumber" formControlName="PhoneNumber" type="text" mask="0 (000) 000-00-00"
+					placeholder="8 (___) ___-__-__" />
+			</div>
+		</div>
+
+		<div class="row mt-3">
+			<div class="col-md-4">
+				<label for="Citizenship">Гражданство:</label>
+				<input id="Citizenship" formControlName="Citizenship" type="text" class="form-control" />
+			</div>
+
+			<div class="col-md-4">
+				<label for="Nationality">Национальность:</label>
+				<input id="Nationality" formControlName="Nationality" type="text" class="form-control" />
+			</div>
+		</div>
+
+		<div class="row mt-4">
+			<div class="col-md-12 text-right">
+				<button type="submit" class="btn btn-primary">Найти</button>
+				<button type="button" class="btn btn-secondary" (click)="resetFilters()">Сбросить</button>
+			</div>
+		</div>
+	</form>
 
 	<!-- Таблица с контрагентами -->
+	<h2>Список контрагентов</h2>
 	<table class="table table-bordered" *ngIf="contractors && contractors.length > 0">
 		<thead>
 			<tr>
+				<th>ID</th>
 				<th>Имя</th>
 				<th>Фамилия</th>
 				<th>Отчество</th>
@@ -15,6 +102,7 @@
 		</thead>
 		<tbody>
 			<tr *ngFor="let contractor of contractors">
+				<td>{{ contractor.id }}</td>
 				<td>{{ contractor.firstName }}</td>
 				<td>{{ contractor.lastName }}</td>
 				<td>{{ contractor.middleName }}</td>

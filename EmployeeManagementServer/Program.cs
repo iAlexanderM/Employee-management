@@ -65,6 +65,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<ContractorService>();
+builder.Services.AddScoped<ContractorSearchService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

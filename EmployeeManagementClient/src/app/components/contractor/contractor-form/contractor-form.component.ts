@@ -1,13 +1,15 @@
-import { Component, input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ContractorCreateService } from '../../../services/contractorCreate.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
 @Component({
 	selector: 'app-contractor-form',
 	standalone: true,
-	imports: [ReactiveFormsModule, CommonModule, RouterModule],
+	imports: [ReactiveFormsModule, CommonModule, RouterModule, NgxMaskDirective],
+	providers: [provideNgxMask()],
 	templateUrl: './contractor-form.component.html',
 	styleUrls: ['./contractor-form.component.css']
 })
@@ -37,6 +39,7 @@ export class ContractorFormComponent implements OnInit {
 			ProductType: ['', Validators.required],
 			Citizenship: ['', Validators.required],
 			Nationality: ['', Validators.required],
+			PhoneNumber: ['', [Validators.required]],
 			IsArchived: [false],
 			Photos: [''],
 			DocumentPhotos: ['']
@@ -90,6 +93,8 @@ export class ContractorFormComponent implements OnInit {
 			// Преобразуем даты в формат UTC
 			contractorData.BirthDate = new Date(contractorData.BirthDate).toISOString();
 			contractorData.PassportIssueDate = new Date(contractorData.PassportIssueDate).toISOString();
+
+			contractorData.PhoneNumber = contractorData.PhoneNumber.replace(/\D/g, '');
 
 			this.contractorService.addContractor(contractorData).subscribe({
 				next: () => this.router.navigate(['/contractors']),

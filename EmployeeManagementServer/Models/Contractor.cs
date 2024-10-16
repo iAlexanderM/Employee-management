@@ -16,6 +16,7 @@ namespace EmployeeManagementServer.Models
         public string PassportSerialNumber { get; set; }
         public string PassportIssuedBy { get; set; }
         public DateTime PassportIssueDate { get; set; }
+        public string PhoneNumber { get; set; }
         public string ProductType { get; set; }
         public bool IsArchived { get; set; } = false;
 

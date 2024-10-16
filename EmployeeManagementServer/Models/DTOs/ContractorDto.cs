@@ -36,7 +36,10 @@ namespace EmployeeManagementServer.Models.DTOs
 
 		public DateTime PassportIssueDate { get; set; }
 
-		[Required(ErrorMessage = "Product type is required")]
+        [Required(ErrorMessage = "Phone number is required")]
+        public string PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Product type is required")]
 		public string ProductType { get; set; }
 
         public bool IsArchived { get; set; }

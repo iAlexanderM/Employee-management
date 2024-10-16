@@ -6,7 +6,7 @@ export interface Photo {
 }
 
 export interface Contractor {
-	id: string;
+	id: number;
 	firstName: string;
 	lastName: string;
 	middleName?: string;
@@ -18,6 +18,7 @@ export interface Contractor {
 	nationality: string;
 	passportIssueDate: Date;
 	productType: string;
+	phoneNumber: string;
 	photos: Photo[];
 	documentPhotos: Photo[];
 	isArchived: boolean;

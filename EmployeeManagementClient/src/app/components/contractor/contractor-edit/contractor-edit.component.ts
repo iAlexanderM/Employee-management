@@ -6,11 +6,13 @@ import { ContractorEditService } from '../../../services/contractorEdit.service'
 import { ContractorWatchService } from '../../../services/contractorWatch.service';
 import { Contractor, Photo } from '../../../models/contractor.model';
 import { HttpClientModule } from '@angular/common/http';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
 @Component({
 	selector: 'app-contractor-edit',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule, RouterModule, HttpClientModule],
+	imports: [CommonModule, ReactiveFormsModule, RouterModule, NgxMaskDirective, HttpClientModule],
+	providers: [provideNgxMask()],
 	templateUrl: './contractor-edit.component.html',
 	styleUrls: ['./contractor-edit.component.css']
 })
@@ -48,6 +50,7 @@ export class ContractorEditComponent implements OnInit {
 			Citizenship: ['', Validators.required],
 			Nationality: ['', Validators.required],
 			ProductType: ['', Validators.required],
+			PhoneNumber: ['', Validators.required],
 			IsArchived: [false]
 		});
 
@@ -74,6 +77,7 @@ export class ContractorEditComponent implements OnInit {
 					Citizenship: contractor.citizenship,
 					Nationality: contractor.nationality,
 					ProductType: contractor.productType,
+					PhoneNumber: contractor.phoneNumber,
 					IsArchived: contractor.isArchived
 				});
 

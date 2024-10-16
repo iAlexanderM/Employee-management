@@ -52,7 +52,6 @@ export class ContractorDetailsComponent implements OnInit {
 
 	loadDocumentPhotos(): void {
 		if (this.contractor?.photos) {
-			// Фильтруем фотографии, которые являются документальными.
 			const documentPhotos = this.contractor.photos.filter(photo => photo.isDocumentPhoto);
 			this.documentPhotoUrls = documentPhotos.map(photo => this.transformToUrl(photo.filePath));
 		}
@@ -70,22 +69,34 @@ export class ContractorDetailsComponent implements OnInit {
 		return `http://localhost:8080/${filePath.replace(/\\/g, '/').replace(/^.*wwwroot\//, '')}`;
 	}
 
-	archiveContractor(): void {
-		if (this.contractor?.id) {
-			this.contractorService.archiveContractor(this.contractor.id).subscribe(
-				() => {
-					alert('Контрагент успешно архивирован');
-					this.router.navigate(['/contractors']);
-				},
-				error => console.error('Ошибка при архивировании контрагента', error)
-			);
-		}
-	}
+	//archiveContractor(): void {
+	//	if (this.contractor?.id) {
+	//		this.contractorService.archiveContractor(this.contractor.id).subscribe(
+	//			() => {
+	//				alert('Контрагент успешно архивирован');
+	//				this.router.navigate(['/contractors']);
+	//			},
+	//			error => console.error('Ошибка при архивировании контрагента', error)
+	//		);
+	//	}
+	//}
 
 	editContractor(): void {
 		if (this.contractor?.id) {
 			console.log('Переход на редактирование контрагента с ID:', this.contractor.id);
 			this.router.navigate([`/contractors/edit/${this.contractor.id}`]);
 		}
+	}
+
+	formatPhoneNumber(phone: string): string {
+		if (!phone) return '';
+
+		const cleaned = phone.replace(/\D/g, '');
+
+		if (cleaned.length === 11 && cleaned.startsWith('8')) {
+			return cleaned.replace(/(\d)(\d{3})(\d{3})(\d{2})(\d{2})/, '$1($2)$3-$4-$5');
+		}
+
+		return phone;
 	}
 }
