@@ -7,11 +7,12 @@ import { ContractorWatchService } from '../../../services/contractorWatch.servic
 import { Contractor, Photo } from '../../../models/contractor.model';
 import { HttpClientModule } from '@angular/common/http';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
+import { CitizenshipAndNationalityModalComponent } from '../../modals/citizenship-and-nationality-modal/citizenship-and-nationality-modal.component';
 
 @Component({
 	selector: 'app-contractor-edit',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule, RouterModule, NgxMaskDirective, HttpClientModule],
+	imports: [CommonModule, ReactiveFormsModule, RouterModule, NgxMaskDirective, HttpClientModule, CitizenshipAndNationalityModalComponent],
 	providers: [provideNgxMask()],
 	templateUrl: './contractor-edit.component.html',
 	styleUrls: ['./contractor-edit.component.css']
@@ -24,6 +25,9 @@ export class ContractorEditComponent implements OnInit {
 	contractorId!: string;
 	documentPhotoPreviews: { file: File | null, url: string }[] = [];
 	existingDocumentPhotos: Photo[] = [];
+	isModalOpen = false;
+	modalField: 'Citizenship' | 'Nationality' = 'Citizenship';
+	modalMode: 'select' | 'add' = 'select';
 
 	private fb = inject(FormBuilder);
 	private contractorService = inject(ContractorEditService);
@@ -51,10 +55,10 @@ export class ContractorEditComponent implements OnInit {
 			Nationality: ['', Validators.required],
 			ProductType: ['', Validators.required],
 			PhoneNumber: ['', Validators.required],
-			IsArchived: [false]
+			IsArchived: [false],
+			SortOrder: [null]
 		});
 
-		// Отслеживание изменений формы
 		this.contractorForm.valueChanges.subscribe((value) => {
 			console.log('Изменения в форме:', value);
 		});
@@ -78,7 +82,8 @@ export class ContractorEditComponent implements OnInit {
 					Nationality: contractor.nationality,
 					ProductType: contractor.productType,
 					PhoneNumber: contractor.phoneNumber,
-					IsArchived: contractor.isArchived
+					IsArchived: contractor.isArchived,
+					SortOrder: contractor.sortOrder
 				});
 
 				const photos = (contractor.photos as any)?.$values || contractor.photos || [];
@@ -105,6 +110,26 @@ export class ContractorEditComponent implements OnInit {
 				console.error('Ошибка при получении данных контрагента:', err);
 			}
 		});
+	}
+
+	openModal(field: 'Citizenship' | 'Nationality', mode: 'select' | 'add'): void {
+		this.modalField = field;
+		this.modalMode = mode;
+		this.isModalOpen = true;
+	}
+
+	closeModal(): void {
+		this.isModalOpen = false;
+	}
+
+	selectItem(item: { name: string }): void {
+		this.contractorForm.patchValue({ [this.modalField]: item.name });
+		this.closeModal();
+	}
+
+	addItem(item: { name: string }): void {
+		this.contractorForm.patchValue({ [this.modalField]: item.name });
+		this.closeModal();
 	}
 
 	onPhotoChange(event: Event, isDocumentPhoto: boolean): void {

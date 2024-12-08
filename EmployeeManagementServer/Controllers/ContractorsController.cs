@@ -26,12 +26,32 @@ namespace EmployeeManagementServer.Controllers
             _logger = logger;
         }
 
-        // Получение всех контрагентов
         [HttpGet]
-        public async Task<IActionResult> GetContractors()
+        public async Task<IActionResult> GetContractors([FromQuery] int page = 1, [FromQuery] int pageSize = 25)
         {
-            var contractors = await _contractorService.GetAllContractorsAsync();
-            return Ok(contractors);
+            try
+            {
+                if (page < 1 || pageSize < 1)
+                {
+                    return BadRequest("Параметры страницы и размера должны быть больше нуля.");
+                }
+
+                int skip = (page - 1) * pageSize;
+                int total = await _contractorService.GetTotalContractorsCountAsync();
+
+                var contractors = await _contractorService.GetContractorsAsync(skip, pageSize);
+
+                return Ok(new
+                {
+                    total,
+                    contractors = contractors
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при получении контрагентов");
+                return StatusCode(500, "Ошибка сервера.");
+            }
         }
 
         // Получение контрагента по идентификатору
@@ -173,6 +193,7 @@ namespace EmployeeManagementServer.Controllers
             contractor.ProductType = contractorDto.ProductType;
             contractor.PhoneNumber = contractorDto.PhoneNumber;
             contractor.IsArchived = contractorDto.IsArchived;
+            contractor.SortOrder = contractorDto.SortOrder;
         }
     }
 }

@@ -19,8 +19,9 @@ namespace EmployeeManagementServer.Models
         public required string PhoneNumber { get; set; }
         public required string ProductType { get; set; }
         public bool IsArchived { get; set; } = false;
+        public int? SortOrder { get; set; }
+        public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
 
-        // Связь с фотографиями
         public ICollection<ContractorPhoto> Photos { get; set; } = new List<ContractorPhoto>();
     }
 }

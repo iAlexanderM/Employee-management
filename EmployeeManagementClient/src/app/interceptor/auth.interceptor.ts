@@ -1,32 +1,31 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService } from '../services/auth.service';
+import { TokenService } from '../services/token.service';
 import { HttpRequest, HttpHandlerFn, HttpEvent } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { AuthService } from '../services/auth.service';
 
-export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: HttpHandlerFn): Observable<HttpEvent<any>> => {
+export const authInterceptor: HttpInterceptorFn = (
+	req: HttpRequest<any>,
+	next: HttpHandlerFn
+): Observable<HttpEvent<any>> => {
+	const tokenService = inject(TokenService);
 	const authService = inject(AuthService);
-	const authToken = authService.getToken();
-	const tokenExpiry = localStorage.getItem('tokenExpiry');
 
-	if (authToken && tokenExpiry && Date.now() < Number(tokenExpiry)) {
-		const cloned = req.clone({
-			setHeaders: {
-				Authorization: `Bearer ${authToken}`
-			}
-		});
-		return next(cloned); // Продолжаем обработку запроса
-	}
+	const authToken = tokenService.getToken();
 
-	return next(req).pipe(
+	const clonedRequest = authToken
+		? req.clone({ setHeaders: { Authorization: `Bearer ${authToken}` } })
+		: req;
+
+	return next(clonedRequest).pipe(
 		catchError(error => {
-			if (error.status === 401) {
-				authService.logout().subscribe(() => {
-					window.location.href = '/login';
-				});
+			if (error.status === 401 || error.status === 403) {
+				console.error('Ошибка авторизации. Выполняется logout.');
+				authService.logout();
 			}
-			return throwError(() => new Error('Ошибка запроса: ' + error.message));
+			return throwError(() => error);
 		})
 	);
 };

@@ -1,1 +1,60 @@
-/* You can add global styles to this file, and also import other style files */
+/* styles.css */
+body {
+	font-family: 'Roboto', sans-serif;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+	font-family: 'Roboto', sans-serif;
+}
+
+button,
+.btn {
+	display: inline-block;
+	font-size: 14px;
+	font-weight: 500;
+	padding: 8px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	border: 1px solid transparent;
+	transition: background-color 0.3s, border-color 0.3s;
+	margin: 5px;
+}
+
+/* Цветовые стили */
+.btn-primary,
+.btn-warning,
+.btn-info {
+	background-color: #007bff;
+	border-color: #007bff;
+	color: #fff;
+}
+
+.btn-primary:hover,
+.btn-warning:hover,
+.btn-info:hover {
+	background-color: #0056b3;
+	border-color: #0056b3;
+}
+
+.btn-secondary {
+	background-color: #6c757d;
+	border-color: #6c757d;
+	color: #fff;
+}
+
+.btn-secondary:hover {
+	background-color: #5a6268;
+	border-color: #545b62;
+}
+
+/* Выравнивание размера кнопок */
+.btn-equal {
+	min-width: 120px;
+	text-align: center;
+}

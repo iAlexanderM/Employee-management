@@ -1,0 +1,20 @@
+<div class="container">
+	<h2>Добавить запись в справочник "Национальности"</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="error-message">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма добавления -->
+	<form (ngSubmit)="addNationality()">
+		<div class="form-group">
+			<label for="nationalityName">Название гражданства:</label>
+			<div class="input-container">
+				<input id="nationalityName" type="text" placeholder="Введите название национальности"
+					[(ngModel)]="newNationalityName" name="nationalityName" required />
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary">Добавить</button>
+	</form>
+</div>

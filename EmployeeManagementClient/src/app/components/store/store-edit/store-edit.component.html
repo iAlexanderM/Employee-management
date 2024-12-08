@@ -1,0 +1,65 @@
+<div class="container">
+	<h2>Редактирование торговой точки</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="error-message">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<form (ngSubmit)="updateStore()">
+		<div class="form-group">
+			<label>Здание:</label>
+			<div class="button-container">
+				<button type="button" (click)="openModal('building', 'select')">Выбрать</button>
+				<button type="button" (click)="openModal('building', 'add')">Добавить</button>
+			</div>
+			<div class="input-container">
+				<input type="text" [(ngModel)]="store.building" name="building" readonly />
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label>Здание:</label>
+			<div class="button-container">
+				<button type="button" (click)="openModal('building', 'select')">Выбрать</button>
+				<button type="button" (click)="openModal('building', 'add')">Добавить</button>
+			</div>
+			<div class="input-container">
+				<input type="text" [(ngModel)]="store.building" name="building" readonly />
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label>Линия:</label>
+			<div class="button-container">
+				<button type="button" (click)="openModal('line', 'select')">Выбрать</button>
+				<button type="button" (click)="openModal('line', 'add')">Добавить</button>
+			</div>
+			<div class="input-container">
+				<input type="text" [(ngModel)]="store.line" name="line" readonly />
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label>Торговая точка:</label>
+			<div class="button-container">
+				<button type="button" (click)="openModal('storeNumber', 'select')">Выбрать</button>
+				<button type="button" (click)="openModal('storeNumber', 'add')">Добавить</button>
+			</div>
+			<div class="input-container">
+				<input type="text" [(ngModel)]="store.storeNumber" name="storeNumber" readonly />
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label>Сортировка:</label>
+			<input type="number" [(ngModel)]="store.sortOrder" name="sortOrder" required />
+		</div>
+
+		<button type="submit" class="btn btn-primary">Сохранить</button>
+	</form>
+
+	<app-store-select-or-add-modal *ngIf="isModalOpen" [fieldName]="modalField" [mode]="modalMode"
+		(modalClose)="closeModal()" (itemSelected)="selectItem($event)"
+		(itemAdded)="addItem($event)"></app-store-select-or-add-modal>
+</div>

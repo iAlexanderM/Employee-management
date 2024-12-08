@@ -1,14 +1,238 @@
-nav {
+/* Общая структура приложения */
+.app-layout {
+	display: flex;
+	height: 100vh;
+	/* Высота экрана */
+	width: 100%;
+	/* Ширина экрана */
+}
+
+/* Боковая панель */
+.sidebar {
+	width: 200px;
+	background-color: #f8f9fa;
+	padding: 15px;
+	box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+	display: flex;
+	flex-direction: column;
+}
+
+/* Основной контент */
+.content-container {
+	flex-grow: 1;
+	padding: 20px;
+	overflow-y: auto;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Стили для списка навигации */
+.sidebar .navbar-nav {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	width: 100%;
+}
+
+.sidebar .navbar-nav .nav-item {
 	margin-bottom: 10px;
+	/* Расстояние между элементами */
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
-nav a {
-	margin-right: 10px;
+.sidebar .navbar-nav .nav-item .nav-link {
+	color: #ffffff;
+	background-color: #6c757d;
+	/* Серый фон */
+	width: 95%;
+	height: 45px;
+	/* Высота кнопок */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 15px;
+	border-radius: 5px;
+	/* Закругленные углы */
+	transition: background-color 0.3s, color 0.3s;
+	/* Плавный переход цвета и фона */
 	text-decoration: none;
-	color: blue;
+	/* Убираем подчеркивание текста */
+	font-size: 0.8rem;
+	/* Размер текста */
+	box-sizing: border-box;
 }
 
-nav a.active {
+.sidebar .navbar-nav .nav-item .nav-link:hover {
+	background-color: #007bff;
+	/* Синий фон при наведении */
+	color: #ffffff;
+	/* Белый текст при наведении */
+}
+
+/* Общая структура кнопки */
+.btn {
+	display: flex;
+	align-items: center;
+	/* Вертикальное выравнивание */
+	justify-content: center;
+	/* Горизонтальное выравнивание */
+	text-align: center;
+	padding: 0;
+	/* Убираем лишние отступы внутри кнопки */
+	height: 45px;
+	/* Высота кнопки */
+	width: 100%;
+	/* Ширина кнопки */
+	border-radius: 5px;
+	/* Закругленные углы */
+	transition: background-color 0.3s, color 0.3s;
+	/* Плавный переход */
+	font-size: 1rem;
+	/* Размер текста */
+	font-weight: 500;
+	/* Средняя жирность текста */
+	box-sizing: border-box;
+	/* Корректный расчёт ширины */
+}
+
+.btn-primary {
+	background-color: #007bff;
+	/* Синий фон */
+	border-color: #007bff;
+	/* Синий цвет рамки */
+	color: #ffffff;
+	/* Белый текст */
+	font-size: 1rem;
+	/* Размер текста */
 	font-weight: bold;
-	color: red;
+	/* Полужирный текст */
+	height: 45px;
+	/* Высота кнопки */
+	padding: 0 15px;
+	/* Отступы внутри кнопки */
+	display: flex;
+	/* Flex для выравнивания */
+	align-items: center;
+	/* Вертикальное выравнивание */
+	justify-content: center;
+	/* Горизонтальное выравнивание */
+	text-align: center;
+	/* Текст по центру */
+	border-radius: 5px;
+	/* Закруглённые углы */
+	transition: background-color 0.3s, color 0.3s;
+	/* Плавный переход */
+	width: 100%;
+	/* Растянуть на всю ширину родителя */
+}
+
+.btn-primary:hover {
+	background-color: #0056b3;
+	/* Более тёмный синий при наведении */
+	border-color: #0056b3;
+	/* Более тёмная рамка */
+	color: #ffffff;
+	/* Белый текст при наведении */
+}
+
+/* Стиль кнопки "Выход" */
+.btn-secondary {
+	background-color: #8c9ea3;
+	/* Светло-серый фон */
+	border-color: #8c9ea3;
+	color: #ffffff;
+}
+
+.btn-secondary:hover {
+	background-color: #6b7b80;
+	/* Более тёмный оттенок */
+	border-color: #6b7b80;
+	color: #ffffff;
+}
+
+/* Выпадающий список */
+.dropdown-menu-container {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	width: calc(100% - 2px);
+	/* Устанавливаем ширину равной кнопке, вычитаем границы */
+	z-index: 1000;
+	/* Обеспечивает отображение меню поверх других элементов */
+	background-color: #f8f9fa;
+	/* Светлый фон */
+	border: 1px solid transparent;
+	/* Делаем границу прозрачной */
+	border-radius: 4px;
+	/* Закруглённые углы */
+	padding: 0;
+	/* Убираем внутренние отступы */
+	list-style: none;
+	/* Убираем маркеры списка */
+	margin: 0;
+	/* Убираем внешние отступы */
+	align-items: center;
+	justify-content: center;
+}
+
+.nav-item.dropdown {
+	position: relative;
+}
+
+/* Элементы выпадающего списка */
+.dropdown-item {
+	padding: 5px 10px;
+	/* Отступы внутри элемента */
+	display: flex;
+	text-align: center;
+	/* Выравнивание текста по центру */
+	font-size: 0.85rem;
+	/* Уменьшаем размер текста */
+	color: #495057;
+	/* Цвет текста */
+	text-decoration: none;
+	/* Убрать подчёркивание */
+	transition: background-color 0.3s, color 0.3s;
+	/* Плавный переход */
+	width: 100%;
+	/* Занимает всю ширину родителя */
+	box-sizing: border-box;
+	/* Включаем padding и border в общую ширину */
+	align-items: center;
+	justify-content: center;
+	height: 35px;
+	/* Уменьшаем высоту элементов */
+}
+
+.dropdown-menu .nav-item .dropdown-item {
+	width: 100%;
+}
+
+.dropdown-menu {
+	background-color: #f8f9fa;
+	border: none;
+	/* Убираем границу, так как она задана у контейнера */
+	border-radius: 4px;
+	padding: 0;
+	list-style: none;
+	margin: 0;
+	width: 100%;
+	align-items: center;
+	justify-content: center;
+}
+
+.dropdown-item:hover {
+	background-color: #007bff;
+	/* Синий фон */
+	color: #ffffff;
+	/* Белый текст */
+}
+
+/* Общая ширина для кнопок и выпадающего меню */
+.navbar-nav .nav-item .btn-link,
+.navbar-nav .nav-item .nav-link,
+.dropdown-item {
+	width: 100%;
 }

@@ -1,0 +1,20 @@
+<div class="container">
+	<h2>Добавить запись в справочник "Здания"</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="error-message">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма добавления -->
+	<form (ngSubmit)="addBuilding()">
+		<div class="form-group">
+			<label for="buildingName">Название здания:</label>
+			<div class="input-container">
+				<input id="buildingName" type="text" placeholder="Введите название здания" [(ngModel)]="newBuildingName"
+					name="buildingName" required />
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary">Добавить</button>
+	</form>
+</div>

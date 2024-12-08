@@ -87,6 +87,55 @@ namespace EmployeeManagementServer.Migrations
                     b.ToTable("AspNetUsers", "public");
                 });
 
+            modelBuilder.Entity("EmployeeManagementServer.Models.Building", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Buildings", "public");
+                });
+
+            modelBuilder.Entity("EmployeeManagementServer.Models.Citizenship", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Citizenships", "public");
+                });
+
             modelBuilder.Entity("EmployeeManagementServer.Models.Contractor", b =>
                 {
                     b.Property<int>("Id")
@@ -101,6 +150,9 @@ namespace EmployeeManagementServer.Migrations
                     b.Property<string>("Citizenship")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("DocumentType")
                         .IsRequired()
@@ -144,6 +196,9 @@ namespace EmployeeManagementServer.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("SortOrder")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PassportSerialNumber")
@@ -164,7 +219,6 @@ namespace EmployeeManagementServer.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("FilePath")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("IsDocumentPhoto")
@@ -175,6 +229,111 @@ namespace EmployeeManagementServer.Migrations
                     b.HasIndex("ContractorId");
 
                     b.ToTable("ContractorPhotos", "public");
+                });
+
+            modelBuilder.Entity("EmployeeManagementServer.Models.Floor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Floors", "public");
+                });
+
+            modelBuilder.Entity("EmployeeManagementServer.Models.Line", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Lines", "public");
+                });
+
+            modelBuilder.Entity("EmployeeManagementServer.Models.Nationality", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Nationalities", "public");
+                });
+
+            modelBuilder.Entity("EmployeeManagementServer.Models.RefreshToken", b =>
+                {
+                    b.Property<string>("Token")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsRevoked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime>("LastActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Token");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("RefreshTokens", "public");
                 });
 
             modelBuilder.Entity("EmployeeManagementServer.Models.Store", b =>
@@ -189,8 +348,12 @@ namespace EmployeeManagementServer.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Floor")
-                        .HasColumnType("integer");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Floor")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsArchived")
                         .HasColumnType("boolean");
@@ -199,6 +362,9 @@ namespace EmployeeManagementServer.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("SortOrder")
+                        .HasColumnType("integer");
+
                     b.Property<string>("StoreNumber")
                         .IsRequired()
                         .HasColumnType("text");
@@ -206,6 +372,32 @@ namespace EmployeeManagementServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Stores", "public");
+                });
+
+            modelBuilder.Entity("EmployeeManagementServer.Models.StoreNumber", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StoreNumbers", "public");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>

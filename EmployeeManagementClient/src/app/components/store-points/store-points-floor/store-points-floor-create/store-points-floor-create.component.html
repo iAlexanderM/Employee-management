@@ -1,0 +1,20 @@
+<div class="container">
+	<h2>Добавить запись в справочник "Этаж"</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="error-message">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма добавления -->
+	<form (ngSubmit)="addFloor()">
+		<div class="form-group">
+			<label for="floorName">Название этажа:</label>
+			<div class="input-container">
+				<input id="floorName" type="text" placeholder="Введите название этажа" [(ngModel)]="newFloorName"
+					name="floorName" required />
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary">Добавить</button>
+	</form>
+</div>

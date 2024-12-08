@@ -22,19 +22,15 @@ namespace EmployeeManagementServer.Services
 
         public async Task<List<Contractor>> SearchContractorsAsync(ContractorSearchDto searchDto)
         {
-            _logger.LogInformation("Начало поиска контрагентов с заданными параметрами");
-
             var query = _context.Contractors
                 .Include(c => c.Photos)
                 .AsQueryable();
 
             query = ApplyFilters(query, searchDto);
 
-            var result = await query.ToListAsync();
-            _logger.LogInformation("Поиск завершён. Найдено контрагентов: {count}", result.Count);
-
-            return result;
+            return await query.ToListAsync();
         }
+
 
         private IQueryable<Contractor> ApplyFilters(IQueryable<Contractor> query, ContractorSearchDto searchDto)
         {

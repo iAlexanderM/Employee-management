@@ -1,8 +1,10 @@
 export interface Store {
-	id: string;
+	id?: number;
 	building: string;
-	floor: number;
+	floor: string;
 	line: string;
-	number: number;
-	contractorId?: string;
+	storeNumber: string;
+	isArchived?: boolean;
+	sortOrder: number;
+	createdAt: Date;
 }

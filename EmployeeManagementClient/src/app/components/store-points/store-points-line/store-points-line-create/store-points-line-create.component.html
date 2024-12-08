@@ -1,0 +1,20 @@
+<div class="container">
+	<h2>Добавить запись в справочник "Линия"</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="error-message">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма добавления -->
+	<form (ngSubmit)="addLine()">
+		<div class="form-group">
+			<label for="lineName">Название линии:</label>
+			<div class="input-container">
+				<input id="lineName" type="text" placeholder="Введите название здания" [(ngModel)]="newLineName"
+					name="lineName" required />
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary">Добавить</button>
+	</form>
+</div>

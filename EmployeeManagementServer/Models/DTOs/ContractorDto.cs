@@ -49,5 +49,9 @@ namespace EmployeeManagementServer.Models.DTOs
 
         public List<int> PhotosToRemove { get; set; } = new List<int>();
         public List<int> DocumentPhotosToRemove { get; set; } = new List<int>();
+
+        public DateTime CreatedAt { get; set; }
+
+        public int? SortOrder { get; set; }
     }
 }

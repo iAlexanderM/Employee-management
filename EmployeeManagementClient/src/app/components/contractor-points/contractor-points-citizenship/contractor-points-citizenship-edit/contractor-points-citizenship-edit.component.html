@@ -1,0 +1,29 @@
+<div *ngIf="citizenship" class="container">
+	<h2>Редактирование записи №{{ citizenship.id }}</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="error-message">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма редактирования -->
+	<form (ngSubmit)="updateCitizenship()">
+		<div class="form-group">
+			<label for="citizenshipName">Название:</label>
+			<div class="input-container">
+				<input id="citizenshipName" type="text" placeholder="Введите название гражданства"
+					[(ngModel)]="updatedCitizenshipName" name="citizenshipName" required />
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="sortOrder">Сортировка:</label>
+			<div class="input-container">
+				<input id="sortOrder" type="number" placeholder="Введите порядок сортировки"
+					[(ngModel)]="updatedSortOrder" name="sortOrder" required />
+			</div>
+		</div>
+
+		<button type="submit" class="btn btn-primary">Сохранить</button>
+	</form>
+</div>

@@ -19,6 +19,8 @@ export interface Contractor {
 	passportIssueDate: Date;
 	productType: string;
 	phoneNumber: string;
+	createdAt: Date;
+	sortOrder: number;
 	photos: Photo[];
 	documentPhotos: Photo[];
 	isArchived: boolean;

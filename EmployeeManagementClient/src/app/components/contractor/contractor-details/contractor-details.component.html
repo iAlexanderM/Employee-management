@@ -1,15 +1,23 @@
-<div class="container" *ngIf="contractor">
-	<p><strong>ID:</strong> {{ contractor.id }}</p>
-	<p><strong>Фамилия:</strong> {{ contractor.lastName }}</p>
-	<p><strong>Имя:</strong> {{ contractor.firstName }}</p>
-	<p><strong>Отчество:</strong> {{ contractor.middleName }}</p>
-	<p><strong>Дата Рождения:</strong> {{ contractor.birthDate | date:'dd.MM.yyyy' }}</p>
-	<p><strong>Тип Документа:</strong> {{ contractor.documentType }}</p>
-	<p><strong>Номер телефона:</strong> {{ formatPhoneNumber(contractor.phoneNumber) }}</p>
-	<p><strong>Серия и Номер Паспорта:</strong> {{ contractor.passportSerialNumber }}</p>
-	<p><strong>Кем выдан паспорт:</strong> {{ contractor.passportIssuedBy }}</p>
-	<p><strong>Дата выдачи паспорта:</strong> {{ contractor.passportIssueDate | date:'dd.MM.yyyy' }}</p>
-	<p><strong>Тип продукции:</strong> {{ contractor.productType }}</p>
+<div class="container contractor-details" *ngIf="contractor">
+	<h2 class="text-center">Информация о контрагенте</h2>
+	<div class="details-group">
+		<p><strong>ID:</strong> {{ contractor.id }}</p>
+		<p><strong>Фамилия:</strong> {{ contractor.lastName }}</p>
+		<p><strong>Имя:</strong> {{ contractor.firstName }}</p>
+		<p><strong>Отчество:</strong> {{ contractor.middleName }}</p>
+		<p><strong>Дата Рождения:</strong> {{ contractor.birthDate }}</p>
+		<p><strong>Гражданство:</strong> {{ contractor.citizenship }}</p>
+		<p><strong>Национальность:</strong> {{ contractor.nationality }}</p>
+		<p><strong>Тип Документа:</strong> {{ contractor.documentType }}</p>
+		<p><strong>Номер телефона:</strong> {{ formatPhoneNumber(contractor.phoneNumber) }}</p>
+		<p><strong>Серия и Номер Паспорта:</strong> {{ contractor.passportSerialNumber }}</p>
+		<p><strong>Кем выдан паспорт:</strong> {{ contractor.passportIssuedBy }}</p>
+		<p><strong>Дата выдачи паспорта:</strong> {{ contractor.passportIssueDate | date: 'dd.MM.yyyy' }}</p>
+		<p><strong>Тип продукции:</strong> {{ contractor.productType }}</p>
+		<p><strong>Архивирован:</strong> {{ contractor.isArchived ? 'Да' : 'Нет' }}</p>
+		<p><strong>Дата создания анкеты:</strong> {{ contractor.createdAt | date: 'dd.MM.yyyy HH:mm:ss' }}</p>
+		<p><strong>Порядок сортировки:</strong> {{ contractor.sortOrder }}</p>
+	</div>
 
 	<div class="form-group">
 		<p><strong>Фото:</strong></p>
@@ -29,10 +37,7 @@
 		</div>
 	</div>
 
-	<p><strong>Архивирован:</strong> {{ contractor.isArchived ? 'Да' : 'Нет' }}</p>
-
-	<!--<button class="btn btn-warning" (click)="archiveContractor()" *ngIf="!contractor.isArchived">
-	Архивировать
-	</button>-->
-	<button class="btn btn-primary" (click)="editContractor()">Редактировать</button>
+	<div class="button-group">
+		<button class="btn btn-primary" (click)="editContractor()">Редактировать</button>
+	</div>
 </div>

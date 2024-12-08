@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { StoreService } from '../../../services/store.service';
 import { Store } from '../../../models/store.model';
-import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
 	selector: 'app-store-details',
@@ -15,18 +15,30 @@ export class StoreDetailsComponent implements OnInit {
 	store: Store | null = null;
 
 	constructor(
+		private storeService: StoreService,
 		private route: ActivatedRoute,
-		private router: Router,
-		private storeService: StoreService
+		private router: Router
 	) { }
 
 	ngOnInit(): void {
-		const id = this.route.snapshot.paramMap.get('id');
-		if (id) {
-			this.storeService.getStoreById(id).subscribe(
-				(data: Store) => this.store = data,
-				error => console.error('Ошибка при загрузке данных торговой точки', error)
-			);
+		this.route.params.subscribe(params => {
+			if (params['id']) {
+				const storeId = Number(params['id']);
+				this.loadStore(storeId);
+			}
+		});
+	}
+
+	loadStore(id: number): void {
+		this.storeService.getStoreById(id).subscribe(store => {
+			this.store = store;
+		});
+	}
+
+	// Добавляем метод для редактирования
+	editStore(): void {
+		if (this.store && this.store.id) {
+			this.router.navigate(['/stores/edit', this.store.id]);
 		}
 	}
 }

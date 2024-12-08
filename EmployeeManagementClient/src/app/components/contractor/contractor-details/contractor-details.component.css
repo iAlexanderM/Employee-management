@@ -1,49 +1,92 @@
-.container {
-	max-width: 600px;
+/* Основной контейнер */
+.container.contractor-details {
+	max-width: 700px;
 	margin: 20px auto;
-	padding: 15px;
-	border: 1px solid #ccc;
-	border-radius: 5px;
+	padding: 20px;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	background-color: #f9f9f9;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.form-group {
-	margin-bottom: 15px;
+/* Заголовок */
+h2.text-center {
+	text-align: center;
+	font-size: 24px;
+	font-weight: bold;
+	margin-bottom: 20px;
+	color: #000;
 }
 
-.btn {
-	margin-right: 10px;
+/* Группа деталей */
+.details-group p {
+	margin-bottom: 10px;
+	font-size: 16px;
+	color: #000;
+	/* Черный шрифт */
 }
 
-.photo-previews,
+.details-group p strong {
+	color: #240088;
+}
+
+/* Фото */
+.img-cont {
+	width: 200px;
+	height: 200px;
+	object-fit: cover;
+	border-radius: 8px;
+	border: 1px solid #ddd;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	margin: 0 auto;
+	/* Центрирование */
+	display: block;
+}
+
+/* Группа фото документов */
 .document-photo-previews {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 10px;
+	gap: 15px;
+	justify-content: center;
+	/* Центрирование */
 }
 
-.photo-thumbnail,
-.document-photo-thumbnail {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-}
-
-.photo-thumbnail img,
 .document-photo-thumbnail img {
-	width: 180px;
-	height: 180px;
+	width: 120px;
+	height: 120px;
 	object-fit: cover;
-	border-radius: 4px;
+	border-radius: 8px;
+	border: 1px solid #ddd;
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.photo-thumbnail button,
-.document-photo-thumbnail button {
-	margin-top: 5px;
+.document-photo-thumbnail img:hover {
+	transform: scale(1.1);
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
-.img-cont {
-	width: 250px;
-	height: 250px;
-	object-fit: cover;
-	border-radius: 4px;
+/* Кнопки */
+.button-group {
+	margin-top: 20px;
+	text-align: center;
+}
+
+.btn {
+	margin: 0 10px;
+	padding: 10px 20px;
+	font-size: 16px;
+	border-radius: 6px;
+	transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary {
+	background-color: #007bff;
+	color: white;
+	border: none;
+}
+
+.btn-primary:hover {
+	background-color: #0056b3;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }

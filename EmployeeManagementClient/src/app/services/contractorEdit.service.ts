@@ -32,8 +32,9 @@ export class ContractorEditService {
 					contractorData.PhotosToRemove.forEach((photoId: number) => {
 						formData.append('PhotosToRemove', photoId.toString());
 					});
-				} else {
-					formData.append(key, contractorData[key]);
+				} else if (contractorData[key] !== null && contractorData[key] !== undefined) {
+					// Обрабатываем другие поля, такие как sortOrder и createdAt
+					formData.append(key, contractorData[key].toString());
 				}
 			}
 		}

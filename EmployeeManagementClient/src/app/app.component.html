@@ -1,34 +1,69 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-	<a class="navbar-brand" href="#">Employee Management</a>
-	<div class="collapse navbar-collapse" id="navbarNav">
-		<ul class="navbar-nav mr-auto">
-			<li class="nav-item">
-				<button class="btn btn-link" (click)="toggleReferences()">Справочники</button>
+<div *ngIf="showContent()" class="app-layout">
+	<!-- Боковая панель навигации -->
+	<nav class="sidebar navbar navbar-expand-lg navbar-light bg-light">
+		<a class="navbar-brand" href="#">Бюро пропусков v0.01</a>
+		<ul class="navbar-nav">
+			<!-- Кнопки входа/выхода -->
+			<ul class="navbar-nav ml-auto">
+				<li class="nav-item" *ngIf="isAuthenticated()">
+					<button class="btn btn-primary btn-block" (click)="logout()">Выход</button>
+				</li>
+				<li class="nav-item" *ngIf="!isAuthenticated()">
+					<a class="btn btn-primary btn-block" routerLink="/login">Вход</a>
+				</li>
+			</ul>
+
+			<!-- Кнопка "Справочники" и выпадающий список -->
+			<li class="nav-item dropdown">
+				<button class="btn btn-primary btn-block" (click)="toggleReferences()">Справочники</button>
+
+				<!-- Выпадающий список -->
+				<div *ngIf="isReferencesExpanded" class="dropdown-menu-container">
+					<ul class="navbar-nav dropdown-menu">
+						<li class="nav-item" *ngIf="isAuthenticated()">
+							<a class="nav-link dropdown-item" routerLink="/contractors/new">Добавление нового
+								контрагента</a>
+						</li>
+						<li class="nav-item" *ngIf="isAuthenticated()">
+							<a class="nav-link dropdown-item" routerLink="/contractors"><b>Список контрагентов</b></a>
+						</li>
+						<li class="nav-item" *ngIf="isAuthenticated()">
+							<a class="nav-link dropdown-item" routerLink="/stores/new">Добавление торговой точки</a>
+						</li>
+						<li class="nav-item" *ngIf="isAuthenticated()">
+							<a class="nav-link dropdown-item" routerLink="/stores"><b>Список торговых точек</b></a>
+						</li>
+						<li class="nav-item" *ngIf="isAuthenticated()">
+							<a class="nav-link dropdown-item" routerLink="/building">Здание</a>
+						</li>
+						<li class="nav-item" *ngIf="isAuthenticated()">
+							<a class="nav-link dropdown-item" routerLink="/floor">Этаж</a>
+						</li>
+						<li class="nav-item" *ngIf="isAuthenticated()">
+							<a class="nav-link dropdown-item" routerLink="/line">Линия</a>
+						</li>
+						<li class="nav-item" *ngIf="isAuthenticated()">
+							<a class="nav-link dropdown-item" routerLink="/storeNumber">Точка</a>
+						</li>
+						<li class="nav-item" *ngIf="isAuthenticated()">
+							<a class="nav-link dropdown-item" routerLink="/citizenship">Гражданство</a>
+						</li>
+						<li class="nav-item" *ngIf="isAuthenticated()">
+							<a class="nav-link dropdown-item" routerLink="/nationality">Национальность</a>
+						</li>
+					</ul>
+				</div>
 			</li>
-			<div *ngIf="isReferencesExpanded" class="ml-3">
-				<ul class="navbar-nav">
-					<li class="nav-item" *ngIf="isAuthenticated()">
-						<a class="nav-link" routerLink="/contractors/new">Добавление нового контрагента</a>
-					</li>
-					<li class="nav-item" *ngIf="isAuthenticated()">
-						<a class="nav-link" routerLink="/contractors">Поиск контрагентов</a>
-					</li>
-					<li class="nav-item" *ngIf="isAuthenticated()">
-						<a class="nav-link" routerLink="/stores">Торговые точки</a>
-					</li>
-				</ul>
-			</div>
 		</ul>
-		<ul class="navbar-nav ml-auto">
-			<li class="nav-item" *ngIf="isAuthenticated()">
-				<button class="btn btn-outline-danger" (click)="logout()">Выход</button>
-			</li>
-			<li class="nav-item" *ngIf="!isAuthenticated()">
-				<a class="btn btn-outline-primary" routerLink="/login">Вход</a>
-			</li>
-		</ul>
+	</nav>
+
+	<!-- Основной контент -->
+	<div class="content-container">
+		<router-outlet></router-outlet>
 	</div>
-</nav>
-<div class="container">
+</div>
+
+<!-- Контент для страницы авторизации -->
+<div *ngIf="!showContent()">
 	<router-outlet></router-outlet>
 </div>

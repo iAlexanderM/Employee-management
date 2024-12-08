@@ -15,7 +15,7 @@ namespace EmployeeManagementServer.Services
             _configuration = configuration;
         }
 
-        public string GenerateToken(ApplicationUser user)
+        public string GenerateAccessToken(ApplicationUser user)
         {
             var claims = new[]
             {
@@ -27,7 +27,7 @@ namespace EmployeeManagementServer.Services
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:Token"] ?? string.Empty));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
+            var accessToken = new JwtSecurityToken(
                 issuer: _configuration["AppSettings:Issuer"],
                 audience: _configuration["AppSettings:Audience"],
                 claims: claims,
@@ -35,7 +35,7 @@ namespace EmployeeManagementServer.Services
                 signingCredentials: creds
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return new JwtSecurityTokenHandler().WriteToken(accessToken);
         }
     }
 }

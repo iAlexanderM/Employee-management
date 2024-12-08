@@ -1,6 +1,13 @@
 ﻿using EmployeeManagementServer.Models;
 using EmployeeManagementServer.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace EmployeeManagementServer.Services
 {
@@ -21,10 +28,10 @@ namespace EmployeeManagementServer.Services
         }
 
         public async Task UpdateContractorAsync(
-        Contractor contractor,
-        List<IFormFile> newPhotos,
-        List<IFormFile> newDocumentPhotos,
-        List<int> deletedPhotoIds)
+            Contractor contractor,
+            List<IFormFile> newPhotos,
+            List<IFormFile> newDocumentPhotos,
+            List<int> deletedPhotoIds)
         {
             try
             {
@@ -32,14 +39,18 @@ namespace EmployeeManagementServer.Services
 
                 // Удаление старых фотографий
                 await RemovePhotosAsync(contractor, deletedPhotoIds);
-
                 _logger.LogInformation("Старые фотографии успешно удалены для контрагента с ID {Id}", contractor.Id);
 
                 // Добавление новых фотографий
                 await AddPhotosAsync(contractor, newPhotos, false);
                 await AddPhotosAsync(contractor, newDocumentPhotos, true);
-
                 _logger.LogInformation("Новые фотографии успешно добавлены для контрагента с ID {Id}", contractor.Id);
+
+                // Проверка уникальности SortOrder
+                if (await _context.Contractors.AnyAsync(c => c.SortOrder == contractor.SortOrder && c.Id != contractor.Id))
+                {
+                    throw new InvalidOperationException("Контрагент с таким значением SortOrder уже существует.");
+                }
 
                 // Обновление данных контрагента в базе данных
                 _context.Contractors.Update(contractor);
@@ -53,7 +64,6 @@ namespace EmployeeManagementServer.Services
                 throw; // Перебрасываем исключение для обработки на уровне контроллера
             }
         }
-
 
         private async Task RemovePhotosAsync(Contractor contractor, List<int> photoIds)
         {
@@ -91,8 +101,6 @@ namespace EmployeeManagementServer.Services
             }
         }
 
-
-        // Метод для сохранения фотографий
         public async Task<string> SavePhotoAsync(IFormFile photo, bool isDocumentPhoto)
         {
             var folder = isDocumentPhoto ? Path.Combine("wwwroot", "uploads", "documents") : Path.Combine("wwwroot", "uploads", "photos");
@@ -113,15 +121,14 @@ namespace EmployeeManagementServer.Services
             return filePath;
         }
 
-        // Получение всех контрагентов
         public async Task<List<Contractor>> GetAllContractorsAsync()
         {
             return await _context.Contractors
                 .Include(c => c.Photos)
+                .OrderBy(c => c.SortOrder)
                 .ToListAsync();
         }
 
-        // Получение контрагента по идентификатору
         public async Task<Contractor?> GetContractorByIdAsync(int id)
         {
             return await _context.Contractors
@@ -129,19 +136,45 @@ namespace EmployeeManagementServer.Services
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        // Создание нового контрагента
         public async Task CreateContractorAsync(Contractor contractor)
         {
             _context.Contractors.Add(contractor);
-            await SaveChangesAsync();
+            await SaveChangesAsync(); 
+
+            if (!contractor.SortOrder.HasValue)
+            {
+                contractor.SortOrder = contractor.Id;
+
+                // Проверка уникальности SortOrder
+                if (await _context.Contractors.AnyAsync(c => c.SortOrder == contractor.SortOrder && c.Id != contractor.Id))
+                {
+                    throw new InvalidOperationException("Контрагент с таким значением SortOrder уже существует.");
+                }
+
+                await SaveChangesAsync(); 
+            }
         }
 
-        // Поиск контрагента по номеру паспорта
         public async Task<Contractor?> FindContractorByPassportSerialNumberAsync(string passportSerialNumber)
         {
             return await _context.Contractors
                 .Include(c => c.Photos)
                 .FirstOrDefaultAsync(c => c.PassportSerialNumber == passportSerialNumber);
+        }
+
+        public async Task<int> GetTotalContractorsCountAsync()
+        {
+            return await _context.Contractors.CountAsync();
+        }
+
+        public async Task<List<Contractor>> GetContractorsAsync(int skip, int take)
+        {
+            return await _context.Contractors
+                .Include(c => c.Photos)
+                .OrderBy(c => c.SortOrder)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
         }
     }
 }
