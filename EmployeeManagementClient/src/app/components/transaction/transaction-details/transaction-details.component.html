@@ -1,0 +1,34 @@
+<div class="container mt-4" *ngIf="transaction">
+	<h1>Детали транзакции</h1>
+	<div class="card">
+		<div class="card-body">
+			<p><strong>ID транзакции:</strong> {{ transaction.id }}</p>
+			<p><strong>Token:</strong> {{ transaction.token }}</p>
+			<p><strong>Статус:</strong> {{ transaction.status }}</p>
+			<p><strong>Сумма:</strong> {{ transaction.amount }}</p>
+			<p><strong>Контрагент:</strong> {{ transaction.contractor.lastName }} {{ transaction.contractor.firstName }}
+				{{
+				transaction.contractor.middleName }}</p>
+			<p><strong>Торговая точка:</strong> {{ transaction.store.building }}, №{{ transaction.store.storeNumber }}
+			</p>
+			<p><strong>Тип пропуска:</strong> {{ transaction.passType.name }}</p>
+			<p><strong>Дата начала:</strong> {{ transaction.startDate | date }}</p>
+			<p><strong>Дата окончания:</strong> {{ transaction.endDate | date }}</p>
+			<p><strong>Создано:</strong> {{ transaction.createdAt | date:'short' }}</p>
+			<p><strong>Должность:</strong> {{ transaction.position }}</p>
+
+			<!-- Информация о пропуске, если он существует -->
+			<div *ngIf="transaction.pass">
+				<hr>
+				<h4>Информация о пропуске</h4>
+				<p><strong>ID пропуска:</strong> {{ transaction.pass.id }}</p>
+				<p><strong>Unique Pass ID:</strong> {{ transaction.pass.uniquePassId }}</p>
+				<p><strong>Статус пропуска:</strong> {{ transaction.pass.isClosed ? 'Закрыт' : 'Активен' }}</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="container mt-4" *ngIf="!transaction && transactionId !== null">
+	<p>Транзакция не найдена.</p>
+</div>

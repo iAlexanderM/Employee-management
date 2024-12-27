@@ -176,5 +176,23 @@ namespace EmployeeManagementServer.Services
                 .Take(take)
                 .ToListAsync();
         }
+
+        public async Task<string?> GetLastNonDocumentPhotoAsync(int contractorId)
+        {
+            var contractor = await _context.Contractors
+                .Include(c => c.Photos)
+                .FirstOrDefaultAsync(c => c.Id == contractorId);
+
+            if (contractor == null || !contractor.Photos.Any())
+                return null;
+
+            // Выбираем последнее фото, которое не является документом
+            var photo = contractor.Photos
+                .Where(p => !p.IsDocumentPhoto)
+                .OrderByDescending(p => p.Id) // Сортируем по убыванию ID
+                .FirstOrDefault();
+
+            return photo?.FilePath;
+        }
     }
 }

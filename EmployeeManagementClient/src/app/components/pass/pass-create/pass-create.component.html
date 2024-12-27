@@ -1,0 +1,43 @@
+<div class="container mt-4">
+	<h2>Создание пропуска</h2>
+	<form (ngSubmit)="createPass()" class="mt-3">
+
+		<div class="mb-3">
+			<label for="contractor" class="form-label">Контрагент:</label>
+			<select [(ngModel)]="contractorId" name="contractorId" id="contractor" class="form-control" required>
+				<option *ngFor="let c of contractors" [value]="c.id">{{ c.lastName }} {{ c.firstName }}</option>
+			</select>
+		</div>
+
+		<div class="mb-3">
+			<label for="store" class="form-label">Торговая точка:</label>
+			<select [(ngModel)]="storeId" name="storeId" id="store" class="form-control" required>
+				<option *ngFor="let s of stores" [value]="s.id">{{ s.building }} №{{ s.storeNumber }}</option>
+			</select>
+		</div>
+
+		<div class="mb-3">
+			<label for="passType" class="form-label">Тип пропуска:</label>
+			<select [(ngModel)]="passTypeId" name="passTypeId" id="passType" class="form-control" required>
+				<option *ngFor="let pt of passTypes" [value]="pt.id">{{ pt.name }}</option>
+			</select>
+		</div>
+
+		<div class="mb-3">
+			<label for="startDate" class="form-label">Дата начала:</label>
+			<input id="startDate" type="date" [(ngModel)]="startDate" name="startDate" class="form-control" required>
+		</div>
+
+		<div class="mb-3">
+			<label for="endDate" class="form-label">Дата окончания:</label>
+			<input id="endDate" type="date" [(ngModel)]="endDate" name="endDate" class="form-control" required>
+		</div>
+
+		<div class="mb-3">
+			<label for="position" class="form-label">Должность:</label>
+			<input id="position" type="text" [(ngModel)]="position" name="position" class="form-control" required>
+		</div>
+
+		<button type="submit" class="btn btn-primary">Создать пропуск</button>
+	</form>
+</div>

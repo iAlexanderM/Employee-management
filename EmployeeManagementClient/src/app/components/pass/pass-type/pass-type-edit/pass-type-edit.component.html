@@ -1,0 +1,65 @@
+<div class="container contractor-details">
+	<h2>Редактирование типа пропуска</h2>
+	<form (ngSubmit)="updatePassType()">
+		<div class="form-group">
+			<label for="name">Название:</label>
+			<input id="name" type="text" class="form-control" [(ngModel)]="passType.name" name="name"
+				placeholder="Введите название типа пропуска" required />
+		</div>
+
+		<div class="form-group">
+			<label for="duration">Срок (в месяцах):</label>
+			<input id="duration" type="number" class="form-control" [(ngModel)]="passType.durationInMonths"
+				name="duration" min="1" required />
+		</div>
+
+		<div class="form-group">
+			<label for="cost">Стоимость:</label>
+			<input id="cost" type="number" class="form-control" [(ngModel)]="passType.cost" name="cost"
+				placeholder="Введите стоимость" min="0" required />
+		</div>
+
+		<div class="form-group">
+			<label for="color">Цвет:</label>
+			<input id="color" type="color" class="form-control" [(ngModel)]="passType.color" name="color" />
+		</div>
+
+		<div class="form-group">
+			<label>Группа:</label>
+			<button type="button" class="btn btn-secondary" (click)="openGroupModal()">
+				Выбрать группу
+			</button>
+			<p *ngIf="passType.passGroupId">
+				Выбрана группа: {{ passGroupName }}
+			</p>
+		</div>
+
+		<div class="form-group">
+			<label for="printTemplate">Шаблон для печати:</label>
+			<textarea id="printTemplate" class="form-control" [(ngModel)]="passType.printTemplate" name="printTemplate"
+				placeholder="Введите шаблон для печати" rows="5" required></textarea>
+		</div>
+
+		<div class="form-group">
+			<label for="sortOrder">Номер сортировки:</label>
+			<input id="sortOrder" type="number" class="form-control" [(ngModel)]="passType.sortOrder" name="sortOrder"
+				min="0" required />
+		</div>
+
+		<div class="form-group">
+			<label for="isArchived">Архивирован:</label>
+			<input id="isArchived" type="checkbox" [(ngModel)]="passType.isArchived" name="isArchived" />
+		</div>
+
+		<div class="form-group mt-4">
+			<button type="submit" class="btn btn-primary">Сохранить</button>
+			<button type="button" class="btn btn-secondary" routerLink="/pass-types">
+				Отмена
+			</button>
+		</div>
+	</form>
+
+	<!-- Вставка модального окна -->
+	<app-pass-group-modal *ngIf="isModalOpen" (modalClose)="closeGroupModal()"
+		(groupSelected)="onGroupSelected($event)"></app-pass-group-modal>
+</div>

@@ -2,54 +2,89 @@
 	<!-- Боковая панель навигации -->
 	<nav class="sidebar navbar navbar-expand-lg navbar-light bg-light">
 		<a class="navbar-brand" href="#">Бюро пропусков v0.01</a>
-		<ul class="navbar-nav">
+		<ul class="navbar-nav ms-auto">
+
 			<!-- Кнопки входа/выхода -->
-			<ul class="navbar-nav ml-auto">
-				<li class="nav-item" *ngIf="isAuthenticated()">
-					<button class="btn btn-primary btn-block" (click)="logout()">Выход</button>
-				</li>
-				<li class="nav-item" *ngIf="!isAuthenticated()">
-					<a class="btn btn-primary btn-block" routerLink="/login">Вход</a>
-				</li>
-			</ul>
+			<li class="nav-item" *ngIf="isAuthenticated()">
+				<button class="btn btn-primary me-2" (click)="logout()">Выход</button>
+			</li>
+			<li class="nav-item" *ngIf="!isAuthenticated()">
+				<a class="btn btn-primary me-2" routerLink="/login">Вход</a>
+			</li>
 
 			<!-- Кнопка "Справочники" и выпадающий список -->
-			<li class="nav-item dropdown">
-				<button class="btn btn-primary btn-block" (click)="toggleReferences()">Справочники</button>
+			<li class="nav-item dropdown" *ngIf="isAuthenticated()">
+				<button class="btn btn-primary me-2" (click)="toggleReferences()">Справочники</button>
 
 				<!-- Выпадающий список -->
 				<div *ngIf="isReferencesExpanded" class="dropdown-menu-container">
-					<ul class="navbar-nav dropdown-menu">
-						<li class="nav-item" *ngIf="isAuthenticated()">
+					<ul class="navbar-nav dropdown-menu show">
+						<li class="nav-item">
 							<a class="nav-link dropdown-item" routerLink="/contractors/new">Добавление нового
 								контрагента</a>
 						</li>
-						<li class="nav-item" *ngIf="isAuthenticated()">
-							<a class="nav-link dropdown-item" routerLink="/contractors"><b>Список контрагентов</b></a>
+						<li class="nav-item">
+							<a class="nav-link dropdown-item" routerLink="/contractors"><strong>Список
+									контрагентов</strong></a>
 						</li>
-						<li class="nav-item" *ngIf="isAuthenticated()">
+						<li class="nav-item">
 							<a class="nav-link dropdown-item" routerLink="/stores/new">Добавление торговой точки</a>
 						</li>
-						<li class="nav-item" *ngIf="isAuthenticated()">
-							<a class="nav-link dropdown-item" routerLink="/stores"><b>Список торговых точек</b></a>
+						<li class="nav-item">
+							<a class="nav-link dropdown-item" routerLink="/stores"><strong>Список торговых
+									точек</strong></a>
 						</li>
-						<li class="nav-item" *ngIf="isAuthenticated()">
+						<li class="nav-item">
 							<a class="nav-link dropdown-item" routerLink="/building">Здание</a>
 						</li>
-						<li class="nav-item" *ngIf="isAuthenticated()">
+						<li class="nav-item">
 							<a class="nav-link dropdown-item" routerLink="/floor">Этаж</a>
 						</li>
-						<li class="nav-item" *ngIf="isAuthenticated()">
+						<li class="nav-item">
 							<a class="nav-link dropdown-item" routerLink="/line">Линия</a>
 						</li>
-						<li class="nav-item" *ngIf="isAuthenticated()">
+						<li class="nav-item">
 							<a class="nav-link dropdown-item" routerLink="/storeNumber">Точка</a>
 						</li>
-						<li class="nav-item" *ngIf="isAuthenticated()">
+						<li class="nav-item">
 							<a class="nav-link dropdown-item" routerLink="/citizenship">Гражданство</a>
 						</li>
-						<li class="nav-item" *ngIf="isAuthenticated()">
+						<li class="nav-item">
 							<a class="nav-link dropdown-item" routerLink="/nationality">Национальность</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link dropdown-item" routerLink="/pass-groups">Группы пропусков</a>
+						</li>
+					</ul>
+				</div>
+			</li>
+
+			<!-- Кнопка для перехода к списку очереди -->
+			<li class="nav-item" *ngIf="isAuthenticated()">
+				<a class="btn btn-primary me-2" routerLink="/queue">Список очереди</a>
+			</li>
+
+			<!-- Кнопка "Транзакции" и выпадающий список -->
+			<li class="nav-item dropdown" *ngIf="isAuthenticated()">
+				<button class="btn btn-primary me-2" (click)="toggleTransactions()">Транзакции</button>
+
+				<!-- Выпадающий список для Транзакций -->
+				<div *ngIf="isTransactionsExpanded" class="dropdown-menu-container">
+					<ul class="navbar-nav dropdown-menu show">
+						<li class="nav-item">
+							<a class="nav-link dropdown-item" routerLink="/transactions">
+								Список транзакций
+							</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link dropdown-item" routerLink="/transactions/create">
+								Создать транзакцию
+							</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link dropdown-item" routerLink="/passes/print-queue">
+								Очередь печати пропусков
+							</a>
 						</li>
 					</ul>
 				</div>
@@ -64,6 +99,6 @@
 </div>
 
 <!-- Контент для страницы авторизации -->
-<div *ngIf="!showContent()">
+<div *ngIf="!showContent()" class="container mt-5">
 	<router-outlet></router-outlet>
 </div>

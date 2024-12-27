@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { ContractorWatchService } from '../../../services/contractorWatch.service';
+import { ContractorWatchService } from '../../../services/contractor-watch.service';
 import { Contractor, Photo } from '../../../models/contractor.model';
 import { CommonModule } from '@angular/common';
 import { TransformToUrlPipe } from '../../pipes/transform-to-url.pipe';
@@ -41,12 +41,9 @@ export class ContractorDetailsComponent implements OnInit {
 	}
 
 	normalizePhotos(contractor: Contractor): Contractor {
-		contractor.photos = Array.isArray(contractor.photos)
-			? contractor.photos
-			: (contractor.photos?.['$values'] || []);
-		contractor.documentPhotos = Array.isArray(contractor.documentPhotos)
-			? contractor.documentPhotos
-			: (contractor.documentPhotos?.['$values'] || []);
+		// Убрана проверка на `$values`
+		contractor.photos = Array.isArray(contractor.photos) ? contractor.photos : [];
+		contractor.documentPhotos = Array.isArray(contractor.documentPhotos) ? contractor.documentPhotos : [];
 		return contractor;
 	}
 
@@ -68,18 +65,6 @@ export class ContractorDetailsComponent implements OnInit {
 	transformToUrl(filePath: string): string {
 		return `http://localhost:8080/${filePath.replace(/\\/g, '/').replace(/^.*wwwroot\//, '')}`;
 	}
-
-	//archiveContractor(): void {
-	//	if (this.contractor?.id) {
-	//		this.contractorService.archiveContractor(this.contractor.id).subscribe(
-	//			() => {
-	//				alert('Контрагент успешно архивирован');
-	//				this.router.navigate(['/contractors']);
-	//			},
-	//			error => console.error('Ошибка при архивировании контрагента', error)
-	//		);
-	//	}
-	//}
 
 	editContractor(): void {
 		if (this.contractor?.id) {

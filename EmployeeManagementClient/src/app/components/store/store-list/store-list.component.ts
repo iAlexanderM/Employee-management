@@ -64,7 +64,7 @@ export class StoreListComponent implements OnInit, OnDestroy {
 		this.storeService.getStores(this.currentPage, this.pageSize, filters).subscribe({
 			next: (response) => {
 				console.log('[loadStores] Response:', response);
-				this.stores = response.stores || [];
+				this.stores = Array.isArray(response.stores) ? response.stores : [];
 				this.totalItems = response.total || 0;
 				this.totalPages = Math.ceil(this.totalItems / this.pageSize);
 				this.updateVisiblePages();

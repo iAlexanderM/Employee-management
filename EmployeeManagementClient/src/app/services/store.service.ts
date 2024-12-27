@@ -27,7 +27,7 @@ export class StoreService {
 
 		return this.http.get<any>(`${this.storesApiUrl}`, { params }).pipe(
 			map((response) => {
-				const stores = response.stores?.$values || response.stores || [];
+				const stores = response.stores || [];
 				return {
 					total: response.total || 0,
 					stores: stores,
@@ -60,28 +60,28 @@ export class StoreService {
 		const params = new HttpParams().set('query', query);
 		return this.http.get<any>(`${this.suggestionsApiUrl}/buildings`, { params }).pipe(
 			// Преобразуем ответ, чтобы получить массив строк
-			map((response) => response.$values || [])
+			map((response) => response || [])
 		);
 	}
 
 	getFloorSuggestions(query: string): Observable<string[]> {
 		const params = new HttpParams().set('query', query);
 		return this.http.get<any>(`${this.suggestionsApiUrl}/floors`, { params }).pipe(
-			map((response) => response.$values || [])
+			map((response) => response || [])
 		);
 	}
 
 	getLineSuggestions(query: string): Observable<string[]> {
 		const params = new HttpParams().set('query', query);
 		return this.http.get<any>(`${this.suggestionsApiUrl}/lines`, { params }).pipe(
-			map((response) => response.$values || [])
+			map((response) => response || [])
 		);
 	}
 
 	getStoreNumberSuggestions(query: string): Observable<string[]> {
 		const params = new HttpParams().set('query', query);
 		return this.http.get<any>(`${this.suggestionsApiUrl}/storeNumbers`, { params }).pipe(
-			map((response) => response.$values || [])
+			map((response) => response || [])
 		);
 	}
 
@@ -97,7 +97,7 @@ export class StoreService {
 
 		return this.http.get<any>(`${this.storesApiUrl}/search`, { params }).pipe(
 			map((response) => {
-				const stores = response.stores?.$values || response.stores || [];
+				const stores = response.stores || [];
 				return {
 					total: response.total || 0,
 					stores: stores,

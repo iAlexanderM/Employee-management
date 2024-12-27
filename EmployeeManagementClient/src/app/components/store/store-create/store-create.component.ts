@@ -41,7 +41,6 @@ export class StoreCreateComponent {
 		});
 	}
 
-
 	openModal(field: 'building' | 'floor' | 'line' | 'storeNumber', mode: 'select' | 'add') {
 		this.modalField = field;
 		this.modalMode = mode;

@@ -31,13 +31,10 @@ export class StorePointsService {
 		const url = search ? `${this.baseApiUrl}/searchBuildings` : `${this.baseApiUrl}/Building`;
 
 		return this.http.get<any>(url, { params }).pipe(
-			map((response) => {
-				const buildings = response.buildings?.$values || response.buildings || [];
-				return {
-					total: response.total || 0,
-					buildings: buildings,
-				};
-			})
+			map((response) => ({
+				total: response.total || 0,
+				buildings: response.buildings || [],
+			}))
 		);
 	}
 
@@ -52,7 +49,6 @@ export class StorePointsService {
 	updateBuilding(id: number, name: string, sortOrder: number): Observable<void> {
 		return this.http.put<void>(`${this.baseApiUrl}/building/${id}`, { name, sortOrder });
 	}
-
 
 	getFloors(
 		page: number = 1,
@@ -73,13 +69,10 @@ export class StorePointsService {
 		const url = search ? `${this.baseApiUrl}/searchFloors` : `${this.baseApiUrl}/Floor`;
 
 		return this.http.get<any>(url, { params }).pipe(
-			map((response) => {
-				const floors = response.floors?.$values || response.floors || [];
-				return {
-					total: response.total || 0,
-					floors: floors,
-				};
-			})
+			map((response) => ({
+				total: response.total || 0,
+				floors: response.floors || [],
+			}))
 		);
 	}
 
@@ -115,13 +108,10 @@ export class StorePointsService {
 		const url = search ? `${this.baseApiUrl}/searchLines` : `${this.baseApiUrl}/Line`;
 
 		return this.http.get<any>(url, { params }).pipe(
-			map((response) => {
-				const lines = response.lines?.$values || response.lines || [];
-				return {
-					total: response.total || 0,
-					lines: lines,
-				};
-			})
+			map((response) => ({
+				total: response.total || 0,
+				lines: response.lines || [],
+			}))
 		);
 	}
 
@@ -157,13 +147,10 @@ export class StorePointsService {
 		const url = search ? `${this.baseApiUrl}/searchStoreNumbers` : `${this.baseApiUrl}/StoreNumber`;
 
 		return this.http.get<any>(url, { params }).pipe(
-			map((response) => {
-				const storeNumbers = response.storeNumbers?.$values || response.storeNumbers || [];
-				return {
-					total: response.total || 0,
-					storeNumbers: storeNumbers,
-				};
-			})
+			map((response) => ({
+				total: response.total || 0,
+				storeNumbers: response.storeNumbers || [],
+			}))
 		);
 	}
 
@@ -192,14 +179,10 @@ export class StorePointsService {
 		}
 
 		return this.http.get<any>(`${this.baseApiUrl}/searchBuildings/search`, { params }).pipe(
-			map((response) => {
-				// Парсим ответ
-				const buildings = response?.$values || []; // Извлекаем массив из $values
-				return {
-					total: buildings.length, // Количество зданий
-					buildings, // Сами здания
-				};
-			}),
+			map((response) => ({
+				total: response.total || 0, // Общее количество зданий
+				buildings: response.buildings || [], // Массив зданий
+			})),
 			catchError((error) => {
 				console.error('[searchBuildings] Ошибка:', error);
 				return of({ total: 0, buildings: [] }); // Возвращаем пустой результат в случае ошибки
@@ -212,6 +195,7 @@ export class StorePointsService {
 	): Observable<{ total: number; floors: any[] }> {
 		let params = new HttpParams();
 
+		// Добавляем критерии поиска
 		if (criteria && Object.keys(criteria).length > 0) {
 			Object.keys(criteria).forEach((key) => {
 				params = params.set(key, criteria[key].toString());
@@ -219,16 +203,13 @@ export class StorePointsService {
 		}
 
 		return this.http.get<any>(`${this.baseApiUrl}/searchFloors/search`, { params }).pipe(
-			map((response) => {
-				const floors = response?.$values || [];
-				return {
-					total: floors.length,
-					floors,
-				};
-			}),
+			map((response) => ({
+				total: response.total || 0, // Общее количество этажей
+				floors: response.floors || [], // Массив этажей
+			})),
 			catchError((error) => {
 				console.error('[searchFloors] Ошибка:', error);
-				return of({ total: 0, floors: [] });
+				return of({ total: 0, floors: [] }); // Возвращаем пустой результат в случае ошибки
 			})
 		);
 	}
@@ -238,6 +219,7 @@ export class StorePointsService {
 	): Observable<{ total: number; lines: any[] }> {
 		let params = new HttpParams();
 
+		// Добавляем критерии поиска
 		if (criteria && Object.keys(criteria).length > 0) {
 			Object.keys(criteria).forEach((key) => {
 				params = params.set(key, criteria[key].toString());
@@ -245,16 +227,13 @@ export class StorePointsService {
 		}
 
 		return this.http.get<any>(`${this.baseApiUrl}/searchLines/search`, { params }).pipe(
-			map((response) => {
-				const lines = response?.$values || [];
-				return {
-					total: lines.length,
-					lines,
-				};
-			}),
+			map((response) => ({
+				total: response.total || 0, // Общее количество линий
+				lines: response.lines || [], // Массив линий
+			})),
 			catchError((error) => {
 				console.error('[searchLines] Ошибка:', error);
-				return of({ total: 0, lines: [] });
+				return of({ total: 0, lines: [] }); // Возвращаем пустой результат в случае ошибки
 			})
 		);
 	}
@@ -264,6 +243,7 @@ export class StorePointsService {
 	): Observable<{ total: number; storeNumbers: any[] }> {
 		let params = new HttpParams();
 
+		// Добавляем критерии поиска
 		if (criteria && Object.keys(criteria).length > 0) {
 			Object.keys(criteria).forEach((key) => {
 				params = params.set(key, criteria[key].toString());
@@ -271,16 +251,13 @@ export class StorePointsService {
 		}
 
 		return this.http.get<any>(`${this.baseApiUrl}/searchStoreNumbers/search`, { params }).pipe(
-			map((response) => {
-				const storeNumbers = response?.$values || [];
-				return {
-					total: storeNumbers.length,
-					storeNumbers,
-				};
-			}),
+			map((response) => ({
+				total: response.total || 0, // Общее количество номеров
+				storeNumbers: response.storeNumbers || [], // Массив номеров
+			})),
 			catchError((error) => {
 				console.error('[searchStoreNumbers] Ошибка:', error);
-				return of({ total: 0, storeNumbers: [] });
+				return of({ total: 0, storeNumbers: [] }); // Возвращаем пустой результат в случае ошибки
 			})
 		);
 	}

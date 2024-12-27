@@ -1,0 +1,5 @@
+<div *ngIf="activeToken" class="active-token-banner bg-info text-white p-3 mb-4">
+	<p><strong>Активный талон:</strong> {{ activeToken }}</p>
+	<button class="btn btn-secondary me-2" (click)="goToTransaction()">Перейти к транзакции</button>
+	<button class="btn btn-danger" (click)="closeToken()">Закрыть талон</button>
+</div>

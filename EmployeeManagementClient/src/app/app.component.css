@@ -236,3 +236,8 @@
 .dropdown-item {
 	width: 100%;
 }
+
+a.btn {
+	text-decoration: none;
+	/* Убирает подчеркивание */
+}

@@ -2,8 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ContractorEditService } from '../../../services/contractorEdit.service';
-import { ContractorWatchService } from '../../../services/contractorWatch.service';
+import { ContractorEditService } from '../../../services/contractor-edit.service';
+import { ContractorWatchService } from '../../../services/contractor-watch.service';
 import { Contractor, Photo } from '../../../models/contractor.model';
 import { HttpClientModule } from '@angular/common/http';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
@@ -86,7 +86,8 @@ export class ContractorEditComponent implements OnInit {
 					SortOrder: contractor.sortOrder
 				});
 
-				const photos = (contractor.photos as any)?.$values || contractor.photos || [];
+				// Убрана проверка на $values
+				const photos = contractor.photos || [];
 				photos.forEach((photo: Photo) => {
 					photo.filePath = photo.filePath.replace(/\\/g, '/');
 				});

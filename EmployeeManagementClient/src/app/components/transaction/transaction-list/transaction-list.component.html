@@ -1,0 +1,50 @@
+<div class="container mt-4">
+	<h2>Список транзакций</h2>
+
+	<!-- Фильтры по статусу -->
+	<div class="mb-3">
+		<button class="btn btn-primary me-2" (click)="changeStatusFilter('Pending')">Pending</button>
+		<button class="btn btn-success me-2" (click)="changeStatusFilter('Paid')">Paid</button>
+		<button class="btn btn-warning me-2" (click)="changeStatusFilter('Active')">Active</button>
+		<button class="btn btn-danger" (click)="changeStatusFilter('Closed')">Closed</button>
+	</div>
+
+	<!-- Таблица транзакций -->
+	<table class="table table-bordered">
+		<thead class="table-light">
+			<tr>
+				<th>ID</th>
+				<th>Token</th>
+				<th>Store</th>
+				<th>Contractor</th>
+				<th>Pass Type</th>
+				<th>Amount</th>
+				<th>Status</th>
+				<th>Pass ID</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let t of transactions">
+				<td>{{ t.id }}</td>
+				<td>{{ t.token }}</td>
+				<td>
+					{{ t.store?.building }}, №{{ t.store?.storeNumber }}
+				</td>
+				<td>
+					{{ t.contractor?.lastName }} {{ t.contractor?.firstName }} {{ t.contractor?.middleName }}
+				</td>
+				<td>{{ t.passType?.name }}</td>
+				<td>{{ t.amount }}</td>
+				<td>{{ t.status }}</td>
+				<td>
+					{{ t.passId ? t.pass?.uniquePassId : 'N/A' }}
+				</td>
+				<td>
+					<button *ngIf="t.status === 'Pending'" class="btn btn-success btn-sm"
+						(click)="confirmPayment(t.id)">Подтвердить оплату</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

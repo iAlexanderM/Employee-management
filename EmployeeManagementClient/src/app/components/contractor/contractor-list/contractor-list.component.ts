@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { RouterModule, Router, Routes } from '@angular/router';
-import { ContractorWatchService } from '../../../services/contractorWatch.service';
+import { RouterModule, Router } from '@angular/router';
+import { ContractorWatchService } from '../../../services/contractor-watch.service';
 import { Contractor } from '../../../models/contractor.model';
 import { CommonModule } from '@angular/common';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
@@ -80,11 +80,6 @@ export class ContractorListComponent implements OnInit {
 						this.contractors = response.contractors.map((contractor: Contractor) =>
 							this.normalizePhotos(contractor)
 						);
-					} else if (response.contractors.$values) {
-						console.log('contractors содержит $values'); // Проверка на наличие $values
-						this.contractors = response.contractors.$values.map((contractor: Contractor) =>
-							this.normalizePhotos(contractor)
-						);
 					} else {
 						console.error('Некорректный формат поля contractors:', response.contractors);
 						this.contractors = [];
@@ -159,14 +154,13 @@ export class ContractorListComponent implements OnInit {
 		});
 	}
 
-
 	extractContractors(response: any): Contractor[] {
 		if (response && response.contractors && Array.isArray(response.contractors)) {
 			return response.contractors;
 		} else if (response && response.Contractors && Array.isArray(response.Contractors)) {
 			return response.Contractors;
-		} else if (response && response.contractors && response.contractors.$values) {
-			return response.contractors.$values;
+		} else if (response && response.contractors) {
+			return response.contractors;
 		} else if (response && response.$values) {
 			return response.$values;
 		} else if (Array.isArray(response)) {
@@ -280,11 +274,8 @@ export class ContractorListComponent implements OnInit {
 	}
 
 	normalizePhotos(contractor: Contractor): Contractor {
-		if (contractor.photos && contractor.photos.hasOwnProperty('$values')) {
-			contractor.photos = (contractor.photos as any).$values || [];
-		} else if (!Array.isArray(contractor.photos)) {
-			contractor.photos = [];
-		}
+		// Убрана проверка на `$values`
+		contractor.photos = Array.isArray(contractor.photos) ? contractor.photos : [];
 		return contractor;
 	}
 
@@ -299,7 +290,6 @@ export class ContractorListComponent implements OnInit {
 		}
 		return null;
 	}
-
 
 	toggleSearchForm(): void {
 		this.isExpanded = !this.isExpanded;

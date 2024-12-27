@@ -1,0 +1,31 @@
+<div class="container mt-4">
+	<h2>Очередь на печать</h2>
+	<table class="table table-bordered mt-3">
+		<thead class="table-light">
+			<tr>
+				<th>ID</th>
+				<th>Unique Pass ID</th>
+				<th>Контрагент</th>
+				<th>Торговая точка</th>
+				<th>Тип пропуска</th>
+				<th>Действия</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let p of passes">
+				<td>{{ p.id }}</td>
+				<td>{{ p.uniquePassId }}</td>
+				<td>
+					{{ p.contractor?.lastName }} {{ p.contractor?.firstName }} {{ p.contractor?.middleName }}
+				</td>
+				<td>
+					{{ p.store?.building }}, №{{ p.store?.storeNumber }}
+				</td>
+				<td>{{ p.passType?.name }}</td>
+				<td>
+					<button class="btn btn-primary btn-sm" (click)="printPass(p.id)">Печать</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

@@ -1,0 +1,19 @@
+.active-token-banner {
+	position: fixed;
+	top: 0;
+	width: 100%;
+	background-color: #f8f9fa;
+	border-bottom: 1px solid #ddd;
+	padding: 10px;
+	text-align: center;
+	z-index: 1000;
+}
+
+.active-token-banner p {
+	display: inline-block;
+	margin: 0 10px;
+}
+
+.active-token-banner button {
+	margin-left: 10px;
+}

@@ -1,0 +1,190 @@
+/* Модальное окно */
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+}
+
+.modal-content {
+	background: white;
+	border-radius: 8px;
+	padding: 20px;
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+	width: 90%;
+	max-width: 1000px;
+	max-height: 90%;
+	overflow-y: auto;
+	animation: fadeIn 0.3s ease-out;
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-20px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Форма поиска */
+.search-form {
+	margin-bottom: 20px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 15px;
+}
+
+.search-form label {
+	font-size: 14px;
+	margin-right: 5px;
+}
+
+.search-form input {
+	padding: 5px;
+	font-size: 14px;
+	width: 200px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+.search-form button {
+	padding: 5px 10px;
+	font-size: 14px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.search-form .btn-primary {
+	background-color: #007bff;
+	color: #fff;
+}
+
+.search-form .btn-secondary {
+	background-color: #6c757d;
+	color: #fff;
+}
+
+/* Таблица */
+.table-container {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 20px 0;
+	table-layout: fixed;
+}
+
+thead th {
+	background-color: #f4f4f4;
+	text-align: left;
+	padding: 10px;
+	font-size: 16px;
+}
+
+tbody {
+	display: block;
+	max-height: calc(100% - 100px);
+	overflow-y: auto;
+}
+
+thead,
+tbody tr {
+	display: table;
+	width: 100%;
+	table-layout: fixed;
+}
+
+tbody tr {
+	font-size: 14px;
+	cursor: pointer;
+	padding: 10px 8px;
+	height: 40px;
+}
+
+tbody tr.odd-row {
+	background-color: #f9f9f9;
+}
+
+tbody tr.even-row {
+	background-color: #ffffff;
+}
+
+tbody tr:hover {
+	background-color: #f1f1f1;
+}
+
+th:nth-child(1),
+td:nth-child(1) {
+	width: 25%;
+}
+
+th:nth-child(2),
+td:nth-child(2) {
+	width: 25%;
+}
+
+th:nth-child(3),
+td:nth-child(3) {
+	width: 25%;
+}
+
+th:nth-child(4),
+td:nth-child(4) {
+	width: 25%;
+}
+
+/* Пагинация */
+.pagination-container {
+	display: flex;
+	justify-content: flex-end;
+	/* Выравнивание по правому краю */
+	margin-top: 10px;
+	overflow-x: auto;
+	white-space: nowrap;
+}
+
+.pagination-squares {
+	display: flex;
+	gap: 5px;
+}
+
+.square {
+	width: 30px;
+	height: 30px;
+	background-color: #e0e0e0;
+	color: #000;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: bold;
+	flex-shrink: 0;
+	transition: background-color 0.2s;
+}
+
+.square:hover {
+	background-color: #c0c0c0;
+}
+
+.square.active {
+	background-color: #007bff;
+	color: #fff;
+}

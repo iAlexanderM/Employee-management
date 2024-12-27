@@ -136,6 +136,23 @@ namespace EmployeeManagementServer.Migrations
                     b.ToTable("Citizenships", "public");
                 });
 
+            modelBuilder.Entity("EmployeeManagementServer.Models.CloseReason", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CloseReasons", "public");
+                });
+
             modelBuilder.Entity("EmployeeManagementServer.Models.Contractor", b =>
                 {
                     b.Property<int>("Id")
@@ -231,6 +248,31 @@ namespace EmployeeManagementServer.Migrations
                     b.ToTable("ContractorPhotos", "public");
                 });
 
+            modelBuilder.Entity("EmployeeManagementServer.Models.EmployeeManagementServer.Models.PassGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PassGroups", "public");
+                });
+
             modelBuilder.Entity("EmployeeManagementServer.Models.Floor", b =>
                 {
                     b.Property<int>("Id")
@@ -304,6 +346,177 @@ namespace EmployeeManagementServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Nationalities", "public");
+                });
+
+            modelBuilder.Entity("EmployeeManagementServer.Models.Pass", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CloseReason")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ContractorId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("MainPhotoPath")
+                        .HasColumnType("text");
+
+                    b.Property<int>("PassTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StoreId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UniquePassId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContractorId");
+
+                    b.HasIndex("PassTypeId");
+
+                    b.HasIndex("StoreId");
+
+                    b.HasIndex("UniquePassId")
+                        .IsUnique();
+
+                    b.ToTable("Passes", "public");
+                });
+
+            modelBuilder.Entity("EmployeeManagementServer.Models.PassTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ContractorId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("PassId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PassTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("StoreId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TokenType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContractorId");
+
+                    b.HasIndex("PassId")
+                        .IsUnique();
+
+                    b.HasIndex("PassTypeId");
+
+                    b.HasIndex("StoreId");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PassTransactions", "public");
+                });
+
+            modelBuilder.Entity("EmployeeManagementServer.Models.PassType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Cost")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DurationInMonths")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("PassGroupId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PrintTemplate")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PassGroupId");
+
+                    b.ToTable("PassTypes", "public");
                 });
 
             modelBuilder.Entity("EmployeeManagementServer.Models.RefreshToken", b =>
@@ -562,6 +775,86 @@ namespace EmployeeManagementServer.Migrations
                     b.Navigation("Contractor");
                 });
 
+            modelBuilder.Entity("EmployeeManagementServer.Models.Pass", b =>
+                {
+                    b.HasOne("EmployeeManagementServer.Models.Contractor", "Contractor")
+                        .WithMany()
+                        .HasForeignKey("ContractorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EmployeeManagementServer.Models.PassType", "PassType")
+                        .WithMany()
+                        .HasForeignKey("PassTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EmployeeManagementServer.Models.Store", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Contractor");
+
+                    b.Navigation("PassType");
+
+                    b.Navigation("Store");
+                });
+
+            modelBuilder.Entity("EmployeeManagementServer.Models.PassTransaction", b =>
+                {
+                    b.HasOne("EmployeeManagementServer.Models.Contractor", "Contractor")
+                        .WithMany()
+                        .HasForeignKey("ContractorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EmployeeManagementServer.Models.Pass", "Pass")
+                        .WithOne("PassTransaction")
+                        .HasForeignKey("EmployeeManagementServer.Models.PassTransaction", "PassId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("EmployeeManagementServer.Models.PassType", "PassType")
+                        .WithMany()
+                        .HasForeignKey("PassTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EmployeeManagementServer.Models.Store", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EmployeeManagementServer.Models.ApplicationUser", "User")
+                        .WithMany("PassTransactions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Contractor");
+
+                    b.Navigation("Pass");
+
+                    b.Navigation("PassType");
+
+                    b.Navigation("Store");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EmployeeManagementServer.Models.PassType", b =>
+                {
+                    b.HasOne("EmployeeManagementServer.Models.EmployeeManagementServer.Models.PassGroup", "PassGroup")
+                        .WithMany("PassTypes")
+                        .HasForeignKey("PassGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PassGroup");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -613,9 +906,25 @@ namespace EmployeeManagementServer.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("EmployeeManagementServer.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("PassTransactions");
+                });
+
             modelBuilder.Entity("EmployeeManagementServer.Models.Contractor", b =>
                 {
                     b.Navigation("Photos");
+                });
+
+            modelBuilder.Entity("EmployeeManagementServer.Models.EmployeeManagementServer.Models.PassGroup", b =>
+                {
+                    b.Navigation("PassTypes");
+                });
+
+            modelBuilder.Entity("EmployeeManagementServer.Models.Pass", b =>
+                {
+                    b.Navigation("PassTransaction")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

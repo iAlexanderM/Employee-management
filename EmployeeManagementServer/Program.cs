@@ -15,6 +15,7 @@ using System.IO;
 using EmployeeManagementServer.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using System.Threading;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDataProtection()
     .PersistKeysToDbContext<ApplicationDbContext>();
 
+// Настройка Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
@@ -61,6 +63,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// Настройка авторизации
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
@@ -68,7 +71,7 @@ builder.Services.AddAuthorization(options =>
         .Build();
 });
 
-// Настройка Cors для разрешения запросов из любого источника
+// Настройка CORS для разрешения запросов из любого источника
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins", builder =>
@@ -102,6 +105,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Logging.AddConsole();
 
+// Регистрация дополнительных сервисов
 builder.Services.AddScoped<FloorService>();
 builder.Services.AddScoped<StoreNumberService>();
 builder.Services.AddScoped<BuildingService>();
@@ -110,11 +114,13 @@ builder.Services.AddScoped<NationalityService>();
 builder.Services.AddScoped<CitizenshipService>();
 builder.Services.AddScoped<SuggestionsService>();
 
+builder.Services.AddScoped<JwtPassTokenService>();
+
 // Настройка контроллеров
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
 
@@ -125,6 +131,7 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+    // Миграции базы данных с повторными попытками подключения
     var retryCount = 5;
     var delay = TimeSpan.FromSeconds(5);
     for (int i = 0; i < retryCount; i++)
@@ -134,13 +141,62 @@ using (var scope = app.Services.CreateScope())
             dbContext.Database.Migrate();
             break;
         }
-        catch
+        catch (Exception ex)
         {
             if (i == retryCount - 1)
                 throw;
+
             Console.WriteLine($"Не удалось подключиться к базе данных. Попытка {i + 1} из {retryCount}. Ожидание {delay.TotalSeconds} секунд.");
+            Console.WriteLine($"Ошибка: {ex.Message}");
             Thread.Sleep(delay);
         }
+    }
+
+    // Добавление первого пользователя и роли
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+    // Создание роли "Admin", если её нет
+    string adminRole = "Admin";
+    if (!await roleManager.RoleExistsAsync(adminRole))
+    {
+        await roleManager.CreateAsync(new IdentityRole(adminRole));
+    }
+
+    // Создание первого администратора
+    string adminUserName = "Admin";
+    string adminEmail = "admin@example.com";
+    string adminPassword = "Admin@12345"; // Замените на надёжный пароль
+
+    if (await userManager.FindByNameAsync(adminUserName) == null)
+    {
+        var adminUser = new ApplicationUser
+        {
+            UserName = adminUserName,
+            Email = adminEmail,
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(adminUser, adminPassword);
+
+        if (result.Succeeded)
+        {
+            // Назначение роли "Admin" первому пользователю
+            await userManager.AddToRoleAsync(adminUser, adminRole);
+            Console.WriteLine("Администратор успешно создан.");
+        }
+        else
+        {
+            Console.WriteLine("Ошибка при создании администратора:");
+            foreach (var error in result.Errors)
+            {
+                Console.WriteLine($"- {error.Description}");
+            }
+        }
+    }
+    else
+    {
+        Console.WriteLine("Администратор уже существует.");
     }
 }
 

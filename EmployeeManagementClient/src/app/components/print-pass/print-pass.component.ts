@@ -22,14 +22,18 @@ export class PrintPassComponent implements OnInit {
 		);
 	}
 
+	/**
+	 * Печать пропуска для выбранного контрагента.
+	 * @param contractor Контрагент.
+	 */
 	printPass(contractor: Contractor): void {
 		const printContents = `
-      <div>
+      <div style="font-family: Arial, sans-serif; padding: 20px;">
         <h3>Пропуск</h3>
-        <p>Имя: ${contractor.firstName}</p>
-        <p>Фамилия: ${contractor.lastName}</p>
-        <p>Дата Рождения: ${contractor.birthDate}</p>
-        <p>Тип продукции: ${contractor.productType}</p>
+        <p><strong>Имя:</strong> ${contractor.firstName}</p>
+        <p><strong>Фамилия:</strong> ${contractor.lastName}</p>
+        <p><strong>Дата Рождения:</strong> ${new Date(contractor.birthDate).toLocaleDateString()}</p>
+        <p><strong>Тип продукции:</strong> ${contractor.productType}</p>
       </div>
     `;
 		const printWindow = window.open('', '_blank');
@@ -37,6 +41,7 @@ export class PrintPassComponent implements OnInit {
 			printWindow.document.write(printContents);
 			printWindow.document.close();
 			printWindow.print();
+			printWindow.close();
 		}
 	}
 }

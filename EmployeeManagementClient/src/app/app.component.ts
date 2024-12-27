@@ -13,6 +13,7 @@ import { RouterModule } from '@angular/router';
 })
 export class AppComponent implements OnDestroy {
 	isReferencesExpanded = false;
+	isTransactionsExpanded = false;
 	title = 'Employee Management';
 	private inactivityListeners: (() => void)[] = [];
 
@@ -29,24 +30,39 @@ export class AppComponent implements OnDestroy {
 		});
 	}
 
+	/**
+	 * Проверка аутентификации пользователя.
+	 */
 	isAuthenticated(): boolean {
 		return this.authService.isAuthenticated();
 	}
 
+	/**
+	 * Переключение состояния раскрытия списка справочников.
+	 */
 	toggleReferences(): void {
 		this.isReferencesExpanded = !this.isReferencesExpanded;
 	}
 
+	/**
+	 * Выход пользователя из системы.
+	 */
 	logout(): void {
 		this.authService.logout();
 		this.router.navigate(['/login']);
 		console.log('Пользователь вышел из системы.');
 	}
 
+	/**
+	 * Определяет, должен ли показываться основной контент.
+	 */
 	showContent(): boolean {
 		return this.router.url !== '/login';
 	}
 
+	/**
+	 * Настройка слушателей для отслеживания активности пользователя.
+	 */
 	private setupInactivityListeners(): void {
 		const events = ['click', 'keydown'];
 
@@ -59,8 +75,18 @@ export class AppComponent implements OnDestroy {
 		console.log('Отслеживание активности пользователя включено.');
 	}
 
+	/**
+	 * Очистка слушателей при уничтожении компонента.
+	 */
 	ngOnDestroy(): void {
 		this.inactivityListeners.forEach(removeListener => removeListener());
 		console.log('Слушатели активности пользователя удалены.');
+	}
+
+	/**
+	 * Переключение состояния раскрытия списка транзакций.
+	 */
+	toggleTransactions(): void {
+		this.isTransactionsExpanded = !this.isTransactionsExpanded;
 	}
 }

@@ -33,7 +33,7 @@ export class ContractorPointsService {
 
 		return this.http.get<any>(url, { params }).pipe(
 			map((response) => {
-				const nationalities = response.nationalities?.$values || response.nationalities || [];
+				const nationalities = response.nationalities || [];
 				return {
 					total: response.total || 0,
 					nationalities: nationalities,
@@ -69,7 +69,7 @@ export class ContractorPointsService {
 		return this.http.get<any>(`${this.baseApiUrl}/searchNationalities/search`, { params }).pipe(
 			map((response) => {
 				// Парсим ответ
-				const nationalities = response?.$values || []; // Извлекаем массив из $values
+				const nationalities = response.nationalities || [];
 				return {
 					total: nationalities.length,
 					nationalities,
@@ -103,7 +103,7 @@ export class ContractorPointsService {
 
 		return this.http.get<any>(url, { params }).pipe(
 			map((response) => {
-				const citizenships = response.citizenships?.$values || response.citizenships || [];
+				const citizenships = response.citizenships || [];
 				return {
 					total: response.total || 0,
 					citizenships: citizenships,
@@ -139,7 +139,7 @@ export class ContractorPointsService {
 		return this.http.get<any>(`${this.baseApiUrl}/searchCitizenships/search`, { params }).pipe(
 			map((response) => {
 				// Парсим ответ
-				const citizenships = response?.$values || [];
+				const citizenships = response.citizenships || [];
 				return {
 					total: citizenships.length,
 					citizenships,
@@ -147,7 +147,7 @@ export class ContractorPointsService {
 			}),
 			catchError((error) => {
 				console.error('[searchCitizenships] Ошибка:', error);
-				return of({ total: 0, citizenships: [] }); // Возвращаем пустой результат в случае ошибки
+				return of({ total: 0, citizenships: [] });
 			})
 		);
 	}

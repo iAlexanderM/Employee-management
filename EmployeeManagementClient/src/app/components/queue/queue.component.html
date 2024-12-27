@@ -1,0 +1,53 @@
+<div class="container mt-4">
+	<h2>Очередь талонов</h2>
+
+	<!-- Классический подход -->
+	<div class="mb-4">
+		<h3>Классический подход</h3>
+
+		<!-- Текущий талон -->
+		<p><strong>Текущий талон:</strong> {{ currentToken }}</p>
+		<button class="btn btn-primary me-2" (click)="generateNewToken()">Создать новый талон</button>
+		<p *ngIf="newToken"><strong>Новый талон:</strong> {{ newToken }}</p>
+	</div>
+
+	<!-- Активный талон -->
+	<div class="mb-4">
+		<h3>Активный талон</h3>
+		<p *ngIf="activeToken"><strong>Активный талон:</strong> {{ activeToken }}</p>
+		<p *ngIf="!activeToken">Нет активного талона</p>
+		<button *ngIf="activeToken" class="btn btn-danger" (click)="closeActiveToken()">Закрыть активный талон</button>
+	</div>
+
+	<!-- Список ожидающих талонов -->
+	<div class="mb-4">
+		<h3>Список ожидающих талонов</h3>
+		<table class="table table-bordered">
+			<thead class="table-light">
+				<tr>
+					<th>Token</th>
+					<th>Created At</th>
+					<th>Действия</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr *ngFor="let t of pendingTokens">
+					<td>{{ t.token }}</td>
+					<td>{{ t.createdAt | date:'short' }}</td>
+					<td>
+						<button class="btn btn-success btn-sm" (click)="activateToken(t.token)">Активировать</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<!-- JWT-подход -->
+	<div class="mb-4">
+		<h3>JWT-подход</h3>
+		<button class="btn btn-secondary me-2" (click)="jwtGetNextSignedToken()">Получить подписанный талон</button>
+		<p *ngIf="signedToken"><strong>Signed Token:</strong> {{ signedToken }}</p>
+		<button class="btn btn-primary" (click)="jwtSaveTransaction()" [disabled]="!signedToken">Сохранить
+			транзакцию</button>
+	</div>
+</div>
