@@ -16,6 +16,7 @@ using EmployeeManagementServer.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using System.Threading;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,15 +52,24 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer("JwtBearer", options =>
 {
+    // КЛЮЧЕВОЙ МОМЕНТ:
+    // ОТКЛЮЧАЕМ автопреобразование входящих клеймов (чтобы sub не мапился к NameIdentifier автоматически).
+    options.MapInboundClaims = false;
+
+    // Указываем, что NameClaimType = ClaimTypes.NameIdentifier
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true, // Проверка издателя токена
-        ValidateAudience = true, // Проверка аудитории токена
-        ValidateLifetime = true, // Проверка срока действия токена
-        ValidateIssuerSigningKey = true, // Проверка подписи токена
-        ValidIssuer = builder.Configuration["AppSettings:Issuer"], // Настройки издателя
-        ValidAudience = builder.Configuration["AppSettings:Audience"], // Настройки аудитории
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"] ?? string.Empty)) // Секретный ключ
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["AppSettings:Issuer"],
+        ValidAudience = builder.Configuration["AppSettings:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"] ?? string.Empty)),
+
+        // Теперь ASP.NET будет искать "nameid" клейм и ставить его в ClaimTypes.NameIdentifier.
+        NameClaimType = ClaimTypes.NameIdentifier,
+        RoleClaimType = ClaimTypes.Role
     };
 });
 
@@ -71,7 +81,7 @@ builder.Services.AddAuthorization(options =>
         .Build();
 });
 
-// Настройка CORS для разрешения запросов из любого источника
+// Настройка CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins", builder =>
@@ -82,7 +92,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Регистрация остальных сервисов
+// Регистрация сервисов/поисков/т.д.
 builder.Services.AddScoped<ContractorService>();
 builder.Services.AddScoped<IContractorSearchService, ContractorSearchService>();
 builder.Services.AddScoped<IStoreService, StoreService>();
@@ -126,12 +136,14 @@ builder.Services.AddControllers()
 
 var app = builder.Build();
 
-// Обрабатываем миграции базы данных при старте приложения
+// Запускаем миграции
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-    // Миграции базы данных с повторными попытками подключения
+    Console.WriteLine(">>> Текущая строка подключения: " + dbContext.Database.GetDbConnection().ConnectionString);
+
+    // Миграции + повторные попытки
     var retryCount = 5;
     var delay = TimeSpan.FromSeconds(5);
     for (int i = 0; i < retryCount; i++)
@@ -152,21 +164,20 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    // Добавление первого пользователя и роли
+    // Создаём роль "Admin"
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    // Создание роли "Admin", если её нет
     string adminRole = "Admin";
     if (!await roleManager.RoleExistsAsync(adminRole))
     {
         await roleManager.CreateAsync(new IdentityRole(adminRole));
     }
 
-    // Создание первого администратора
+    // Создаём пользователя Admin, если нет
     string adminUserName = "Admin";
     string adminEmail = "admin@example.com";
-    string adminPassword = "Admin@12345"; // Замените на надёжный пароль
+    string adminPassword = "Admin@12345";
 
     if (await userManager.FindByNameAsync(adminUserName) == null)
     {
@@ -181,7 +192,6 @@ using (var scope = app.Services.CreateScope())
 
         if (result.Succeeded)
         {
-            // Назначение роли "Admin" первому пользователю
             await userManager.AddToRoleAsync(adminUser, adminRole);
             Console.WriteLine("Администратор успешно создан.");
         }
@@ -215,7 +225,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Подключаем CORS для API
+// Подключаем CORS
 app.UseCors("AllowAllOrigins");
 
 // Подключаем аутентификацию и авторизацию
@@ -225,7 +235,7 @@ app.UseAuthorization();
 // Маршрутизация контроллеров
 app.MapControllers();
 
-// Чтение порта для запуска приложения
+// Чтение порта
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Urls.Add($"http://*:{port}");
 

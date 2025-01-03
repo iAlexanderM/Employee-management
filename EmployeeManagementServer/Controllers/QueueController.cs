@@ -2,110 +2,91 @@
 using Microsoft.EntityFrameworkCore;
 using EmployeeManagementServer.Data;
 using EmployeeManagementServer.Models;
-using EmployeeManagementServer.Models.DTOs;
-using EmployeeManagementServer.Services;
 using System.Security.Claims;
-using Npgsql;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.RegularExpressions;
+using System.ComponentModel.DataAnnotations;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace EmployeeManagementServer.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // Защита контроллера
+    [Authorize]
     public class QueueController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly JwtPassTokenService _passTokenService;
 
-        public QueueController(ApplicationDbContext context, JwtPassTokenService passTokenService)
+        public QueueController(ApplicationDbContext context)
         {
             _context = context;
-            _passTokenService = passTokenService;
         }
 
-        //----------------------------------------------------------------------
-        //    1)  Классические методы "current-token", "active-token", etc.
-        //         чтобы фронт (QueueService) не падал с 404
-        //----------------------------------------------------------------------
-
         /// <summary>
-        /// Получить текущий номер талона для указанного типа (например, 'P').
-        /// Используется на фронте (QueueComponent) → getCurrentToken('P').
-        /// Логика: ищем последний за сегодня и берём его номер, иначе 0.
+        /// Создать новый талон (Active).
+        /// POST /api/Queue/create-token?type=P
         /// </summary>
-        [HttpGet("current-token/{type}")]
-        public async Task<IActionResult> GetCurrentToken(string type)
+        [HttpPost("create-token")]
+        public async Task<IActionResult> CreateToken([FromQuery] string type)
         {
-            var today = DateTime.UtcNow.Date;
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine($"[DEBUG] CreateToken: userId from token = {userId}");
 
-            var lastTransaction = await _context.PassTransactions
-                .Where(t => t.TokenType == type && t.CreatedAt.Date == today && t.UserId == userId)
-                .OrderByDescending(t => t.CreatedAt)
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Не удалось определить пользователя (NameIdentifier).");
+            }
+
+            // Проверяем, нет ли уже Active
+            var existingActive = await _context.PassTransactions
+                .FirstOrDefaultAsync(t => t.UserId == userId && t.Status == "Active");
+            if (existingActive != null)
+            {
+                return BadRequest($"У вас уже есть активный талон: {existingActive.Token}. " +
+                                  "Сначала закройте или сохраните (Pending) его.");
+            }
+
+            // Определяем "сегодня" (UTC)
+            DateTime today = DateTime.UtcNow.Date;
+
+            // Находим последний талон за сегодня
+            var lastTodayTransaction = await _context.PassTransactions
+                .Where(t => t.TokenType == type && t.CreatedAt.Date == today)
+                .OrderByDescending(t => t.Id)
                 .FirstOrDefaultAsync();
 
-            int currentNumber = 0;
-            if (lastTransaction != null)
+            int nextNum = 1;
+            if (lastTodayTransaction != null)
             {
-                // Предполагаем, что Token = "P3" → берём substring(1..)
-                if (lastTransaction.Token.Length > 1)
+                var match = Regex.Match(lastTodayTransaction.Token, @"(\d+)$");
+                if (match.Success && int.TryParse(match.Groups[1].Value, out int parsedNumber))
                 {
-                    var numericPart = lastTransaction.Token.Substring(1);
-                    if (int.TryParse(numericPart, out int parsedNum))
-                    {
-                        currentNumber = parsedNum;
-                    }
+                    nextNum = parsedNumber + 1;
                 }
             }
 
-            return Ok(new { currentToken = $"{type}{currentNumber}" });
+            string newToken = $"{type}{nextNum}";
+
+            var transaction = new PassTransaction
+            {
+                Token = newToken,
+                TokenType = type,
+                UserId = userId,
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.PassTransactions.Add(transaction);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { token = newToken });
         }
 
         /// <summary>
-        /// Список ожидающих (Pending) для текущего пользователя.
-        /// Фронт: /api/Queue/pending-tokens
-        /// </summary>
-        [HttpGet("pending-tokens")]
-        public async Task<IActionResult> GetPendingTokens()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var tokens = await _context.PassTransactions
-                .Where(t => t.Status == "Pending" && t.UserId == userId)
-                .OrderByDescending(t => t.CreatedAt)
-                .Select(t => new
-                {
-                    t.Token,
-                    t.CreatedAt
-                })
-                .ToListAsync();
-
-            return Ok(tokens);
-        }
-
-        /// <summary>
-        /// Получить "активный" талон для текущего пользователя. 
-        /// </summary>
-        [HttpGet("active-token")]
-        public async Task<IActionResult> GetActiveToken()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var activeTransaction = await _context.PassTransactions
-                .Where(t => t.Status == "Active" && t.UserId == userId)
-                .OrderByDescending(t => t.CreatedAt)
-                .FirstOrDefaultAsync();
-
-            if (activeTransaction == null)
-                return Ok(new { ActiveToken = (string?)null });
-
-            return Ok(new { ActiveToken = activeTransaction.Token });
-        }
-
-        /// <summary>
-        /// Закрыть талон (Pending) → Closed для текущего пользователя.
-        /// Фронт: POST /api/Queue/close-token  body: { token:"P3" }
+        /// Закрыть талон (Active → Closed).
+        /// POST /api/Queue/close-token
         /// </summary>
         [HttpPost("close-token")]
         public async Task<IActionResult> CloseActiveToken([FromBody] CloseTokenDto dto)
@@ -114,12 +95,18 @@ namespace EmployeeManagementServer.Controllers
                 return BadRequest("Токен не указан.");
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine($"[DEBUG] CloseActiveToken: userId from token = {userId}");
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Не удалось определить пользователя.");
 
             var transaction = await _context.PassTransactions
-                .FirstOrDefaultAsync(t => t.Token == dto.Token && t.Status == "Pending" && t.UserId == userId);
+                .FirstOrDefaultAsync(t => t.Token == dto.Token
+                    && t.Status == "Active"
+                    && t.UserId == userId);
 
             if (transaction == null)
-                return NotFound("Талон не найден или уже не Pending.");
+                return NotFound("Активный талон не найден или принадлежит другому пользователю.");
 
             transaction.Status = "Closed";
             _context.PassTransactions.Update(transaction);
@@ -129,176 +116,101 @@ namespace EmployeeManagementServer.Controllers
         }
 
         /// <summary>
-        /// Активировать талон (из Pending в Active) для текущего пользователя.
-        /// Фронт: POST /api/Queue/activate-token, body: { token: "P3" }
+        /// Сохранить транзакцию (Active → Pending).
+        /// PUT /api/Queue/save-transaction
         /// </summary>
-        [HttpPost("activate-token")]
-        public async Task<IActionResult> ActivateToken([FromBody] ActivateTokenDto dto)
+        [HttpPut("save-transaction")]
+        public async Task<IActionResult> SaveTransaction([FromBody] SaveTransactionDto dto)
         {
-            if (dto == null || string.IsNullOrWhiteSpace(dto.Token))
-                return BadRequest("Токен не указан.");
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // Проверяем, есть ли уже активный талон для пользователя
-            var existingActive = await _context.PassTransactions
-                .FirstOrDefaultAsync(t => t.Status == "Active" && t.UserId == userId);
-
-            if (existingActive != null)
-            {
-                return BadRequest($"Талон {existingActive.Token} уже активен. Закройте его перед активацией нового.");
-            }
-
-            var token = dto.Token;
-
-            // Ищем транзакцию и меняем статус
-            var transaction = await _context.PassTransactions
-                .FirstOrDefaultAsync(t => t.Token == token && t.Status == "Pending" && t.UserId == userId);
-
-            if (transaction == null)
-                return NotFound("Талон не найден или уже не Pending.");
-
-            transaction.Status = "Active";
-            _context.PassTransactions.Update(transaction);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        //----------------------------------------------------------------------
-        //    2)  JWT-подход: GET new-token/{type}, POST save-transaction
-        //----------------------------------------------------------------------
-
-        /// <summary>
-        /// (JWT-подход) Получить подписанный талон (type="P", num=3) из sequence,
-        /// НЕ создаём запись в PassTransactions. 
-        /// Фронт: GET /api/Queue/new-token/P
-        /// Возвращаем signedToken = "...".
-        /// </summary>
-        [HttpGet("new-token/{type}")]
-        public async Task<IActionResult> GetNextToken(string type)
-        {
-            // 1) Получаем следующий номер из sequence
-            var connection = _context.Database.GetDbConnection() as NpgsqlConnection;
-            if (connection == null) throw new Exception("Не удалось получить NpgsqlConnection.");
-
-            if (connection.State != System.Data.ConnectionState.Open)
-                await connection.OpenAsync();
-
-            long nextVal;
-            using (var cmd = connection.CreateCommand())
-            {
-                cmd.CommandText = "SELECT nextval('pass_token_seq')";
-                var obj = await cmd.ExecuteScalarAsync();
-                nextVal = (long)obj;
-            }
-
-            // Получаем UserId из Claims
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized("Пользователь не аутентифицирован.");
-            }
-
-            var signedToken = _passTokenService.GeneratePassToken(type, nextVal, userId);
-            return Ok(new { signedToken });
-        }
-
-        /// <summary>
-        /// (JWT-подход) Сохранить транзакцию (PassTransaction),
-        /// используя подписанный токен (dto.SignedToken).
-        /// В теле: { signedToken, contractorId, storeId, passTypeId, startDate, endDate, ... }
-        /// Создаём запись в PassTransactions (Status=Pending).
-        /// </summary>
-        [HttpPost("save-transaction")]
-        public async Task<IActionResult> SaveTransaction([FromBody] SaveTransactionJwtDto dto)
-        {
-            // 1) Валидируем подписанный токен
-            var (isValid, error, talonType, talonNum, tokenUserId) =
-                _passTokenService.ValidatePassToken(dto.SignedToken);
-
-            if (!isValid)
-                return BadRequest($"Invalid token: {error}");
-
-            // Проверка соответствия userId
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!string.IsNullOrWhiteSpace(tokenUserId)
-                && !string.IsNullOrWhiteSpace(currentUserId)
-                && tokenUserId != currentUserId)
-            {
-                return BadRequest("Этот талон принадлежит другому пользователю.");
-            }
-
-            // Формируем Token="P3"
-            var tokenString = $"{talonType}{talonNum}";
-
-            // 2) Проверяем поля
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine($"[DEBUG] SaveTransaction: userId from token = {userId}");
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Не удалось определить пользователя.");
+
+            var transaction = await _context.PassTransactions
+                .FirstOrDefaultAsync(t => t.Token == dto.Token
+                    && t.Status == "Active"
+                    && t.UserId == userId);
+
+            if (transaction == null)
+                return NotFound("Активный талон не найден или принадлежит другому пользователю.");
 
             var passType = await _context.PassTypes.FindAsync(dto.PassTypeId);
             if (passType == null)
                 return BadRequest("Указанный тип пропуска (PassTypeId) не найден.");
 
-            if (!await _context.Contractors.AnyAsync(c => c.Id == dto.ContractorId))
+            bool contractorExists = await _context.Contractors.AnyAsync(c => c.Id == dto.ContractorId);
+            if (!contractorExists)
                 return BadRequest("Указанный контрагент (ContractorId) не найден.");
 
-            if (!await _context.Stores.AnyAsync(s => s.Id == dto.StoreId))
+            bool storeExists = await _context.Stores.AnyAsync(s => s.Id == dto.StoreId);
+            if (!storeExists)
                 return BadRequest("Указанная торговая точка (StoreId) не найдена.");
 
-            // 3) Проверка на повтор
-            bool alreadyExists = await _context.PassTransactions.AnyAsync(t => t.Token == tokenString);
-            if (alreadyExists)
-                return BadRequest($"Транзакция с Token={tokenString} уже существует!");
+            transaction.ContractorId = dto.ContractorId;
+            transaction.StoreId = dto.StoreId;
+            transaction.PassTypeId = dto.PassTypeId;
+            transaction.StartDate = dto.StartDate;
+            transaction.EndDate = dto.EndDate;
+            transaction.Position = dto.Position ?? string.Empty;
+            transaction.Amount = passType.Cost;
+            transaction.Status = "Pending";
 
-            // 4) Создаём запись в PassTransactions
-            var transaction = new PassTransaction
-            {
-                Token = tokenString,
-                TokenType = talonType ?? "P",
-                ContractorId = dto.ContractorId,
-                StoreId = dto.StoreId,
-                PassTypeId = dto.PassTypeId,
-                StartDate = dto.StartDate,
-                EndDate = dto.EndDate,
-                Amount = passType.Cost,
-                Position = dto.Position ?? string.Empty,
-                Status = "Pending",
-                CreatedAt = DateTime.UtcNow,
-                UserId = currentUserId ?? string.Empty // Присваиваем текущего пользователя
-            };
-
-            _context.PassTransactions.Add(transaction);
+            _context.PassTransactions.Update(transaction);
             await _context.SaveChangesAsync();
 
             return Ok(new
             {
-                Message = "Транзакция успешно сохранена",
-                TransactionId = transaction.Id,
-                Token = transaction.Token
+                Message = "Транзакция сохранена (Pending).",
+                Token = transaction.Token,
+                TransactionId = transaction.Id
             });
+        }
+
+        /// <summary>
+        /// Список всех транзакций (для демонстрации).
+        /// GET /api/Queue/list-all
+        /// </summary>
+        [HttpGet("list-all")]
+        public async Task<IActionResult> ListAll()
+        {
+            var allTransactions = await _context.PassTransactions
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
+
+            return Ok(allTransactions);
         }
     }
 
-    /// <summary>
-    /// DTO для закрытия талона (close-token).
-    /// </summary>
     public class CloseTokenDto
     {
         public string Token { get; set; } = string.Empty;
     }
 
-    /// <summary>
-    /// DTO для (JWT-подход) сохранения транзакции.
-    /// </summary>
-    public class SaveTransactionJwtDto
+    public class SaveTransactionDto
     {
-        public string SignedToken { get; set; } = string.Empty;
+        [Required]
+        public string Token { get; set; } = string.Empty;
+
+        [Required]
         public int ContractorId { get; set; }
+
+        [Required]
         public int StoreId { get; set; }
+
+        [Required]
         public int PassTypeId { get; set; }
+
+        [Required]
         public DateTime StartDate { get; set; }
+
+        [Required]
         public DateTime EndDate { get; set; }
+
         public string? Position { get; set; }
     }
 }

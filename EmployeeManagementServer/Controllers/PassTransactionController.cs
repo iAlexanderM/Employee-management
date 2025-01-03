@@ -3,14 +3,16 @@ using EmployeeManagementServer.Data;
 using EmployeeManagementServer.Models;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using EmployeeManagementServer.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
+using System;
+using System.Linq;
+using System.ComponentModel.DataAnnotations;
 
 namespace EmployeeManagementServer.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // Защита контроллера
+    [Authorize]
     public class PassTransactionController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -21,7 +23,8 @@ namespace EmployeeManagementServer.Controllers
         }
 
         /// <summary>
-        /// Получить все транзакции (можно фильтровать по статусу на фронте).
+        /// Получить все транзакции (для администрирования).
+        /// Пример: GET /api/PassTransaction
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetAllPassTransactions()
@@ -38,7 +41,8 @@ namespace EmployeeManagementServer.Controllers
         }
 
         /// <summary>
-        /// Получить транзакцию по её внутреннему Id (первичный ключ).
+        /// Получить транзакцию по её внутреннему Id.
+        /// Пример: GET /api/PassTransaction/5
         /// </summary>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPassTransactionById(int id)
@@ -52,31 +56,43 @@ namespace EmployeeManagementServer.Controllers
                 .FirstOrDefaultAsync(t => t.Id == id);
 
             if (transaction == null)
+            {
                 return NotFound();
+            }
 
             return Ok(transaction);
         }
 
         /// <summary>
-        /// Подтвердить оплату транзакции (меняем Status = "Paid").
-        /// По желанию создаём реальный Pass (готовый пропуск) в таблице Passes.
+        /// Подтвердить оплату транзакции (Pending → Paid), при этом создается Pass.
+        /// Пример: POST /api/PassTransaction/{id}/confirm
         /// </summary>
         [HttpPost("{id}/confirm")]
         public async Task<IActionResult> ConfirmTransaction(int id)
         {
-            var transaction = await _context.PassTransactions.FindAsync(id);
+            // Ищем транзакцию
+            var transaction = await _context.PassTransactions.FirstOrDefaultAsync(t => t.Id == id);
             if (transaction == null)
+            {
                 return NotFound("Транзакция не найдена.");
+            }
 
+            // Проверяем статус
             if (transaction.Status == "Paid")
-                return BadRequest("Транзакция уже подтверждена как оплаченная.");
+            {
+                return BadRequest("Транзакция уже оплачена.");
+            }
+            if (transaction.Status != "Pending")
+            {
+                return BadRequest("Транзакция должна быть в статусе Pending, чтобы оплатить.");
+            }
 
-            // Меняем статус
+            // Ставим статус = Paid
             transaction.Status = "Paid";
             _context.PassTransactions.Update(transaction);
 
-            // Создаём запись в Pass (как пропуск)
-            var pass = new Pass
+            // Создаем запись в Pass
+            Pass pass = new Pass
             {
                 UniquePassId = Guid.NewGuid().ToString(),
                 ContractorId = transaction.ContractorId,
@@ -84,42 +100,120 @@ namespace EmployeeManagementServer.Controllers
                 PassTypeId = transaction.PassTypeId,
                 StartDate = transaction.StartDate,
                 EndDate = transaction.EndDate,
-                Position = transaction.Position, // берем из транзакции
+                Position = transaction.Position,
                 TransactionDate = DateTime.UtcNow,
                 IsClosed = false
-                // PassTransactionId удалено
             };
-
             _context.Passes.Add(pass);
             await _context.SaveChangesAsync();
 
-            // Обновляем транзакцию с PassId
+            // Связываем PassTransaction с Pass
             transaction.PassId = pass.Id;
             _context.PassTransactions.Update(transaction);
             await _context.SaveChangesAsync();
 
             return Ok(new
             {
-                Message = "Транзакция подтверждена, пропуск создан.",
+                Message = $"Транзакция {transaction.Token} оплачена, пропуск создан.",
                 Transaction = transaction
             });
         }
 
-        /*
-        // (УДАЛЕНО/закомментировано)
-        // Старый метод CreatePassTransaction с GenerateToken,
-        // чтобы логика не пересекалась с QueueController + sequence.
+        /// <summary>
+        /// Редактировать транзакцию в статусе Pending.
+        /// Пример: PUT /api/PassTransaction/{id}/update
+        /// Body:
+        /// {
+        ///   "contractorId": 321,
+        ///   "storeId": 50,
+        ///   "passTypeId": 6,
+        ///   "startDate": "2024-12-30T10:00:00",
+        ///   "endDate": "2024-12-30T19:00:00",
+        ///   "position": "Старший менеджер"
+        /// }
+        /// </summary>
+        /// <param name="id">ID транзакции</param>
+        /// <param name="dto">Новые данные</param>
+        /// <returns>JSON с сообщением об успехе</returns>
+        [HttpPut("{id}/update")]
+        public async Task<IActionResult> UpdatePendingTransaction(int id, [FromBody] UpdatePendingDto dto)
+        {
+            // Проверяем валидацию
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-        // [HttpPost]
-        // public async Task<IActionResult> CreatePassTransaction([FromBody] CreatePassTransactionDto dto)
-        // {
-        //     ... (закомментировано)
-        // }
+            // Ищем транзакцию
+            var transaction = await _context.PassTransactions.FirstOrDefaultAsync(t => t.Id == id);
+            if (transaction == null)
+            {
+                return NotFound("Транзакция не найдена.");
+            }
 
-        // private async Task<string> GenerateToken(int storeId)
-        // {
-        //    ... (закомментировано)
-        // }
-        */
+            // Разрешаем редактировать только если статус = Pending
+            if (transaction.Status != "Pending")
+            {
+                return BadRequest("Редактировать можно только транзакцию в статусе Pending.");
+            }
+
+            // Проверяем PassType
+            var passType = await _context.PassTypes.FindAsync(dto.PassTypeId);
+            if (passType == null)
+            {
+                return BadRequest("Тип пропуска не найден.");
+            }
+
+            // Проверяем Contractor
+            bool contractorExists = await _context.Contractors.AnyAsync(c => c.Id == dto.ContractorId);
+            if (!contractorExists)
+            {
+                return BadRequest("Контрагент не найден.");
+            }
+
+            // Проверяем Store
+            bool storeExists = await _context.Stores.AnyAsync(s => s.Id == dto.StoreId);
+            if (!storeExists)
+            {
+                return BadRequest("Торговая точка не найдена.");
+            }
+
+            // Обновляем поля
+            transaction.ContractorId = dto.ContractorId;
+            transaction.StoreId = dto.StoreId;
+            transaction.PassTypeId = dto.PassTypeId;
+            transaction.StartDate = dto.StartDate;
+            transaction.EndDate = dto.EndDate;
+            transaction.Position = dto.Position ?? string.Empty;
+            transaction.Amount = passType.Cost;
+
+            _context.PassTransactions.Update(transaction);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = $"Транзакция {transaction.Token} обновлена." });
+        }
+    }
+
+    /// <summary>
+    /// DTO для обновления Pending-транзакции
+    /// </summary>
+    public class UpdatePendingDto
+    {
+        [Required]
+        public int ContractorId { get; set; }
+
+        [Required]
+        public int StoreId { get; set; }
+
+        [Required]
+        public int PassTypeId { get; set; }
+
+        [Required]
+        public DateTime StartDate { get; set; }
+
+        [Required]
+        public DateTime EndDate { get; set; }
+
+        public string? Position { get; set; }
     }
 }
