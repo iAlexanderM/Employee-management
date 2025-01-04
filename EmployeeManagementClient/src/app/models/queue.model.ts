@@ -1,21 +1,9 @@
-/**
- * DTO для сохранения транзакции через JWT-подход.
- */
-export interface SaveTransactionJwtDto {
-	signedToken: string;
-	contractorId: number;
-	storeId: number;
-	passTypeId: number;
-	startDate: string; // ISO формат даты
-	endDate: string;   // ISO формат даты
-	position?: string;
-}
-
-/**
- * Ответ от сервера после сохранения транзакции.
- */
-export interface SaveTransactionResponse {
-	message: string;
-	transactionId: number;
+// src/app/models/queue.model.ts
+export interface QueueToken {
+	id: number;
 	token: string;
+	tokenType: string;
+	userId: string;
+	status: string;
+	createdAt: Date;
 }

@@ -1,5 +1,6 @@
+// src/app/services/transaction.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PassTransaction } from '../models/transaction.model';
 
@@ -11,39 +12,28 @@ export class TransactionService {
 
 	constructor(private http: HttpClient) { }
 
-	/**
-	 * Получить список транзакций с фильтром по статусу.
-	 * @param status Статус транзакции (например, 'Pending', 'Paid').
-	 */
-	getTransactions(status?: string): Observable<PassTransaction[]> {
-		let params = new HttpParams();
-		if (status) {
-			params = params.set('status', status);
-		}
-		return this.http.get<PassTransaction[]>(this.apiUrl, { params });
+	getAllTransactions(): Observable<PassTransaction[]> {
+		return this.http.get<PassTransaction[]>(this.apiUrl);
 	}
 
-	/**
-	 * Получить транзакцию по её ID.
-	 * @param id ID транзакции.
-	 */
 	getTransactionById(id: number): Observable<PassTransaction> {
 		return this.http.get<PassTransaction>(`${this.apiUrl}/${id}`);
 	}
 
-	/**
-	 * Создать новую транзакцию.
-	 * @param data Данные для создания транзакции.
-	 */
-	createTransaction(data: Partial<PassTransaction>): Observable<PassTransaction> {
-		return this.http.post<PassTransaction>(this.apiUrl, data);
+	confirmTransaction(id: number): Observable<any> {
+		return this.http.post<any>(`${this.apiUrl}/${id}/confirm`, {});
 	}
 
-	/**
-	 * Подтвердить оплату транзакции.
-	 * @param id ID транзакции.
-	 */
-	confirmTransaction(id: number): Observable<void> {
-		return this.http.post<void>(`${this.apiUrl}/${id}/confirm`, {});
+	updatePendingTransaction(id: number, dto: UpdatePendingDto): Observable<{ message: string }> {
+		return this.http.put<{ message: string }>(`${this.apiUrl}/${id}/update`, dto);
 	}
+}
+
+export interface UpdatePendingDto {
+	contractorId: number;
+	storeId: number;
+	passTypeId: number;
+	startDate: Date;
+	endDate: Date;
+	position?: string;
 }

@@ -1,5 +1,12 @@
-<div *ngIf="activeToken" class="active-token-banner bg-info text-white p-3 mb-4">
-	<p><strong>Активный талон:</strong> {{ activeToken }}</p>
-	<button class="btn btn-secondary me-2" (click)="goToTransaction()">Перейти к транзакции</button>
-	<button class="btn btn-danger" (click)="closeToken()">Закрыть талон</button>
+<!-- src/app/components/queue/active-token/active-token.component.html -->
+<div class="active-token-container" *ngIf="activeToken; else noActiveToken">
+	<h3>Ваш Активный Талон</h3>
+	<p><strong>Талон:</strong> {{ activeToken.token }}</p>
+	<p><strong>Тип услуги:</strong> {{ activeToken.tokenType }}</p>
+	<p><strong>Дата создания:</strong> {{ activeToken.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</p>
+	<p><strong>Статус:</strong> {{ activeToken.status }}</p>
 </div>
+
+<ng-template #noActiveToken>
+	<p>У вас нет активных талонов.</p>
+</ng-template>

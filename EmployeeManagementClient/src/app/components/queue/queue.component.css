@@ -1,0 +1,12 @@
+/* src/app/components/queue/queue.component.css */
+.queue-container {
+	padding: 20px;
+}
+
+.queue-container h2 {
+	margin-bottom: 20px;
+}
+
+.queue-container .btn {
+	margin-bottom: 10px;
+}

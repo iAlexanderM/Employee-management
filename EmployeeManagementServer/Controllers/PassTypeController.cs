@@ -5,11 +5,14 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using EmployeeManagementServer.Models.DTOs;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EmployeeManagementServer.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
+
     public class PassTypeController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

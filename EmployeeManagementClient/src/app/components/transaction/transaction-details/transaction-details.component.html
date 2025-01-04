@@ -1,34 +1,25 @@
-<div class="container mt-4" *ngIf="transaction">
-	<h1>Детали транзакции</h1>
-	<div class="card">
-		<div class="card-body">
-			<p><strong>ID транзакции:</strong> {{ transaction.id }}</p>
-			<p><strong>Token:</strong> {{ transaction.token }}</p>
-			<p><strong>Статус:</strong> {{ transaction.status }}</p>
-			<p><strong>Сумма:</strong> {{ transaction.amount }}</p>
-			<p><strong>Контрагент:</strong> {{ transaction.contractor.lastName }} {{ transaction.contractor.firstName }}
-				{{
-				transaction.contractor.middleName }}</p>
-			<p><strong>Торговая точка:</strong> {{ transaction.store.building }}, №{{ transaction.store.storeNumber }}
-			</p>
-			<p><strong>Тип пропуска:</strong> {{ transaction.passType.name }}</p>
-			<p><strong>Дата начала:</strong> {{ transaction.startDate | date }}</p>
-			<p><strong>Дата окончания:</strong> {{ transaction.endDate | date }}</p>
-			<p><strong>Создано:</strong> {{ transaction.createdAt | date:'short' }}</p>
-			<p><strong>Должность:</strong> {{ transaction.position }}</p>
+<!-- src/app/components/transaction/transaction-details/transaction-details.component.html -->
+<div class="transaction-details-container" *ngIf="transaction; else noTransaction">
+	<h2>Детали Транзакции</h2>
+	<p><strong>ID:</strong> {{ transaction.id }}</p>
+	<p><strong>Талон:</strong> {{ transaction.token }}</p>
+	<p><strong>Тип Талона:</strong> {{ transaction.tokenType }}</p>
+	<p><strong>Пользователь ID:</strong> {{ transaction.userId }}</p>
+	<p><strong>Статус:</strong> {{ transaction.status }}</p>
+	<p><strong>Дата Создания:</strong> {{ transaction.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</p>
+	<p><strong>Контрагент ID:</strong> {{ transaction.contractorId }}</p>
+	<p><strong>Торговая Точка ID:</strong> {{ transaction.storeId }}</p>
+	<p><strong>Тип Пропуска ID:</strong> {{ transaction.passTypeId }}</p>
+	<p><strong>Дата Начала:</strong> {{ transaction.startDate | date:'dd.MM.yyyy HH:mm:ss' }}</p>
+	<p><strong>Дата Окончания:</strong> {{ transaction.endDate | date:'dd.MM.yyyy HH:mm:ss' }}</p>
+	<p><strong>Должность:</strong> {{ transaction.position }}</p>
+	<p><strong>Сумма:</strong> {{ transaction.amount }}</p>
+	<p><strong>Pass ID:</strong> {{ transaction.passId }}</p>
 
-			<!-- Информация о пропуске, если он существует -->
-			<div *ngIf="transaction.pass">
-				<hr>
-				<h4>Информация о пропуске</h4>
-				<p><strong>ID пропуска:</strong> {{ transaction.pass.id }}</p>
-				<p><strong>Unique Pass ID:</strong> {{ transaction.pass.uniquePassId }}</p>
-				<p><strong>Статус пропуска:</strong> {{ transaction.pass.isClosed ? 'Закрыт' : 'Активен' }}</p>
-			</div>
-		</div>
-	</div>
+	<button *ngIf="transaction.status === 'Pending'" (click)="confirmPayment()" class="btn btn-success">Подтвердить
+		Оплату</button>
 </div>
 
-<div class="container mt-4" *ngIf="!transaction && transactionId !== null">
+<ng-template #noTransaction>
 	<p>Транзакция не найдена.</p>
-</div>
+</ng-template>

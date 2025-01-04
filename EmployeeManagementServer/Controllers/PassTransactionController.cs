@@ -10,9 +10,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EmployeeManagementServer.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class PassTransactionController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -70,14 +70,12 @@ namespace EmployeeManagementServer.Controllers
         [HttpPost("{id}/confirm")]
         public async Task<IActionResult> ConfirmTransaction(int id)
         {
-            // Ищем транзакцию
             var transaction = await _context.PassTransactions.FirstOrDefaultAsync(t => t.Id == id);
             if (transaction == null)
             {
                 return NotFound("Транзакция не найдена.");
             }
 
-            // Проверяем статус
             if (transaction.Status == "Paid")
             {
                 return BadRequest("Транзакция уже оплачена.");
@@ -87,11 +85,9 @@ namespace EmployeeManagementServer.Controllers
                 return BadRequest("Транзакция должна быть в статусе Pending, чтобы оплатить.");
             }
 
-            // Ставим статус = Paid
             transaction.Status = "Paid";
             _context.PassTransactions.Update(transaction);
 
-            // Создаем запись в Pass
             Pass pass = new Pass
             {
                 UniquePassId = Guid.NewGuid().ToString(),
@@ -107,7 +103,6 @@ namespace EmployeeManagementServer.Controllers
             _context.Passes.Add(pass);
             await _context.SaveChangesAsync();
 
-            // Связываем PassTransaction с Pass
             transaction.PassId = pass.Id;
             _context.PassTransactions.Update(transaction);
             await _context.SaveChangesAsync();
@@ -138,47 +133,40 @@ namespace EmployeeManagementServer.Controllers
         [HttpPut("{id}/update")]
         public async Task<IActionResult> UpdatePendingTransaction(int id, [FromBody] UpdatePendingDto dto)
         {
-            // Проверяем валидацию
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            // Ищем транзакцию
             var transaction = await _context.PassTransactions.FirstOrDefaultAsync(t => t.Id == id);
             if (transaction == null)
             {
                 return NotFound("Транзакция не найдена.");
             }
 
-            // Разрешаем редактировать только если статус = Pending
             if (transaction.Status != "Pending")
             {
                 return BadRequest("Редактировать можно только транзакцию в статусе Pending.");
             }
 
-            // Проверяем PassType
             var passType = await _context.PassTypes.FindAsync(dto.PassTypeId);
             if (passType == null)
             {
                 return BadRequest("Тип пропуска не найден.");
             }
 
-            // Проверяем Contractor
             bool contractorExists = await _context.Contractors.AnyAsync(c => c.Id == dto.ContractorId);
             if (!contractorExists)
             {
                 return BadRequest("Контрагент не найден.");
             }
 
-            // Проверяем Store
             bool storeExists = await _context.Stores.AnyAsync(s => s.Id == dto.StoreId);
             if (!storeExists)
             {
                 return BadRequest("Торговая точка не найдена.");
             }
 
-            // Обновляем поля
             transaction.ContractorId = dto.ContractorId;
             transaction.StoreId = dto.StoreId;
             transaction.PassTypeId = dto.PassTypeId;

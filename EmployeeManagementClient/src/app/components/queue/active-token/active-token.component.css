@@ -1,19 +1,10 @@
-.active-token-banner {
-	position: fixed;
-	top: 0;
-	width: 100%;
-	background-color: #f8f9fa;
-	border-bottom: 1px solid #ddd;
-	padding: 10px;
-	text-align: center;
-	z-index: 1000;
+/* src/app/components/queue/active-token/active-token.component.css */
+.active-token-container {
+	padding: 20px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
 }
 
-.active-token-banner p {
-	display: inline-block;
-	margin: 0 10px;
-}
-
-.active-token-banner button {
-	margin-left: 10px;
+.active-token-container h3 {
+	margin-bottom: 15px;
 }

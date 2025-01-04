@@ -37,6 +37,8 @@ namespace EmployeeManagementServer.Data
 
         public DbSet<PassTransaction> PassTransactions { get; set; }
 
+        public DbSet<QueueToken> QueueTokens { get; set; } // Добавлено
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -136,6 +138,18 @@ namespace EmployeeManagementServer.Data
                 .WithOne(p => p.PassTransaction)
                 .HasForeignKey<PassTransaction>(pt => pt.PassId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Настройка связей QueueToken -> ApplicationUser
+            builder.Entity<QueueToken>()
+                .HasOne(qt => qt.User)
+                .WithMany(u => u.QueueTokens)
+                .HasForeignKey(qt => qt.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Уникальный индекс для QueueToken
+            builder.Entity<QueueToken>()
+                .HasIndex(qt => qt.Token)
+                .IsUnique();
 
             // Настройка конвертеров для DateTime
             foreach (var entityType in builder.Model.GetEntityTypes())

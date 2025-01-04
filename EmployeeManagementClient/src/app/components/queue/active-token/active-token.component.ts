@@ -1,60 +1,30 @@
+// src/app/components/queue/active-token/active-token.component.ts
 import { Component, OnInit } from '@angular/core';
 import { QueueService } from '../../../services/queue.service';
-import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { QueueToken } from '../../../models/queue.model';
 
 @Component({
 	selector: 'app-active-token',
-	standalone: true,
-	imports: [CommonModule],
 	templateUrl: './active-token.component.html',
 	styleUrls: ['./active-token.component.css']
 })
 export class ActiveTokenComponent implements OnInit {
-	activeToken: string | null = null;
+	activeToken: QueueToken | null = null;
 
-	constructor(private queueService: QueueService, private router: Router) { }
+	constructor(private queueService: QueueService) { }
 
 	ngOnInit(): void {
 		this.loadActiveToken();
 	}
 
-	/**
-	 * Загрузка активного талона.
-	 */
 	loadActiveToken(): void {
-		this.queueService.getActiveToken().subscribe({
-			next: (data) => {
-				this.activeToken = data.ActiveToken;
+		this.queueService.listAllTransactions().subscribe(
+			(transactions) => {
+				this.activeToken = transactions.find(t => t.status === 'Active') || null;
 			},
-			error: (err) => console.error('Ошибка при загрузке активного талона', err)
-		});
-	}
-
-	/**
-	 * Закрыть активный талон.
-	 */
-	closeToken(): void {
-		if (this.activeToken) {
-			this.queueService.closeToken(this.activeToken).subscribe({
-				next: () => {
-					this.activeToken = null;
-					this.router.navigate(['/queue']); // Перенаправление после закрытия
-				},
-				error: (err) => console.error('Ошибка при закрытии талона', err)
-			});
-		}
-	}
-
-	/**
-	 * Перейти к транзакции.
-	 */
-	goToTransaction(): void {
-		if (this.activeToken) {
-			// Предположим, что есть способ найти транзакцию по талону
-			this.router.navigate(['/transactions'], { queryParams: { token: this.activeToken } });
-		} else {
-			alert('Нет активного талона для перехода к транзакции.');
-		}
+			(error) => {
+				console.error('Ошибка при загрузке активного талона:', error);
+			}
+		);
 	}
 }

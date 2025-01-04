@@ -19,5 +19,5 @@ export interface Pass {
 	closeReason?: string;
 	mainPhotoPath?: string;
 	position: string;
-	passTransaction?: PassTransaction; // Связь с PassTransaction
+	passTransaction?: PassTransaction;
 }

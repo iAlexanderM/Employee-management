@@ -17,6 +17,8 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using System.Threading;
 using System.Security.Claims;
+using Microsoft.OpenApi.Models; // Добавлено для Swagger
+using System.Reflection; // Добавлено для XML-документации
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -126,6 +128,50 @@ builder.Services.AddScoped<SuggestionsService>();
 
 builder.Services.AddScoped<JwtPassTokenService>();
 
+// Добавление Swagger
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Employee Management API",
+        Version = "v1",
+        Description = "API для управления талонами и транзакциями сотрудников."
+    });
+
+    // Настройка JWT аутентификации в Swagger
+    var securityScheme = new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Введите только JWT-токен без префикса 'Bearer'. Например: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Reference = new OpenApiReference
+        {
+            Type = ReferenceType.SecurityScheme,
+            Id = "Bearer"
+        }
+    };
+
+    c.AddSecurityDefinition("Bearer", securityScheme);
+
+    var securityRequirement = new OpenApiSecurityRequirement
+    {
+        { securityScheme, Array.Empty<string>() }
+    };
+
+    c.AddSecurityRequirement(securityRequirement);
+
+    // Настройка XML-документации (если используется)
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
+});
+
 // Настройка контроллеров
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -209,6 +255,16 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine("Администратор уже существует.");
     }
 }
+
+// Настройка конвейера HTTP-запросов
+
+// Добавляем Swagger Middleware
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Employee Management API V1");
+    c.RoutePrefix = string.Empty; // Чтобы Swagger UI был доступен по корневому URL
+});
 
 if (app.Environment.IsDevelopment())
 {

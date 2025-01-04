@@ -1,43 +1,63 @@
-<div class="container mt-4">
-	<h2>Создание пропуска</h2>
-	<form (ngSubmit)="createPass()" class="mt-3">
+<!-- src/app/components/pass/pass-create/pass-create.component.html -->
+<div class="pass-create-container">
+	<h2>Создать Пропуск</h2>
 
-		<div class="mb-3">
-			<label for="contractor" class="form-label">Контрагент:</label>
-			<select [(ngModel)]="contractorId" name="contractorId" id="contractor" class="form-control" required>
-				<option *ngFor="let c of contractors" [value]="c.id">{{ c.lastName }} {{ c.firstName }}</option>
-			</select>
+	<form [formGroup]="passForm" (ngSubmit)="onSubmit()">
+		<div class="form-group">
+			<label for="uniquePassId">Уникальный ID Пропуска</label>
+			<input id="uniquePassId" formControlName="uniquePassId" class="form-control" />
+			<div *ngIf="passForm.get('uniquePassId')?.invalid && passForm.get('uniquePassId')?.touched"
+				class="text-danger">
+				Уникальный ID пропуска обязателен.
+			</div>
 		</div>
 
-		<div class="mb-3">
-			<label for="store" class="form-label">Торговая точка:</label>
-			<select [(ngModel)]="storeId" name="storeId" id="store" class="form-control" required>
-				<option *ngFor="let s of stores" [value]="s.id">{{ s.building }} №{{ s.storeNumber }}</option>
-			</select>
+		<div class="form-group">
+			<label for="contractorId">ID Контрагента</label>
+			<input id="contractorId" formControlName="contractorId" type="number" class="form-control" />
+			<div *ngIf="passForm.get('contractorId')?.invalid && passForm.get('contractorId')?.touched"
+				class="text-danger">
+				ID контрагента обязателен.
+			</div>
 		</div>
 
-		<div class="mb-3">
-			<label for="passType" class="form-label">Тип пропуска:</label>
-			<select [(ngModel)]="passTypeId" name="passTypeId" id="passType" class="form-control" required>
-				<option *ngFor="let pt of passTypes" [value]="pt.id">{{ pt.name }}</option>
-			</select>
+		<div class="form-group">
+			<label for="storeId">ID Торговой Точки</label>
+			<input id="storeId" formControlName="storeId" type="number" class="form-control" />
+			<div *ngIf="passForm.get('storeId')?.invalid && passForm.get('storeId')?.touched" class="text-danger">
+				ID торговой точки обязателен.
+			</div>
 		</div>
 
-		<div class="mb-3">
-			<label for="startDate" class="form-label">Дата начала:</label>
-			<input id="startDate" type="date" [(ngModel)]="startDate" name="startDate" class="form-control" required>
+		<div class="form-group">
+			<label for="passTypeId">ID Типа Пропуска</label>
+			<input id="passTypeId" formControlName="passTypeId" type="number" class="form-control" />
+			<div *ngIf="passForm.get('passTypeId')?.invalid && passForm.get('passTypeId')?.touched" class="text-danger">
+				ID типа пропуска обязателен.
+			</div>
 		</div>
 
-		<div class="mb-3">
-			<label for="endDate" class="form-label">Дата окончания:</label>
-			<input id="endDate" type="date" [(ngModel)]="endDate" name="endDate" class="form-control" required>
+		<div class="form-group">
+			<label for="startDate">Дата Начала</label>
+			<input id="startDate" formControlName="startDate" type="datetime-local" class="form-control" />
+			<div *ngIf="passForm.get('startDate')?.invalid && passForm.get('startDate')?.touched" class="text-danger">
+				Дата начала обязательна.
+			</div>
 		</div>
 
-		<div class="mb-3">
-			<label for="position" class="form-label">Должность:</label>
-			<input id="position" type="text" [(ngModel)]="position" name="position" class="form-control" required>
+		<div class="form-group">
+			<label for="endDate">Дата Окончания</label>
+			<input id="endDate" formControlName="endDate" type="datetime-local" class="form-control" />
+			<div *ngIf="passForm.get('endDate')?.invalid && passForm.get('endDate')?.touched" class="text-danger">
+				Дата окончания обязательна.
+			</div>
 		</div>
 
-		<button type="submit" class="btn btn-primary">Создать пропуск</button>
+		<div class="form-group">
+			<label for="position">Должность</label>
+			<input id="position" formControlName="position" class="form-control" />
+		</div>
+
+		<button type="submit" class="btn btn-success" [disabled]="passForm.invalid">Создать Пропуск</button>
 	</form>
 </div>

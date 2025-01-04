@@ -9,9 +9,9 @@ using System;
 
 namespace EmployeeManagementServer.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class PassController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

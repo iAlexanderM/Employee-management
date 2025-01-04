@@ -1,3 +1,4 @@
+// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, timer, Subscription } from 'rxjs';
@@ -9,11 +10,11 @@ import { Router } from '@angular/router';
 	providedIn: 'root',
 })
 export class AuthService {
-	private apiUrl = 'http://localhost:8080/api/auth';
+	private apiUrl = '/api/auth'; // Относительный путь
 	private inactivityTimeout: any;
 	private tokenExpiryCheckTimer: Subscription | null = null;
-	private readonly maxInactivityDuration = 30 * 60 * 1000;
-	private readonly refreshThreshold = 10 * 60 * 1000;
+	private readonly maxInactivityDuration = 30 * 60 * 1000; // 30 минут
+	private readonly refreshThreshold = 10 * 60 * 1000; // 10 минут
 
 	constructor(
 		private http: HttpClient,
@@ -48,11 +49,15 @@ export class AuthService {
 			.pipe(
 				map(response => {
 					if (response?.accessToken) {
-						this.tokenService.saveTokens(response.accessToken, response.refreshToken, 30 * 60 * 1000);
+						// Устанавливаем время истечения токена (например, 30 минут)
+						const tokenExpiry = Date.now() + 30 * 60 * 1000;
+						this.tokenService.saveTokens(response.accessToken, response.refreshToken, tokenExpiry);
 						this.startInactivityTimer();
 						this.startTokenExpiryCheck();
+						console.log('Вход выполнен успешно. Токены сохранены.');
 						return true;
 					}
+					console.warn('Ответ сервера не содержит accessToken.');
 					return false;
 				}),
 				catchError(error => {
@@ -64,7 +69,9 @@ export class AuthService {
 
 	logout(): void {
 		this.tokenService.clearTokens();
-		clearTimeout(this.inactivityTimeout);
+		if (this.inactivityTimeout) {
+			clearTimeout(this.inactivityTimeout);
+		}
 		this.stopTokenExpiryCheck();
 		this.router.navigate(['/login']);
 		console.log('Выход из системы выполнен. Пользователь перенаправлен на страницу логина.');
@@ -92,17 +99,33 @@ export class AuthService {
 			.pipe(
 				tap(response => {
 					if (response?.accessToken) {
-						this.tokenService.saveTokens(response.accessToken, response.refreshToken, 30 * 1000);
+						// Устанавливаем новое время истечения токена (например, 30 минут)
+						const newTokenExpiry = Date.now() + 30 * 60 * 1000;
+						this.tokenService.saveTokens(response.accessToken, response.refreshToken, newTokenExpiry);
+						this.startInactivityTimer();
+						this.startTokenExpiryCheck();
 						console.log('Токен успешно обновлён.');
+					} else {
+						console.warn('Ответ сервера не содержит accessToken при обновлении.');
+						this.logout();
 					}
+				}),
+				map(response => {
+					if (response && response.accessToken) {
+						return true;
+					}
+					return false;
 				}),
 				catchError(error => {
 					console.error('Ошибка при обновлении токена', error);
 					this.logout();
 					return of(false);
-				}),
-				map(() => true)
+				})
 			);
+	}
+
+	getToken(): string | null {
+		return this.tokenService.getToken();
 	}
 
 	resetInactivityTimer(): void {
@@ -110,12 +133,16 @@ export class AuthService {
 	}
 
 	private startInactivityTimer(): void {
-		clearTimeout(this.inactivityTimeout);
+		if (this.inactivityTimeout) {
+			clearTimeout(this.inactivityTimeout);
+		}
 
 		this.inactivityTimeout = setTimeout(() => {
 			console.warn('Таймер бездействия истёк. Выполняется logout.');
 			this.logout();
 		}, this.maxInactivityDuration);
+
+		console.log(`Таймер бездействия запущен на ${this.maxInactivityDuration / 1000 / 60} минут.`);
 	}
 
 	private startTokenExpiryCheck(): void {
@@ -125,26 +152,36 @@ export class AuthService {
 		const tokenExpiry = this.tokenService.getTokenExpiry();
 		if (!tokenExpiry) return;
 
-		// Интервал проверки устанавливаем больше
+		// Интервал проверки устанавливаем больше или равно refreshThreshold
 		const interval = Math.max(this.refreshThreshold, 10 * 1000); // Проверяем каждые 10 секунд
 
 		console.log(`Запуск проверки истечения токена с интервалом: ${interval / 1000} секунд.`);
 
 		// Запускаем таймер
 		this.tokenExpiryCheckTimer = timer(0, interval).subscribe(() => {
-			const tokenExpiry = this.tokenService.getTokenExpiry();
-			if (tokenExpiry && tokenExpiry - Date.now() < this.refreshThreshold) {
-				console.log('Токен скоро истечёт. Выполняется обновление токена.');
-				this.refreshToken().subscribe();
-			} else if (tokenExpiry && tokenExpiry - Date.now() > this.refreshThreshold) {
-				const remainingTime = Math.floor((tokenExpiry - Date.now()) / 1000);
-				console.log(`Токен ещё действителен. Осталось: ${remainingTime} секунд.`);
+			const currentTokenExpiry = this.tokenService.getTokenExpiry();
+			if (!currentTokenExpiry) {
+				console.warn('Отсутствует время истечения токена. Выполняется logout.');
+				this.logout();
+				return;
 			}
 
-			// Проверяем авторизацию
-			if (!this.isAuthenticated()) {
+			const timeRemaining = currentTokenExpiry - Date.now();
+
+			if (timeRemaining < this.refreshThreshold && timeRemaining > 0) {
+				console.log('Токен скоро истечёт. Выполняется обновление токена.');
+				this.refreshToken().subscribe(success => {
+					if (!success) {
+						console.warn('Не удалось обновить токен. Выполняется logout.');
+						this.logout();
+					}
+				});
+			} else if (timeRemaining <= 0) {
 				console.warn('Токен истёк. Выполняется logout.');
 				this.logout();
+			} else {
+				const remainingMinutes = Math.floor(timeRemaining / 1000 / 60);
+				console.log(`Токен ещё действителен. Осталось: ${remainingMinutes} минут.`);
 			}
 		});
 	}
@@ -153,6 +190,7 @@ export class AuthService {
 		if (this.tokenExpiryCheckTimer) {
 			this.tokenExpiryCheckTimer.unsubscribe();
 			this.tokenExpiryCheckTimer = null;
+			console.log('Проверка истечения токена остановлена.');
 		}
 	}
 }

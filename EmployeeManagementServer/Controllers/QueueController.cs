@@ -9,12 +9,14 @@ using System.ComponentModel.DataAnnotations;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using EmployeeManagementServer.Models.DTOs;
 
 namespace EmployeeManagementServer.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+
     public class QueueController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -40,27 +42,27 @@ namespace EmployeeManagementServer.Controllers
             }
 
             // Проверяем, нет ли уже Active
-            var existingActive = await _context.PassTransactions
+            var existingActive = await _context.QueueTokens
                 .FirstOrDefaultAsync(t => t.UserId == userId && t.Status == "Active");
             if (existingActive != null)
             {
                 return BadRequest($"У вас уже есть активный талон: {existingActive.Token}. " +
-                                  "Сначала закройте или сохраните (Pending) его.");
+                                  "Сначала закройте или сохраните его.");
             }
 
             // Определяем "сегодня" (UTC)
             DateTime today = DateTime.UtcNow.Date;
 
             // Находим последний талон за сегодня
-            var lastTodayTransaction = await _context.PassTransactions
+            var lastTodayToken = await _context.QueueTokens
                 .Where(t => t.TokenType == type && t.CreatedAt.Date == today)
                 .OrderByDescending(t => t.Id)
                 .FirstOrDefaultAsync();
 
             int nextNum = 1;
-            if (lastTodayTransaction != null)
+            if (lastTodayToken != null)
             {
-                var match = Regex.Match(lastTodayTransaction.Token, @"(\d+)$");
+                var match = Regex.Match(lastTodayToken.Token, @"(\d+)$");
                 if (match.Success && int.TryParse(match.Groups[1].Value, out int parsedNumber))
                 {
                     nextNum = parsedNumber + 1;
@@ -69,7 +71,7 @@ namespace EmployeeManagementServer.Controllers
 
             string newToken = $"{type}{nextNum}";
 
-            var transaction = new PassTransaction
+            var token = new QueueToken
             {
                 Token = newToken,
                 TokenType = type,
@@ -78,14 +80,82 @@ namespace EmployeeManagementServer.Controllers
                 CreatedAt = DateTime.UtcNow
             };
 
-            _context.PassTransactions.Add(transaction);
+            _context.QueueTokens.Add(token);
             await _context.SaveChangesAsync();
 
             return Ok(new { token = newToken });
         }
 
         /// <summary>
-        /// Закрыть талон (Active → Closed).
+        /// Создать транзакцию на основе талона очереди.
+        /// POST /api/Queue/create-transaction
+        /// </summary>
+        [HttpPost("create-transaction")]
+        public async Task<IActionResult> CreateTransaction([FromBody] CreateTransactionDto dto)
+        {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Token))
+                return BadRequest("Талон очереди не указан.");
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine($"[DEBUG] CreateTransaction: userId from token = {userId}");
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Не удалось определить пользователя.");
+
+            // Найти активный талон очереди
+            var queueToken = await _context.QueueTokens
+                .FirstOrDefaultAsync(q => q.Token == dto.Token && q.UserId == userId && q.Status == "Active");
+
+            if (queueToken == null)
+                return BadRequest("Активный талон очереди не найден.");
+
+            // Проверить существование Contractor, Store и PassType
+            var contractorExists = await _context.Contractors.AnyAsync(c => c.Id == dto.ContractorId);
+            if (!contractorExists)
+                return BadRequest("Указанный ContractorId не существует.");
+
+            var storeExists = await _context.Stores.AnyAsync(s => s.Id == dto.StoreId);
+            if (!storeExists)
+                return BadRequest("Указанный StoreId не существует.");
+
+            var passType = await _context.PassTypes.FindAsync(dto.PassTypeId);
+            if (passType == null)
+                return BadRequest("Указанный PassTypeId не существует.");
+
+            // Создать транзакцию
+            var transaction = new PassTransaction
+            {
+                Token = queueToken.Token,
+                TokenType = queueToken.TokenType,
+                UserId = userId,
+                Status = "Pending",
+                CreatedAt = DateTime.UtcNow,
+                ContractorId = dto.ContractorId,
+                StoreId = dto.StoreId,
+                PassTypeId = dto.PassTypeId,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate,
+                Position = dto.Position ?? string.Empty,
+                Amount = passType.Cost
+            };
+
+            _context.PassTransactions.Add(transaction);
+
+            // Обновить статус талона очереди, если необходимо
+            queueToken.Status = "Used";
+            _context.QueueTokens.Update(queueToken);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                Message = "Транзакция создана.",
+                transactionId = transaction.Id
+            });
+        }
+
+        /// <summary>
+        /// Закрыть талон очереди (Active → Closed).
         /// POST /api/Queue/close-token
         /// </summary>
         [HttpPost("close-token")]
@@ -100,117 +170,42 @@ namespace EmployeeManagementServer.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("Не удалось определить пользователя.");
 
-            var transaction = await _context.PassTransactions
-                .FirstOrDefaultAsync(t => t.Token == dto.Token
-                    && t.Status == "Active"
-                    && t.UserId == userId);
+            var queueToken = await _context.QueueTokens
+                .FirstOrDefaultAsync(q => q.Token == dto.Token && q.UserId == userId && q.Status == "Active");
 
-            if (transaction == null)
-                return NotFound("Активный талон не найден или принадлежит другому пользователю.");
+            if (queueToken == null)
+                return NotFound("Активный талон очереди не найден или принадлежит другому пользователю.");
 
-            transaction.Status = "Closed";
-            _context.PassTransactions.Update(transaction);
+            queueToken.Status = "Closed";
+            _context.QueueTokens.Update(queueToken);
             await _context.SaveChangesAsync();
 
-            return NoContent();
-        }
-
-        /// <summary>
-        /// Сохранить транзакцию (Active → Pending).
-        /// PUT /api/Queue/save-transaction
-        /// </summary>
-        [HttpPut("save-transaction")]
-        public async Task<IActionResult> SaveTransaction([FromBody] SaveTransactionDto dto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Console.WriteLine($"[DEBUG] SaveTransaction: userId from token = {userId}");
-
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized("Не удалось определить пользователя.");
-
-            var transaction = await _context.PassTransactions
-                .FirstOrDefaultAsync(t => t.Token == dto.Token
-                    && t.Status == "Active"
-                    && t.UserId == userId);
-
-            if (transaction == null)
-                return NotFound("Активный талон не найден или принадлежит другому пользователю.");
-
-            var passType = await _context.PassTypes.FindAsync(dto.PassTypeId);
-            if (passType == null)
-                return BadRequest("Указанный тип пропуска (PassTypeId) не найден.");
-
-            bool contractorExists = await _context.Contractors.AnyAsync(c => c.Id == dto.ContractorId);
-            if (!contractorExists)
-                return BadRequest("Указанный контрагент (ContractorId) не найден.");
-
-            bool storeExists = await _context.Stores.AnyAsync(s => s.Id == dto.StoreId);
-            if (!storeExists)
-                return BadRequest("Указанная торговая точка (StoreId) не найдена.");
-
-            transaction.ContractorId = dto.ContractorId;
-            transaction.StoreId = dto.StoreId;
-            transaction.PassTypeId = dto.PassTypeId;
-            transaction.StartDate = dto.StartDate;
-            transaction.EndDate = dto.EndDate;
-            transaction.Position = dto.Position ?? string.Empty;
-            transaction.Amount = passType.Cost;
-            transaction.Status = "Pending";
-
-            _context.PassTransactions.Update(transaction);
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                Message = "Транзакция сохранена (Pending).",
-                Token = transaction.Token,
-                TransactionId = transaction.Id
-            });
+            return Ok(new { message = "Талон успешно закрыт." });
         }
 
         /// <summary>
         /// Список всех транзакций (для демонстрации).
-        /// GET /api/Queue/list-all
+        /// GET /api/Queue/list-all-transactions
         /// </summary>
-        [HttpGet("list-all")]
-        public async Task<IActionResult> ListAll()
+        [HttpGet("list-all-transactions")]
+        public async Task<IActionResult> ListAllTransactions()
         {
             var allTransactions = await _context.PassTransactions
+                .Include(t => t.Store) // Загружаем связанные данные Store
+                .Include(t => t.Contractor) // Загружаем связанные данные Contractor
                 .OrderByDescending(t => t.CreatedAt)
+                .Select(t => new
+                {
+                    t.Token,
+                    t.CreatedAt,
+                    StoreId = t.StoreId, // Возвращаем StoreId вместо Store.Name
+                    ContractorId = t.ContractorId, // Возвращаем ContractorId вместо Contractor.Name
+                    t.Amount,
+                    t.Status
+                })
                 .ToListAsync();
 
             return Ok(allTransactions);
         }
-    }
-
-    public class CloseTokenDto
-    {
-        public string Token { get; set; } = string.Empty;
-    }
-
-    public class SaveTransactionDto
-    {
-        [Required]
-        public string Token { get; set; } = string.Empty;
-
-        [Required]
-        public int ContractorId { get; set; }
-
-        [Required]
-        public int StoreId { get; set; }
-
-        [Required]
-        public int PassTypeId { get; set; }
-
-        [Required]
-        public DateTime StartDate { get; set; }
-
-        [Required]
-        public DateTime EndDate { get; set; }
-
-        public string? Position { get; set; }
     }
 }

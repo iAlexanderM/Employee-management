@@ -6,7 +6,7 @@
         public int StoreId { get; set; }
         public int PassTypeId { get; set; }
         public DateTime StartDate { get; set; }
-        public int DurationInDays { get; set; }
+        public int DurationInMonths { get; set; }
         public string Position { get; set; }
     }
 }

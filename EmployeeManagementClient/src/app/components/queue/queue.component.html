@@ -1,53 +1,33 @@
-<div class="container mt-4">
-	<h2>Очередь талонов</h2>
+<!-- src/app/components/queue/queue.component.html -->
+<div class="queue-container">
+	<h2>Список Талонов Очереди</h2>
 
-	<!-- Классический подход -->
-	<div class="mb-4">
-		<h3>Классический подход</h3>
+	<button (click)="onCreateTransaction()" class="btn btn-primary">Взять новый талон</button>
 
-		<!-- Текущий талон -->
-		<p><strong>Текущий талон:</strong> {{ currentToken }}</p>
-		<button class="btn btn-primary me-2" (click)="generateNewToken()">Создать новый талон</button>
-		<p *ngIf="newToken"><strong>Новый талон:</strong> {{ newToken }}</p>
-	</div>
-
-	<!-- Активный талон -->
-	<div class="mb-4">
-		<h3>Активный талон</h3>
-		<p *ngIf="activeToken"><strong>Активный талон:</strong> {{ activeToken }}</p>
-		<p *ngIf="!activeToken">Нет активного талона</p>
-		<button *ngIf="activeToken" class="btn btn-danger" (click)="closeActiveToken()">Закрыть активный талон</button>
-	</div>
-
-	<!-- Список ожидающих талонов -->
-	<div class="mb-4">
-		<h3>Список ожидающих талонов</h3>
-		<table class="table table-bordered">
-			<thead class="table-light">
-				<tr>
-					<th>Token</th>
-					<th>Created At</th>
-					<th>Действия</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr *ngFor="let t of pendingTokens">
-					<td>{{ t.token }}</td>
-					<td>{{ t.createdAt | date:'short' }}</td>
-					<td>
-						<button class="btn btn-success btn-sm" (click)="activateToken(t.token)">Активировать</button>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
-
-	<!-- JWT-подход -->
-	<div class="mb-4">
-		<h3>JWT-подход</h3>
-		<button class="btn btn-secondary me-2" (click)="jwtGetNextSignedToken()">Получить подписанный талон</button>
-		<p *ngIf="signedToken"><strong>Signed Token:</strong> {{ signedToken }}</p>
-		<button class="btn btn-primary" (click)="jwtSaveTransaction()" [disabled]="!signedToken">Сохранить
-			транзакцию</button>
-	</div>
+	<table class="table table-striped mt-3">
+		<thead>
+			<tr>
+				<th>Код</th>
+				<th>Дата</th>
+				<th>Талон</th>
+				<th>Тип услуги</th>
+				<th>Окно</th>
+				<th>Статус</th>
+				<th>Действия</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let transaction of transactions">
+				<td>{{ transaction.id }}</td>
+				<td>{{ transaction.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+				<td>{{ transaction.token }}</td>
+				<td>{{ transaction.tokenType }}</td>
+				<td>{{ transaction.storeId }}</td>
+				<td>{{ transaction.status }}</td>
+				<td>
+					<button (click)="onCloseToken(transaction.token)" class="btn btn-sm btn-danger">Закрыть</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
 </div>

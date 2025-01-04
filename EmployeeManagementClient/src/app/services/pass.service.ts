@@ -1,33 +1,39 @@
+// src/app/services/transaction.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Pass } from '../models/pass.model';
+import { PassTransaction } from '../models/transaction.model';
 
 @Injectable({
 	providedIn: 'root'
 })
-export class PassService {
-	private apiUrl = 'http://localhost:8080/api/Pass';
+export class TransactionService {
+	private apiUrl = 'http://localhost:8080/api/PassTransaction';
 
 	constructor(private http: HttpClient) { }
 
-	/**
-	 * Получить список пропусков с фильтром по статусу печати.
-	 * @param printed Статус печати (true/false).
-	 */
-	getPasses(printed?: boolean): Observable<Pass[]> {
-		let params = new HttpParams();
-		if (printed !== undefined) {
-			params = params.set('printed', printed.toString());
-		}
-		return this.http.get<Pass[]>(this.apiUrl, { params });
+	getAllTransactions(): Observable<PassTransaction[]> {
+		return this.http.get<PassTransaction[]>(this.apiUrl);
 	}
 
-	/**
-	 * Печать пропуска.
-	 * @param id ID пропуска.
-	 */
-	printPass(id: number): Observable<void> {
-		return this.http.post<void>(`${this.apiUrl}/${id}/print`, {});
+	getTransactionById(id: number): Observable<PassTransaction> {
+		return this.http.get<PassTransaction>(`${this.apiUrl}/${id}`);
 	}
+
+	confirmTransaction(id: number): Observable<any> {
+		return this.http.post<any>(`${this.apiUrl}/${id}/confirm`, {});
+	}
+
+	updatePendingTransaction(id: number, dto: UpdatePendingDto): Observable<{ message: string }> {
+		return this.http.put<{ message: string }>(`${this.apiUrl}/${id}/update`, dto);
+	}
+}
+
+export interface UpdatePendingDto {
+	contractorId: number;
+	storeId: number;
+	passTypeId: number;
+	startDate: Date;
+	endDate: Date;
+	position?: string;
 }

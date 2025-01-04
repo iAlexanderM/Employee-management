@@ -6,9 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using EmployeeManagementServer.Models.DTOs;
 using System.ComponentModel.DataAnnotations;
 using EmployeeManagementServer.Models.EmployeeManagementServer.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EmployeeManagementServer.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class PassGroupController : ControllerBase

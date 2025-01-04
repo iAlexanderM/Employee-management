@@ -3,6 +3,7 @@ using System;
 using EmployeeManagementServer.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EmployeeManagementServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250103092330_UpdatePass")]
+    partial class UpdatePass
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -519,44 +522,6 @@ namespace EmployeeManagementServer.Migrations
                     b.ToTable("PassTypes", "public");
                 });
 
-            modelBuilder.Entity("EmployeeManagementServer.Models.QueueToken", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TokenType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Token")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("QueueTokens", "public");
-                });
-
             modelBuilder.Entity("EmployeeManagementServer.Models.RefreshToken", b =>
                 {
                     b.Property<string>("Token")
@@ -893,17 +858,6 @@ namespace EmployeeManagementServer.Migrations
                     b.Navigation("PassGroup");
                 });
 
-            modelBuilder.Entity("EmployeeManagementServer.Models.QueueToken", b =>
-                {
-                    b.HasOne("EmployeeManagementServer.Models.ApplicationUser", "User")
-                        .WithMany("QueueTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -958,8 +912,6 @@ namespace EmployeeManagementServer.Migrations
             modelBuilder.Entity("EmployeeManagementServer.Models.ApplicationUser", b =>
                 {
                     b.Navigation("PassTransactions");
-
-                    b.Navigation("QueueTokens");
                 });
 
             modelBuilder.Entity("EmployeeManagementServer.Models.Contractor", b =>
