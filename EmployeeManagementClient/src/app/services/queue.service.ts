@@ -2,40 +2,43 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
+import { environment } from '../../environments/environment';
 import { QueueToken } from '../models/queue.model';
-import { PassTransaction } from '../models/transaction.model';
+import { CreateTransactionDto } from '../models/create-transaction.dto';
 
 @Injectable({
 	providedIn: 'root'
 })
 export class QueueService {
-	private apiUrl = 'http://localhost:8080/api/Queue';
+	private baseUrl = `${environment.apiUrl}/Queue`;
 
 	constructor(private http: HttpClient) { }
 
+	/**
+	 * Создать талон: POST /api/Queue/create-token?type=P
+	 */
 	createToken(type: string): Observable<{ token: string }> {
-		return this.http.post<{ token: string }>(`${this.apiUrl}/create-token?type=${type}`, {});
+		return this.http.post<{ token: string }>(
+			`${this.baseUrl}/create-token?type=${type}`,
+			{}
+		);
 	}
 
+	/**
+	 * Закрыть талон: POST /api/Queue/close-token
+	 */
 	closeToken(token: string): Observable<{ message: string }> {
-		return this.http.post<{ message: string }>(`${this.apiUrl}/close-token`, { token });
+		return this.http.post<{ message: string }>(
+			`${this.baseUrl}/close-token`,
+			{ token }
+		);
 	}
 
-	listAllTransactions(): Observable<PassTransaction[]> {
-		return this.http.get<PassTransaction[]>(`${this.apiUrl}/list-all-transactions`);
+	/**
+	 * Список всех талонов: GET /api/Queue/list-all-tokens
+	 */
+	listAllTokens(): Observable<QueueToken[]> {
+		return this.http.get<QueueToken[]>(`${this.baseUrl}/list-all-tokens`);
 	}
-
-	createTransaction(dto: CreateTransactionDto): Observable<{ message: string; transactionId: number }> {
-		return this.http.post<{ message: string; transactionId: number }>(`${this.apiUrl}/create-transaction`, dto);
-	}
-}
-
-export interface CreateTransactionDto {
-	token: string;
-	contractorId: number;
-	storeId: number;
-	passTypeId: number;
-	startDate: Date;
-	endDate: Date;
-	position?: string;
 }

@@ -1,7 +1,6 @@
-// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, timer, Subscription } from 'rxjs';
+import { Observable, of, timer, Subscription, Subject } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 import { TokenService } from './token.service';
 import { Router } from '@angular/router';
@@ -16,12 +15,19 @@ export class AuthService {
 	private readonly maxInactivityDuration = 30 * 60 * 1000; // 30 минут
 	private readonly refreshThreshold = 10 * 60 * 1000; // 10 минут
 
+	// Subject для оповещения о необходимости проверки активного талона
+	public activeTokenCheck$ = new Subject<void>();
+
 	constructor(
 		private http: HttpClient,
 		private tokenService: TokenService,
 		private router: Router
 	) { }
 
+	/**
+	 * Инициализация токена.
+	 * Если токен валиден, запускаются таймеры, генерируется событие проверки активного талона.
+	 */
 	initializeToken(): Observable<boolean> {
 		const token = this.tokenService.getToken();
 		const tokenExpiry = this.tokenService.getTokenExpiry();
@@ -30,6 +36,8 @@ export class AuthService {
 			console.log(`Токен активен. Истекает: ${new Date(tokenExpiry).toLocaleString()}`);
 			this.startInactivityTimer();
 			this.startTokenExpiryCheck();
+			console.log('Инициализация токена завершена, можно проверять активный талон.');
+			this.activeTokenCheck$.next();
 			return of(true);
 		}
 
@@ -43,18 +51,26 @@ export class AuthService {
 		return of(false);
 	}
 
+	/**
+	 * Выполнение входа. При успешном ответе сохраняются токены, запускаются таймеры, происходит навигация и генерируется событие activeTokenCheck.
+	 */
 	login(username: string, password: string): Observable<boolean> {
 		return this.http
 			.post<{ accessToken: string; refreshToken: string }>(`${this.apiUrl}/login`, { username, password })
 			.pipe(
 				map(response => {
 					if (response?.accessToken) {
-						// Устанавливаем время истечения токена (например, 30 минут)
 						const tokenExpiry = Date.now() + 30 * 60 * 1000;
 						this.tokenService.saveTokens(response.accessToken, response.refreshToken, tokenExpiry);
 						this.startInactivityTimer();
 						this.startTokenExpiryCheck();
 						console.log('Вход выполнен успешно. Токены сохранены.');
+						console.log('После входа запускается проверка активного талона.');
+						// Навигируемся с /login на нужный роут (например, /dashboard). Измените, если нужно.
+						if (this.router.url === '/login') {
+							this.router.navigate(['/dashboard']);
+						}
+						this.activeTokenCheck$.next();
 						return true;
 					}
 					console.warn('Ответ сервера не содержит accessToken.');
@@ -80,42 +96,34 @@ export class AuthService {
 	isAuthenticated(): boolean {
 		const token = this.tokenService.getToken();
 		const tokenExpiry = this.tokenService.getTokenExpiry();
-		const isAuthenticated = !!(token && tokenExpiry && Date.now() < tokenExpiry);
-		return isAuthenticated;
+		return !!(token && tokenExpiry && Date.now() < tokenExpiry);
 	}
 
 	refreshToken(): Observable<boolean> {
 		const refreshToken = this.tokenService.getRefreshToken();
-
 		if (!refreshToken) {
 			console.error('Refresh токен отсутствует. Выполняется logout.');
 			this.logout();
 			return of(false);
 		}
-
 		console.log('Попытка обновления токена...');
 		return this.http
 			.post<{ accessToken: string; refreshToken: string }>(`${this.apiUrl}/refresh`, { refreshToken })
 			.pipe(
 				tap(response => {
 					if (response?.accessToken) {
-						// Устанавливаем новое время истечения токена (например, 30 минут)
 						const newTokenExpiry = Date.now() + 30 * 60 * 1000;
 						this.tokenService.saveTokens(response.accessToken, response.refreshToken, newTokenExpiry);
 						this.startInactivityTimer();
 						this.startTokenExpiryCheck();
 						console.log('Токен успешно обновлён.');
+						this.activeTokenCheck$.next();
 					} else {
 						console.warn('Ответ сервера не содержит accessToken при обновлении.');
 						this.logout();
 					}
 				}),
-				map(response => {
-					if (response && response.accessToken) {
-						return true;
-					}
-					return false;
-				}),
+				map(response => !!(response && response.accessToken)),
 				catchError(error => {
 					console.error('Ошибка при обновлении токена', error);
 					this.logout();
@@ -136,28 +144,19 @@ export class AuthService {
 		if (this.inactivityTimeout) {
 			clearTimeout(this.inactivityTimeout);
 		}
-
 		this.inactivityTimeout = setTimeout(() => {
 			console.warn('Таймер бездействия истёк. Выполняется logout.');
 			this.logout();
 		}, this.maxInactivityDuration);
-
-		console.log(`Таймер бездействия запущен на ${this.maxInactivityDuration / 1000 / 60} минут.`);
+		console.log(`Таймер бездействия запущен на ${this.maxInactivityDuration / 60000} минут.`);
 	}
 
 	private startTokenExpiryCheck(): void {
-		// Останавливаем предыдущий таймер, если он есть
 		this.stopTokenExpiryCheck();
-
 		const tokenExpiry = this.tokenService.getTokenExpiry();
 		if (!tokenExpiry) return;
-
-		// Интервал проверки устанавливаем больше или равно refreshThreshold
-		const interval = Math.max(this.refreshThreshold, 10 * 1000); // Проверяем каждые 10 секунд
-
+		const interval = Math.max(this.refreshThreshold, 10 * 1000);
 		console.log(`Запуск проверки истечения токена с интервалом: ${interval / 1000} секунд.`);
-
-		// Запускаем таймер
 		this.tokenExpiryCheckTimer = timer(0, interval).subscribe(() => {
 			const currentTokenExpiry = this.tokenService.getTokenExpiry();
 			if (!currentTokenExpiry) {
@@ -165,9 +164,7 @@ export class AuthService {
 				this.logout();
 				return;
 			}
-
 			const timeRemaining = currentTokenExpiry - Date.now();
-
 			if (timeRemaining < this.refreshThreshold && timeRemaining > 0) {
 				console.log('Токен скоро истечёт. Выполняется обновление токена.');
 				this.refreshToken().subscribe(success => {
@@ -180,7 +177,7 @@ export class AuthService {
 				console.warn('Токен истёк. Выполняется logout.');
 				this.logout();
 			} else {
-				const remainingMinutes = Math.floor(timeRemaining / 1000 / 60);
+				const remainingMinutes = Math.floor(timeRemaining / 60000);
 				console.log(`Токен ещё действителен. Осталось: ${remainingMinutes} минут.`);
 			}
 		});

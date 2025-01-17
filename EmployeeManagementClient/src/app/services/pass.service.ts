@@ -1,39 +1,31 @@
-// src/app/services/transaction.service.ts
+// src/app/services/pass.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PassTransaction } from '../models/transaction.model';
+import { Pass } from '../models/pass.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
 	providedIn: 'root'
 })
-export class TransactionService {
-	private apiUrl = 'http://localhost:8080/api/PassTransaction';
+export class PassService {
+	private baseUrl = `${environment.apiUrl}/Pass`;
 
 	constructor(private http: HttpClient) { }
 
-	getAllTransactions(): Observable<PassTransaction[]> {
-		return this.http.get<PassTransaction[]>(this.apiUrl);
+	getAllPasses(): Observable<Pass[]> {
+		return this.http.get<Pass[]>(this.baseUrl);
 	}
 
-	getTransactionById(id: number): Observable<PassTransaction> {
-		return this.http.get<PassTransaction>(`${this.apiUrl}/${id}`);
+	getPassById(id: number): Observable<Pass> {
+		return this.http.get<Pass>(`${this.baseUrl}/${id}`);
 	}
 
-	confirmTransaction(id: number): Observable<any> {
-		return this.http.post<any>(`${this.apiUrl}/${id}/confirm`, {});
+	closePass(id: number, closeReason: string): Observable<void> {
+		return this.http.post<void>(`${this.baseUrl}/${id}/close`, { closeReason });
 	}
 
-	updatePendingTransaction(id: number, dto: UpdatePendingDto): Observable<{ message: string }> {
-		return this.http.put<{ message: string }>(`${this.apiUrl}/${id}/update`, dto);
+	createPass(passData: Pass): Observable<Pass> {
+		return this.http.post<Pass>(this.baseUrl, passData);
 	}
-}
-
-export interface UpdatePendingDto {
-	contractorId: number;
-	storeId: number;
-	passTypeId: number;
-	startDate: Date;
-	endDate: Date;
-	position?: string;
 }

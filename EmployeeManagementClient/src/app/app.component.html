@@ -1,3 +1,4 @@
+<!-- src/app/app.component.html -->
 <div *ngIf="showContent()" class="app-layout">
 	<!-- Боковая панель навигации -->
 	<nav class="sidebar navbar navbar-expand-lg navbar-light bg-light">
@@ -102,3 +103,6 @@
 <div *ngIf="!showContent()" class="container mt-5">
 	<router-outlet></router-outlet>
 </div>
+
+<app-active-token-floating *ngIf="showActivePanel" [tokenData]="activeToken" (close)="onCloseTokenPanel()">
+</app-active-token-floating>

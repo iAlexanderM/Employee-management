@@ -17,8 +17,9 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using System.Threading;
 using System.Security.Claims;
-using Microsoft.OpenApi.Models; // Добавлено для Swagger
-using System.Reflection; // Добавлено для XML-документации
+using Microsoft.OpenApi.Models;
+using System.Reflection;
+using EmployeeManagementServer.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,8 +55,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer("JwtBearer", options =>
 {
-    // КЛЮЧЕВОЙ МОМЕНТ:
-    // ОТКЛЮЧАЕМ автопреобразование входящих клеймов (чтобы sub не мапился к NameIdentifier автоматически).
+    // ОТКЛЮЧАЕМ автопреобразование входящих клеймов
     options.MapInboundClaims = false;
 
     // Указываем, что NameClaimType = ClaimTypes.NameIdentifier
@@ -69,7 +69,6 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["AppSettings:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"] ?? string.Empty)),
 
-        // Теперь ASP.NET будет искать "nameid" клейм и ставить его в ClaimTypes.NameIdentifier.
         NameClaimType = ClaimTypes.NameIdentifier,
         RoleClaimType = ClaimTypes.Role
     };
@@ -88,9 +87,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins", builder =>
     {
-        builder.AllowAnyOrigin()
+        builder.WithOrigins("http://localhost:4200")
                .AllowAnyMethod()
-               .AllowAnyHeader();
+               .AllowAnyHeader()
+               .AllowCredentials();
     });
 });
 
@@ -112,6 +112,7 @@ builder.Services.AddScoped<INationalitySearchService, NationalitySearchService>(
 builder.Services.AddScoped<ICitizenshipService, CitizenshipService>();
 builder.Services.AddScoped<ICitizenshipSearchService, CitizenshipSearchService>();
 builder.Services.AddScoped<ISuggestionsService, SuggestionsService>();
+builder.Services.AddScoped<IPassTransactionSearchService, PassTransactionSearchService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -128,7 +129,7 @@ builder.Services.AddScoped<SuggestionsService>();
 
 builder.Services.AddScoped<JwtPassTokenService>();
 
-// Добавление Swagger
+// Добавляем Swagger
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -138,11 +139,10 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API для управления талонами и транзакциями сотрудников."
     });
 
-    // Настройка JWT аутентификации в Swagger
     var securityScheme = new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Description = "Введите только JWT-токен без префикса 'Bearer'. Например: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        Description = "Введите только JWT-токен без префикса 'Bearer'.",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
         Scheme = "bearer",
@@ -163,7 +163,6 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityRequirement(securityRequirement);
 
-    // Настройка XML-документации (если используется)
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     if (File.Exists(xmlPath))
@@ -172,7 +171,8 @@ builder.Services.AddSwaggerGen(c =>
     }
 });
 
-// Настройка контроллеров
+builder.Services.AddSignalR();
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -189,7 +189,6 @@ using (var scope = app.Services.CreateScope())
 
     Console.WriteLine(">>> Текущая строка подключения: " + dbContext.Database.GetDbConnection().ConnectionString);
 
-    // Миграции + повторные попытки
     var retryCount = 5;
     var delay = TimeSpan.FromSeconds(5);
     for (int i = 0; i < retryCount; i++)
@@ -204,7 +203,7 @@ using (var scope = app.Services.CreateScope())
             if (i == retryCount - 1)
                 throw;
 
-            Console.WriteLine($"Не удалось подключиться к базе данных. Попытка {i + 1} из {retryCount}. Ожидание {delay.TotalSeconds} секунд.");
+            Console.WriteLine($"Не удалось подключиться к БД. Попытка {i + 1}/{retryCount}. Ожидание {delay.TotalSeconds}с.");
             Console.WriteLine($"Ошибка: {ex.Message}");
             Thread.Sleep(delay);
         }
@@ -256,14 +255,12 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Настройка конвейера HTTP-запросов
-
-// Добавляем Swagger Middleware
+// Middleware и т.п.
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Employee Management API V1");
-    c.RoutePrefix = string.Empty; // Чтобы Swagger UI был доступен по корневому URL
+    c.RoutePrefix = string.Empty;
 });
 
 if (app.Environment.IsDevelopment())
@@ -281,12 +278,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Подключаем CORS
 app.UseCors("AllowAllOrigins");
 
-// Подключаем аутентификацию и авторизацию
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<QueueHub>("/hubs/queue");
 
 // Маршрутизация контроллеров
 app.MapControllers();

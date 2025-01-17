@@ -1,84 +1,84 @@
 // src/app/components/queue/queue.component.ts
-import { QueueService } from '../../services/queue.service';
-import { PassTransaction } from '../../models/transaction.model';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { QueueService } from '../../services/queue.service';
+import { QueueToken } from '../../models/queue.model';
+import { SignalRService } from '../../services/signalr.service';
 
 @Component({
 	selector: 'app-queue',
 	standalone: true,
-	imports: [CommonModule],
+	imports: [CommonModule, ReactiveFormsModule],
 	templateUrl: './queue.component.html',
 	styleUrls: ['./queue.component.css']
 })
-export class QueueComponent {
-	transactions: PassTransaction[] = [];
-	createTransactionForm: FormGroup;
-	selectedToken: string = '';
+export class QueueComponent implements OnInit {
+	tokens: QueueToken[] = [];
+	createTokenForm: FormGroup;
 
 	constructor(
 		private queueService: QueueService,
-		private fb: FormBuilder
+		private fb: FormBuilder,
+		private signalRService: SignalRService
 	) {
-		this.createTransactionForm = this.fb.group({
-			token: ['', Validators.required],
-			contractorId: ['', Validators.required],
-			storeId: ['', Validators.required],
-			passTypeId: ['', Validators.required],
-			startDate: ['', Validators.required],
-			endDate: ['', Validators.required],
-			position: ['']
+		this.createTokenForm = this.fb.group({
+			type: ['P', Validators.required]
 		});
 	}
 
 	ngOnInit(): void {
-		this.loadTransactions();
+		this.loadTokens();
+		// Подписываемся на SignalR событие, чтобы обновлять список при изменениях
+		this.signalRService.onQueueUpdated(() => {
+			console.log('QueueComponent: QueueUpdated event received – reloading tokens');
+			this.loadTokens();
+		});
 	}
 
-	loadTransactions(): void {
-		this.queueService.listAllTransactions().subscribe(
-			(data) => {
-				this.transactions = data;
+	loadTokens(): void {
+		this.queueService.listAllTokens().subscribe({
+			next: (data) => {
+				this.tokens = data;
 			},
-			(error) => {
-				console.error('Ошибка при загрузке транзакций:', error);
+			error: (err) => {
+				console.error('Ошибка при загрузке талонов:', err);
 			}
-		);
+		});
 	}
 
-	onCreateTransaction(): void {
-		if (this.createTransactionForm.invalid) {
+	onCreateToken(): void {
+		if (this.createTokenForm.invalid) {
 			return;
 		}
-
-		const dto = this.createTransactionForm.value;
-
-		this.queueService.createTransaction(dto).subscribe(
-			(response) => {
-				alert(response.message);
-				this.createTransactionForm.reset();
-				this.loadTransactions();
+		const type = this.createTokenForm.value.type;
+		this.queueService.createToken(type).subscribe({
+			next: (res) => {
+				alert(`Талон создан: ${res.token}`);
+				this.createTokenForm.reset({ type: 'P' });
+				// Можно обновить локальный список, но если SignalR пришёл, это обновит и его тоже
+				this.loadTokens();
 			},
-			(error) => {
-				console.error('Ошибка при создании транзакции:', error);
-				alert('Не удалось создать транзакцию.');
+			error: (err) => {
+				console.error('Ошибка при создании талона:', err);
+				alert('Не удалось создать талон.');
 			}
-		);
+		});
 	}
 
 	onCloseToken(token: string): void {
-		if (confirm(`Вы уверены, что хотите закрыть талон ${token}?`)) {
-			this.queueService.closeToken(token).subscribe(
-				(response) => {
-					alert(response.message);
-					this.loadTransactions();
-				},
-				(error) => {
-					console.error('Ошибка при закрытии талона:', error);
-					alert('Не удалось закрыть талон.');
-				}
-			);
+		if (!confirm(`Вы уверены, что хотите закрыть талон ${token}?`)) {
+			return;
 		}
+		this.queueService.closeToken(token).subscribe({
+			next: (res) => {
+				alert(res.message);
+				this.loadTokens();
+			},
+			error: (err) => {
+				console.error('Ошибка при закрытии талона:', err);
+				alert('Не удалось закрыть талон.');
+			}
+		});
 	}
 }

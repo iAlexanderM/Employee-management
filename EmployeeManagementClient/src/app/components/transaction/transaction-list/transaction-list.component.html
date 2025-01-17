@@ -1,17 +1,43 @@
-<div class="container mt-4">
+<div class="compact-container transactions-container">
 	<h2>Список транзакций</h2>
 
-	<!-- Фильтры по статусу -->
-	<div class="mb-3">
-		<button class="btn btn-primary me-2" (click)="changeStatusFilter('Pending')">Pending</button>
-		<button class="btn btn-success me-2" (click)="changeStatusFilter('Paid')">Paid</button>
-		<button class="btn btn-warning me-2" (click)="changeStatusFilter('Active')">Active</button>
-		<button class="btn btn-danger" (click)="changeStatusFilter('Closed')">Closed</button>
+	<!-- Форма поиска транзакций -->
+	<form [formGroup]="searchForm" class="mb-3">
+		<div class="row">
+			<div class="col-md-4">
+				<label for="token" class="form-label">Поиск по талону:</label>
+				<input id="token" type="text" formControlName="token" class="form-control" placeholder="Введите талон">
+			</div>
+			<!-- Добавьте другие фильтры при необходимости -->
+		</div>
+	</form>
+
+	<!-- Блок для выбора количества элементов на странице -->
+	<div class="d-flex justify-content-end align-items-center mb-2">
+		<label for="pageSize" class="me-2">Элементов на странице:</label>
+		<select id="pageSize" class="form-select" [formControl]="pageSizeControl">
+			<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+		</select>
 	</div>
 
+	<!-- Верхняя пагинация -->
+	<div *ngIf="!isLoading && totalPages > 1" class="pagination-container mb-2">
+		<div class="pagination-squares">
+			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+				[class.disabled]="page === '...'" (click)="onPageClick(page)">
+				{{ page }}
+			</div>
+		</div>
+	</div>
+
+	<!-- Сообщение о загрузке -->
+	<div *ngIf="isLoading" class="text-center mt-4">
+		<p>Загрузка данных...</p>
+	</div>
+	<br>
 	<!-- Таблица транзакций -->
-	<table class="table table-bordered">
-		<thead class="table-light">
+	<table *ngIf="!isLoading && transactions.length > 0" class="table table-bordered table-striped">
+		<thead>
 			<tr>
 				<th>ID</th>
 				<th>Token</th>
@@ -21,30 +47,39 @@
 				<th>Amount</th>
 				<th>Status</th>
 				<th>Pass ID</th>
-				<th>Actions</th>
+				<th>Действия</th>
 			</tr>
 		</thead>
 		<tbody>
 			<tr *ngFor="let t of transactions">
 				<td>{{ t.id }}</td>
 				<td>{{ t.token }}</td>
-				<td>
-					{{ t.store?.building }}, №{{ t.store?.storeNumber }}
-				</td>
-				<td>
-					{{ t.contractor?.lastName }} {{ t.contractor?.firstName }} {{ t.contractor?.middleName }}
-				</td>
+				<td>{{ t.store?.storeNumber }}</td>
+				<td>{{ t.contractor?.lastName }} {{ t.contractor?.firstName }}</td>
 				<td>{{ t.passType?.name }}</td>
 				<td>{{ t.amount }}</td>
 				<td>{{ t.status }}</td>
-				<td>
-					{{ t.passId ? t.pass?.uniquePassId : 'N/A' }}
-				</td>
+				<td>{{ t.passId ? t.passId : 'N/A' }}</td>
 				<td>
 					<button *ngIf="t.status === 'Pending'" class="btn btn-success btn-sm"
-						(click)="confirmPayment(t.id)">Подтвердить оплату</button>
+						(click)="confirmPayment(t.id)">
+						Оплатить
+					</button>
 				</td>
 			</tr>
 		</tbody>
 	</table>
+	<p *ngIf="!isLoading && transactions.length === 0" class="text-center mt-4">
+		Нет транзакций для отображения.
+	</p>
+	<br>
+	<!-- Нижняя пагинация -->
+	<div *ngIf="!isLoading && totalPages > 1" class="pagination-container mt-2">
+		<div class="pagination-squares">
+			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+				[class.disabled]="page === '...'" (click)="onPageClick(page)">
+				{{ page }}
+			</div>
+		</div>
+	</div>
 </div>

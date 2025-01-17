@@ -146,11 +146,6 @@ namespace EmployeeManagementServer.Data
                 .HasForeignKey(qt => qt.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Уникальный индекс для QueueToken
-            builder.Entity<QueueToken>()
-                .HasIndex(qt => qt.Token)
-                .IsUnique();
-
             // Настройка конвертеров для DateTime
             foreach (var entityType in builder.Model.GetEntityTypes())
             {

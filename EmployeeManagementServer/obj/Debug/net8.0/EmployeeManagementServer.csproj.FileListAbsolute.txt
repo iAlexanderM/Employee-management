@@ -487,3 +487,5 @@ C:\Users\zelom\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\De
 C:\Users\zelom\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.pdb
 C:\Users\zelom\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\EmployeeManagementServer.genruntimeconfig.cache
 C:\Users\zelom\Desktop\buroP\Employee-management\EmployeeManagementServer\obj\Debug\net8.0\ref\EmployeeManagementServer.dll
+C:\Users\zelom\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\Newtonsoft.Json.dll
+C:\Users\zelom\Desktop\buroP\Employee-management\EmployeeManagementServer\bin\Debug\net8.0\System.Net.WebSockets.WebSocketProtocol.dll
