@@ -40,4 +40,18 @@ public class SuggestionsController : ControllerBase
         var suggestions = _suggestionsService.GetStoreNumberSuggestions(query ?? string.Empty);
         return Ok(suggestions);
     }
+
+    [HttpGet("stores")]
+    public IActionResult GetStoresSuggestions([FromQuery] string? query)
+    {
+        var suggestions = _suggestionsService.GetStoresSuggestions(query ?? string.Empty);
+        return Ok(suggestions);
+    }
+
+    [HttpGet("contractors")]
+    public IActionResult GetContractorSuggestions([FromQuery] string? query)
+    {
+        var suggestions = _suggestionsService.GetContractorSuggestions(query ?? string.Empty);
+        return Ok(suggestions);
+    }
 }

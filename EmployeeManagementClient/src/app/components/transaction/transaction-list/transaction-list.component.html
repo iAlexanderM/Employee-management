@@ -4,18 +4,38 @@
 	<!-- Форма поиска транзакций -->
 	<form [formGroup]="searchForm" class="mb-3">
 		<div class="row">
-			<div class="col-md-4">
+			<div class="col-md-3">
 				<label for="token" class="form-label">Поиск по талону:</label>
 				<input id="token" type="text" formControlName="token" class="form-control" placeholder="Введите талон">
 			</div>
-			<!-- Добавьте другие фильтры при необходимости -->
+			<div class="col-md-3">
+				<label for="store" class="form-label">Торговая точка (ID):</label>
+				<input id="store" type="text" formControlName="store" class="form-control"
+					placeholder="Введите ID точки">
+			</div>
+			<div class="col-md-3">
+				<label for="contractor" class="form-label">Контрагент (ID):</label>
+				<input id="contractor" type="text" formControlName="contractor" class="form-control"
+					placeholder="Введите ID контрагента">
+			</div>
+			<div class="col-md-3">
+				<label for="issuedBy" class="form-label">Кто выписал:</label>
+				<input id="issuedBy" type="text" formControlName="issuedBy" class="form-control"
+					placeholder="Введите, кто выписал">
+			</div>
+		</div>
+		<!-- Кнопка для запуска поиска -->
+		<div class="row mt-3">
+			<div class="col-md-12 text-end">
+				<button type="button" class="btn btn-primary" (click)="onSearchClick()">Поиск</button>
+			</div>
 		</div>
 	</form>
 
 	<!-- Блок для выбора количества элементов на странице -->
 	<div class="d-flex justify-content-end align-items-center mb-2">
 		<label for="pageSize" class="me-2">Элементов на странице:</label>
-		<select id="pageSize" class="form-select" [formControl]="pageSizeControl">
+		<select id="pageSize" class="form-select w-auto" [formControl]="pageSizeControl">
 			<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
 		</select>
 	</div>
@@ -34,7 +54,7 @@
 	<div *ngIf="isLoading" class="text-center mt-4">
 		<p>Загрузка данных...</p>
 	</div>
-	<br>
+
 	<!-- Таблица транзакций -->
 	<table *ngIf="!isLoading && transactions.length > 0" class="table table-bordered table-striped">
 		<thead>
@@ -72,7 +92,7 @@
 	<p *ngIf="!isLoading && transactions.length === 0" class="text-center mt-4">
 		Нет транзакций для отображения.
 	</p>
-	<br>
+
 	<!-- Нижняя пагинация -->
 	<div *ngIf="!isLoading && totalPages > 1" class="pagination-container mt-2">
 		<div class="pagination-squares">

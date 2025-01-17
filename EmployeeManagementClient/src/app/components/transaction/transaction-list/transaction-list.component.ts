@@ -1,9 +1,8 @@
-// src/app/components/transaction/transaction-list/transaction-list.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
-import { TransactionService } from '../../../services/transaction.service';
+import { TransactionService, UpdatePendingDto } from '../../../services/transaction.service';
 import { PassTransaction } from '../../../models/transaction.model';
 
 @Component({
@@ -36,34 +35,38 @@ export class TransactionListComponent implements OnInit {
 	) { }
 
 	ngOnInit(): void {
-		// Инициализируем форму поиска. Добавьте нужные поля фильтрации.
+		// Инициализируем форму поиска с нужными полями фильтрации:
+		// token – талон,
+		// store – ID торговой точки (или можно использовать название, если сервер поддерживает поиск по нему),
+		// contractor – ID или ФИО контрагента,
+		// issuedBy – поле "Кто выписал" (скорректируйте имя поля в DTO и на сервере, если требуется)
 		this.searchForm = this.fb.group({
-			token: ['']
-			// Можно добавить дополнительные поля, например: dateFrom, dateTo и др.
+			token: [''],
+			store: [''],
+			contractor: [''],
+			issuedBy: ['']
 		});
 
 		// Подписываемся на изменения размера страницы
 		this.pageSizeControl.valueChanges.subscribe(value => {
 			this.pageSize = value;
 			this.currentPage = 1;
-			this.loadTransactions();
+			// Чтобы при изменении размера сразу применялись данные, можно вызвать поиск
+			// либо же оставить только кнопку "Поиск"
+			// this.loadTransactions();
 		});
 
-		// При изменении значений в форме поиска сбрасываем номер страницы и загружаем данные
-		this.searchForm.valueChanges.subscribe(() => {
-			this.currentPage = 1;
-			this.loadTransactions();
-		});
-
-		// Первоначальная загрузка данных
+		// Первоначальная загрузка данных (без фильтрации)
 		this.loadTransactions();
 	}
 
 	/**
 	 * Загружает транзакции с учётом фильтров и параметров пагинации.
+	 * Метод вызывается при нажатии кнопки "Поиск" и при переключении страниц.
 	 */
 	loadTransactions(): void {
 		this.isLoading = true;
+		// Формируем параметры из формы – если поле пустое, оно не отправится
 		const searchParams = this.searchForm.value;
 		this.transactionService.searchTransactions(searchParams, this.currentPage, this.pageSize).subscribe({
 			next: result => {
@@ -131,12 +134,10 @@ export class TransactionListComponent implements OnInit {
 
 	/**
 	 * Обработчик изменения размера страницы.
-	 * (Действие уже обработано через подписку на pageSizeControl.valueChanges,
-	 * но можно оставить этот метод, если вы решите использовать (change) в шаблоне.)
 	 */
-	onPageSizeChange(): void {
+	onPageSizeChange(event: any): void {
+		this.pageSize = +event.target.value;
 		this.currentPage = 1;
-		this.totalPages = Math.ceil(this.totalItems / this.pageSize);
 		this.loadTransactions();
 	}
 
@@ -150,11 +151,19 @@ export class TransactionListComponent implements OnInit {
 		this.transactionService.confirmTransaction(id).subscribe({
 			next: response => {
 				alert(response.message);
-				this.loadTransactions();
+				this.loadTransactions(); // Обновляем список
 			},
 			error: err => {
 				console.error('Ошибка при подтверждении оплаты:', err);
 			}
 		});
+	}
+
+	/**
+	 * Нажатие на кнопку "Поиск". Вызывает загрузку транзакций с фильтрами.
+	 */
+	onSearchClick(): void {
+		this.currentPage = 1; // сбрасываем страницу при поиске
+		this.loadTransactions();
 	}
 }

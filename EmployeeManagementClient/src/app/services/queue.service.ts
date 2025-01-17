@@ -1,6 +1,6 @@
 // src/app/services/queue.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
@@ -38,7 +38,10 @@ export class QueueService {
 	/**
 	 * Список всех талонов: GET /api/Queue/list-all-tokens
 	 */
-	listAllTokens(): Observable<QueueToken[]> {
-		return this.http.get<QueueToken[]>(`${this.baseUrl}/list-all-tokens`);
+	listAllTokens(page: number = 1, pageSize: number = 25): Observable<{ total: number; tokens: QueueToken[] }> {
+		let params = new HttpParams()
+			.set('page', page.toString())
+			.set('pageSize', pageSize.toString());
+		return this.http.get<{ total: number; tokens: QueueToken[] }>(`${this.baseUrl}/list-all-tokens`, { params });
 	}
 }

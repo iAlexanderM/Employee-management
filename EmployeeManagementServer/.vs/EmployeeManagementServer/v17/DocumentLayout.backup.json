@@ -3,6 +3,34 @@
   "WorkspaceRootPath": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\controllers\\suggestionscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:controllers\\suggestionscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\services\\suggestionsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:services\\suggestionsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\services\\isuggestionsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:services\\isuggestionsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\controllers\\storecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:controllers\\storecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\controllers\\searchstorescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:controllers\\searchstorescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\controllers\\searchstorenumberscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:controllers\\searchstorenumberscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\controllers\\searchnationalitiescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:controllers\\searchnationalitiescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\controllers\\queuecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:controllers\\queuecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -279,10 +307,6 @@
       "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:services\\icitizenshipservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\controllers\\searchstorenumberscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:controllers\\searchstorenumberscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\controllers\\searchlinescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:controllers\\searchlinescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -379,24 +403,8 @@
       "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:services\\storesearchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\controllers\\searchstorescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:controllers\\searchstorescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\controllers\\storecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:controllers\\storecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\services\\refreshtokenservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:services\\refreshtokenservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\controllers\\suggestionscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:controllers\\suggestionscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\controllers\\searchnationalitiescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:controllers\\searchnationalitiescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\controllers\\searchfloorscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -409,14 +417,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\controllers\\searchcitizenshipcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:controllers\\searchcitizenshipcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\services\\isuggestionsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:services\\isuggestionsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\services\\suggestionsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|solutionrelative:services\\suggestionsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A0471257-F8A8-4519-ABCD-36C45C2A8335}|EmployeeManagementServer.csproj|c:\\users\\zelom\\desktop\\burop\\employee-management\\employeemanagementserver\\services\\ifloorsearchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -470,89 +470,115 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "PassTransactionSearchService.cs",
-              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\PassTransactionSearchService.cs",
-              "RelativeDocumentMoniker": "Services\\PassTransactionSearchService.cs",
-              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\PassTransactionSearchService.cs",
-              "RelativeToolTip": "Services\\PassTransactionSearchService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAD4AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-17T06:42:34.487Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "IPassTransactionSearchService.cs",
-              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\IPassTransactionSearchService.cs",
-              "RelativeDocumentMoniker": "Services\\IPassTransactionSearchService.cs",
-              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\IPassTransactionSearchService.cs",
-              "RelativeToolTip": "Services\\IPassTransactionSearchService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-17T06:42:14.259Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 7,
-              "Title": "PassTransactionSearchDto.cs",
-              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\PassTransactionSearchDto.cs",
-              "RelativeDocumentMoniker": "Models\\DTOs\\PassTransactionSearchDto.cs",
-              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\PassTransactionSearchDto.cs",
-              "RelativeToolTip": "Models\\DTOs\\PassTransactionSearchDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Title": "QueueController.cs",
+              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\QueueController.cs",
+              "RelativeDocumentMoniker": "Controllers\\QueueController.cs",
+              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\QueueController.cs",
+              "RelativeToolTip": "Controllers\\QueueController.cs",
+              "ViewState": "AgIAAIAAAAAAAAAAAAAmwJ0AAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-17T06:41:45.367Z",
+              "WhenOpened": "2024-12-12T06:50:56.184Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "PassTransactionController.cs",
-              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\PassTransactionController.cs",
-              "RelativeDocumentMoniker": "Controllers\\PassTransactionController.cs",
-              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\PassTransactionController.cs",
-              "RelativeToolTip": "Controllers\\PassTransactionController.cs",
-              "ViewState": "AgIAAO8AAAAAAAAAAAAUwCEBAAAAAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "SuggestionsController.cs",
+              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SuggestionsController.cs",
+              "RelativeDocumentMoniker": "Controllers\\SuggestionsController.cs",
+              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SuggestionsController.cs",
+              "RelativeToolTip": "Controllers\\SuggestionsController.cs",
+              "ViewState": "AgIAABUAAAAAAAAAAAAswC4AAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-11T13:40:11.474Z",
+              "WhenOpened": "2024-11-12T09:55:38.16Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAGgAAAAAAAAAAAAqwHIAAABaAAAAAAAAAA==",
+              "Title": "SearchStoresController.cs",
+              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchStoresController.cs",
+              "RelativeDocumentMoniker": "Controllers\\SearchStoresController.cs",
+              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchStoresController.cs",
+              "RelativeToolTip": "Controllers\\SearchStoresController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-02T17:24:06.428Z",
+              "WhenOpened": "2024-11-01T10:26:20.911Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "SearchNationalitiesController.cs",
+              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchNationalitiesController.cs",
+              "RelativeDocumentMoniker": "Controllers\\SearchNationalitiesController.cs",
+              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchNationalitiesController.cs",
+              "RelativeToolTip": "Controllers\\SearchNationalitiesController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-11-09T11:03:56.854Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "SearchStoreNumbersController.cs",
+              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchStoreNumbersController.cs",
+              "RelativeDocumentMoniker": "Controllers\\SearchStoreNumbersController.cs",
+              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchStoreNumbersController.cs",
+              "RelativeToolTip": "Controllers\\SearchStoreNumbersController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-31T13:55:13.141Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "PassGroupController.cs",
-              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\PassGroupController.cs",
-              "RelativeDocumentMoniker": "Controllers\\PassGroupController.cs",
-              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\PassGroupController.cs",
-              "RelativeToolTip": "Controllers\\PassGroupController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACQAAAAOAAAAAAAAAA==",
+              "Title": "StoreController.cs",
+              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\StoreController.cs",
+              "RelativeDocumentMoniker": "Controllers\\StoreController.cs",
+              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\StoreController.cs",
+              "RelativeToolTip": "Controllers\\StoreController.cs",
+              "ViewState": "AgIAAGsAAAAAAAAAAAAQwI0AAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-10T08:52:43.384Z",
+              "WhenOpened": "2024-11-06T11:29:10.981Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
+              "Title": "ISuggestionsService.cs",
+              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\ISuggestionsService.cs",
+              "RelativeDocumentMoniker": "Services\\ISuggestionsService.cs",
+              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\ISuggestionsService.cs",
+              "RelativeToolTip": "Services\\ISuggestionsService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-11-12T10:04:02.847Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "SuggestionsService.cs",
+              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\SuggestionsService.cs",
+              "RelativeDocumentMoniker": "Services\\SuggestionsService.cs",
+              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\SuggestionsService.cs",
+              "RelativeToolTip": "Services\\SuggestionsService.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAcwBkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-11-12T10:04:24.242Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
               "Title": "PassTypeController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\PassTypeController.cs",
               "RelativeDocumentMoniker": "Controllers\\PassTypeController.cs",
@@ -560,25 +586,83 @@
               "RelativeToolTip": "Controllers\\PassTypeController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-10T08:05:38.81Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "QueueController.cs",
-              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\QueueController.cs",
-              "RelativeDocumentMoniker": "Controllers\\QueueController.cs",
-              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\QueueController.cs",
-              "RelativeToolTip": "Controllers\\QueueController.cs",
-              "ViewState": "AgIAAG8AAAAAAAAAAAAkwIwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-12T06:50:56.184Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-12-10T08:05:38.81Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 10,
+              "Title": "PassGroupController.cs",
+              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\PassGroupController.cs",
+              "RelativeDocumentMoniker": "Controllers\\PassGroupController.cs",
+              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\PassGroupController.cs",
+              "RelativeToolTip": "Controllers\\PassGroupController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACQAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-12-10T08:52:43.384Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAGgAAAAAAAAAAAAqwHIAAABaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-02T17:24:06.428Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "PassTransactionController.cs",
+              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\PassTransactionController.cs",
+              "RelativeDocumentMoniker": "Controllers\\PassTransactionController.cs",
+              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\PassTransactionController.cs",
+              "RelativeToolTip": "Controllers\\PassTransactionController.cs",
+              "ViewState": "AgIAAO8AAAAAAAAAAAAUwCEBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-12-11T13:40:11.474Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "PassTransactionSearchDto.cs",
+              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\PassTransactionSearchDto.cs",
+              "RelativeDocumentMoniker": "Models\\DTOs\\PassTransactionSearchDto.cs",
+              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\PassTransactionSearchDto.cs",
+              "RelativeToolTip": "Models\\DTOs\\PassTransactionSearchDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-17T06:41:45.367Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "IPassTransactionSearchService.cs",
+              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\IPassTransactionSearchService.cs",
+              "RelativeDocumentMoniker": "Services\\IPassTransactionSearchService.cs",
+              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\IPassTransactionSearchService.cs",
+              "RelativeToolTip": "Services\\IPassTransactionSearchService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-17T06:42:14.259Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "PassTransactionSearchService.cs",
+              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\PassTransactionSearchService.cs",
+              "RelativeDocumentMoniker": "Services\\PassTransactionSearchService.cs",
+              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\PassTransactionSearchService.cs",
+              "RelativeToolTip": "Services\\PassTransactionSearchService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAD4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-17T06:42:34.487Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
               "Title": "ContractorsController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\ContractorsController.cs",
               "RelativeDocumentMoniker": "Controllers\\ContractorsController.cs",
@@ -586,12 +670,11 @@
               "RelativeToolTip": "Controllers\\ContractorsController.cs",
               "ViewState": "AgIAAJ8AAAAAAAAAAAAiwMYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-10T07:51:57.926Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-09-10T07:51:57.926Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 19,
               "Title": "ContractorService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\ContractorService.cs",
               "RelativeDocumentMoniker": "Services\\ContractorService.cs",
@@ -599,12 +682,11 @@
               "RelativeToolTip": "Services\\ContractorService.cs",
               "ViewState": "AgIAAKAAAAAAAAAAAADwv8UAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-12T07:07:44.455Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-09-12T07:07:44.455Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 20,
               "Title": "CreateTransactionDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\CreateTransactionDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\CreateTransactionDto.cs",
@@ -616,7 +698,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 18,
               "Title": "ContractorSearchService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\ContractorSearchService.cs",
               "RelativeDocumentMoniker": "Services\\ContractorSearchService.cs",
@@ -624,12 +706,11 @@
               "RelativeToolTip": "Services\\ContractorSearchService.cs",
               "ViewState": "AgIAAC0AAAAAAAAAAAAqwFUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-14T06:59:02.679Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-14T06:59:02.679Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 16,
               "Title": "ContractorSearchDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\ContractorSearchDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\ContractorSearchDto.cs",
@@ -637,12 +718,11 @@
               "RelativeToolTip": "Models\\DTOs\\ContractorSearchDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-16T18:45:11.133Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-16T18:45:11.133Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 15,
               "Title": "IContractorSearchService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\IContractorSearchService.cs",
               "RelativeDocumentMoniker": "Services\\IContractorSearchService.cs",
@@ -650,12 +730,11 @@
               "RelativeToolTip": "Services\\IContractorSearchService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-16T18:48:41.134Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-16T18:48:41.134Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 21,
               "Title": "QueueHub.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Hubs\\QueueHub.cs",
               "RelativeDocumentMoniker": "Hubs\\QueueHub.cs",
@@ -667,7 +746,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 22,
               "Title": "ApplicationDbContext.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Data\\ApplicationDbContext.cs",
               "RelativeDocumentMoniker": "Data\\ApplicationDbContext.cs",
@@ -679,7 +758,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 23,
               "Title": "MappingProfile.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Mapping\\MappingProfile.cs",
               "RelativeDocumentMoniker": "Mapping\\MappingProfile.cs",
@@ -691,7 +770,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 24,
               "Title": "ExpiredTokenCleanupService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\ExpiredTokenCleanupService.cs",
               "RelativeDocumentMoniker": "Services\\ExpiredTokenCleanupService.cs",
@@ -703,7 +782,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 25,
               "Title": "JwtPassTokenService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\JwtPassTokenService.cs",
               "RelativeDocumentMoniker": "Services\\JwtPassTokenService.cs",
@@ -715,7 +794,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 26,
               "Title": "QueueToken.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\QueueToken.cs",
               "RelativeDocumentMoniker": "Models\\QueueToken.cs",
@@ -727,7 +806,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 27,
               "Title": "PassType.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\PassType.cs",
               "RelativeDocumentMoniker": "Models\\PassType.cs",
@@ -739,7 +818,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 28,
               "Title": "PassTransaction.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\PassTransaction.cs",
               "RelativeDocumentMoniker": "Models\\PassTransaction.cs",
@@ -751,7 +830,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 29,
               "Title": "Pass.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\Pass.cs",
               "RelativeDocumentMoniker": "Models\\Pass.cs",
@@ -763,7 +842,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 30,
               "Title": "CloseReason.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\CloseReason.cs",
               "RelativeDocumentMoniker": "Models\\CloseReason.cs",
@@ -775,7 +854,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 31,
               "Title": "PassDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\PassDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\PassDto.cs",
@@ -787,7 +866,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 32,
               "Title": "CloseTokenDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\CloseTokenDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\CloseTokenDto.cs",
@@ -799,7 +878,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 33,
               "Title": "ClosePassDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\ClosePassDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\ClosePassDto.cs",
@@ -811,7 +890,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 27,
+              "DocumentIndex": 34,
               "Title": "PassController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\PassController.cs",
               "RelativeDocumentMoniker": "Controllers\\PassController.cs",
@@ -823,7 +902,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 28,
+              "DocumentIndex": 35,
               "Title": "FloorController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\FloorController.cs",
               "RelativeDocumentMoniker": "Controllers\\FloorController.cs",
@@ -835,7 +914,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 29,
+              "DocumentIndex": 36,
               "Title": "NationalityController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\NationalityController.cs",
               "RelativeDocumentMoniker": "Controllers\\NationalityController.cs",
@@ -847,7 +926,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 30,
+              "DocumentIndex": 37,
               "Title": "ApplicationUser.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\ApplicationUser.cs",
               "RelativeDocumentMoniker": "Models\\ApplicationUser.cs",
@@ -859,7 +938,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 31,
+              "DocumentIndex": 38,
               "Title": "AuthController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\AuthController.cs",
               "RelativeDocumentMoniker": "Controllers\\AuthController.cs",
@@ -871,7 +950,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 32,
+              "DocumentIndex": 39,
               "Title": "BuildingController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\BuildingController.cs",
               "RelativeDocumentMoniker": "Controllers\\BuildingController.cs",
@@ -883,7 +962,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 34,
+              "DocumentIndex": 41,
               "Title": "PassTypeDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\PassTypeDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\PassTypeDto.cs",
@@ -895,7 +974,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 33,
+              "DocumentIndex": 40,
               "Title": "PassGroupDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\PassGroupDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\PassGroupDto.cs",
@@ -907,7 +986,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 35,
+              "DocumentIndex": 42,
               "Title": "RefreshTokenRequestDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\RefreshTokenRequestDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\RefreshTokenRequestDto.cs",
@@ -919,7 +998,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 36,
+              "DocumentIndex": 43,
               "Title": "PassGroup.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\PassGroup.cs",
               "RelativeDocumentMoniker": "Models\\PassGroup.cs",
@@ -931,7 +1010,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 37,
+              "DocumentIndex": 44,
               "Title": "SaveTransactionJwtDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\SaveTransactionJwtDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\SaveTransactionJwtDto.cs",
@@ -943,7 +1022,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 39,
+              "DocumentIndex": 46,
               "Title": "SearchBuildingsController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchBuildingsController.cs",
               "RelativeDocumentMoniker": "Controllers\\SearchBuildingsController.cs",
@@ -955,7 +1034,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 38,
+              "DocumentIndex": 45,
               "Title": "JwtTokenService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\JwtTokenService.cs",
               "RelativeDocumentMoniker": "Services\\JwtTokenService.cs",
@@ -967,7 +1046,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 40,
+              "DocumentIndex": 47,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\appsettings.json",
               "RelativeDocumentMoniker": "appsettings.json",
@@ -979,7 +1058,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 41,
+              "DocumentIndex": 48,
               "Title": "ActivateTokenDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\ActivateTokenDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\ActivateTokenDto.cs",
@@ -991,7 +1070,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 42,
+              "DocumentIndex": 49,
               "Title": "20241226111331_AddUserToPassTransactionV2.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Migrations\\20241226111331_AddUserToPassTransactionV2.cs",
               "RelativeDocumentMoniker": "Migrations\\20241226111331_AddUserToPassTransactionV2.cs",
@@ -1003,7 +1082,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 43,
+              "DocumentIndex": 50,
               "Title": "ApplicationDbContextFactory.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Data\\ApplicationDbContextFactory.cs",
               "RelativeDocumentMoniker": "Data\\ApplicationDbContextFactory.cs",
@@ -1015,7 +1094,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 44,
+              "DocumentIndex": 51,
               "Title": "Contractor.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\Contractor.cs",
               "RelativeDocumentMoniker": "Models\\Contractor.cs",
@@ -1027,7 +1106,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 45,
+              "DocumentIndex": 52,
               "Title": "UserLoginDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\UserLoginDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\UserLoginDto.cs",
@@ -1039,7 +1118,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 46,
+              "DocumentIndex": 53,
               "Title": "20241225075814_AddPassTokenSequence.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Migrations\\20241225075814_AddPassTokenSequence.cs",
               "RelativeDocumentMoniker": "Migrations\\20241225075814_AddPassTokenSequence.cs",
@@ -1051,7 +1130,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 47,
+              "DocumentIndex": 54,
               "Title": "ContractorDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\ContractorDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\ContractorDto.cs",
@@ -1063,7 +1142,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 48,
+              "DocumentIndex": 55,
               "Title": "RefreshToken.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\RefreshToken.cs",
               "RelativeDocumentMoniker": "Models\\RefreshToken.cs",
@@ -1075,7 +1154,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 49,
+              "DocumentIndex": 56,
               "Title": "StoreDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\StoreDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\StoreDto.cs",
@@ -1087,7 +1166,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 52,
+              "DocumentIndex": 59,
               "Title": "Building.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\Building.cs",
               "RelativeDocumentMoniker": "Models\\Building.cs",
@@ -1099,7 +1178,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 51,
+              "DocumentIndex": 58,
               "Title": "Citizenship.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\Citizenship.cs",
               "RelativeDocumentMoniker": "Models\\Citizenship.cs",
@@ -1111,7 +1190,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 50,
+              "DocumentIndex": 57,
               "Title": "ContractorPhoto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\ContractorPhoto.cs",
               "RelativeDocumentMoniker": "Models\\ContractorPhoto.cs",
@@ -1123,7 +1202,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 53,
+              "DocumentIndex": 60,
               "Title": "BuildingService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\BuildingService.cs",
               "RelativeDocumentMoniker": "Services\\BuildingService.cs",
@@ -1135,7 +1214,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 62,
+              "DocumentIndex": 69,
               "Title": "INationalityService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\INationalityService.cs",
               "RelativeDocumentMoniker": "Services\\INationalityService.cs",
@@ -1147,7 +1226,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 55,
+              "DocumentIndex": 62,
               "Title": "StoreNumberService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\StoreNumberService.cs",
               "RelativeDocumentMoniker": "Services\\StoreNumberService.cs",
@@ -1159,7 +1238,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 54,
+              "DocumentIndex": 61,
               "Title": "StoreNumberController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\StoreNumberController.cs",
               "RelativeDocumentMoniker": "Controllers\\StoreNumberController.cs",
@@ -1171,7 +1250,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 59,
+              "DocumentIndex": 66,
               "Title": "NationalityService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\NationalityService.cs",
               "RelativeDocumentMoniker": "Services\\NationalityService.cs",
@@ -1183,7 +1262,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 60,
+              "DocumentIndex": 67,
               "Title": "LineService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\LineService.cs",
               "RelativeDocumentMoniker": "Services\\LineService.cs",
@@ -1195,7 +1274,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 61,
+              "DocumentIndex": 68,
               "Title": "LineController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\LineController.cs",
               "RelativeDocumentMoniker": "Controllers\\LineController.cs",
@@ -1207,7 +1286,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 57,
+              "DocumentIndex": 64,
               "Title": "ILineService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\ILineService.cs",
               "RelativeDocumentMoniker": "Services\\ILineService.cs",
@@ -1219,7 +1298,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 56,
+              "DocumentIndex": 63,
               "Title": "IStoreNumberService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\IStoreNumberService.cs",
               "RelativeDocumentMoniker": "Services\\IStoreNumberService.cs",
@@ -1231,7 +1310,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 58,
+              "DocumentIndex": 65,
               "Title": "INationalitySearchService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\INationalitySearchService.cs",
               "RelativeDocumentMoniker": "Services\\INationalitySearchService.cs",
@@ -1243,7 +1322,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 65,
+              "DocumentIndex": 72,
               "Title": "IFloorService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\IFloorService.cs",
               "RelativeDocumentMoniker": "Services\\IFloorService.cs",
@@ -1255,7 +1334,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 64,
+              "DocumentIndex": 71,
               "Title": "FloorService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\FloorService.cs",
               "RelativeDocumentMoniker": "Services\\FloorService.cs",
@@ -1267,7 +1346,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 66,
+              "DocumentIndex": 73,
               "Title": "CitizenshipController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\CitizenshipController.cs",
               "RelativeDocumentMoniker": "Controllers\\CitizenshipController.cs",
@@ -1279,7 +1358,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 63,
+              "DocumentIndex": 70,
               "Title": "IBuildingService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\IBuildingService.cs",
               "RelativeDocumentMoniker": "Services\\IBuildingService.cs",
@@ -1291,7 +1370,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 67,
+              "DocumentIndex": 74,
               "Title": "CitizenshipService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\CitizenshipService.cs",
               "RelativeDocumentMoniker": "Services\\CitizenshipService.cs",
@@ -1303,7 +1382,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 68,
+              "DocumentIndex": 75,
               "Title": "ICitizenshipService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\ICitizenshipService.cs",
               "RelativeDocumentMoniker": "Services\\ICitizenshipService.cs",
@@ -1315,19 +1394,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 69,
-              "Title": "SearchStoreNumbersController.cs",
-              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchStoreNumbersController.cs",
-              "RelativeDocumentMoniker": "Controllers\\SearchStoreNumbersController.cs",
-              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchStoreNumbersController.cs",
-              "RelativeToolTip": "Controllers\\SearchStoreNumbersController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAPAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-31T13:55:13.141Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 70,
+              "DocumentIndex": 76,
               "Title": "SearchLinesController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchLinesController.cs",
               "RelativeDocumentMoniker": "Controllers\\SearchLinesController.cs",
@@ -1339,7 +1406,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 71,
+              "DocumentIndex": 77,
               "Title": "NationalitySearchDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\NationalitySearchDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\NationalitySearchDto.cs",
@@ -1351,7 +1418,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 76,
+              "DocumentIndex": 82,
               "Title": "FloorSearchDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\FloorSearchDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\FloorSearchDto.cs",
@@ -1363,7 +1430,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 72,
+              "DocumentIndex": 78,
               "Title": "CitizenshipSearchDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\CitizenshipSearchDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\CitizenshipSearchDto.cs",
@@ -1375,7 +1442,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 73,
+              "DocumentIndex": 79,
               "Title": "BuildingSearchDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\BuildingSearchDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\BuildingSearchDto.cs",
@@ -1387,7 +1454,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 74,
+              "DocumentIndex": 80,
               "Title": "StoreNumberSearchDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\StoreNumberSearchDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\StoreNumberSearchDto.cs",
@@ -1399,7 +1466,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 75,
+              "DocumentIndex": 81,
               "Title": "StoreNumberDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\StoreNumberDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\StoreNumberDto.cs",
@@ -1411,7 +1478,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 77,
+              "DocumentIndex": 83,
               "Title": "StoreSearchDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\StoreSearchDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\StoreSearchDto.cs",
@@ -1423,7 +1490,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 78,
+              "DocumentIndex": 84,
               "Title": "NationalityDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\NationalityDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\NationalityDto.cs",
@@ -1435,7 +1502,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 79,
+              "DocumentIndex": 85,
               "Title": "LineSearchDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\LineSearchDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\LineSearchDto.cs",
@@ -1447,7 +1514,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 80,
+              "DocumentIndex": 86,
               "Title": "LineDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\LineDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\LineDto.cs",
@@ -1459,7 +1526,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 81,
+              "DocumentIndex": 87,
               "Title": "FloorDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\FloorDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\FloorDto.cs",
@@ -1471,7 +1538,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 82,
+              "DocumentIndex": 88,
               "Title": "CitizenshipDto.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\DTOs\\CitizenshipDto.cs",
               "RelativeDocumentMoniker": "Models\\DTOs\\CitizenshipDto.cs",
@@ -1483,7 +1550,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 83,
+              "DocumentIndex": 89,
               "Title": "IBuildingSearchService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\IBuildingSearchService.cs",
               "RelativeDocumentMoniker": "Services\\IBuildingSearchService.cs",
@@ -1495,7 +1562,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 84,
+              "DocumentIndex": 90,
               "Title": "BuildingSearchService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\BuildingSearchService.cs",
               "RelativeDocumentMoniker": "Services\\BuildingSearchService.cs",
@@ -1507,7 +1574,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 85,
+              "DocumentIndex": 91,
               "Title": "StoreNumber.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\StoreNumber.cs",
               "RelativeDocumentMoniker": "Models\\StoreNumber.cs",
@@ -1519,7 +1586,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 86,
+              "DocumentIndex": 92,
               "Title": "Store.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\Store.cs",
               "RelativeDocumentMoniker": "Models\\Store.cs",
@@ -1531,7 +1598,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 87,
+              "DocumentIndex": 93,
               "Title": "Nationality.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\Nationality.cs",
               "RelativeDocumentMoniker": "Models\\Nationality.cs",
@@ -1543,7 +1610,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 88,
+              "DocumentIndex": 94,
               "Title": "Line.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\Line.cs",
               "RelativeDocumentMoniker": "Models\\Line.cs",
@@ -1555,7 +1622,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 89,
+              "DocumentIndex": 95,
               "Title": "Floor.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Models\\Floor.cs",
               "RelativeDocumentMoniker": "Models\\Floor.cs",
@@ -1567,7 +1634,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 90,
+              "DocumentIndex": 96,
               "Title": "IStoreSearchService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\IStoreSearchService.cs",
               "RelativeDocumentMoniker": "Services\\IStoreSearchService.cs",
@@ -1579,7 +1646,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 91,
+              "DocumentIndex": 97,
               "Title": "IStoreService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\IStoreService.cs",
               "RelativeDocumentMoniker": "Services\\IStoreService.cs",
@@ -1591,7 +1658,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 92,
+              "DocumentIndex": 98,
               "Title": "StoreService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\StoreService.cs",
               "RelativeDocumentMoniker": "Services\\StoreService.cs",
@@ -1603,7 +1670,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 93,
+              "DocumentIndex": 99,
               "Title": "StoreSearchService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\StoreSearchService.cs",
               "RelativeDocumentMoniker": "Services\\StoreSearchService.cs",
@@ -1615,31 +1682,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 94,
-              "Title": "SearchStoresController.cs",
-              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchStoresController.cs",
-              "RelativeDocumentMoniker": "Controllers\\SearchStoresController.cs",
-              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchStoresController.cs",
-              "RelativeToolTip": "Controllers\\SearchStoresController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-01T10:26:20.911Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 95,
-              "Title": "StoreController.cs",
-              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\StoreController.cs",
-              "RelativeDocumentMoniker": "Controllers\\StoreController.cs",
-              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\StoreController.cs",
-              "RelativeToolTip": "Controllers\\StoreController.cs",
-              "ViewState": "AgIAAG4AAAAAAAAAAAAQwIUAAAAcAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-06T11:29:10.981Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 96,
+              "DocumentIndex": 100,
               "Title": "RefreshTokenService.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\RefreshTokenService.cs",
               "RelativeDocumentMoniker": "Services\\RefreshTokenService.cs",
@@ -1651,31 +1694,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 97,
-              "Title": "SuggestionsController.cs",
-              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SuggestionsController.cs",
-              "RelativeDocumentMoniker": "Controllers\\SuggestionsController.cs",
-              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SuggestionsController.cs",
-              "RelativeToolTip": "Controllers\\SuggestionsController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAXAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-12T09:55:38.16Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 98,
-              "Title": "SearchNationalitiesController.cs",
-              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchNationalitiesController.cs",
-              "RelativeDocumentMoniker": "Controllers\\SearchNationalitiesController.cs",
-              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchNationalitiesController.cs",
-              "RelativeToolTip": "Controllers\\SearchNationalitiesController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAPAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-09T11:03:56.854Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 99,
+              "DocumentIndex": 101,
               "Title": "SearchFloorsController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchFloorsController.cs",
               "RelativeDocumentMoniker": "Controllers\\SearchFloorsController.cs",
@@ -1687,7 +1706,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 100,
+              "DocumentIndex": 102,
               "Title": "SearchContractorsController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchContractorsController.cs",
               "RelativeDocumentMoniker": "Controllers\\SearchContractorsController.cs",
@@ -1699,7 +1718,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 101,
+              "DocumentIndex": 103,
               "Title": "SearchCitizenshipController.cs",
               "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Controllers\\SearchCitizenshipController.cs",
               "RelativeDocumentMoniker": "Controllers\\SearchCitizenshipController.cs",
@@ -1708,30 +1727,6 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-11-09T10:55:45.466Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 102,
-              "Title": "ISuggestionsService.cs",
-              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\ISuggestionsService.cs",
-              "RelativeDocumentMoniker": "Services\\ISuggestionsService.cs",
-              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\ISuggestionsService.cs",
-              "RelativeToolTip": "Services\\ISuggestionsService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-12T10:04:02.847Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 103,
-              "Title": "SuggestionsService.cs",
-              "DocumentMoniker": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\SuggestionsService.cs",
-              "RelativeDocumentMoniker": "Services\\SuggestionsService.cs",
-              "ToolTip": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\Services\\SuggestionsService.cs",
-              "RelativeToolTip": "Services\\SuggestionsService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-12T10:04:24.242Z"
             },
             {
               "$type": "Document",

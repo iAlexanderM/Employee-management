@@ -1,5 +1,7 @@
+<!-- src/app/components/queue/queue.component.html -->
 <div class="compact-container talons-container">
 	<h2>Список талонов</h2>
+
 	<!-- Форма для создания талона -->
 	<form [formGroup]="createTokenForm" (ngSubmit)="onCreateToken()">
 		<label for="tokenType">Тип талона:</label>
@@ -7,11 +9,28 @@
 			<option value="P">P</option>
 			<option value="G">G</option>
 		</select>
-		<button type="submit" class="btn btn-primary">
-			Создать талон
-		</button>
+		<button type="submit" class="btn btn-primary">Создать талон</button>
 	</form>
 	<br>
+
+	<!-- Блок для выбора количества элементов на странице -->
+	<div class="d-flex justify-content-end align-items-center mb-2">
+		<label for="pageSize" class="me-2">Элементов на странице:</label>
+		<select id="pageSize" class="form-select" (change)="onPageSizeChange($event)">
+			<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+		</select>
+	</div>
+
+	<div *ngIf="totalPages > 1" class="pagination-container">
+		<div class="pagination-squares">
+			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+				[class.disabled]="page === '...'" (click)="onPageClick(page)">
+				{{ page }}
+			</div>
+		</div>
+	</div>
+	<br>
+
 	<!-- Таблица талонов -->
 	<table class="table table-bordered table-striped">
 		<thead>
@@ -41,4 +60,14 @@
 			</tr>
 		</tbody>
 	</table>
+
+	<!-- Пагинация для талонов -->
+	<div *ngIf="totalPages > 1" class="pagination-container">
+		<div class="pagination-squares">
+			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+				[class.disabled]="page === '...'" (click)="onPageClick(page)">
+				{{ page }}
+			</div>
+		</div>
+	</div>
 </div>

@@ -1,3 +1,4 @@
+// src/app/app.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -31,6 +32,10 @@ export class AppComponent implements OnInit, OnDestroy {
 	showActivePanel = false;
 	activeToken: QueueToken | null = null;
 
+	// Добавляем свойства пагинации
+	currentPage: number = 1;
+	pageSize: number = 25;
+
 	constructor(
 		private authService: AuthService,
 		private queueService: QueueService,
@@ -47,11 +52,14 @@ export class AppComponent implements OnInit, OnDestroy {
 			} else {
 				console.log('Пользователь авторизован. Запускаем SignalR.');
 				this.startSignalR();
-				// Если на /login, сразу перенаправляем на основной роут (например, dashboard)
+				// Если пользователь находится на /login, можно перенаправить на основной роут (например, /dashboard)
 				if (this.router.url === '/login') {
 					this.router.navigate(['/dashboard']);
 				}
-				// Можно не вызывать loadActiveToken сразу, а отложить его до конца навигации
+				// Вызываем проверку активного талона после успешного входа
+				this.loadActiveToken(() => {
+					console.log('Метод loadActiveToken() успешно выполнен после входа.');
+				});
 			}
 		});
 
@@ -69,7 +77,7 @@ export class AppComponent implements OnInit, OnDestroy {
 		this.routerEventsSubscription = this.router.events
 			.pipe(filter(event => event instanceof NavigationEnd))
 			.subscribe(() => {
-				// Если пользователь авторизован и мы не на странице логина – загружаем активный талон
+				// Если пользователь авторизован и не находится на странице логина – загружаем активный талон
 				if (this.isAuthenticated() && this.router.url !== '/login') {
 					console.log('Навигация завершена. Вызывается метод loadActiveToken().');
 					this.loadActiveToken(() => {
@@ -111,10 +119,13 @@ export class AppComponent implements OnInit, OnDestroy {
 			if (callback) callback();
 			return;
 		}
-		this.queueService.listAllTokens().subscribe({
-			next: (tokens) => {
-				console.log('loadActiveToken: получены токены', tokens);
-				const found = tokens.find(t => t.status === 'Active');
+		// Используем currentPage и pageSize для пагинации, если это необходимо (либо передаем их по умолчанию)
+		this.queueService.listAllTokens(this.currentPage, this.pageSize).subscribe({
+			next: (result: { total: number; tokens: QueueToken[] }) => {
+				console.log('loadActiveToken: получены данные', result);
+				// Используем массив талонов
+				const tokensArray: QueueToken[] = result.tokens;
+				const found = tokensArray.find((t: QueueToken) => t.status === 'Active');
 				if (found) {
 					this.activeToken = found;
 					this.showActivePanel = true;
@@ -124,7 +135,6 @@ export class AppComponent implements OnInit, OnDestroy {
 					this.showActivePanel = false;
 					console.log('Активный талон не найден.');
 				}
-				console.log('loadActiveToken: showActivePanel =', this.showActivePanel);
 				if (callback) callback();
 			},
 			error: (err) => {
@@ -137,7 +147,7 @@ export class AppComponent implements OnInit, OnDestroy {
 	}
 
 	/**
-	 * Обработчик закрытия плавающей панели, поступающий из ActiveTokenComponent.
+	 * Обработчик события закрытия плавающей панели, поступающий от ActiveTokenComponent.
 	 */
 	onCloseTokenPanel(): void {
 		this.activeToken = null;

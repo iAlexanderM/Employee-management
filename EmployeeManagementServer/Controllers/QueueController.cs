@@ -126,25 +126,35 @@ namespace EmployeeManagementServer.Controllers
         }
 
         /// <summary>
-        /// Список всех талонов (демо).
-        /// GET /api/Queue/list-all-tokens
+        /// Список всех талонов (с пагинацией).
+        /// GET /api/Queue/list-all-tokens?page=1&pageSize=25
         /// </summary>
         [HttpGet("list-all-tokens")]
-        public async Task<IActionResult> ListAllTokens()
+        public async Task<IActionResult> ListAllTokens([FromQuery] int page = 1, [FromQuery] int pageSize = 25)
         {
+            if (page < 1 || pageSize < 1)
+                return BadRequest("Параметры страницы и размера должны быть больше нуля.");
+
             DateTime today = DateTime.UtcNow.Date;
 
-            var tokens = await _context.QueueTokens
+            // Получаем базовый запрос с сортировкой по возрастанию - новые будут внизу
+            IOrderedQueryable<QueueToken> query = _context.QueueTokens
                 .Where(t => t.CreatedAt.Date == today && t.Status != "Closed")
-                .OrderByDescending(t => t.CreatedAt)
-                .ToListAsync();
+                .OrderBy(t => t.CreatedAt);
 
-            var tokensToShow = tokens.Where(t =>
-                t.Status != "Отправлен на оплату"
-                || !_context.PassTransactions.Any(pt => pt.Token == t.Token && pt.Status == "Paid")
+            // Применяем дополнительную фильтрацию, сохраняем тип IOrderedQueryable
+            query = (IOrderedQueryable<QueueToken>)query.Where(t =>
+                t.Status != "Отправлен на оплату" ||
+                !_context.PassTransactions.Any(pt => pt.Token == t.Token && pt.Status == "Paid")
             );
 
-            return Ok(tokensToShow);
+            int total = await query.CountAsync();
+            var tokens = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return Ok(new { total, tokens });
         }
     }
 }
