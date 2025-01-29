@@ -1,26 +1,34 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ContractorPointsService } from '../../../../services/contractor-points.service';
 import { Router } from '@angular/router';
-import { Citizenship } from '../../../../models/contractor-points.model';
 
 @Component({
 	selector: 'app-contractor-points-citizenship-create',
 	standalone: true,
-	imports: [CommonModule, FormsModule],
+	imports: [CommonModule, ReactiveFormsModule],
 	templateUrl: './contractor-points-citizenship-create.component.html',
-	styleUrl: './contractor-points-citizenship-create.component.css'
+	styleUrls: ['./contractor-points-citizenship-create.component.css']
 })
 export class ContractorPointsCitizenshipCreateComponent {
-	newCitizenshipName: string = '';
+	citizenshipForm: FormGroup;
 	errorMessage: string = '';
 
-	constructor(private contractorPointsService: ContractorPointsService, private router: Router) { }
+	constructor(
+		private fb: FormBuilder,
+		private contractorPointsService: ContractorPointsService,
+		private router: Router
+	) {
+		this.citizenshipForm = this.fb.group({
+			citizenshipName: ['', Validators.required]
+		});
+	}
 
 	addCitizenship(): void {
-		if (this.newCitizenshipName.trim()) {
-			this.contractorPointsService.addCitizenship(this.newCitizenshipName).subscribe(
+		if (this.citizenshipForm.valid) {
+			const citizenshipName = this.citizenshipForm.value.citizenshipName.trim();
+			this.contractorPointsService.addCitizenship(citizenshipName).subscribe(
 				() => {
 					this.router.navigate(['/citizenship']);
 				},
@@ -32,6 +40,8 @@ export class ContractorPointsCitizenshipCreateComponent {
 					}
 				}
 			);
+		} else {
+			this.errorMessage = 'Пожалуйста, заполните обязательные поля.';
 		}
 	}
 }

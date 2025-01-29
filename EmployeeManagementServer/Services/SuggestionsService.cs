@@ -1,4 +1,5 @@
 ﻿using EmployeeManagementServer.Data;
+using Microsoft.EntityFrameworkCore;
 
 public class SuggestionsService : ISuggestionsService
 {
@@ -11,28 +12,43 @@ public class SuggestionsService : ISuggestionsService
 
     public IEnumerable<string> GetBuildingSuggestions(string query)
     {
-        return GetSuggestions(_context.Stores.Select(s => s.Building), query);
+        string pattern = $"{query.Trim()}%";
+        return _context.Stores
+            .Where(s => string.IsNullOrEmpty(query) || EF.Functions.ILike(s.Building, pattern))
+            .Select(s => s.Building)
+            .Distinct()
+            .OrderBy(s => s)
+            .ToList();
     }
 
     public IEnumerable<string> GetFloorSuggestions(string query)
     {
-        return GetSuggestions(_context.Stores.Select(s => s.Floor), query);
+        string pattern = $"{query.Trim()}%";
+        return _context.Stores
+            .Where(s => string.IsNullOrEmpty(query) || EF.Functions.ILike(s.Floor, pattern))
+            .Select(s => s.Floor)
+            .Distinct()
+            .OrderBy(s => s)
+            .ToList();
     }
 
     public IEnumerable<string> GetLineSuggestions(string query)
     {
-        return GetSuggestions(_context.Stores.Select(s => s.Line), query);
+        string pattern = $"{query.Trim()}%";
+        return _context.Stores
+            .Where(s => string.IsNullOrEmpty(query) || EF.Functions.ILike(s.Line, pattern))
+            .Select(s => s.Line)
+            .Distinct()
+            .OrderBy(s => s)
+            .ToList();
     }
 
     public IEnumerable<string> GetStoreNumberSuggestions(string query)
     {
-        return GetSuggestions(_context.Stores.Select(s => s.StoreNumber), query);
-    }
-
-    private IEnumerable<string> GetSuggestions(IQueryable<string> source, string query)
-    {
-        return source
-            .Where(s => string.IsNullOrEmpty(query) || s.StartsWith(query))
+        string pattern = $"{query.Trim()}%";
+        return _context.Stores
+            .Where(s => string.IsNullOrEmpty(query) || EF.Functions.ILike(s.StoreNumber, pattern))
+            .Select(s => s.StoreNumber)
             .Distinct()
             .OrderBy(s => s)
             .ToList();

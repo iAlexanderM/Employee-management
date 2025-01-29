@@ -1,26 +1,34 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ContractorPointsService } from '../../../../services/contractor-points.service';
 import { Router } from '@angular/router';
-import { Nationality } from '../../../../models/contractor-points.model';
 
 @Component({
 	selector: 'app-contractor-points-nationality-create',
 	standalone: true,
-	imports: [CommonModule, FormsModule],
+	imports: [CommonModule, ReactiveFormsModule],
 	templateUrl: './contractor-points-nationality-create.component.html',
-	styleUrl: './contractor-points-nationality-create.component.css'
+	styleUrls: ['./contractor-points-nationality-create.component.css'] // Исправлено на styleUrls
 })
 export class ContractorPointsNationalityCreateComponent {
-	newNationalityName: string = '';
+	nationalityForm: FormGroup;
 	errorMessage: string = '';
 
-	constructor(private contractorPointsService: ContractorPointsService, private router: Router) { }
+	constructor(
+		private fb: FormBuilder,
+		private contractorPointsService: ContractorPointsService,
+		private router: Router
+	) {
+		this.nationalityForm = this.fb.group({
+			nationalityName: ['', Validators.required]
+		});
+	}
 
 	addNationality(): void {
-		if (this.newNationalityName.trim()) {
-			this.contractorPointsService.addNationality(this.newNationalityName).subscribe(
+		if (this.nationalityForm.valid) {
+			const nationalityName = this.nationalityForm.value.nationalityName.trim();
+			this.contractorPointsService.addNationality(nationalityName).subscribe(
 				() => {
 					this.router.navigate(['/nationality']);
 				},
@@ -32,6 +40,8 @@ export class ContractorPointsNationalityCreateComponent {
 					}
 				}
 			);
+		} else {
+			this.errorMessage = 'Пожалуйста, заполните обязательные поля.';
 		}
 	}
 }

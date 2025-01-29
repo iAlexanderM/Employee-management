@@ -1,7 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Citizenship, Nationality } from '../../../models/contractor-points.model';
 import { ContractorPointsService } from '../../../services/contractor-points.service';
 import { Observable } from 'rxjs';
@@ -9,7 +8,7 @@ import { Observable } from 'rxjs';
 @Component({
 	selector: 'app-citizenship-and-nationality-modal',
 	standalone: true,
-	imports: [CommonModule, FormsModule, ReactiveFormsModule],
+	imports: [CommonModule, ReactiveFormsModule],
 	templateUrl: './citizenship-and-nationality-modal.component.html',
 	styleUrls: ['./citizenship-and-nationality-modal.component.css']
 })
@@ -23,7 +22,8 @@ export class CitizenshipAndNationalityModalComponent implements OnInit {
 	@Output() itemAdded = new EventEmitter<Citizenship | Nationality>();
 
 	searchForm: FormGroup;
-	newItemName: string = '';
+	paginationForm: FormGroup; // Добавлено
+	addForm: FormGroup;
 	errorMessage: string = '';
 
 	currentPage = 1;
@@ -38,9 +38,20 @@ export class CitizenshipAndNationalityModalComponent implements OnInit {
 	isSearchMode: boolean = false;
 
 	constructor(private fb: FormBuilder, private contractorPointsService: ContractorPointsService) {
+		// Инициализация формы поиска с валидаторами
 		this.searchForm = this.fb.group({
 			Id: [''],
 			Name: ['']
+		});
+
+		// Инициализация формы добавления с валидаторами
+		this.addForm = this.fb.group({
+			newItemName: ['', Validators.required]
+		});
+
+		// Инициализация формы пагинации с валидаторами
+		this.paginationForm = this.fb.group({
+			pageSize: [this.pageSize, [Validators.required, Validators.min(1)]]
 		});
 	}
 
@@ -49,6 +60,12 @@ export class CitizenshipAndNationalityModalComponent implements OnInit {
 		if (this.mode === 'select') {
 			this.loadItems();
 		}
+
+		// Подписка на изменения pageSize
+		this.paginationForm.get('pageSize')?.valueChanges.subscribe(value => {
+			this.pageSize = Number(value);
+			this.onPageSizeChange();
+		});
 	}
 
 	closeModal(): void {
@@ -244,13 +261,19 @@ export class CitizenshipAndNationalityModalComponent implements OnInit {
 	}
 
 	addItem(): void {
-		if (!this.newItemName.trim()) {
-			this.errorMessage = 'Название не может быть пустым';
+		if (this.addForm.invalid) {
+			this.errorMessage = 'Пожалуйста, введите название.';
+			return;
+		}
+
+		const trimmedName = this.addForm.get('newItemName')?.value.trim();
+		if (!trimmedName) {
+			this.errorMessage = 'Название не может быть пустым.';
 			return;
 		}
 
 		const addMethod = this.getAddMethod();
-		addMethod(this.newItemName.trim()).subscribe(
+		addMethod(trimmedName).subscribe(
 			(data: any) => {
 				this.itemAdded.emit(data);
 				this.closeModal();

@@ -1,10 +1,30 @@
-/* Общая структура приложения */
+/* 
+  Обнуление отступов, чтобы height:100% корректно работало 
+  вместе с .app-layout { height:100vh }.
+*/
+html,
+body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: inherit;
+}
+
+/* 
+  Общая структура приложения: 
+  flex-контейнер на всю высоту экрана.
+*/
 .app-layout {
 	display: flex;
 	height: 100vh;
-	/* Высота экрана */
+	/* занимает весь экран */
 	width: 100%;
-	/* Ширина экрана */
 }
 
 /* Боковая панель */
@@ -20,13 +40,17 @@
 /* Основной контент */
 .content-container {
 	flex-grow: 1;
+	/* 
+    Если нужно центрировать содержимое:
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  */
 	padding: 20px;
 	overflow-y: auto;
-	align-items: center;
-	justify-content: center;
 }
 
-/* Стили для списка навигации */
+/* ----- Навигация в боковой панели ----- */
 .sidebar .navbar-nav {
 	list-style: none;
 	padding: 0;
@@ -36,208 +60,138 @@
 
 .sidebar .navbar-nav .nav-item {
 	margin-bottom: 10px;
-	/* Расстояние между элементами */
 	display: flex;
 	justify-content: center;
 	align-items: center;
 }
 
+/* Ссылка в навигации, стилизованная как кнопка */
 .sidebar .navbar-nav .nav-item .nav-link {
 	color: #ffffff;
 	background-color: #6c757d;
-	/* Серый фон */
+	/* серый фон */
 	width: 95%;
 	height: 45px;
-	/* Высота кнопок */
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	padding: 0 15px;
 	border-radius: 5px;
-	/* Закругленные углы */
 	transition: background-color 0.3s, color 0.3s;
-	/* Плавный переход цвета и фона */
 	text-decoration: none;
-	/* Убираем подчеркивание текста */
 	font-size: 0.8rem;
-	/* Размер текста */
 	box-sizing: border-box;
 }
 
 .sidebar .navbar-nav .nav-item .nav-link:hover {
 	background-color: #007bff;
-	/* Синий фон при наведении */
+	/* синий фон при наведении */
 	color: #ffffff;
-	/* Белый текст при наведении */
+	/* белый текст при наведении */
 }
 
-/* Общая структура кнопки */
+/* ----- Общий стиль кнопок ----- */
 .btn {
 	display: flex;
 	align-items: center;
-	/* Вертикальное выравнивание */
 	justify-content: center;
-	/* Горизонтальное выравнивание */
 	text-align: center;
-	padding: 0;
-	/* Убираем лишние отступы внутри кнопки */
 	height: 45px;
-	/* Высота кнопки */
-	width: 100%;
-	/* Ширина кнопки */
+	padding: 0 15px;
 	border-radius: 5px;
-	/* Закругленные углы */
 	transition: background-color 0.3s, color 0.3s;
-	/* Плавный переход */
 	font-size: 1rem;
-	/* Размер текста */
 	font-weight: 500;
-	/* Средняя жирность текста */
 	box-sizing: border-box;
-	/* Корректный расчёт ширины */
+	cursor: pointer;
+	/* 
+    Если всегда нужны кнопки на всю ширину родителя:
+    width: 100%;
+  */
 }
 
+/* Основные стили .btn-primary */
 .btn-primary {
 	background-color: #007bff;
-	/* Синий фон */
-	border-color: #007bff;
-	/* Синий цвет рамки */
+	border: 1px solid #007bff;
 	color: #ffffff;
-	/* Белый текст */
-	font-size: 1rem;
-	/* Размер текста */
-	font-weight: bold;
-	/* Полужирный текст */
-	height: 45px;
-	/* Высота кнопки */
-	padding: 0 15px;
-	/* Отступы внутри кнопки */
-	display: flex;
-	/* Flex для выравнивания */
-	align-items: center;
-	/* Вертикальное выравнивание */
-	justify-content: center;
-	/* Горизонтальное выравнивание */
-	text-align: center;
-	/* Текст по центру */
-	border-radius: 5px;
-	/* Закруглённые углы */
-	transition: background-color 0.3s, color 0.3s;
-	/* Плавный переход */
-	width: 100%;
-	/* Растянуть на всю ширину родителя */
 }
 
 .btn-primary:hover {
 	background-color: #0056b3;
-	/* Более тёмный синий при наведении */
 	border-color: #0056b3;
-	/* Более тёмная рамка */
-	color: #ffffff;
-	/* Белый текст при наведении */
 }
 
-/* Стиль кнопки "Выход" */
+/* Кнопка "Выход" (допустим, .btn-secondary) */
 .btn-secondary {
 	background-color: #8c9ea3;
-	/* Светло-серый фон */
-	border-color: #8c9ea3;
+	border: 1px solid #8c9ea3;
 	color: #ffffff;
 }
 
 .btn-secondary:hover {
 	background-color: #6b7b80;
-	/* Более тёмный оттенок */
 	border-color: #6b7b80;
-	color: #ffffff;
 }
 
-/* Выпадающий список */
+/* ----- Выпадающее меню ----- */
+.nav-item.dropdown {
+	position: relative;
+}
+
 .dropdown-menu-container {
 	position: absolute;
 	top: 100%;
 	left: 0;
 	width: calc(100% - 2px);
-	/* Устанавливаем ширину равной кнопке, вычитаем границы */
 	z-index: 1000;
-	/* Обеспечивает отображение меню поверх других элементов */
 	background-color: #f8f9fa;
-	/* Светлый фон */
-	border: 1px solid transparent;
-	/* Делаем границу прозрачной */
 	border-radius: 4px;
-	/* Закруглённые углы */
 	padding: 0;
-	/* Убираем внутренние отступы */
-	list-style: none;
-	/* Убираем маркеры списка */
 	margin: 0;
-	/* Убираем внешние отступы */
-	align-items: center;
-	justify-content: center;
+	list-style: none;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
-.nav-item.dropdown {
-	position: relative;
-}
-
-/* Элементы выпадающего списка */
-.dropdown-item {
-	padding: 5px 10px;
-	/* Отступы внутри элемента */
-	display: flex;
-	text-align: center;
-	/* Выравнивание текста по центру */
-	font-size: 0.85rem;
-	/* Уменьшаем размер текста */
-	color: #495057;
-	/* Цвет текста */
-	text-decoration: none;
-	/* Убрать подчёркивание */
-	transition: background-color 0.3s, color 0.3s;
-	/* Плавный переход */
-	width: 100%;
-	/* Занимает всю ширину родителя */
-	box-sizing: border-box;
-	/* Включаем padding и border в общую ширину */
-	align-items: center;
-	justify-content: center;
-	height: 35px;
-	/* Уменьшаем высоту элементов */
-}
-
-.dropdown-menu .nav-item .dropdown-item {
-	width: 100%;
-}
-
-.dropdown-menu {
+/* Сами ссылки-элементы внутри меню */
+.dropdown-menu-container .dropdown-menu.show {
 	background-color: #f8f9fa;
 	border: none;
-	/* Убираем границу, так как она задана у контейнера */
 	border-radius: 4px;
-	padding: 0;
-	list-style: none;
 	margin: 0;
+	padding: 0;
 	width: 100%;
+}
+
+.dropdown-item {
+	display: flex;
 	align-items: center;
 	justify-content: center;
+	text-align: center;
+	font-size: 0.85rem;
+	color: #495057;
+	text-decoration: none;
+	height: 35px;
+	padding: 5px 10px;
+	transition: background-color 0.3s, color 0.3s;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .dropdown-item:hover {
 	background-color: #007bff;
-	/* Синий фон */
 	color: #ffffff;
-	/* Белый текст */
 }
 
-/* Общая ширина для кнопок и выпадающего меню */
+/* Чтоб ссылки-блоки были на всю ширину */
 .navbar-nav .nav-item .btn-link,
 .navbar-nav .nav-item .nav-link,
 .dropdown-item {
 	width: 100%;
 }
 
+/* Если вы используете <a class="btn"> ... */
 a.btn {
 	text-decoration: none;
-	/* Убирает подчеркивание */
+	color: inherit;
 }

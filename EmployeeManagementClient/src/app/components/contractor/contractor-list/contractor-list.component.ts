@@ -1,43 +1,55 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+// contractor-list.component.ts
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { ContractorWatchService } from '../../../services/contractor-watch.service';
 import { Contractor } from '../../../models/contractor.model';
 import { CommonModule } from '@angular/common';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
+import { Subscription } from 'rxjs';
 
 @Component({
 	selector: 'app-contractor-list',
 	standalone: true,
-	imports: [ReactiveFormsModule, CommonModule, RouterModule, NgxMaskDirective, FormsModule],
+	imports: [ReactiveFormsModule, CommonModule, RouterModule, NgxMaskDirective],
 	providers: [provideNgxMask()],
 	templateUrl: './contractor-list.component.html',
 	styleUrls: ['./contractor-list.component.css']
 })
-export class ContractorListComponent implements OnInit {
-	contractors: Contractor[] = []; // Все записи (при поиске)
-	displayedContractors: Contractor[] = []; // Записи для текущей страницы
-	searchForm: FormGroup;
-	isExpanded = false;
-	isLoading = false;
-	isSearchMode = false;
+export class ContractorListComponent implements OnInit, OnDestroy {
+	// Все контрагенты (используется только в режиме поиска)
+	allContractors: Contractor[] = [];
+	// Отображаемые контрагенты (для таблицы)
+	displayedContractors: Contractor[] = [];
 
-	// Пагинация
+	// Общие параметры пагинации
 	currentPage = 1;
+	pageSizeOptions = [25, 50, 100];
 	pageSize = 25;
 	totalItems = 0;
 	totalPages = 0;
 	visiblePages: (number | string)[] = [];
-	pageSizeOptions = [25, 50, 100];
-	searchParams: any = {};
+
+	// Флаги
+	isSearchMode = false;
+	isExpanded = false; // Добавлено
+	isLoading = false;  // Добавлено
+
+	// Активные фильтры
+	activeFilters: { [key: string]: any } = {}; // Добавлено
+
+	// Форма поиска
+	searchForm: FormGroup;
+
+	private subscriptions: Subscription[] = [];
 
 	constructor(
 		private contractorService: ContractorWatchService,
-		private fb: FormBuilder,
-		private router: Router
+		private router: Router,
+		private fb: FormBuilder
 	) {
 		this.searchForm = this.fb.group({
-			Id: [''],
+			Id: ['', Validators.pattern(/^\d+$/)],
 			FirstName: [''],
 			LastName: [''],
 			MiddleName: [''],
@@ -51,174 +63,212 @@ export class ContractorListComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
-		this.loadContractors(); // Загружаем данные при инициализации
+		this.loadContractors(); // Загрузка всех контрагентов при инициализации
 	}
 
-	loadContractors(): void {
-		// Формируем параметры для запроса, включая пагинацию
-		const params = {
-			page: this.currentPage,
-			pageSize: this.pageSize,
-			...this.searchParams // Если есть параметры поиска
-		};
+	ngOnDestroy(): void {
+		this.subscriptions.forEach(sub => sub.unsubscribe());
+	}
 
-		console.log('Параметры запроса:', params); // Лог параметров запроса
+	/**
+	 * Метод загрузки контрагентов.
+	 * @param isSearch - флаг, указывающий, выполняется ли поиск.
+	 */
+	loadContractors(isSearch: boolean = false): void {
+		if (isSearch) {
+			this.isSearchMode = true;
+			this.currentPage = 1; // Сброс на первую страницу при новом поиске
+			this.activeFilters = this.prepareSearchCriteria(); // Подготовка критериев поиска
+		} else {
+			this.isSearchMode = false;
+			this.activeFilters = {}; // Очистка фильтров при отмене поиска
+		}
 
-		this.isLoading = true;
-
-		this.contractorService.getContractors(params).subscribe({
-			next: (response: any) => {
-				this.isLoading = false;
-				console.log('Ответ сервера:', response); // Лог полного ответа сервера
-
-				if (response && response.contractors) {
-					console.log('Полученные контрагенты до обработки:', response.contractors); // Лог необработанных данных
-
-					// Обработка данных от сервера
-					if (Array.isArray(response.contractors)) {
-						console.log('Массив contractors корректный'); // Проверка структуры
-						this.contractors = response.contractors.map((contractor: Contractor) =>
-							this.normalizePhotos(contractor)
-						);
-					} else {
-						console.error('Некорректный формат поля contractors:', response.contractors);
-						this.contractors = [];
-					}
-
-					this.totalItems = response.total > 0 ? response.total : this.contractors.length;
+		if (this.isSearchMode) {
+			// Клиентская пагинация при поиске: загружаем все соответствующие записи
+			this.isLoading = true;
+			this.contractorService.searchContractors(this.activeFilters).subscribe({
+				next: (response: { contractors: Contractor[]; total: number }) => {
+					this.isLoading = false;
+					console.log('[loadContractors - Search] Ответ сервера:', response);
+					this.allContractors = response.contractors.map(contractor => this.normalizePhotos(contractor));
+					this.totalItems = response.total;
 					this.totalPages = Math.ceil(this.totalItems / this.pageSize);
-
-					console.log('Обработанные контрагенты:', this.contractors); // Лог после обработки
-
-					this.totalItems = response.total || 0; // Сервер должен возвращать общее количество записей
-					this.totalPages = Math.ceil(this.totalItems / this.pageSize);
-
-					console.log('Всего записей:', this.totalItems, 'Всего страниц:', this.totalPages); // Лог пагинации
-
-					this.displayedContractors = this.contractors; // Отображаем полученные записи
-					console.log('Отображаемые контрагенты:', this.displayedContractors); // Лог отображаемых данных
-
 					this.updateVisiblePages();
-				} else {
-					console.error('Некорректный ответ сервера:', response);
+					this.setDisplayedContractors(); // Установка отображаемых записей
+				},
+				error: (err) => {
+					this.isLoading = false;
+					console.error('[loadContractors - Search] Ошибка:', err);
+					this.allContractors = [];
+					this.displayedContractors = [];
+					this.totalItems = 0;
+					this.totalPages = 0;
+					this.visiblePages = [];
+				},
+			});
+		} else {
+			// Серверная пагинация при отображении всех контрагентов
+			const params = {
+				page: this.currentPage,
+				pageSize: this.pageSize,
+				...this.activeFilters // Если есть параметры поиска
+			};
+
+			console.log('[loadContractors - Server] Параметры запроса:', params);
+			this.isLoading = true;
+
+			this.contractorService.getContractors(params).subscribe({
+				next: (response: { total: number, contractors: Contractor[] }) => {
+					this.isLoading = false;
+					console.log('[loadContractors - Server] Ответ сервера:', response);
+
+					if (response && Array.isArray(response.contractors)) {
+						this.displayedContractors = response.contractors.map(contractor => this.normalizePhotos(contractor));
+						this.totalItems = response.total || this.displayedContractors.length;
+						this.totalPages = Math.ceil(this.totalItems / this.pageSize);
+						this.updateVisiblePages();
+						console.log('[loadContractors - Server] Отображаемые контрагенты:', this.displayedContractors);
+					} else {
+						console.error('[loadContractors - Server] Некорректный ответ сервера:', response);
+						this.resetPagination();
+					}
+				},
+				error: (err) => {
+					this.isLoading = false;
+					console.error('[loadContractors - Server] Ошибка:', err);
 					this.resetPagination();
 				}
-			},
-			error: (error: any) => {
-				this.isLoading = false;
-				console.error('Ошибка при загрузке контрагентов:', error);
-				this.resetPagination();
-			}
-		});
-	}
-
-	searchContractors(): void {
-		this.isSearchMode = true;
-		this.isLoading = true;
-		this.currentPage = 1;
-
-		const searchParams = this.prepareSearchParams();
-		console.log('Параметры для поиска:', searchParams);
-
-		this.contractorService.searchContractors(searchParams).subscribe({
-			next: (response: any) => {
-				this.isLoading = false;
-				console.log('Ответ сервера:', response);
-
-				if (response && response.contractors) {
-					console.log('Сырые данные контрагентов:', response.contractors);
-
-					// Обработка данных
-					this.contractors = response.contractors.map((contractor: Contractor) => {
-						const normalized = this.normalizePhotos(contractor);
-						console.log(`Контрагент после нормализации (ID: ${normalized.id}):`, normalized);
-						return normalized;
-					});
-
-					this.totalItems = response.total > 0 ? response.total : this.contractors.length;
-					this.totalPages = Math.ceil(this.totalItems / this.pageSize);
-
-					console.log('Обработанные данные контрагентов:', this.contractors);
-
-					// Обновление отображаемых данных
-					this.displayedContractors = this.contractors.slice(0, this.pageSize);
-					console.log('Отображаемые контрагенты:', this.displayedContractors);
-				} else {
-					console.error('Некорректный или пустой ответ сервера:', response);
-				}
-			},
-			error: (error: any) => {
-				console.error('Ошибка при выполнении поиска контрагентов:', error);
-				this.isLoading = false;
-			}
-		});
-	}
-
-	extractContractors(response: any): Contractor[] {
-		if (response && response.contractors && Array.isArray(response.contractors)) {
-			return response.contractors;
-		} else if (response && response.Contractors && Array.isArray(response.Contractors)) {
-			return response.Contractors;
-		} else if (response && response.contractors) {
-			return response.contractors;
-		} else if (response && response.$values) {
-			return response.$values;
-		} else if (Array.isArray(response)) {
-			return response;
-		} else {
-			console.error('Неизвестный формат ответа сервера:', response);
-			return [];
+			});
 		}
 	}
 
-	// Сброс фильтров
+	/**
+	 * Метод для установки отображаемых контрагентов при клиентской пагинации.
+	 */
+	private setDisplayedContractors(): void {
+		const startIndex = (this.currentPage - 1) * this.pageSize;
+		const endIndex = startIndex + this.pageSize;
+		this.displayedContractors = this.allContractors.slice(startIndex, endIndex);
+		console.log('[setDisplayedContractors] Отображаемые контрагенты:', this.displayedContractors);
+	}
+
+	/**
+	 * Метод для перехода к определенной странице.
+	 * @param page - номер страницы.
+	 */
+	goToPage(page: number | string): void {
+		if (typeof page !== 'number') return;
+
+		if (page < 1 || page > this.totalPages) return;
+
+		this.currentPage = page;
+		this.updateVisiblePages();
+
+		if (this.isSearchMode) {
+			this.setDisplayedContractors(); // Обновление отображаемых контрагентов при поиске
+		} else {
+			this.loadContractors(); // Загрузка данных с сервера при отображении всех контрагентов
+		}
+	}
+
+	/**
+	 * Обработчик клика по странице пагинации.
+	 * @param page - номер страницы или '...'.
+	 */
+	onPageClick(page: number | string): void {
+		if (page === '...') return;
+		this.goToPage(page as number);
+	}
+
+	/**
+	 * Обработчик изменения размера страницы.
+	 * @param event - событие изменения.
+	 */
+	onPageSizeChange(event: Event): void {
+		const selectElement = event.target as HTMLSelectElement;
+		const newSize = parseInt(selectElement.value, 10);
+		if (!isNaN(newSize)) {
+			this.pageSize = newSize;
+			this.currentPage = 1;
+			this.totalPages = this.isSearchMode
+				? Math.ceil(this.allContractors.length / this.pageSize)
+				: Math.ceil(this.totalItems / this.pageSize);
+
+			console.log(`[onPageSizeChange] Размер страницы изменен на ${this.pageSize}, перезагружаем данные.`);
+
+			if (this.isSearchMode) {
+				this.setDisplayedContractors();
+			} else {
+				this.loadContractors();
+			}
+		}
+	}
+
+	/**
+	 * Метод для выполнения поиска контрагентов.
+	 */
+	searchContractors(): void {
+		this.isSearchMode = true;
+		this.currentPage = 1;
+		this.loadContractors(true);
+	}
+
+	/**
+	 * Метод для подготовки критериев поиска из формы.
+	 */
+	prepareSearchCriteria(): { [key: string]: any } {
+		const criteria: { [key: string]: any } = {};
+		Object.keys(this.searchForm.value).forEach(key => {
+			const value = this.searchForm.get(key)?.value;
+			if (value !== null && value !== '') {
+				criteria[key] = key === 'Id' ? parseInt(value, 10) : value.trim();
+			}
+		});
+		console.log('[prepareSearchCriteria] Сформированные критерии:', criteria);
+		return criteria;
+	}
+
+	/**
+	 * Метод для сброса фильтров поиска.
+	 */
 	resetFilters(): void {
 		this.searchForm.reset();
-		this.searchParams = {};
 		this.isSearchMode = false;
 		this.currentPage = 1;
+		this.activeFilters = {};
 		this.loadContractors();
 	}
 
-	// Обновление данных для текущей страницы (только для поиска)
-	updatePagination(): void {
-		this.displayedContractors = this.contractors.slice(
-			(this.currentPage - 1) * this.pageSize,
-			this.currentPage * this.pageSize
-		);
-		this.updateVisiblePages();
-	}
-
-	resetPagination(): void {
-		this.contractors = [];
-		this.displayedContractors = [];
-		this.totalItems = 0;
-		this.totalPages = 0;
-		this.visiblePages = [];
-	}
-
+	/**
+	 * Обновление видимых страниц пагинации.
+	 */
 	updateVisiblePages(): void {
 		const pages: (number | string)[] = [];
-		const totalVisiblePages = 7; // Максимальное количество видимых страниц
+		const totalVisiblePages = 7; // Максимальное количество отображаемых страниц
 
 		if (this.totalPages <= totalVisiblePages) {
+			// Если страниц меньше или равно максимальному количеству
 			for (let i = 1; i <= this.totalPages; i++) {
 				pages.push(i);
 			}
 		} else {
 			if (this.currentPage <= 4) {
-				for (let i = 1; i <= 6; i++) {
+				// Если текущая страница в начале
+				for (let i = 1; i <= 5; i++) {
 					pages.push(i);
 				}
 				pages.push('...');
 				pages.push(this.totalPages);
 			} else if (this.currentPage >= this.totalPages - 3) {
+				// Если текущая страница в конце
 				pages.push(1);
 				pages.push('...');
-				for (let i = this.totalPages - 5; i <= this.totalPages; i++) {
+				for (let i = this.totalPages - 4; i <= this.totalPages; i++) {
 					pages.push(i);
 				}
 			} else {
+				// Если текущая страница в середине
 				pages.push(1);
 				pages.push('...');
 				pages.push(this.currentPage - 1);
@@ -230,55 +280,22 @@ export class ContractorListComponent implements OnInit {
 		}
 
 		this.visiblePages = pages;
+		console.log('[updateVisiblePages] Видимые страницы:', this.visiblePages);
 	}
 
-	goToPage(page: number | string): void {
-		if (typeof page !== 'number') {
-			return; // Если page не число, ничего не делаем
-		}
-		if (page < 1 || page > this.totalPages) return;
-		this.currentPage = page;
-
-		if (this.isSearchMode) {
-			this.updatePagination();
-		} else {
-			this.loadContractors();
-		}
-	}
-
-	onPageSizeChange(): void {
-		this.currentPage = 1;
-		this.totalPages = Math.ceil(this.totalItems / this.pageSize);
-
-		if (this.isSearchMode) {
-			this.updatePagination();
-		} else {
-			this.loadContractors();
-		}
-	}
-
-	onPageClick(page: number | string): void {
-		if (page !== '...') {
-			this.goToPage(page as number);
-		}
-	}
-
-	prepareSearchParams(): any {
-		const params = { ...this.searchForm.value };
-		Object.keys(params).forEach((key) => {
-			if (!params[key]) {
-				delete params[key];
-			}
-		});
-		return params;
-	}
-
+	/**
+	 * Метод для нормализации фотографий контрагента.
+	 * @param contractor - объект контрагента.
+	 */
 	normalizePhotos(contractor: Contractor): Contractor {
-		// Убрана проверка на `$values`
 		contractor.photos = Array.isArray(contractor.photos) ? contractor.photos : [];
 		return contractor;
 	}
 
+	/**
+	 * Метод для получения первой фотографии контрагента.
+	 * @param contractor - объект контрагента.
+	 */
 	getFirstPhoto(contractor: Contractor): string | null {
 		if (contractor.photos && contractor.photos.length > 0) {
 			const photo = contractor.photos[0];
@@ -291,15 +308,37 @@ export class ContractorListComponent implements OnInit {
 		return null;
 	}
 
+	/**
+	 * Метод для переключения формы поиска.
+	 */
 	toggleSearchForm(): void {
 		this.isExpanded = !this.isExpanded;
 	}
 
+	/**
+	 * Метод для навигации на страницу деталей контрагента.
+	 * @param id - идентификатор контрагента.
+	 */
 	navigateToDetails(id: number): void {
 		this.router.navigate(['/contractors/details', id]);
 	}
 
+	/**
+	 * Метод для навигации на страницу редактирования контрагента.
+	 * @param id - идентификатор контрагента.
+	 */
 	navigateToEdit(id: number): void {
 		this.router.navigate(['/contractors/edit', id]);
+	}
+
+	/**
+	 * Метод для сброса пагинации в случае ошибки.
+	 */
+	private resetPagination(): void {
+		this.allContractors = [];
+		this.displayedContractors = [];
+		this.totalItems = 0;
+		this.totalPages = 0;
+		this.visiblePages = [];
 	}
 }

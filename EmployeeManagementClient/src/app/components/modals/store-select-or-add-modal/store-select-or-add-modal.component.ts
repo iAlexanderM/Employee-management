@@ -1,8 +1,13 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import {
+	FormsModule,
+	ReactiveFormsModule,
+	FormBuilder,
+	FormGroup
+} from '@angular/forms';
 import { StorePointsService } from '../../../services/store-points.service';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
 	selector: 'app-store-select-or-add-modal',
@@ -11,7 +16,7 @@ import { Observable } from 'rxjs';
 	templateUrl: './store-select-or-add-modal.component.html',
 	styleUrls: ['./store-select-or-add-modal.component.css']
 })
-export class StoreSelectOrAddModalComponent implements OnInit {
+export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 	@Input() fieldName: 'building' | 'floor' | 'line' | 'storeNumber' = 'building';
 	@Input() mode: 'select' | 'add' = 'select';
 	@Output() modalClose = new EventEmitter<void>();
@@ -32,7 +37,15 @@ export class StoreSelectOrAddModalComponent implements OnInit {
 	isSearchMode: boolean = false;
 	pageSizeOptions: number[] = [25, 50, 100];
 
-	constructor(private storePointsService: StorePointsService, private fb: FormBuilder) {
+	// Новый FormControl для выбора размера страницы
+	pageSizeControl = new FormBuilder().control(this.pageSize);
+
+	private subscriptions: Subscription[] = [];
+
+	constructor(
+		private storePointsService: StorePointsService,
+		private fb: FormBuilder
+	) {
 		this.searchForm = this.fb.group({
 			Id: [''],
 			Name: ['']
@@ -56,9 +69,25 @@ export class StoreSelectOrAddModalComponent implements OnInit {
 
 	ngOnInit() {
 		this.isSearchMode = false;
+
+		// Подписка на изменение pageSizeControl
+		this.subscriptions.push(
+			this.pageSizeControl.valueChanges.subscribe(value => {
+				const newSize = Number(value);
+				if (!isNaN(newSize) && newSize > 0) {
+					this.pageSize = newSize;
+					this.onPageSizeChange();
+				}
+			})
+		);
+
 		if (this.mode === 'select') {
 			this.loadItems();
 		}
+	}
+
+	ngOnDestroy(): void {
+		this.subscriptions.forEach(s => s.unsubscribe());
 	}
 
 	closeModal() {
@@ -165,27 +194,23 @@ export class StoreSelectOrAddModalComponent implements OnInit {
 		const pages: (number | string)[] = [];
 
 		if (this.totalPages <= 7) {
-			// Show all pages
 			for (let i = 1; i <= this.totalPages; i++) {
 				pages.push(i);
 			}
 		} else {
 			if (this.currentPage <= 4) {
-				// Near the start
 				for (let i = 1; i <= 6; i++) {
 					pages.push(i);
 				}
 				pages.push('...');
 				pages.push(this.totalPages);
 			} else if (this.currentPage >= this.totalPages - 3) {
-				// Near the end
 				pages.push(1);
 				pages.push('...');
 				for (let i = this.totalPages - 5; i <= this.totalPages; i++) {
 					pages.push(i);
 				}
 			} else {
-				// In the middle
 				pages.push(1);
 				pages.push('...');
 				pages.push(this.currentPage - 1);
@@ -225,10 +250,11 @@ export class StoreSelectOrAddModalComponent implements OnInit {
 
 	searchItems(): void {
 		this.isSearchMode = true;
-		this.currentPage = 1; // Сброс на первую страницу при новом поиске
+		this.currentPage = 1;
 		const searchMethod = this.getSearchMethod();
 		const criteria = this.prepareSearchCriteria();
 		const fieldKey = this.getFieldKey();
+
 		searchMethod(criteria).subscribe(
 			(data: any) => {
 				this.items = data[fieldKey] || [];
@@ -270,9 +296,11 @@ export class StoreSelectOrAddModalComponent implements OnInit {
 			},
 			(error: any) => {
 				if (error.status === 409) {
-					this.errorMessage = 'Запись с таким именем уже существует. Пожалуйста, выберите другое имя.';
+					this.errorMessage =
+						'Запись с таким именем уже существует. Пожалуйста, выберите другое имя.';
 				} else {
-					this.errorMessage = 'Произошла ошибка. Пожалуйста, попробуйте еще раз.';
+					this.errorMessage =
+						'Произошла ошибка. Пожалуйста, попробуйте еще раз.';
 				}
 			}
 		);
@@ -282,6 +310,7 @@ export class StoreSelectOrAddModalComponent implements OnInit {
 		this.currentPage = 1;
 		this.calculateTotalPages();
 		this.updateVisiblePages();
+
 		if (this.isSearchMode) {
 			this.updateDisplayedItems();
 		} else {

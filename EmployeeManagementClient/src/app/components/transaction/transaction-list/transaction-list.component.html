@@ -1,38 +1,72 @@
-<div class="compact-container transactions-container">
+<!-- transaction-list.component.html -->
+
+<div class="transactions-container">
 	<h2>Список транзакций</h2>
 
-	<!-- Форма поиска транзакций -->
 	<form [formGroup]="searchForm" class="mb-3">
 		<div class="row">
+			<!-- Поле автодополнения для Торговой точки -->
 			<div class="col-md-3">
-				<label for="token" class="form-label">Поиск по талону:</label>
-				<input id="token" type="text" formControlName="token" class="form-control" placeholder="Введите талон">
+				<mat-form-field appearance="fill" class="w-100">
+					<mat-label>Торговая точка</mat-label>
+					<input matInput formControlName="storeSearch" [matAutocomplete]="autoStore"
+						placeholder="Введите торговую точку" />
+					<mat-autocomplete #autoStore="matAutocomplete">
+						<!-- Сообщение "Результатов не найдено" -->
+						<mat-option *ngIf="(storeOptions$ | async)?.length === 0 && !isLoading" disabled>
+							Результатов не найдено
+						</mat-option>
+
+						<!-- Отображение результатов поиска -->
+						<mat-option *ngFor="let option of storeOptions$ | async" [value]="option">
+							{{ option }}
+						</mat-option>
+					</mat-autocomplete>
+				</mat-form-field>
 			</div>
+
+			<!-- Поле автодополнения для ФИО контрагента -->
 			<div class="col-md-3">
-				<label for="store" class="form-label">Торговая точка (ID):</label>
-				<input id="store" type="text" formControlName="store" class="form-control"
-					placeholder="Введите ID точки">
-			</div>
-			<div class="col-md-3">
-				<label for="contractor" class="form-label">Контрагент (ID):</label>
-				<input id="contractor" type="text" formControlName="contractor" class="form-control"
-					placeholder="Введите ID контрагента">
-			</div>
-			<div class="col-md-3">
-				<label for="issuedBy" class="form-label">Кто выписал:</label>
-				<input id="issuedBy" type="text" formControlName="issuedBy" class="form-control"
-					placeholder="Введите, кто выписал">
+				<mat-form-field appearance="fill" class="w-100">
+					<mat-label>ФИО контрагента</mat-label>
+					<input matInput formControlName="contractorName" [matAutocomplete]="autoContractor"
+						placeholder="Введите ФИО контрагента" />
+					<mat-autocomplete #autoContractor="matAutocomplete" [displayWith]="displayContractor">
+						<!-- Сообщение "Результатов не найдено" -->
+						<mat-option *ngIf="(contractorOptions$ | async)?.length === 0 && !isLoading" disabled>
+							Результатов не найдено
+						</mat-option>
+
+						<!-- Отображение результатов поиска с дополнительными данными -->
+						<mat-option *ngFor="let contractor of contractorOptions$ | async" [value]="contractor">
+							<div class="contractor-option">
+								<div class="contractor-name">
+									<strong>{{ contractor.lastName }} {{ contractor.firstName }} {{
+										contractor.middleName }}</strong>
+								</div>
+								<div class="contractor-details">
+									<span>Дата рождения: {{ contractor.birthDate | date:'dd.MM.yyyy' }}</span><br />
+									<span>Номер паспорта: {{ contractor.passportSerialNumber }}</span>
+								</div>
+							</div>
+						</mat-option>
+					</mat-autocomplete>
+				</mat-form-field>
 			</div>
 		</div>
-		<!-- Кнопка для запуска поиска -->
-		<div class="row mt-3">
-			<div class="col-md-12 text-end">
-				<button type="button" class="btn btn-primary" (click)="onSearchClick()">Поиск</button>
-			</div>
+
+		<!-- Кнопки Поиск и Сброс фильтров -->
+		<div class="d-flex justify-content-start align-items-center mt-2">
+			<button mat-stroked-button color="primary" type="button" (click)="onSearchClick()" class="me-2">
+				Поиск
+			</button>
+			<button mat-stroked-button color="warn" type="button" (click)="onResetFilters()">
+				Сброс
+			</button>
 		</div>
 	</form>
 
-	<!-- Блок для выбора количества элементов на странице -->
+	<!-- Выбор количества элементов на странице -->
 	<div class="d-flex justify-content-end align-items-center mb-2">
 		<label for="pageSize" class="me-2">Элементов на странице:</label>
 		<select id="pageSize" class="form-select w-auto" [formControl]="pageSizeControl">
@@ -40,7 +74,7 @@
 		</select>
 	</div>
 
-	<!-- Верхняя пагинация -->
+	<!-- Пагинация (в верхней части таблицы) -->
 	<div *ngIf="!isLoading && totalPages > 1" class="pagination-container mb-2">
 		<div class="pagination-squares">
 			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
@@ -50,10 +84,11 @@
 		</div>
 	</div>
 
-	<!-- Сообщение о загрузке -->
+	<!-- Индикатор загрузки данных -->
 	<div *ngIf="isLoading" class="text-center mt-4">
 		<p>Загрузка данных...</p>
 	</div>
+	<br />
 
 	<!-- Таблица транзакций -->
 	<table *ngIf="!isLoading && transactions.length > 0" class="table table-bordered table-striped">
@@ -62,7 +97,7 @@
 				<th>ID</th>
 				<th>Token</th>
 				<th>Store</th>
-				<th>Contractor</th>
+				<th>Контрагент</th>
 				<th>Pass Type</th>
 				<th>Amount</th>
 				<th>Status</th>
@@ -74,26 +109,27 @@
 			<tr *ngFor="let t of transactions">
 				<td>{{ t.id }}</td>
 				<td>{{ t.token }}</td>
-				<td>{{ t.store?.storeNumber }}</td>
-				<td>{{ t.contractor?.lastName }} {{ t.contractor?.firstName }}</td>
-				<td>{{ t.passType?.name }}</td>
+				<td>{{ t.store.storeNumber }}</td>
+				<td>{{ t.contractor.lastName }} {{ t.contractor.firstName }} {{ t.contractor.middleName }}</td>
+				<td>{{ t.passType.name }}</td>
 				<td>{{ t.amount }}</td>
 				<td>{{ t.status }}</td>
 				<td>{{ t.passId ? t.passId : 'N/A' }}</td>
 				<td>
-					<button *ngIf="t.status === 'Pending'" class="btn btn-success btn-sm"
-						(click)="confirmPayment(t.id)">
+					<button mat-button color="primary" *ngIf="t.status === 'Pending'" (click)="confirmPayment(t.id)">
 						Оплатить
 					</button>
 				</td>
 			</tr>
 		</tbody>
 	</table>
+
+	<!-- Сообщение, если нет транзакций для отображения -->
 	<p *ngIf="!isLoading && transactions.length === 0" class="text-center mt-4">
 		Нет транзакций для отображения.
 	</p>
 
-	<!-- Нижняя пагинация -->
+	<!-- Пагинация (в нижней части таблицы) -->
 	<div *ngIf="!isLoading && totalPages > 1" class="pagination-container mt-2">
 		<div class="pagination-squares">
 			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"

@@ -1,3 +1,4 @@
+<!-- contractor-list.component.html -->
 <div class="container compact-container">
 	<div class="container styled-container">
 		<h2>Поиск контрагентов</h2>
@@ -66,7 +67,8 @@
 				контрагента</button>
 			<div class="d-flex justify-content-end align-items-center mb-3">
 				<label for="pageSize" class="me-2">Элементов на странице:</label>
-				<select id="pageSize" class="form-select w-auto" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+				<!-- Используем [value] и (change) для обработки изменения -->
+				<select id="pageSize" class="form-select w-auto" [value]="pageSize" (change)="onPageSizeChange($event)">
 					<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
 				</select>
 			</div>

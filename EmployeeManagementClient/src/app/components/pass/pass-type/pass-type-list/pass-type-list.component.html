@@ -1,15 +1,18 @@
 <div class="compact-container">
 	<h2>Типы пропусков группы "{{ groupName }}"</h2>
 
-	<form (ngSubmit)="searchPassTypes()">
+	<!-- Форма поиска (reactive) -->
+	<form [formGroup]="searchForm" (ngSubmit)="searchPassTypes()">
 		<div class="form-group">
 			<label for="id">ID:</label>
-			<input id="id" type="number" class="form-control" [(ngModel)]="searchCriteria.id" name="id" />
+			<!-- formControlName="id" -->
+			<input id="id" type="number" class="form-control" formControlName="id" />
 		</div>
 
 		<div class="form-group">
 			<label for="name">Название:</label>
-			<input id="name" type="text" class="form-control" [(ngModel)]="searchCriteria.name" name="name" />
+			<!-- formControlName="name" -->
+			<input id="name" type="text" class="form-control" formControlName="name" />
 		</div>
 
 		<div class="form-group">
@@ -18,6 +21,7 @@
 		</div>
 	</form>
 
+	<!-- Пагинация (верхняя) -->
 	<div *ngIf="totalPages() > 1" class="pagination-container">
 		<div class="pagination-squares">
 			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
@@ -27,21 +31,27 @@
 		</div>
 	</div>
 
+	<!-- Выбор размера страницы (reactive) -->
 	<div>
 		<label for="pageSize">Элементов на странице:</label>
-		<select id="pageSize" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
-			<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+		<select id="pageSize" [formControl]="pageSizeControl">
+			<option *ngFor="let size of pageSizeOptions" [value]="size">
+				{{ size }}
+			</option>
 		</select>
 	</div>
 
-	<button class="btn btn-primary mb-3" [routerLink]="'/pass-types/create'">Создать тип пропуска</button>
+	<button class="btn btn-primary mb-3" [routerLink]="'/pass-types/create'">
+		Создать тип пропуска
+	</button>
 
 	<!-- Если массив пуст, отображаем сообщение -->
 	<div *ngIf="displayedPassTypes.length === 0" class="text-center mt-4">
 		<p>Нет типов для отображения</p>
 	</div>
 
-	<table class="table table-striped">
+	<!-- Таблица, если есть элементы -->
+	<table class="table table-striped" *ngIf="displayedPassTypes.length > 0">
 		<thead>
 			<tr>
 				<th>ID</th>
@@ -70,6 +80,7 @@
 		</tbody>
 	</table>
 
+	<!-- Пагинация (нижняя) -->
 	<div *ngIf="totalPages() > 1" class="pagination-container">
 		<div class="pagination-squares">
 			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"

@@ -8,7 +8,7 @@ import { Contractor } from '../models/contractor.model';
 	providedIn: 'root'
 })
 export class ContractorWatchService {
-	private apiUrl = 'http://localhost:8080/api/searchcontractors';
+	private apiUrl = 'http://localhost:8080/api';
 
 	constructor(private http: HttpClient) { }
 
@@ -25,14 +25,23 @@ export class ContractorWatchService {
 		);
 	}
 
-	searchContractors(params: any): Observable<any> {
+	searchContractors(params: any): Observable<{ contractors: Contractor[]; total: number }> {
 		const httpParams = new HttpParams({ fromObject: params });
-		return this.http.get<any>(`${this.apiUrl}/search`, { params: httpParams }).pipe(
-			map((response) => ({
-				contractors: response.contractors || [],
-				total: response.total || 0,
-			})),
-			catchError((error) => {
+		return this.http.get<any>(`${this.apiUrl}/searchcontractors/search`, { params: httpParams }).pipe(
+			map(response => {
+				if (Array.isArray(response)) {
+					// Сервер возвращает просто массив контрагентов
+					return { contractors: response, total: response.length };
+				} else if (response && Array.isArray(response.contractors)) {
+					// Сервер возвращает объект с полями contractors и total
+					return { contractors: response.contractors, total: response.total || response.contractors.length };
+				} else {
+					// Неизвестный формат ответа
+					console.error('Неизвестный формат ответа при поиске:', response);
+					return { contractors: [], total: 0 };
+				}
+			}),
+			catchError(error => {
 				console.error('Ошибка поиска:', error);
 				return of({ contractors: [], total: 0 });
 			})

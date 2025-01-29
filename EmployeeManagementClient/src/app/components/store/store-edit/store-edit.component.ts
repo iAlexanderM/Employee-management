@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { StoreService } from '../../../services/store.service';
 import { Store } from '../../../models/store.model';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,12 +9,12 @@ import { StoreSelectOrAddModalComponent } from '../../modals/store-select-or-add
 @Component({
 	selector: 'app-store-edit',
 	standalone: true,
-	imports: [CommonModule, FormsModule, StoreSelectOrAddModalComponent],
+	imports: [CommonModule, ReactiveFormsModule, StoreSelectOrAddModalComponent],
 	templateUrl: './store-edit.component.html',
 	styleUrls: ['./store-edit.component.css']
 })
 export class StoreEditComponent implements OnInit {
-	store: Store = { building: '', floor: '', line: '', storeNumber: '', sortOrder: 0, createdAt: new Date() };
+	storeForm: FormGroup;
 	originalStore: Store | null = null; // Оригинальные данные
 	storeId: number | null = null;
 
@@ -24,10 +24,21 @@ export class StoreEditComponent implements OnInit {
 	errorMessage: string | null = null; // Поле для отображения ошибки
 
 	constructor(
+		private fb: FormBuilder,
 		private storeService: StoreService,
 		private route: ActivatedRoute,
 		private router: Router
-	) { }
+	) {
+		// Инициализация формы с контролами и валидаторами
+		this.storeForm = this.fb.group({
+			building: [{ value: '', disabled: true }, Validators.required],
+			floor: [{ value: '', disabled: true }, Validators.required],
+			line: [{ value: '', disabled: true }, Validators.required],
+			storeNumber: [{ value: '', disabled: true }, Validators.required],
+			sortOrder: [0, [Validators.required, Validators.min(0)]],
+			createdAt: [new Date(), Validators.required],
+		});
+	}
 
 	ngOnInit(): void {
 		this.route.params.subscribe(params => {
@@ -40,14 +51,25 @@ export class StoreEditComponent implements OnInit {
 
 	loadStore(id: number): void {
 		this.storeService.getStoreById(id).subscribe(store => {
-			this.store = { ...store };
-			this.originalStore = { ...store }; // Сохраняем оригинальные данные
+			this.originalStore = { ...store };
+			this.storeForm.patchValue({
+				building: store.building,
+				floor: store.floor,
+				line: store.line,
+				storeNumber: store.storeNumber,
+				sortOrder: store.sortOrder,
+				createdAt: store.createdAt,
+			});
+		}, error => {
+			console.error('Ошибка при загрузке торговой точки:', error);
+			this.errorMessage = 'Не удалось загрузить торговую точку.';
 		});
 	}
 
 	isModified(): boolean {
-		// Сравниваем оригинальные данные с текущими для проверки изменений
-		return JSON.stringify(this.store) !== JSON.stringify(this.originalStore);
+		if (!this.originalStore) return false;
+		const currentValue = this.storeForm.getRawValue();
+		return JSON.stringify(currentValue) !== JSON.stringify(this.originalStore);
 	}
 
 	updateStore(): void {
@@ -60,7 +82,12 @@ export class StoreEditComponent implements OnInit {
 		}
 
 		if (this.storeId) {
-			this.storeService.updateStore(this.storeId, this.store).subscribe({
+			const updatedStore: Store = {
+				...this.originalStore,
+				...this.storeForm.getRawValue(),
+			};
+
+			this.storeService.updateStore(this.storeId, updatedStore).subscribe({
 				next: () => {
 					this.router.navigate(['/stores']);
 				},
@@ -89,7 +116,9 @@ export class StoreEditComponent implements OnInit {
 	}
 
 	selectItem(item: any) {
-		this.store[this.modalField] = item.name;
+		this.storeForm.patchValue({
+			[this.modalField]: item.name,
+		});
 		this.closeModal();
 	}
 
@@ -98,7 +127,9 @@ export class StoreEditComponent implements OnInit {
 			this.errorMessage = 'Название не может быть пустым';
 			return;
 		}
-		this.store[this.modalField] = newItem;
+		this.storeForm.patchValue({
+			[this.modalField]: newItem,
+		});
 		this.closeModal();
 	}
 }

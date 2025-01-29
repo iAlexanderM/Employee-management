@@ -8,9 +8,15 @@
 		<!-- Режим добавления -->
 		<div *ngIf="mode === 'add'" class="add-form">
 			<label>Введите название:</label>
-			<input type="text" [(ngModel)]="newItemName" placeholder="Введите название" />
+			<input type="text" formControlName="newItemName" placeholder="Введите название"
+				[ngClass]="{'is-invalid': addForm.get('newItemName')?.invalid && addForm.get('newItemName')?.touched}" />
+			<!-- Сообщение об ошибке для поля названия -->
+			<div *ngIf="addForm.get('newItemName')?.invalid && addForm.get('newItemName')?.touched"
+				class="invalid-feedback">
+				Название обязательно.
+			</div>
 			<div class="actions">
-				<button class="btn btn-primary" (click)="addItem()">Добавить</button>
+				<button class="btn btn-primary" (click)="addItem()" [disabled]="addForm.invalid">Добавить</button>
 				<button class="btn btn-secondary" (click)="closeModal()">Отмена</button>
 			</div>
 			<p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
@@ -23,11 +29,23 @@
 				<form [formGroup]="searchForm" (ngSubmit)="searchItems()">
 					<div>
 						<label>ID:</label>
-						<input formControlName="Id" type="text" placeholder="Введите ID" />
+						<input formControlName="Id" type="text" placeholder="Введите ID"
+							[ngClass]="{'is-invalid': searchForm.get('Id')?.invalid && searchForm.get('Id')?.touched}" />
+						<!-- Сообщение об ошибке для поля ID -->
+						<div *ngIf="searchForm.get('Id')?.invalid && searchForm.get('Id')?.touched"
+							class="invalid-feedback">
+							ID должно быть числом.
+						</div>
 					</div>
 					<div>
 						<label>Название:</label>
-						<input formControlName="Name" type="text" placeholder="Введите название" />
+						<input formControlName="Name" type="text" placeholder="Введите название"
+							[ngClass]="{'is-invalid': searchForm.get('Name')?.invalid && searchForm.get('Name')?.touched}" />
+						<!-- Сообщение об ошибке для поля Название -->
+						<div *ngIf="searchForm.get('Name')?.invalid && searchForm.get('Name')?.touched"
+							class="invalid-feedback">
+							Название должно содержать текст.
+						</div>
 					</div>
 					<div>
 						<button type="submit" class="btn btn-primary">Искать</button>
@@ -39,9 +57,16 @@
 			<!-- Выбор размера страницы -->
 			<div class="page-size-selector">
 				<label for="pageSize">Элементов на странице:</label>
-				<select id="pageSize" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
-					<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
-				</select>
+				<form [formGroup]="paginationForm" class="d-inline-block ms-2">
+					<select id="pageSize" formControlName="pageSize" class="form-control w-auto d-inline-block">
+						<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+					</select>
+					<!-- Сообщение об ошибке для выбора размера страницы -->
+					<div *ngIf="paginationForm.get('pageSize')?.invalid && paginationForm.get('pageSize')?.touched"
+						class="invalid-feedback">
+						Выберите допустимое количество элементов.
+					</div>
+				</form>
 			</div>
 
 			<!-- Пагинация сверху -->
@@ -53,6 +78,7 @@
 					</div>
 				</div>
 			</div>
+			<br>
 
 			<!-- Таблица -->
 			<div class="table-container">
@@ -66,9 +92,9 @@
 					</thead>
 					<tbody>
 						<tr *ngFor="let item of filteredItems" (click)="selectItem(item)">
-							<td>{{ item.sortOrder || '—' }}</td>
-							<td>{{ item.id || '—' }}</td>
-							<td>{{ item.name || 'Не указано' }}</td>
+							<td>{{ item.sortOrder || '-' }}</td>
+							<td>{{ item.id }}</td>
+							<td>{{ item.name }}</td>
 						</tr>
 					</tbody>
 				</table>

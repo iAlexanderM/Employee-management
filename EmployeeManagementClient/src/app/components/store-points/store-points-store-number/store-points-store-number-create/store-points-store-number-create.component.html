@@ -6,15 +6,15 @@
 		<p>{{ errorMessage }}</p>
 	</div>
 
-	<!-- Форма добавления -->
-	<form (ngSubmit)="addStoreNumber()">
+	<form [formGroup]="storeNumberForm" (ngSubmit)="addStoreNumber()">
 		<div class="form-group">
 			<label for="storeNumberName">Название точки:</label>
 			<div class="input-container">
-				<input id="storeNumberName" type="text" placeholder="Введите название здания"
-					[(ngModel)]="newStoreNumberName" name="storeNumberName" required />
+				<input id="storeNumberName" type="text" placeholder="Введите название точки" formControlName="name"
+					required />
 			</div>
 		</div>
+
 		<button type="submit" class="btn btn-primary">Добавить</button>
 	</form>
 </div>

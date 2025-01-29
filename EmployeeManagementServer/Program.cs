@@ -173,6 +173,8 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddSignalR();
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

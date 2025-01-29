@@ -43,22 +43,26 @@ namespace EmployeeManagementServer.Services
 
             if (!string.IsNullOrEmpty(searchDto.Building))
             {
-                query = query.Where(s => s.Building.Trim() == searchDto.Building.Trim());
+                string buildingFilter = $"{searchDto.Building.Trim()}%";
+                query = query.Where(s => EF.Functions.ILike(s.Building, buildingFilter));
             }
 
             if (!string.IsNullOrEmpty(searchDto.Floor))
             {
-                query = query.Where(s => s.Floor.Trim() == searchDto.Floor.Trim());
+                string floorFilter = $"{searchDto.Floor.Trim()}%";
+                query = query.Where(s => EF.Functions.ILike(s.Floor, floorFilter));
             }
 
             if (!string.IsNullOrEmpty(searchDto.Line))
             {
-                query = query.Where(s => s.Line.Trim() == searchDto.Line.Trim());
+                string lineFilter = $"{searchDto.Line.Trim()}%";
+                query = query.Where(s => EF.Functions.ILike(s.Line, lineFilter));
             }
 
             if (!string.IsNullOrEmpty(searchDto.StoreNumber))
             {
-                query = query.Where(s => s.StoreNumber.Trim() == searchDto.StoreNumber.Trim());
+                string storeNumberFilter = $"{searchDto.StoreNumber.Trim()}%";
+                query = query.Where(s => EF.Functions.ILike(s.StoreNumber, storeNumberFilter));
             }
 
             if (searchDto.IsArchived.HasValue)

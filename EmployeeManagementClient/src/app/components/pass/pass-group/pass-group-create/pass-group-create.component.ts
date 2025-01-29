@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { PassGroupTypeService } from '../../../../services/pass-group-type.service';
 
@@ -9,20 +9,39 @@ import { PassGroupTypeService } from '../../../../services/pass-group-type.servi
 	templateUrl: './pass-group-create.component.html',
 	styleUrls: ['./pass-group-create.component.css'],
 	standalone: true,
-	imports: [CommonModule, FormsModule, RouterModule],
+	imports: [CommonModule, ReactiveFormsModule, RouterModule],
 })
 export class PassGroupCreateComponent {
-	group = { id: 0, name: '', color: '' };
+	groupForm: FormGroup;
+	errorMessage: string = '';
 
-	constructor(private service: PassGroupTypeService, private router: Router) { }
+	constructor(
+		private fb: FormBuilder,
+		private service: PassGroupTypeService,
+		private router: Router
+	) {
+		// Инициализация формы с контролами и валидаторами
+		this.groupForm = this.fb.group({
+			name: ['', Validators.required],
+			color: ['#ffffff'], // Установим дефолтный цвет
+		});
+	}
 
 	createGroup(): void {
-		this.service.createGroup(this.group).subscribe({
-			next: () => {
-				console.log('Группа создана');
-				this.router.navigate(['/pass-groups']); // Перенаправляем на список групп
-			},
-			error: (err) => console.error('Ошибка при создании группы:', err),
-		});
+		if (this.groupForm.valid) {
+			const newGroup = this.groupForm.value;
+			this.service.createGroup(newGroup).subscribe({
+				next: () => {
+					console.log('Группа создана');
+					this.router.navigate(['/pass-groups']); // Перенаправляем на список групп
+				},
+				error: (err) => {
+					console.error('Ошибка при создании группы:', err);
+					this.errorMessage = 'Произошла ошибка при создании группы. Попробуйте позже.';
+				},
+			});
+		} else {
+			this.errorMessage = 'Пожалуйста, заполните все обязательные поля.';
+		}
 	}
 }

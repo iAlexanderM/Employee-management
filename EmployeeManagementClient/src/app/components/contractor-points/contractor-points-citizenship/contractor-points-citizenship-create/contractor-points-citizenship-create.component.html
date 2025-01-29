@@ -7,14 +7,18 @@
 	</div>
 
 	<!-- Форма добавления -->
-	<form (ngSubmit)="addCitizenship()">
+	<form [formGroup]="citizenshipForm" (ngSubmit)="addCitizenship()">
 		<div class="form-group">
 			<label for="citizenshipName">Название гражданства:</label>
 			<div class="input-container">
-				<input id="citizenshipName" type="text" placeholder="Введите название здания"
-					[(ngModel)]="newCitizenshipName" name="citizenshipName" required />
+				<input id="citizenshipName" type="text" placeholder="Введите название гражданства"
+					formControlName="citizenshipName" required />
+			</div>
+			<div *ngIf="citizenshipForm.get('citizenshipName')?.invalid && citizenshipForm.get('citizenshipName')?.touched"
+				class="error">
+				Название гражданства обязательно.
 			</div>
 		</div>
-		<button type="submit" class="btn btn-primary">Добавить</button>
+		<button type="submit" class="btn btn-primary" [disabled]="citizenshipForm.invalid">Добавить</button>
 	</form>
 </div>

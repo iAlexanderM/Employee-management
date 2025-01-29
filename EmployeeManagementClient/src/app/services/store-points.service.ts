@@ -178,16 +178,29 @@ export class StorePointsService {
 			});
 		}
 
-		return this.http.get<any>(`${this.baseApiUrl}/searchBuildings/search`, { params }).pipe(
-			map((response) => ({
-				total: response.total || 0, // Общее количество зданий
-				buildings: response.buildings || [], // Массив зданий
-			})),
-			catchError((error) => {
-				console.error('[searchBuildings] Ошибка:', error);
-				return of({ total: 0, buildings: [] }); // Возвращаем пустой результат в случае ошибки
-			})
-		);
+		return this.http
+			.get<any>(`${this.baseApiUrl}/searchBuildings/search`, { params })
+			.pipe(
+				map((response) => {
+					// Если сервер вернул массив вида: [ { id, name }, ... ]
+					if (Array.isArray(response)) {
+						return {
+							total: response.length,
+							buildings: response
+						};
+					}
+					// Иначе, если объект: { total, buildings }, обрабатываем как раньше
+					const buildings = response.buildings || [];
+					return {
+						total: response.total ?? buildings.length,
+						buildings
+					};
+				}),
+				catchError((error) => {
+					console.error('[searchBuildings] Ошибка:', error);
+					return of({ total: 0, buildings: [] });
+				})
+			);
 	}
 
 	searchFloors(
@@ -202,16 +215,27 @@ export class StorePointsService {
 			});
 		}
 
-		return this.http.get<any>(`${this.baseApiUrl}/searchFloors/search`, { params }).pipe(
-			map((response) => ({
-				total: response.total || 0, // Общее количество этажей
-				floors: response.floors || [], // Массив этажей
-			})),
-			catchError((error) => {
-				console.error('[searchFloors] Ошибка:', error);
-				return of({ total: 0, floors: [] }); // Возвращаем пустой результат в случае ошибки
-			})
-		);
+		return this.http
+			.get<any>(`${this.baseApiUrl}/searchFloors/search`, { params })
+			.pipe(
+				map((response) => {
+					if (Array.isArray(response)) {
+						return {
+							total: response.length,
+							floors: response
+						};
+					}
+					const floors = response.floors || [];
+					return {
+						total: response.total ?? floors.length,
+						floors
+					};
+				}),
+				catchError((error) => {
+					console.error('[searchFloors] Ошибка:', error);
+					return of({ total: 0, floors: [] });
+				})
+			);
 	}
 
 	searchLines(
@@ -219,23 +243,33 @@ export class StorePointsService {
 	): Observable<{ total: number; lines: any[] }> {
 		let params = new HttpParams();
 
-		// Добавляем критерии поиска
 		if (criteria && Object.keys(criteria).length > 0) {
 			Object.keys(criteria).forEach((key) => {
 				params = params.set(key, criteria[key].toString());
 			});
 		}
 
-		return this.http.get<any>(`${this.baseApiUrl}/searchLines/search`, { params }).pipe(
-			map((response) => ({
-				total: response.total || 0, // Общее количество линий
-				lines: response.lines || [], // Массив линий
-			})),
-			catchError((error) => {
-				console.error('[searchLines] Ошибка:', error);
-				return of({ total: 0, lines: [] }); // Возвращаем пустой результат в случае ошибки
-			})
-		);
+		return this.http
+			.get<any>(`${this.baseApiUrl}/searchLines/search`, { params })
+			.pipe(
+				map((response) => {
+					if (Array.isArray(response)) {
+						return {
+							total: response.length,
+							lines: response
+						};
+					}
+					const lines = response.lines || [];
+					return {
+						total: response.total ?? lines.length,
+						lines
+					};
+				}),
+				catchError((error) => {
+					console.error('[searchLines] Ошибка:', error);
+					return of({ total: 0, lines: [] });
+				})
+			);
 	}
 
 	searchStoreNumbers(
@@ -243,22 +277,32 @@ export class StorePointsService {
 	): Observable<{ total: number; storeNumbers: any[] }> {
 		let params = new HttpParams();
 
-		// Добавляем критерии поиска
 		if (criteria && Object.keys(criteria).length > 0) {
 			Object.keys(criteria).forEach((key) => {
 				params = params.set(key, criteria[key].toString());
 			});
 		}
 
-		return this.http.get<any>(`${this.baseApiUrl}/searchStoreNumbers/search`, { params }).pipe(
-			map((response) => ({
-				total: response.total || 0, // Общее количество номеров
-				storeNumbers: response.storeNumbers || [], // Массив номеров
-			})),
-			catchError((error) => {
-				console.error('[searchStoreNumbers] Ошибка:', error);
-				return of({ total: 0, storeNumbers: [] }); // Возвращаем пустой результат в случае ошибки
-			})
-		);
+		return this.http
+			.get<any>(`${this.baseApiUrl}/searchStoreNumbers/search`, { params })
+			.pipe(
+				map((response) => {
+					if (Array.isArray(response)) {
+						return {
+							total: response.length,
+							storeNumbers: response
+						};
+					}
+					const storeNumbers = response.storeNumbers || [];
+					return {
+						total: response.total ?? storeNumbers.length,
+						storeNumbers
+					};
+				}),
+				catchError((error) => {
+					console.error('[searchStoreNumbers] Ошибка:', error);
+					return of({ total: 0, storeNumbers: [] });
+				})
+			);
 	}
 }

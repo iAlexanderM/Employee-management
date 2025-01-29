@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
 import { PassType } from '../models/pass-type.model';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
 	providedIn: 'root',
@@ -66,6 +67,25 @@ export class PassGroupTypeService {
 			params = params.set('name', name);
 		}
 
-		return this.http.get<PassType[]>(`${this.baseUrl}/passType/search`, { params });
+		return this.http.get<any>(`${this.baseUrl}/passType/search`, { params }).pipe(
+			// map(...) преобразует «сырой» ответ (response) к массиву PassType
+			map(response => {
+				// Вариант 1: сервер вернул сразу массив
+				if (Array.isArray(response)) {
+					return response as PassType[];
+				}
+				// Вариант 2: сервер вернул объект { passTypes: [ ... ], ... }
+				else if (response && Array.isArray(response.passTypes)) {
+					return response.passTypes as PassType[];
+				}
+				// Иначе вернем пустой массив
+				return [];
+			}),
+			catchError(error => {
+				console.error('[searchPassTypes] Ошибка запроса:', error);
+				// В случае ошибки -> вернем пустой массив, чтобы не ронять приложение
+				return of([]);
+			})
+		);
 	}
 }

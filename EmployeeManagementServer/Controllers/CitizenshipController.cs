@@ -63,7 +63,7 @@ namespace EmployeeManagementServer.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateCitizenship([FromBody] BuildingDto citizenshipDto)
+        public async Task<IActionResult> CreateCitizenship([FromBody] CitizenshipDto citizenshipDto)
         {
             if (citizenshipDto == null || string.IsNullOrWhiteSpace(citizenshipDto.Name))
             {

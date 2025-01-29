@@ -3,28 +3,39 @@ import { CommonModule } from '@angular/common';
 import { ContractorPointsService } from '../../../../services/contractor-points.service';
 import { Citizenship } from '../../../../models/contractor-points.model';
 import { Router, RouterModule } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
 @Component({
 	selector: 'app-contractor-points-citizenship-list',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		RouterModule,
+	],
 	templateUrl: './contractor-points-citizenship-list.component.html',
 	styleUrls: ['./contractor-points-citizenship-list.component.css']
 })
 export class ContractorPointsCitizenshipListComponent implements OnInit, OnDestroy {
+
 	citizenships: Citizenship[] = [];
 	displayedCitizenships: Citizenship[] = [];
+
 	searchForm: FormGroup;
-	isSearchMode = false; // Флаг, указывающий, выполняется ли поиск
-	currentPage: number = 1;
-	pageSize: number = 25;
-	totalPages: number = 0;
-	totalItems: number = 0;
-	visiblePages: (number | string)[] = [];
-	pageSizeOptions: number[] = [25, 50, 100];
+
+	isSearchMode = false;
 	isExpanded = false;
+
+	currentPage: number = 1;
+	pageSizeOptions: number[] = [25, 50, 100];
+	pageSize: number = 25;
+
+	totalItems: number = 0;
+	totalPages: number = 0;
+	visiblePages: (number | string)[] = [];
+
+	pageSizeControl = new FormControl(this.pageSize);
 
 	private subscriptions: Subscription[] = [];
 
@@ -40,60 +51,122 @@ export class ContractorPointsCitizenshipListComponent implements OnInit, OnDestr
 	}
 
 	ngOnInit(): void {
-		this.loadCitizenships(); // Загружаем данные при входе на страницу
+		console.log('[ngOnInit] ContractorPointsCitizenshipListComponent инициализировался.');
+
+		this.subscriptions.push(
+			this.pageSizeControl.valueChanges.subscribe((value) => {
+				console.log('[pageSizeControl.valueChanges] новое значение:', value);
+				const newSize = Number(value);
+				if (!isNaN(newSize) && newSize > 0) {
+					this.pageSize = newSize;
+					this.currentPage = 1;
+					this.calculateTotalPages();
+					this.updateVisiblePages();
+
+					if (this.isSearchMode) {
+						this.updateDisplayedCitizenships();
+					} else {
+						this.loadCitizenships();
+					}
+				}
+			})
+		);
+
+		this.loadCitizenships();
 	}
 
 	ngOnDestroy(): void {
-		this.subscriptions.forEach((sub) => sub.unsubscribe());
+		this.subscriptions.forEach((s) => s.unsubscribe());
 	}
 
-	// Обычная загрузка (серверная пагинация)
 	loadCitizenships(): void {
-		this.isSearchMode = false; // Выключаем режим поиска
-		this.contractorPointsService.getCitizenships(this.currentPage, this.pageSize, this.prepareSearchCriteria()).subscribe({
+		this.isSearchMode = false;
+		const criteria = this.prepareSearchCriteria();
+
+		console.log('[loadCitizenships] (серверная пагинация) Параметры:', {
+			currentPage: this.currentPage,
+			pageSize: this.pageSize,
+			criteria
+		});
+
+		this.contractorPointsService.getCitizenships(this.currentPage, this.pageSize, criteria).subscribe({
 			next: (response) => {
+				console.log('[loadCitizenships] Raw response from server:', response);
+
 				this.citizenships = response.citizenships || [];
 				this.totalItems = response.total || 0;
+
+				console.log('[loadCitizenships] После парсинга:', {
+					citizenshipsCount: this.citizenships.length,
+					totalItems: this.totalItems
+				});
+
 				this.calculateTotalPages();
 				this.updateVisiblePages();
 				this.displayedCitizenships = this.citizenships;
+
+				console.log('[loadCitizenships] displayedCitizenships:', this.displayedCitizenships);
 			},
 			error: (err) => {
 				console.error('[loadCitizenships] Ошибка загрузки данных:', err);
 				this.citizenships = [];
 				this.displayedCitizenships = [];
-			},
+			}
 		});
 	}
 
-	// Поиск без серверной пагинации
 	searchCitizenships(): void {
-		this.isSearchMode = true; // Включаем режим поиска
-		this.currentPage = 1; // Начинаем с 1-й страницы при поиске
-		this.contractorPointsService.searchCitizenships(this.prepareSearchCriteria()).subscribe({
+		this.isSearchMode = true;
+		this.currentPage = 1;
+		const criteria = this.prepareSearchCriteria();
+
+		console.log('[searchCitizenships] (клиентская пагинация) Параметры поиска:', criteria);
+
+		this.contractorPointsService.searchCitizenships(criteria).subscribe({
 			next: (response) => {
+				console.log('[searchCitizenships] Raw response from server:', response);
 				this.citizenships = response.citizenships || [];
 				this.totalItems = this.citizenships.length;
+
+				console.log('[searchCitizenships] После парсинга:', {
+					citizenshipsCount: this.citizenships.length,
+					totalItems: this.totalItems
+				});
+
 				this.calculateTotalPages();
 				this.updateVisiblePages();
-				this.updateDisplayedCitizenships(); // Локальная нарезка
+
+				this.updateDisplayedCitizenships();
+
+				console.log('[searchCitizenships] displayedCitizenships:', this.displayedCitizenships);
 			},
 			error: (err) => {
 				console.error('[searchCitizenships] Ошибка выполнения поиска:', err);
 				this.citizenships = [];
 				this.displayedCitizenships = [];
-			},
+			}
 		});
 	}
 
 	prepareSearchCriteria(): { [key: string]: any } {
-		const criteria = Object.entries(this.searchForm.value)
-			.filter(([_, value]) => value !== null && value !== '')
-			.reduce<{ [key: string]: any }>((acc, [key, value]) => {
-				acc[key] = key === 'Id' ? parseInt(value as string, 10) : (value as string).trim();
+		const rawValues = this.searchForm.value;
+		console.log('[prepareSearchCriteria] raw form values:', rawValues);
+
+		const criteria = Object.entries(rawValues)
+			.filter(([_, val]) => val !== null && val !== '')
+			.reduce<{ [key: string]: any }>((acc, [key, val]) => {
+				if (key === 'Id') {
+					const parsed = parseInt(val as string, 10);
+					if (!isNaN(parsed)) {
+						acc[key] = parsed;
+					}
+				} else {
+					acc[key] = (val as string).trim();
+				}
 				return acc;
 			}, {});
 
+		console.log('[prepareSearchCriteria] итоговые критерии:', criteria);
 		return criteria;
 	}
 
@@ -104,14 +177,23 @@ export class ContractorPointsCitizenshipListComponent implements OnInit, OnDestr
 	}
 
 	resetFilters(): void {
+		console.log('[resetFilters] Сбрасываем форму и режим поиска');
 		this.searchForm.reset();
 		this.currentPage = 1;
-		this.loadCitizenships(); // Возвращаемся к обычному показу
+		this.loadCitizenships();
 	}
 
 	goToPage(page: number | string): void {
-		if (typeof page !== 'number') return;
-		if (page < 1 || page > this.totalPages) return;
+		console.log('[goToPage] попытка перейти к странице:', page);
+
+		if (typeof page !== 'number') {
+			console.warn('[goToPage] page не число:', page);
+			return;
+		}
+		if (page < 1 || page > this.totalPages) {
+			console.warn('[goToPage] page вне диапазона:', page, 'totalPages:', this.totalPages);
+			return;
+		}
 
 		this.currentPage = page;
 		if (this.isSearchMode) {
@@ -122,18 +204,8 @@ export class ContractorPointsCitizenshipListComponent implements OnInit, OnDestr
 		this.updateVisiblePages();
 	}
 
-	onPageSizeChange(): void {
-		this.currentPage = 1;
-		this.calculateTotalPages();
-		this.updateVisiblePages();
-		if (this.isSearchMode) {
-			this.updateDisplayedCitizenships();
-		} else {
-			this.loadCitizenships();
-		}
-	}
-
 	onPageClick(page: number | string): void {
+		console.log('[onPageClick] click:', page);
 		if (page !== '...') {
 			this.goToPage(page as number);
 		}
@@ -141,6 +213,7 @@ export class ContractorPointsCitizenshipListComponent implements OnInit, OnDestr
 
 	calculateTotalPages(): void {
 		this.totalPages = Math.ceil(this.totalItems / this.pageSize);
+		console.log('[calculateTotalPages] totalItems =', this.totalItems, 'pageSize =', this.pageSize, '=> totalPages =', this.totalPages);
 	}
 
 	updateVisiblePages(): void {
@@ -148,7 +221,6 @@ export class ContractorPointsCitizenshipListComponent implements OnInit, OnDestr
 		const pages: (number | string)[] = [];
 
 		if (this.totalPages <= totalVisiblePages) {
-			// Показываем все страницы
 			for (let i = 1; i <= this.totalPages; i++) {
 				pages.push(i);
 			}
@@ -177,23 +249,28 @@ export class ContractorPointsCitizenshipListComponent implements OnInit, OnDestr
 		}
 
 		this.visiblePages = pages;
+		console.log('[updateVisiblePages] visiblePages:', pages);
 	}
 
 	editCitizenship(id: number | undefined): void {
+		console.log('[editCitizenship] id=', id);
 		if (id !== undefined) {
 			this.router.navigate([`/citizenship/edit`, id]);
 		}
 	}
 
 	addCitizenship(): void {
+		console.log('[addCitizenship]');
 		this.router.navigate(['/citizenship/new']);
 	}
 
 	toggleSearchForm(): void {
 		this.isExpanded = !this.isExpanded;
+		console.log('[toggleSearchForm] isExpanded=', this.isExpanded);
 	}
 
 	viewCitizenshipDetailsInNewTab(id: number | undefined): void {
+		console.log('[viewCitizenshipDetailsInNewTab] id=', id);
 		if (id !== undefined) {
 			const url = `/citizenship/details/${id}`;
 			window.open(url, '_blank');

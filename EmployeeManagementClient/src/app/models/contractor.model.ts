@@ -25,3 +25,24 @@ export interface Contractor {
 	documentPhotos: Photo[];
 	isArchived: boolean;
 }
+
+export interface ContractorDto {
+	id: number;
+	firstName: string;
+	lastName: string;
+	middleName?: string;
+	birthDate: string;
+	citizenship: string;
+	nationality: string;
+	documentType: string;
+	passportSerialNumber: string;
+	passportIssuedBy: string;
+	passportIssueDate: string;
+	phoneNumber: string;
+	productType: string;
+	isArchived: boolean;
+	createdAt: string;
+	sortOrder?: number;
+	photos: Photo[];
+	documentPhotos: Photo[];
+}

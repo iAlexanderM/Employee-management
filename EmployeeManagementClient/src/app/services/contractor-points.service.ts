@@ -66,20 +66,34 @@ export class ContractorPointsService {
 			});
 		}
 
-		return this.http.get<any>(`${this.baseApiUrl}/searchNationalities/search`, { params }).pipe(
-			map((response) => {
-				// Парсим ответ
-				const nationalities = response.nationalities || [];
-				return {
-					total: nationalities.length,
-					nationalities,
-				};
-			}),
-			catchError((error) => {
-				console.error('[searchNationalities] Ошибка:', error);
-				return of({ total: 0, nationalities: [] });
-			})
-		);
+		return this.http
+			.get<any>(`${this.baseApiUrl}/searchNationalities/search`, { params })
+			.pipe(
+				map((response) => {
+					// Если бэкенд вернул массив (например, [ {id: 1, name: ...}, ... ]).
+					// В этом случае response будет Array, а у него нет поля `nationalities`.
+					if (Array.isArray(response)) {
+						return {
+							total: response.length,
+							nationalities: response
+						};
+					}
+
+					// Иначе, если бэкенд вернул объект вида
+					// { nationalities: [...], total: 123 } или хотя бы { nationalities: [...] }
+					const nationalities = response.nationalities || [];
+					return {
+						// Если у объекта есть total, можно взять его.
+						// Если нет — берем длину массива как total.
+						total: response.total ?? nationalities.length,
+						nationalities
+					};
+				}),
+				catchError((error) => {
+					console.error('[searchNationalities] Ошибка:', error);
+					return of({ total: 0, nationalities: [] });
+				})
+			);
 	}
 
 	//Citizenships
@@ -138,11 +152,19 @@ export class ContractorPointsService {
 
 		return this.http.get<any>(`${this.baseApiUrl}/searchCitizenships/search`, { params }).pipe(
 			map((response) => {
-				// Парсим ответ
+				if (Array.isArray(response)) {
+					return {
+						total: response.length,
+						citizenships: response
+					};
+				}
+
+				// Иначе, если сервер вернул объект { citizenships: [...], ... },
+				// делаем, как раньше
 				const citizenships = response.citizenships || [];
 				return {
 					total: citizenships.length,
-					citizenships,
+					citizenships
 				};
 			}),
 			catchError((error) => {

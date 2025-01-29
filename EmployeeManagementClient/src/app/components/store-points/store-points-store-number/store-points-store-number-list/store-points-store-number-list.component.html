@@ -1,7 +1,7 @@
 <div>
 	<h2>Список точек</h2>
 	<button (click)="addStoreNumber()" class="btn btn-info btn-sm btn-equal">Добавить новую точку</button>
-	<br>
+	<br />
 	<button type="button" class="btn btn-link mb-3" (click)="toggleSearchForm()">
 		{{ isExpanded ? 'Свернуть' : 'Развернуть' }} форму поиска
 	</button>
@@ -12,7 +12,6 @@
 				<label for="Id">ID точки:</label>
 				<input id="Id" formControlName="Id" type="text" class="form-control" />
 			</div>
-
 			<div class="col-md-4">
 				<label for="Name">Название:</label>
 				<input id="Name" formControlName="Name" type="text" class="form-control" />
@@ -30,9 +29,10 @@
 	<div class="d-flex justify-content-between align-items-center mb-3">
 		<div>
 			<label for="pageSize">Элементов на странице:</label>
-			<select id="pageSize" class="form-control w-auto d-inline-block" [(ngModel)]="pageSize"
-				(change)="onPageSizeChange()">
-				<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+			<select id="pageSize" class="form-control w-auto d-inline-block" [formControl]="pageSizeControl">
+				<option *ngFor="let size of pageSizeOptions" [value]="size">
+					{{ size }}
+				</option>
 			</select>
 		</div>
 		<p>Всего страниц: {{ totalPages }}</p>
@@ -47,7 +47,7 @@
 			</div>
 		</div>
 	</div>
-	<br>
+	<br />
 
 	<table class="table table-bordered table-hover" *ngIf="displayedStoreNumbers.length > 0">
 		<thead>
@@ -65,9 +65,12 @@
 				<td>{{ storeNumber.name }}</td>
 				<td>
 					<button class="btn btn-info btn-sm btn-equal"
-						(click)="viewStoreNumberDetailsInNewTab(storeNumber.id)">Просмотреть</button>
-					<button class="btn btn-secondary btn-sm btn-equal"
-						(click)="editStoreNumber(storeNumber.id)">Редактировать</button>
+						(click)="viewStoreNumberDetailsInNewTab(storeNumber.id)">
+						Просмотреть
+					</button>
+					<button class="btn btn-secondary btn-sm btn-equal" (click)="editStoreNumber(storeNumber.id)">
+						Редактировать
+					</button>
 				</td>
 			</tr>
 		</tbody>

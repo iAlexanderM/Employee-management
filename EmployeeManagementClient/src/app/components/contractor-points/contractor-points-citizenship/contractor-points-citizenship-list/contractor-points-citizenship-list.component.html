@@ -1,18 +1,20 @@
 <div>
 	<h2>Список гражданств</h2>
-	<button (click)="addCitizenship()" class="btn btn-info btn-sm btn-equal">Добавить новое гражданство</button>
-	<br>
+	<button (click)="addCitizenship()" class="btn btn-info btn-sm btn-equal">
+		Добавить новое гражданство
+	</button>
+	<br />
 	<button type="button" class="btn btn-link mb-3" (click)="toggleSearchForm()">
 		{{ isExpanded ? 'Свернуть' : 'Развернуть' }} форму поиска
 	</button>
 
+	<!-- Форма поиска -->
 	<form *ngIf="isExpanded" [formGroup]="searchForm" (ngSubmit)="searchCitizenships()" class="mb-4">
 		<div class="row">
 			<div class="col-md-4">
 				<label for="Id">ID гражданства</label>
 				<input id="Id" formControlName="Id" type="text" class="form-control" />
 			</div>
-
 			<div class="col-md-4">
 				<label for="Name">Название:</label>
 				<input id="Name" formControlName="Name" type="text" class="form-control" />
@@ -20,25 +22,27 @@
 		</div>
 
 		<div class="row mt-4">
-			<div class="col-md-12 text-right">
+			<div class="col-md-12 text-end">
 				<button type="submit" class="btn btn-primary">Найти</button>
 				<button type="button" class="btn btn-secondary" (click)="resetFilters()">Сбросить</button>
 			</div>
 		</div>
 	</form>
 
+	<!-- Выбор размера страницы (Reactive FormControl) -->
 	<div class="d-flex justify-content-between align-items-center mb-3">
 		<div>
 			<label for="pageSize">Элементов на странице:</label>
-			<select id="pageSize" class="form-control w-auto d-inline-block" [(ngModel)]="pageSize"
-				(change)="onPageSizeChange()">
-				<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+			<select id="pageSize" class="form-control w-auto d-inline-block" [formControl]="pageSizeControl">
+				<option *ngFor="let size of pageSizeOptions" [value]="size">
+					{{ size }}
+				</option>
 			</select>
 		</div>
 		<p>Всего страниц: {{ totalPages }}</p>
 	</div>
 
-	<!-- Пагинация -->
+	<!-- Пагинация (верхняя) -->
 	<div *ngIf="totalPages > 1" class="pagination-container">
 		<div class="pagination-squares">
 			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
@@ -47,8 +51,9 @@
 			</div>
 		</div>
 	</div>
-	<br>
+	<br />
 
+	<!-- Таблица -->
 	<table class="table table-bordered table-hover" *ngIf="displayedCitizenships.length > 0">
 		<thead>
 			<tr>
@@ -65,9 +70,12 @@
 				<td>{{ citizenship.name }}</td>
 				<td>
 					<button class="btn btn-info btn-sm btn-equal"
-						(click)="viewCitizenshipDetailsInNewTab(citizenship.id)">Просмотреть</button>
-					<button class="btn btn-secondary btn-sm btn-equal"
-						(click)="editCitizenship(citizenship.id)">Редактировать</button>
+						(click)="viewCitizenshipDetailsInNewTab(citizenship.id)">
+						Просмотреть
+					</button>
+					<button class="btn btn-secondary btn-sm btn-equal" (click)="editCitizenship(citizenship.id)">
+						Редактировать
+					</button>
 				</td>
 			</tr>
 		</tbody>
@@ -75,7 +83,7 @@
 
 	<p *ngIf="displayedCitizenships.length === 0">Нет записей для отображения.</p>
 
-	<!-- Пагинация -->
+	<!-- Пагинация (нижняя) -->
 	<div *ngIf="totalPages > 1" class="pagination-container">
 		<div class="pagination-squares">
 			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"

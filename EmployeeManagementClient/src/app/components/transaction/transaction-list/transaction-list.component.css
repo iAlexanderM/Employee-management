@@ -10,7 +10,7 @@
 	margin-bottom: 20px;
 }
 
-/* Стили для форм (создание талона и поиска транзакций) */
+/* Стили для форм */
 .compact-container form {
 	margin-bottom: 20px;
 	padding: 10px;
@@ -53,13 +53,18 @@ tr:hover {
 	background-color: #e9ecef;
 }
 
-/* Стили для элементов управления формой (select, input, кнопки) */
+/* Стили элементов управления формой */
 .form-select {
 	display: inline-block;
 	width: auto;
 	margin-right: 10px;
 }
 
+.mat-form-field {
+	width: 100%;
+}
+
+/* Стили для кнопок */
 .btn {
 	display: inline-block;
 	font-size: 14px;
@@ -83,33 +88,22 @@ tr:hover {
 	border-color: #0056b3;
 }
 
-.btn-danger {
-	background-color: #dc3545;
-	border-color: #dc3545;
+.btn-secondary {
+	background-color: #6c757d;
+	border-color: #6c757d;
 	color: #fff;
 }
 
-.btn-danger:hover {
-	background-color: #c82333;
-	border-color: #bd2130;
-}
-
-.btn-success {
-	background-color: #28a745;
-	border-color: #28a745;
-	color: #fff;
-}
-
-.btn-success:hover {
-	background-color: #218838;
-	border-color: #1e7e34;
+.btn-secondary:hover {
+	background-color: #5a6268;
+	border-color: #545b62;
 }
 
 /* Стили пагинации */
 .pagination-container {
 	display: flex;
-	justify-content: left;
-	align-items: left;
+	justify-content: center;
+	align-items: center;
 	gap: 5px;
 	margin-top: 10px;
 }
@@ -151,24 +145,50 @@ tr:hover {
 	cursor: default;
 }
 
-.talons-container form {
-	display: flex;
-	align-items: center;
-	gap: 10px;
+/* Стили для панели автодополнения */
+.search-field-container {
+	position: relative;
 }
 
-.talons-container select.form-select {
-	width: auto;
+.custom-autocomplete-panel {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 1000;
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	width: 100%;
+	max-height: 200px;
+	overflow-y: auto;
 }
 
-.talons-container .btn {
-	margin: 0;
+/* Стили для элементов выпадающего списка */
+.custom-autocomplete-wrapper {
+	position: relative;
 }
 
-.transactions-container .d-flex {
-	margin-bottom: 10px;
+/* Фиксируем выпадающий список */
+.custom-autocomplete-panel {
+	position: absolute !important;
+	top: 100%;
+	left: 0;
+	width: 100%;
+	z-index: 1050;
+	/* Выше стандартного z-index */
+	background: white;
+	box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+	border-radius: 4px;
 }
 
-.transactions-container select.form-select {
-	width: auto;
+/* Делаем текст в выпадающем списке четким */
+.mat-option-text {
+	font-size: 14px;
+	color: #333;
+}
+
+/* Для улучшения взаимодействия */
+.mat-option:hover {
+	background: rgba(0, 0, 0, 0.05);
 }

@@ -6,21 +6,20 @@
 		<p>{{ errorMessage }}</p>
 	</div>
 
-	<!-- Форма редактирования -->
-	<form (ngSubmit)="updateLine()">
+	<!-- Форма редактирования (reactive) -->
+	<form [formGroup]="lineForm" (ngSubmit)="updateLine()">
 		<div class="form-group">
 			<label for="lineName">Название:</label>
 			<div class="input-container">
-				<input id="lineName" type="text" placeholder="Введите название этажа" [(ngModel)]="updatedLineName"
-					name="lineName" required />
+				<input id="lineName" type="text" placeholder="Введите название линии" formControlName="name" required />
 			</div>
 		</div>
 
 		<div class="form-group">
 			<label for="sortOrder">Сортировка:</label>
 			<div class="input-container">
-				<input id="sortOrder" type="number" placeholder="Введите порядок сортировки"
-					[(ngModel)]="updatedSortOrder" name="sortOrder" required />
+				<input id="sortOrder" type="number" placeholder="Введите порядок сортировки" formControlName="sortOrder"
+					required />
 			</div>
 		</div>
 

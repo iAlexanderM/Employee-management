@@ -7,11 +7,13 @@
 		<!-- Режим добавления -->
 		<div *ngIf="mode === 'add'" class="add-form">
 			<label>Введите название:</label>
-			<input type="text" [(ngModel)]="newItemName" placeholder="Введите название" />
+			<input type="text" formControlName="newItemName" placeholder="Введите название" />
+
 			<div class="actions">
 				<button class="btn btn-primary" (click)="addItem()">Добавить</button>
 				<button class="btn btn-secondary" (click)="closeModal()">Отмена</button>
 			</div>
+
 			<p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
 		</div>
 
@@ -35,10 +37,9 @@
 				</form>
 			</div>
 
-			<!-- Выбор размера страницы -->
 			<div class="page-size-selector">
 				<label for="pageSize">Элементов на странице:</label>
-				<select id="pageSize" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+				<select id="pageSize" [formControl]="pageSizeControl">
 					<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
 				</select>
 			</div>

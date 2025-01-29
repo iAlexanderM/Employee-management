@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "nnx9G6ndSUk=",
+  "dgSpecHash": "ZvCEWv2m0hs=",
   "success": true,
-  "projectFilePath": "C:\\Users\\zelom\\Desktop\\buroP\\Employee-management\\EmployeeManagementServer\\EmployeeManagementServer.csproj",
+  "projectFilePath": "C:\\Users\\zelom\\OneDrive\\Рабочий стол\\buroP\\Employee-management\\EmployeeManagementServer\\EmployeeManagementServer.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\zelom\\.nuget\\packages\\automapper\\13.0.1\\automapper.13.0.1.nupkg.sha512",
     "C:\\Users\\zelom\\.nuget\\packages\\azure.core\\1.35.0\\azure.core.1.35.0.nupkg.sha512",

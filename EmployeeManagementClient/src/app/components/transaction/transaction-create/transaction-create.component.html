@@ -1,62 +1,78 @@
-<!-- src/app/components/transaction/transaction-create/transaction-create.component.html -->
 <div class="container mt-4">
 	<h2>Создание транзакции</h2>
+
+	<!-- Ошибки -->
+	<div *ngIf="errorMessage" class="alert alert-danger">
+		{{ errorMessage }}
+	</div>
+
 	<form [formGroup]="transactionForm" (ngSubmit)="createTransaction()" class="mt-3">
-		<!-- Талон очереди -->
+
+		<!-- Талон (read-only) -->
 		<div class="mb-3">
 			<label for="token" class="form-label">Талон очереди:</label>
-			<input id="token" type="text" formControlName="token" class="form-control" required>
+			<input id="token" type="text" formControlName="token" class="form-control" readonly />
 		</div>
 
-		<!-- Контрагент -->
+		<!-- Контрагент (через модальное окно) -->
 		<div class="mb-3">
-			<label for="contractor" class="form-label">Контрагент:</label>
-			<select formControlName="contractorId" id="contractor" class="form-control" required>
-				<option value="" disabled selected>Выберите контрагента</option>
-				<option *ngFor="let c of contractors" [value]="c.id">
-					{{ c.lastName }} {{ c.firstName }}
-				</option>
-			</select>
+			<label class="form-label">Контрагент:</label>
+			<div class="input-group">
+				<!-- read-only "имя" -->
+				<input type="text" class="form-control" [value]="selectedContractorName"
+					placeholder="Выберите контрагента..." readonly />
+				<!-- Скрытое поле для contractorId -->
+				<input type="hidden" formControlName="contractorId" />
+				<!-- Кнопка -->
+				<button type="button" class="btn btn-outline-secondary" (click)="openContractorModal()">
+					Выбрать
+				</button>
+			</div>
 		</div>
 
-		<!-- Торговая точка -->
+		<!-- Торговая точка (через модальное окно) -->
 		<div class="mb-3">
-			<label for="store" class="form-label">Торговая точка:</label>
-			<select formControlName="storeId" id="store" class="form-control" required>
-				<option value="" disabled selected>Выберите торговую точку</option>
-				<option *ngFor="let s of stores" [value]="s.id">
-					{{ s.building }} №{{ s.storeNumber }}
-				</option>
-			</select>
+			<label class="form-label">Торговая точка:</label>
+			<div class="input-group">
+				<input type="text" class="form-control" [value]="selectedStoreName"
+					placeholder="Выберите торговую точку..." readonly />
+				<input type="hidden" formControlName="storeId" />
+				<button type="button" class="btn btn-outline-secondary" (click)="openStoreModal()">
+					Выбрать
+				</button>
+			</div>
 		</div>
 
-		<!-- Тип пропуска -->
+		<!-- Тип пропуска (через модальное окно) -->
 		<div class="mb-3">
-			<label for="passType" class="form-label">Тип пропуска:</label>
-			<select formControlName="passTypeId" id="passType" class="form-control" required>
-				<option value="" disabled selected>Выберите тип пропуска</option>
-				<option *ngFor="let pt of passTypes" [value]="pt.id">
-					{{ pt.name }}
-				</option>
-			</select>
+			<label class="form-label">Тип пропуска:</label>
+			<div class="input-group">
+				<input type="text" class="form-control" [value]="selectedPassTypeName"
+					placeholder="Выберите тип пропуска..." readonly />
+				<input type="hidden" formControlName="passTypeId" />
+				<button type="button" class="btn btn-outline-secondary" (click)="openPassTypeModal()">
+					Выбрать
+				</button>
+			</div>
 		</div>
 
-		<!-- Дата начала -->
+		<!-- Дата начала (по умолчанию сегодня) -->
 		<div class="mb-3">
 			<label for="startDate" class="form-label">Дата начала:</label>
-			<input id="startDate" type="date" formControlName="startDate" class="form-control" required>
+			<input id="startDate" type="date" formControlName="startDate" class="form-control" />
 		</div>
 
-		<!-- Дата окончания -->
+		<!-- Дата окончания (read-only) -->
 		<div class="mb-3">
 			<label for="endDate" class="form-label">Дата окончания:</label>
-			<input id="endDate" type="date" formControlName="endDate" class="form-control" required>
+			<input id="endDate" type="date" formControlName="endDate" class="form-control" readonly />
 		</div>
 
 		<!-- Должность -->
 		<div class="mb-3">
 			<label for="position" class="form-label">Должность:</label>
-			<input id="position" type="text" formControlName="position" class="form-control" required>
+			<input id="position" type="text" formControlName="position" class="form-control"
+				placeholder="Введите должность" />
 		</div>
 
 		<button type="submit" class="btn btn-primary" [disabled]="transactionForm.invalid">
