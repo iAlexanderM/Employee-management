@@ -1,0 +1,165 @@
+<div class="container mt-4">
+	<h2>Создание транзакций</h2>
+	<div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+	<app-active-token-floating *ngIf="activeTokenData" [tokenData]="activeTokenData"
+		(close)="activeTokenData = null"></app-active-token-floating>
+
+	<div *ngFor="let formData of transactionForms; let i = index" class="mb-4 p-3 border rounded">
+		<h3>Документ {{ i + 1 }}</h3>
+		<form [formGroup]="formData.form" class="mt-3">
+			<input type="hidden" formControlName="contractorId">
+			<input type="hidden" formControlName="storeId">
+			<input type="hidden" formControlName="passTypeId">
+
+			<div class="row-custom mb-3">
+				<div class="col-custom-8 align-self-end">
+					<button type="button" class="btn btn-select" (click)="openStoreModal(i)">Выбрать</button>
+				</div>
+				<div class="col-custom-8 align-self-start">
+					<label class="form-label">Здание:</label>
+					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.store}"
+						[value]="formData.store?.building || 'Не выбрано'" readonly />
+				</div>
+				<div class="col-custom-8 align-self-start">
+					<label class="form-label">Этаж:</label>
+					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.store}"
+						[value]="formData.store?.floor || 'Не выбрано'" readonly />
+				</div>
+				<div class="col-custom-8 align-self-start">
+					<label class="form-label">Линия:</label>
+					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.store}"
+						[value]="formData.store?.line || 'Не выбрано'" readonly />
+				</div>
+				<div class="col-custom-8 align-self-start">
+					<label class="form-label">Точка:</label>
+					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.store}"
+						[value]="formData.store?.storeNumber || 'Не выбрано'" readonly />
+				</div>
+			</div>
+
+			<div class="row-custom mb-3">
+				<div class="col-custom-8 align-self-end">
+					<button type="button" class="btn btn-select" (click)="openContractorModal(i)">Выбрать</button>
+				</div>
+				<div class="col-custom-8 align-self-start">
+					<label class="form-label">Фамилия:</label>
+					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.contractor}"
+						[value]="formData.contractor?.lastName || 'Не выбрано'" readonly />
+				</div>
+				<div class="col-custom-8 align-self-start">
+					<label class="form-label">Имя:</label>
+					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.contractor}"
+						[value]="formData.contractor?.firstName || 'Не выбрано'" readonly />
+				</div>
+				<div class="col-custom-8 align-self-start">
+					<label class="form-label">Отчество:</label>
+					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.contractor}"
+						[value]="formData.contractor?.middleName || 'Не выбрано'" readonly />
+				</div>
+				<div class="col-custom-8 align-self-start">
+					<label class="form-label">Серия и №:</label>
+					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.contractor}"
+						[value]="formData.contractor?.passportSerialNumber || 'Не выбрано'" readonly />
+				</div>
+				<div class="col-custom-8 col-span-2 align-self-start">
+					<label for="position_{{i}}" class="form-label">Должность:</label>
+					<div class="position-container d-flex align-items-center">
+						<select id="position_{{i}}" formControlName="position" class="form-control position-select me-2"
+							[ngClass]="{'invalid-field': !formData.form.get('position')?.value}"
+							(change)="onPositionChange(i, $event)">
+							<option value="" disabled>Выберите должность</option>
+							<option value="Сотрудник">Сотрудник</option>
+							<option value="Подрядчик">Подрядчик</option>
+							<option value="Наёмный работник">Наёмный работник</option>
+						</select>
+						<ng-container
+							*ngIf="formData.modalPosition || formData.form.get('position')?.value === 'Наёмный работник'">
+							<input type="text" class="form-control position-input me-2"
+								[value]="formData.modalPosition || ''" readonly />
+							<button *ngIf="formData.form.get('position')?.value === 'Наёмный работник'" type="button"
+								class="btn btn-select me-2" (click)="openPositionModal(i)">
+								Выбрать из списка
+							</button>
+						</ng-container>
+					</div>
+					<app-position-modal [isVisible]="formData.form.get('showPositionModal')?.value" mode="select"
+						(modalClose)="formData.form.get('showPositionModal')?.setValue(false)"
+						(itemSelected)="positionSelected(i, $event)">
+					</app-position-modal>
+				</div>
+			</div>
+
+			<div class="row-custom mb-3">
+				<div class="col-custom-8 align-self-end">
+					<button type="button" class="btn btn-select" (click)="openPassTypeModal(i)">Выбрать</button>
+				</div>
+				<div class="col-custom-8 align-self-start">
+					<label class="form-label">Тип пропуска:</label>
+					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.passType}"
+						[value]="formData.passType?.name || 'Не выбрано'" readonly />
+				</div>
+				<div class="col-custom-8 align-self-start">
+					<label class="form-label">Стоимость:</label>
+					<input type="text" class="form-control" [value]="formData.totalCost || '0'" readonly />
+				</div>
+				<div class="col-custom-8 align-self-start">
+					<label class="form-label">Дата начала:</label>
+					<input type="date" class="form-control" formControlName="startDate"
+						[ngClass]="{'invalid-field': !formData.form.get('startDate')?.value}" />
+				</div>
+				<div class="col-custom-8 align-self-start">
+					<label class="form-label">Дата окончания:</label>
+					<input type="text" class="form-control"
+						[ngClass]="{'invalid-field': !formData.form.get('endDate')?.value}"
+						[value]="formatDateDisplay(formData.form.get('endDate')?.value) || ''" readonly />
+				</div>
+			</div>
+
+			<div class="row-custom mb-3 align-bottom">
+				<div class="col-custom-8 text-end">
+					<button type="button" class="btn btn-danger me-2" (click)="removeTransactionForm(i)"
+						*ngIf="i === 0 && transactionForms.length > 1">
+						Удалить документ
+					</button>
+					<button type="button" class="btn btn-warning me-2" (click)="removeTransactionForm(i)"
+						*ngIf="i === 0 && transactionForms.length === 1">
+						Очистить
+					</button>
+					<button type="button" class="btn btn-danger me-2" (click)="removeTransactionForm(i)" *ngIf="i > 0">
+						Удалить документ
+					</button>
+				</div>
+			</div>
+		</form>
+
+		<app-contractor-select-modal *ngIf="formData.form.controls['showContractorModal'].value"
+			(modalClose)="formData.form.controls['showContractorModal'].setValue(false)"
+			(itemSelected)="contractorSelected(i, $event)"></app-contractor-select-modal>
+		<app-store-select-or-add-modal *ngIf="formData.form.controls['showStoreModal'].value" fieldName="storeNumber"
+			mode="select" (modalClose)="formData.form.controls['showStoreModal'].setValue(false)"
+			(itemSelected)="storeSelected(i, $event)"></app-store-select-or-add-modal>
+		<app-pass-type-modal *ngIf="formData.form.controls['showPassTypeModal'].value"
+			(modalClose)="formData.form.controls['showPassTypeModal'].setValue(false)"
+			(itemSelected)="passTypeSelected(i, $event)"></app-pass-type-modal>
+	</div>
+
+	<div class="row-custom mb-3 align-bottom">
+		<div class="col-custom-8 col-span-2 text-end">
+			<button type="button" class="btn btn-success" (click)="addTransactionForm()">Добавить документ</button>
+		</div>
+	</div>
+
+	<div class="row-custom mb-3 align-bottom">
+		<div class="col-custom-8 col-span-2">
+			<label class="form-label">Итого:</label>
+			<input type="text" class="form-control" [value]="getTotalCost()" readonly />
+		</div>
+	</div>
+
+	<div class="row-custom mb-3 align-bottom">
+		<div class="col-custom-8 text-end">
+			<button type="button" class="btn btn-primary" (click)="createTransaction()">Сохранить</button>
+		</div>
+	</div>
+</div>

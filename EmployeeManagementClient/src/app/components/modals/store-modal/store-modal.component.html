@@ -1,0 +1,111 @@
+<div class="modal-overlay" (click)="closeModal()">
+	<div class="modal-content" (click)="stopPropagation($event)">
+		<header>
+			<h2>{{ mode === 'select' ? 'Выбрать' : 'Добавить' }} {{ fieldNameTranslated }}</h2>
+			<button type="button" class="close-button btn btn-secondary" (click)="closeModal()">×</button>
+		</header>
+
+		<!-- Режим добавления -->
+		<div *ngIf="mode === 'add'" class="add-form">
+			<form [formGroup]="addForm">
+				<label>Введите название:</label>
+				<input type="text" formControlName="newItemName" class="form-control" placeholder="Введите название" />
+
+				<div class="actions mt-3">
+					<button type="button" class="btn btn-primary" (click)="addItem()"
+						[disabled]="addForm.invalid">Добавить</button>
+					<button type="button" class="btn btn-secondary" (click)="closeModal()">Отмена</button>
+				</div>
+			</form>
+
+			<p *ngIf="errorMessage" class="error-message text-danger mt-2">{{ errorMessage }}</p>
+		</div>
+
+		<!-- Режим выбора -->
+		<div *ngIf="mode === 'select'">
+			<!-- Форма поиска -->
+			<div class="search-form mb-3">
+				<form [formGroup]="searchForm" (ngSubmit)="searchStores()">
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<label for="Building">Здание:</label>
+							<input id="Building" formControlName="Building" type="text" class="form-control"
+								placeholder="Введите здание" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="Floor">Этаж:</label>
+							<input id="Floor" formControlName="Floor" type="text" class="form-control"
+								placeholder="Введите этаж" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="Line">Линия:</label>
+							<input id="Line" formControlName="Line" type="text" class="form-control"
+								placeholder="Введите линию" />
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="StoreNumber">Торговая точка:</label>
+							<input id="StoreNumber" formControlName="StoreNumber" type="text" class="form-control"
+								placeholder="Введите номер торговой точки" />
+						</div>
+					</div>
+					<div class="mb-3">
+						<button type="submit" class="btn btn-primary me-2">Искать</button>
+						<button type="button" class="btn btn-secondary" (click)="resetFilters()">Сбросить
+							фильтры</button>
+					</div>
+				</form>
+			</div>
+
+			<div *ngIf="totalPages > 1" class="pagination-container">
+				<div class="pagination-squares">
+					<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" (click)="onPageClick(page)">
+						{{ page }}
+					</div>
+				</div>
+			</div>
+
+			<!-- Таблица -->
+			<div class="table-container">
+				<table class="table table-hover">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Сортировка</th>
+							<th>Здание</th>
+							<th>Этаж</th>
+							<th>Линия</th>
+							<th>Номер точки</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr *ngFor="let store of items" (click)="selectStore(store)" style="cursor: pointer;">
+							<td>{{ store.id }}</td>
+							<td>{{ store.sortOrder }}</td>
+							<td>{{ store.building }}</td>
+							<td>{{ store.floor }}</td>
+							<td>{{ store.line }}</td>
+							<td>{{ store.storeNumber }}</td>
+						</tr>
+					</tbody>
+				</table>
+				<div *ngIf="items.length === 0 && !errorMessage">
+					<p>Нет торговых точек для отображения.</p>
+				</div>
+				<div *ngIf="errorMessage" class="text-danger">
+					{{ errorMessage }}
+				</div>
+			</div>
+
+			<!-- Пагинация -->
+			<div *ngIf="totalPages > 1" class="pagination-container">
+				<div class="pagination-squares">
+					<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" (click)="onPageClick(page)">
+						{{ page }}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

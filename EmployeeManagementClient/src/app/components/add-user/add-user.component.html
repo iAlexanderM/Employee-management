@@ -1,0 +1,57 @@
+<div class="container">
+	<h2>Добавить нового пользователя</h2>
+	<form [formGroup]="addUserForm" (ngSubmit)="register()">
+		<div class="form-group">
+			<label for="username">Логин</label>
+			<input type="text" id="username" formControlName="username" placeholder="Введите логин" required>
+			<div *ngIf="addUserForm.get('username')?.invalid && addUserForm.get('username')?.touched"
+				class="invalid-feedback">
+				Логин обязателен.
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="password">Пароль</label>
+			<input type="password" id="password" formControlName="password" placeholder="Введите пароль" required>
+			<div *ngIf="addUserForm.get('password')?.invalid && addUserForm.get('password')?.touched"
+				class="invalid-feedback">
+				Пароль обязателен.
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="role">Роль</label>
+			<select id="role" formControlName="role" required>
+				<option value="" disabled>Выберите роль</option>
+				<option value="Admin">Admin</option>
+				<option value="Cashier">Cashier</option>
+				<option value="Manager">Manager</option>
+			</select>
+			<div *ngIf="addUserForm.get('role')?.invalid && addUserForm.get('role')?.touched" class="invalid-feedback">
+				Роль обязательна.
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="email">Email (опционально)</label>
+			<input type="email" id="email" formControlName="email" placeholder="Введите email">
+			<div *ngIf="addUserForm.get('email')?.invalid && addUserForm.get('email')?.touched"
+				class="invalid-feedback">
+				Введите корректный email (если заполняете).
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="phoneNumber">Номер телефона (опционально)</label>
+			<input type="text" id="phoneNumber" formControlName="phoneNumber" placeholder="Введите номер телефона">
+		</div>
+
+		<button type="submit" class="b-cta" [disabled]="addUserForm.invalid">Добавить</button>
+	</form>
+
+	<div *ngIf="successMessage" class="success">{{ successMessage }}</div>
+	<div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+	<ul *ngIf="serverErrors.length > 0" class="error-list">
+		<li *ngFor="let error of serverErrors">{{ error.description }}</li>
+	</ul>
+</div>

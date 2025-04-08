@@ -1,0 +1,39 @@
+<div *ngIf="nationality" class="container mt-4">
+	<h2>Редактирование записи №{{ nationality.id }}</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="error-message">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма редактирования -->
+	<form [formGroup]="nationalityForm" (ngSubmit)="updateNationality()">
+		<div class="form-group">
+			<label for="nationalityName">Название:</label>
+			<div class="input-container">
+				<input id="nationalityName" type="text" placeholder="Введите название национальности"
+					formControlName="nationalityName" required />
+			</div>
+			<!-- Валидация поля -->
+			<div *ngIf="nationalityForm.get('nationalityName')?.invalid && nationalityForm.get('nationalityName')?.touched"
+				class="error">
+				Название национальности обязательно.
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="sortOrder">Сортировка:</label>
+			<div class="input-container">
+				<input id="sortOrder" type="number" placeholder="Введите порядок сортировки" formControlName="sortOrder"
+					required />
+			</div>
+			<!-- Валидация поля -->
+			<div *ngIf="nationalityForm.get('sortOrder')?.invalid && nationalityForm.get('sortOrder')?.touched"
+				class="error">
+				Порядок сортировки должен быть неотрицательным числом.
+			</div>
+		</div>
+
+		<button type="submit" class="btn btn-primary" [disabled]="nationalityForm.invalid">Сохранить</button>
+	</form>
+</div>

@@ -1,0 +1,108 @@
+body {
+	background: linear-gradient(135deg, rgba(30, 29, 31, 1) 0%, rgba(223, 64, 90, 1) 100%);
+}
+
+.box {
+	width: 330px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.box-form {
+	width: 320px;
+	z-index: 1;
+}
+
+.box-login {
+	background: #fdfdfd;
+	text-align: center;
+	padding: 20px;
+	border-radius: 6px;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.box-login h2 {
+	font-size: 20px;
+	color: #032942;
+}
+
+.form-group {
+	margin: 15px 0;
+}
+
+.form-group label {
+	display: block;
+	font-size: 14px;
+	margin-bottom: 5px;
+	font-family: var(--m3-ui-family, "Google Sans Flex"), -apple-system, BlinkMacSystemFont, sans-serif;
+	font-size: 16px;
+	font-weight: 500;
+	line-height: 24px;
+	color: #202124;
+	letter-spacing: 0.1px;
+}
+
+/* Стили для полей ввода */
+.form-group input {
+	width: 100%;
+	padding: 8px 12px;
+	font-size: 16px;
+	font-family: var(--m3-ui-family, "Google Sans Flex"), -apple-system, BlinkMacSystemFont, sans-serif;
+	border: 1px solid #ccc;
+	/* Базовая обводка */
+	border-radius: 4px;
+	box-sizing: border-box;
+	transition: border-color 0.3s ease;
+	/* Плавное изменение цвета */
+}
+
+/* Стили при фокусе */
+.form-group input:focus {
+	outline: none;
+	/* Убираем стандартный outline браузера */
+	border-color: #df405a;
+	/* Цвет обводки при фокусе (как кнопка) */
+}
+
+/* Стили для невалидного состояния */
+.form-group input.is-invalid {
+	border-color: #dc3545;
+	/* Красная обводка при ошибке */
+}
+
+/* Сообщение об ошибке */
+.invalid-feedback {
+	color: #dc3545;
+	font-size: 12px;
+	text-align: left;
+	margin-top: 4px;
+}
+
+.b-cta {
+	display: block;
+	width: 100%;
+	padding: 10px;
+	color: #fff;
+	background-color: #df405a;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 16px;
+}
+
+.b-cta:hover {
+	background-color: #87314e;
+}
+
+.b-cta:disabled {
+	background-color: #cccccc;
+	cursor: not-allowed;
+}
+
+.error-message {
+	color: #dc3545;
+	font-size: 14px;
+	margin-bottom: 15px;
+}

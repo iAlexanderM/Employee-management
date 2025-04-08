@@ -1,0 +1,37 @@
+<div class="container mt-4">
+	<h2>Детали торговой точки № {{ store?.id }}</h2>
+
+	<div class="form-group">
+		<p><strong>Сортировка:</strong> {{ store?.sortOrder }}</p>
+	</div>
+
+	<div class="form-group">
+		<p><strong>Здание:</strong> {{ store?.building }}</p>
+	</div>
+
+	<div class="form-group">
+		<p><strong>Этаж:</strong> {{ store?.floor }}</p>
+	</div>
+
+	<div class="form-group">
+		<p><strong>Линия:</strong> {{ store?.line }}</p>
+	</div>
+
+	<div class="form-group">
+		<p><strong>Номер точки:</strong> {{ store?.storeNumber }}</p>
+	</div>
+
+	<div class="form-group">
+		<p><strong>Дата создания торговой точки: </strong> {{ store?.createdAt | date: 'dd.MM.yyyy HH:mm:ss' }}
+		</p>
+	</div>
+
+	<div class="form-group">
+		<p><strong>Архивирован: </strong> {{ store?.isArchived ? 'Да' : 'Нет' }}
+		</p>
+	</div>
+
+	<div class="form-group">
+		<button class="btn btn-primary" (click)="editStore()">Редактировать</button>
+	</div>
+</div>

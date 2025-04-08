@@ -1,0 +1,101 @@
+.container {
+	max-width: 600px;
+	/* Увеличенная ширина контейнера */
+	margin: 30px auto;
+	padding: 20px 30px;
+	border: 1px solid #ccc;
+	border-radius: 8px;
+	background-color: #fefefe;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	overflow: hidden;
+}
+
+h2 {
+	text-align: left;
+	color: #333;
+	margin-bottom: 20px;
+	font-size: 24px;
+}
+
+.form-group {
+	margin-bottom: 25px;
+}
+
+label {
+	font-weight: bold;
+	font-size: 16px;
+	display: block;
+	margin-bottom: 5px;
+	color: #555;
+}
+
+.input-container,
+.button-container {
+	width: 100%;
+	/* Контейнеры занимают одинаковую ширину */
+	display: flex;
+	justify-content: space-between;
+	/* Равномерное распределение */
+}
+
+.input-container input {
+	width: 100%;
+	/* Поля ввода растянуты на всю ширину */
+	padding: 10px 15px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	font-size: 14px;
+	background-color: #fafafa;
+	transition: border-color 0.3s ease-in-out;
+}
+
+.input-container input:focus {
+	border-color: #007bff;
+	outline: none;
+}
+
+.button-container button {
+	flex: 1;
+	/* Кнопки занимают равные части пространства */
+	padding: 10px 15px;
+	margin: 0 5px;
+	/* Отступы между кнопками */
+	font-size: 14px;
+	color: #fff;
+	background-color: #007bff;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.3s ease-in-out;
+}
+
+.button-container button:hover {
+	background-color: #0056b3;
+}
+
+.error-message {
+	background-color: #f8d7da;
+	color: #721c24;
+	padding: 10px;
+	border: 1px solid #f5c6cb;
+	border-radius: 4px;
+	margin-bottom: 20px;
+}
+
+.btn-primary {
+	width: 100%;
+	/* Кнопка "Сохранить" растягивается на всю ширину */
+	margin-top: 20px;
+	padding: 10px 15px;
+	font-size: 16px;
+	background-color: #28a745;
+	border: none;
+	border-radius: 4px;
+	color: #fff;
+	cursor: pointer;
+	transition: background-color 0.3s ease-in-out;
+}
+
+.btn-primary:hover {
+	background-color: #218838;
+}

@@ -1,0 +1,28 @@
+<div class="modal-overlay" (click)="closeModal()">
+	<div class="modal-content" (click)="stopPropagation($event)">
+		<header>
+			<h2>Выберите группу пропусков</h2>
+		</header>
+
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Название</th>
+					<th>Цвет</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr *ngFor="let group of groups" (click)="selectGroup(group)">
+					<td>{{ group.id }}</td>
+					<td>{{ group.name }}</td>
+					<td>
+						<div [style.background]="group.color" style="width: 20px; height: 20px; border-radius: 50%;">
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
+	</div>
+</div>

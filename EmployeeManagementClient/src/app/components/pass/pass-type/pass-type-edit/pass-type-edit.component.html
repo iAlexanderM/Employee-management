@@ -1,0 +1,108 @@
+<div class="container mt-4">
+	<h2>Редактирование типа пропуска</h2>
+
+	<!-- Отображение сообщения об ошибке -->
+	<div *ngIf="errorMessage" class="alert alert-danger">
+		{{ errorMessage }}
+	</div>
+
+	<form [formGroup]="passTypeForm" (ngSubmit)="updatePassType()">
+		<div class="form-group">
+			<label for="name">Название:</label>
+			<input id="name" type="text" class="form-control" formControlName="name"
+				placeholder="Введите название типа пропуска"
+				[ngClass]="{'is-invalid': passTypeForm.get('name')?.invalid && passTypeForm.get('name')?.touched}"
+				required />
+			<!-- Сообщение об ошибке для поля названия -->
+			<div *ngIf="passTypeForm.get('name')?.invalid && passTypeForm.get('name')?.touched"
+				class="invalid-feedback">
+				Название обязательно.
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="duration">Срок (в месяцах):</label>
+			<input id="duration" type="number" class="form-control" formControlName="durationInMonths" name="duration"
+				min="1"
+				[ngClass]="{'is-invalid': passTypeForm.get('durationInMonths')?.invalid && passTypeForm.get('durationInMonths')?.touched}"
+				required />
+			<!-- Сообщение об ошибке для поля срока -->
+			<div *ngIf="passTypeForm.get('durationInMonths')?.invalid && passTypeForm.get('durationInMonths')?.touched"
+				class="invalid-feedback">
+				Срок должен быть минимум 1 месяц.
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="cost">Стоимость:</label>
+			<input id="cost" type="number" class="form-control" formControlName="cost" name="cost"
+				placeholder="Введите стоимость" min="0"
+				[ngClass]="{'is-invalid': passTypeForm.get('cost')?.invalid && passTypeForm.get('cost')?.touched}"
+				required />
+			<!-- Сообщение об ошибке для поля стоимости -->
+			<div *ngIf="passTypeForm.get('cost')?.invalid && passTypeForm.get('cost')?.touched"
+				class="invalid-feedback">
+				Стоимость должна быть неотрицательной.
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="color">Цвет:</label>
+			<input id="color" type="color" class="form-control form-control-color" formControlName="color"
+				title="Выберите цвет" />
+		</div>
+
+		<div class="form-group">
+			<label>Группа:</label>
+			<button type="button" class="btn btn-secondary" (click)="openGroupModal()">Выбрать группу</button>
+			<p *ngIf="passGroupName">Выбрана группа: {{ passGroupName }}</p>
+			<!-- Сообщение об ошибке для группы -->
+			<div *ngIf="passTypeForm.get('passGroupId')?.invalid && passTypeForm.get('passGroupId')?.touched"
+				class="invalid-feedback d-block">
+				Выберите группу.
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="printTemplate">Шаблон для печати:</label>
+			<textarea id="printTemplate" class="form-control" formControlName="printTemplate" name="printTemplate"
+				placeholder="Введите шаблон для печати" rows="5"
+				[ngClass]="{'is-invalid': passTypeForm.get('printTemplate')?.invalid && passTypeForm.get('printTemplate')?.touched}"
+				required></textarea>
+			<div *ngIf="passTypeForm.get('printTemplate')?.invalid && passTypeForm.get('printTemplate')?.touched"
+				class="invalid-feedback">
+				Шаблон для печати обязателен.
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="sortOrder">Номер сортировки:</label>
+			<input id="sortOrder" type="number" class="form-control" formControlName="sortOrder" name="sortOrder"
+				min="0"
+				[ngClass]="{'is-invalid': passTypeForm.get('sortOrder')?.invalid && passTypeForm.get('sortOrder')?.touched}"
+				required />
+			<!-- Сообщение об ошибке для поля номера сортировки -->
+			<div *ngIf="passTypeForm.get('sortOrder')?.invalid && passTypeForm.get('sortOrder')?.touched"
+				class="invalid-feedback">
+				Номер сортировки должен быть неотрицательным.
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="isArchived">Архивирован:</label>
+			<input id="isArchived" type="checkbox" class="form-control" formControlName="isArchived"
+				name="isArchived" />
+		</div>
+
+		<div class="form-group mt-4">
+			<button type="submit" class="btn btn-primary" [disabled]="passTypeForm.invalid">Сохранить</button>
+			<button type="button" class="btn btn-secondary" routerLink="/pass-types">
+				Отмена
+			</button>
+		</div>
+	</form>
+
+	<!-- Вставка модального окна -->
+	<app-pass-group-modal *ngIf="isModalOpen" (modalClose)="closeGroupModal()"
+		(groupSelected)="onGroupSelected($event)"></app-pass-group-modal>
+</div>

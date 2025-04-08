@@ -1,0 +1,129 @@
+<div class="modal-overlay" (click)="closeModal()">
+	<div class="modal-content" (click)="stopPropagation($event)">
+		<header>
+			<h2>Выбрать Контрагента</h2>
+			<button type="button" class="close-button btn btn-secondary" (click)="closeModal()">×</button>
+		</header>
+
+		<!-- Форма поиска -->
+		<div class="search-form">
+			<form [formGroup]="searchForm" (ngSubmit)="searchContractors()">
+				<div class="row">
+					<div class="col-md-6 mb-3">
+						<label for="Id">ID:</label>
+						<input id="Id" formControlName="Id" type="number" class="form-control"
+							placeholder="Введите ID" />
+					</div>
+					<div class="col-md-6 mb-3">
+						<label for="LastName">Фамилия:</label>
+						<input id="LastName" formControlName="LastName" type="text" class="form-control"
+							placeholder="Введите фамилию" />
+					</div>
+					<div class="col-md-6 mb-3">
+						<label for="FirstName">Имя:</label>
+						<input id="FirstName" formControlName="FirstName" type="text" class="form-control"
+							placeholder="Введите имя" />
+					</div>
+					<div class="col-md-6 mb-3">
+						<label for="MiddleName">Отчество:</label>
+						<input id="MiddleName" formControlName="MiddleName" type="text" class="form-control"
+							placeholder="Введите отчество" />
+					</div>
+					<div class="col-md-6 mb-3">
+						<label for="BirthDate">Дата рождения:</label>
+						<input id="BirthDate" formControlName="BirthDate" type="date" class="form-control"
+							placeholder="Введите дату рождения" />
+					</div>
+					<div class="col-md-6 mb-3">
+						<label for="PassportSerialNumber">Серия и номер паспорта:</label>
+						<input id="PassportSerialNumber" formControlName="PassportSerialNumber" type="text"
+							class="form-control" placeholder="Введите серию и номер паспорта" />
+					</div>
+				</div>
+				<div class="mb-3">
+					<button type="submit" class="btn btn-primary me-2">Искать</button>
+					<button type="button" class="btn btn-secondary" (click)="resetFilters()">Сбросить фильтры</button>
+				</div>
+			</form>
+		</div>
+
+		<!-- Пагинация -->
+		<div *ngIf="totalPages > 1" class="pagination-container">
+			<div class="pagination-squares">
+				<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+					[class.disabled]="page === '...'" (click)="onPageClick(page)">
+					{{ page }}
+				</div>
+			</div>
+		</div>
+
+		<!-- Таблица -->
+		<div class="table-container">
+			<table class="table table-hover contractor-table">
+				<colgroup>
+					<col style="width: 10%">
+					<col style="width: 10%">
+					<col style="width: 10%"> <!-- Фото -->
+					<col style="width: 10%">
+					<col style="width: 10%">
+					<col style="width: 10%">
+					<col style="width: 15%">
+					<col style="width: 15%">
+					<col style="width: 10%"> <!-- Действия -->
+				</colgroup>
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Сортировка</th>
+						<th>Фото</th>
+						<th>Фамилия</th>
+						<th>Имя</th>
+						<th>Отчество</th>
+						<th>Дата рождения</th>
+						<th>Серия и номер паспорта</th>
+						<th>Действия</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let contractor of displayedContractors" (click)="selectContractor(contractor)"
+						style="cursor: pointer;">
+						<td>{{ contractor.id }}</td>
+						<td>{{ contractor.sortOrder }}</td>
+						<td>
+							<img *ngIf="getFirstPhoto(contractor)" [src]="getFirstPhoto(contractor)"
+								alt="Фото контрагента" class="contractor-img" loading="lazy" />
+						</td>
+						<td>{{ contractor.lastName }}</td>
+						<td>{{ contractor.firstName }}</td>
+						<td>{{ contractor.middleName }}</td>
+						<td>{{ contractor.birthDate | date: 'dd.MM.yyyy' }}</td>
+						<td>{{ contractor.passportSerialNumber }}</td>
+						<td>
+							<button class="btn btn-info btn-sm btn-equal-one"
+								(click)="navigateToDetails(contractor.id)">Просмотреть</button>
+							<br>
+							<button class="btn btn-secondary btn-sm btn-equal-one"
+								(click)="navigateToEdit(contractor.id)">Редактировать</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<div *ngIf="displayedContractors.length === 0 && !errorMessage">
+				<p>Нет контрагентов для отображения.</p>
+			</div>
+			<div *ngIf="errorMessage" class="text-danger">
+				{{ errorMessage }}
+			</div>
+		</div>
+
+		<!-- Пагинация -->
+		<div *ngIf="totalPages > 1" class="pagination-container">
+			<div class="pagination-squares">
+				<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+					[class.disabled]="page === '...'" (click)="onPageClick(page)">
+					{{ page }}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

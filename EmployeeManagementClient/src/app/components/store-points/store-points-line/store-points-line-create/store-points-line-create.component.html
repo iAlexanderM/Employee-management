@@ -1,0 +1,28 @@
+<div class="container">
+	<h2>Добавить запись в справочник "Линия"</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="alert alert-danger">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма добавления -->
+	<form [formGroup]="lineForm" (ngSubmit)="addLine()">
+		<div class="form-group">
+			<label for="lineName">Название линии:</label>
+			<div class="input-container">
+				<input id="lineName" type="text" class="form-control" placeholder="Введите название линии"
+					formControlName="lineName" [ngClass]="{
+            'is-invalid':
+              lineForm.get('lineName')?.invalid && lineForm.get('lineName')?.touched
+          }" required />
+				<!-- Сообщение об ошибке для поля название линии -->
+				<div *ngIf="lineForm.get('lineName')?.invalid && lineForm.get('lineName')?.touched"
+					class="invalid-feedback">
+					Название линии обязательно.
+				</div>
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary" [disabled]="lineForm.invalid">Добавить</button>
+	</form>
+</div>

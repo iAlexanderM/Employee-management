@@ -1,0 +1,54 @@
+<div *ngIf="showContent()" class="app-layout">
+	<nav class="sidebar navbar navbar-expand-lg navbar-light bg-light">
+		<div class="brand">Бюро пропусков v0.01</div>
+		<ul class="navbar-nav ms-auto">
+			<div *ngFor="let item of data; let i = index;">
+				<!-- Аккордеон для элементов с подменю -->
+				<div *ngIf="item.childProperties">
+					<ng-container *ngIf="hasAccessToChild(item.childProperties)">
+						<button class="accordion" (click)="toggleAccordian($event, i)">
+							{{ item.parentName }}
+						</button>
+						<div class="panel" *ngIf="item.isActive">
+							<ul class="navbar-nav dropdown-menu show">
+								<li class="nav-item" *ngFor="let child of item.childProperties">
+									<ng-container *ngIf="hasRole(getRequiredRole(child.propertyName))">
+										<a class="nav-link dropdown-item"
+											[routerLink]="getRouterLink(child.propertyName)">
+											{{ child.propertyName }}
+										</a>
+									</ng-container>
+								</li>
+							</ul>
+						</div>
+					</ng-container>
+				</div>
+				<!-- Простые ссылки -->
+				<div *ngIf="!item.childProperties">
+					<ng-container *ngIf="hasRole(getRequiredRole(item.parentName))">
+						<a class="btn btn-primary me-2" [routerLink]="item.routerLink">
+							{{ item.parentName }}
+						</a>
+					</ng-container>
+				</div>
+			</div>
+		</ul>
+		<div class="footer">
+			<div *ngIf="isAuthenticated()">
+				<button class="btn btn-primary me-2" (click)="logout()">Выход</button>
+			</div>
+			<div *ngIf="!isAuthenticated()">
+				<a class="btn btn-primary me-2" routerLink="/login">Вход</a>
+			</div>
+		</div>
+	</nav>
+	<div class="content-container">
+		<router-outlet></router-outlet>
+	</div>
+</div>
+<div *ngIf="!showContent()" class="container mt-5">
+	<router-outlet></router-outlet>
+</div>
+<app-active-token-floating *ngIf="showActivePanel" [tokenData]="activeToken" (close)="onCloseTokenPanel()">
+</app-active-token-floating>
+<div class="local-overlay-root"></div>

@@ -1,0 +1,109 @@
+<div class="modal-overlay" (click)="closeModal()" *ngIf="isVisible">
+	<div class="modal-content" (click)="stopPropagation($event)">
+		<header>
+			<h2>{{ mode === 'select' ? 'Выбрать' : 'Добавить' }} Должность</h2>
+		</header>
+
+		<!-- Режим добавления -->
+		<div *ngIf="mode === 'add'" class="add-form">
+			<form [formGroup]="addForm">
+				<label>Введите название:</label>
+				<input type="text" formControlName="newItemName" placeholder="Введите название"
+					[ngClass]="{'is-invalid': addForm.get('newItemName')?.invalid && addForm.get('newItemName')?.touched}" />
+				<div *ngIf="addForm.get('newItemName')?.invalid && addForm.get('newItemName')?.touched"
+					class="invalid-feedback">
+					Название обязательно.
+				</div>
+				<div class="actions">
+					<button class="btn btn-primary" (click)="addItem()" [disabled]="addForm.invalid">Добавить</button>
+					<button class="btn btn-secondary" (click)="closeModal()">Отмена</button>
+				</div>
+			</form>
+			<p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+		</div>
+
+		<!-- Режим выбора -->
+		<div *ngIf="mode === 'select'">
+			<div class="search-form">
+				<form [formGroup]="searchForm" (ngSubmit)="searchItems()">
+					<div>
+						<label>ID:</label>
+						<input formControlName="Id" type="text" placeholder="Введите ID"
+							[ngClass]="{'is-invalid': searchForm.get('Id')?.invalid && searchForm.get('Id')?.touched}" />
+						<div *ngIf="searchForm.get('Id')?.invalid && searchForm.get('Id')?.touched"
+							class="invalid-feedback">
+							ID должно быть числом.
+						</div>
+					</div>
+					<div>
+						<label>Название:</label>
+						<input formControlName="Name" type="text" placeholder="Введите название"
+							[ngClass]="{'is-invalid': searchForm.get('Name')?.invalid && searchForm.get('Name')?.touched}" />
+						<div *ngIf="searchForm.get('Name')?.invalid && searchForm.get('Name')?.touched"
+							class="invalid-feedback">
+							Название должно содержать текст.
+						</div>
+					</div>
+					<div>
+						<button type="submit" class="btn btn-primary">Искать</button>
+						<button type="button" class="btn btn-secondary" (click)="resetFilters()">Сбросить</button>
+					</div>
+				</form>
+			</div>
+
+			<div class="page-size-selector">
+				<label for="pageSize">Элементов на странице:</label>
+				<form [formGroup]="paginationForm" class="d-inline-block ms-2">
+					<select id="pageSize" formControlName="pageSize" class="form-control w-auto d-inline-block">
+						<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+					</select>
+					<div *ngIf="paginationForm.get('pageSize')?.invalid && paginationForm.get('pageSize')?.touched"
+						class="invalid-feedback">
+						Выберите допустимое количество элементов.
+					</div>
+				</form>
+			</div>
+
+			<div class="pagination-container">
+				<div class="pagination-squares">
+					<div *ngFor="let page of visiblePages" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" class="square" (click)="onPageClick(page)">
+						{{ page }}
+					</div>
+				</div>
+			</div>
+			<br>
+
+			<div class="table-container">
+				<table>
+					<thead>
+						<tr>
+							<th>Сортировка</th>
+							<th>ID</th>
+							<th>Название</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr *ngFor="let item of filteredItems" (click)="selectItem(item)">
+							<td>{{ item.sortOrder || '-' }}</td>
+							<td>{{ item.id }}</td>
+							<td>{{ item.name }}</td>
+						</tr>
+					</tbody>
+				</table>
+				<div *ngIf="filteredItems.length === 0">
+					<p>Нет элементов для отображения.</p>
+				</div>
+			</div>
+
+			<div class="pagination-container">
+				<div class="pagination-squares">
+					<div *ngFor="let page of visiblePages" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" class="square" (click)="onPageClick(page)">
+						{{ page }}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

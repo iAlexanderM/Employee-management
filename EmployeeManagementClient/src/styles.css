@@ -1,0 +1,116 @@
+/* styles.css */
+html,
+body {
+	font-family: 'Roboto', sans-serif;
+	margin: 0px 0px 0px 0px;
+	padding: 0px 0px 0px 0px;
+	;
+	height: 100%;
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+.app-layout {
+	display: flex;
+	height: 100vh;
+	width: 100%;
+	padding-bottom: 100px;
+}
+
+button,
+input,
+select,
+textarea {
+	font-family: 'Roboto', sans-serif;
+}
+
+button,
+.btn {
+	display: inline-block;
+	font-size: 14px;
+	font-weight: 500;
+	padding: 8px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	border: 1px solid transparent;
+	transition: background-color 0.3s, border-color 0.3s;
+	margin: 5px;
+}
+
+/* Цветовые стили */
+.btn-primary,
+.btn-warning,
+.btn-info {
+	background-color: #007bff;
+	border-color: #007bff;
+	color: #fff;
+}
+
+.btn-primary:hover,
+.btn-warning:hover,
+.btn-info:hover {
+	background-color: #0056b3;
+	border-color: #0056b3;
+}
+
+.btn-secondary {
+	background-color: #6c757d;
+	border-color: #6c757d;
+	color: #fff;
+}
+
+.btn-secondary:hover {
+	background-color: #5a6268;
+	border-color: #545b62;
+}
+
+/* Выравнивание размера кнопок */
+.btn-equal {
+	min-width: 120px;
+	text-align: center;
+}
+
+.local-overlay-root {
+	position: fixed;
+	/* Фиксированное позиционирование относительно окна */
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	/* Чтобы контейнер не блокировал клики */
+	z-index: 1000;
+	/* Обеспечивает, что оверлеи будут выше других элементов */
+}
+
+.local-overlay-root .cdk-overlay-container {
+	pointer-events: auto;
+	/* Позволяет взаимодействовать с оверлеями */
+}
+
+.is-invalid {
+	border-color: #dc3545;
+}
+
+.invalid-feedback {
+	color: #dc3545;
+	font-size: 80%;
+}
+
+.error-message {
+	color: #dc3545;
+	margin-bottom: 15px;
+}
+
+.container {
+	width: 100%;
+	max-width: 1600px;
+	margin-left: 30px;
+	margin-right: auto;
+	box-sizing: border-box;
+	padding-bottom: 20px;
+}
+
+.mt-4 {
+	margin-top: 2rem;
+}

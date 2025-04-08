@@ -1,0 +1,97 @@
+<div class="modal-overlay" (click)="closeModal()">
+	<div class="modal-content" (click)="stopPropagation($event)">
+		<header>
+			<h2>{{ mode === 'select' ? 'Выбрать' : 'Добавить' }} {{ fieldNameTranslated }}</h2>
+		</header>
+
+		<!-- Режим добавления -->
+		<div *ngIf="mode === 'add'" class="add-form">
+			<form [formGroup]="addForm">
+				<label>Введите название:</label>
+				<input type="text" formControlName="newItemName" placeholder="Введите название"
+					[ngClass]="{'is-invalid': addForm.get('newItemName')?.invalid && addForm.get('newItemName')?.touched}" />
+				<div *ngIf="addForm.get('newItemName')?.invalid && addForm.get('newItemName')?.touched"
+					class="invalid-feedback">
+					Название обязательно
+				</div>
+
+				<div class="actions">
+					<button class="btn btn-primary" (click)="addItem()" [disabled]="addForm.invalid">Добавить</button>
+					<button class="btn btn-secondary" (click)="closeModal()">Отмена</button>
+				</div>
+			</form>
+
+			<p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+		</div>
+
+		<div *ngIf="mode === 'select'">
+			<div class="search-form">
+				<form [formGroup]="searchForm" (ngSubmit)="searchItems()">
+					<div>
+						<label>ID:</label>
+						<input formControlName="Id" type="text" placeholder="Введите ID" />
+					</div>
+					<div>
+						<label>Название:</label>
+						<input formControlName="Name" type="text" placeholder="Введите название" />
+					</div>
+					<div>
+						<button type="submit" class="btn btn-primary">Искать</button>
+						<button type="button" class="btn btn-secondary" (click)="resetFilters()">Сбросить</button>
+					</div>
+				</form>
+			</div>
+
+			<div class="page-size-selector">
+				<label for="pageSize">Элементов на странице:</label>
+				<select id="pageSize" [formControl]="pageSizeControl">
+					<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+				</select>
+			</div>
+
+			<!-- Пагинация сверху -->
+			<div class="pagination-container">
+				<div class="pagination-squares">
+					<div *ngFor="let page of visiblePages" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" class="square" (click)="onPageClick(page)">
+						{{ page }}
+					</div>
+				</div>
+			</div>
+
+			<!-- Таблица -->
+			<div class="table-container">
+				<table>
+					<thead>
+						<tr>
+							<th>Сортировка</th>
+							<th>ID</th>
+							<th>Название</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr *ngFor="let item of filteredItems" (click)="selectItem(item)">
+							<td>{{ item.sortOrder || '-' }}</td>
+							<td>{{ item.id }}</td>
+							<td>{{ item.name }}</td>
+						</tr>
+					</tbody>
+				</table>
+				<!-- Сообщение об отсутствии данных -->
+				<div *ngIf="filteredItems.length === 0">
+					<p>Нет элементов для отображения.</p>
+				</div>
+			</div>
+
+			<!-- Пагинация снизу -->
+			<div class="pagination-container">
+				<div class="pagination-squares">
+					<div *ngFor="let page of visiblePages" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" class="square" (click)="onPageClick(page)">
+						{{ page }}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

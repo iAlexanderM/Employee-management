@@ -1,0 +1,42 @@
+.error-message {
+	color: red;
+	margin: 20px 0;
+}
+
+.actions {
+	margin-top: 20px;
+}
+
+.btn {
+	display: inline-block;
+	font-size: 14px;
+	font-weight: 500;
+	padding: 8px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	border: 1px solid transparent;
+	transition: background-color 0.3s, border-color 0.3s;
+	margin: 0 10px;
+}
+
+.btn-success {
+	background-color: #3CB371;
+	border-color: #3CB371;
+	color: #fff;
+}
+
+.btn-success:hover {
+	background-color: #2e8b57;
+	border-color: #2e8b57;
+}
+
+.btn-secondary {
+	background-color: #6c757d;
+	border-color: #6c757d;
+	color: #fff;
+}
+
+.btn-secondary:hover {
+	background-color: #5a6268;
+	border-color: #545b62;
+}

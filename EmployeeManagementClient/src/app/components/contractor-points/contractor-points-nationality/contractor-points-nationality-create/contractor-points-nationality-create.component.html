@@ -1,0 +1,25 @@
+<div class="container mt-4">
+	<h2>Добавить запись в справочник "Национальности"</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="error-message">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма добавления -->
+	<form [formGroup]="nationalityForm" (ngSubmit)="addNationality()">
+		<div class="form-group">
+			<label for="nationalityName">Название национальности:</label>
+			<div class="input-container">
+				<input id="nationalityName" type="text" placeholder="Введите название национальности"
+					formControlName="nationalityName" required />
+			</div>
+			<!-- Валидация поля -->
+			<div *ngIf="nationalityForm.get('nationalityName')?.invalid && nationalityForm.get('nationalityName')?.touched"
+				class="error">
+				Название национальности обязательно.
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary" [disabled]="nationalityForm.invalid">Добавить</button>
+	</form>
+</div>

@@ -1,0 +1,28 @@
+<div class="container mt-4">
+	<h2>Создание новой группы пропусков</h2>
+	<!-- Отображение сообщения об ошибке -->
+	<div *ngIf="errorMessage" class="alert alert-danger">
+		{{ errorMessage }}
+	</div>
+	<form [formGroup]="groupForm" (ngSubmit)="createGroup()">
+		<div class="form-group">
+			<label for="name">Название</label>
+			<input id="name" type="text" class="form-control" formControlName="name"
+				placeholder="Введите название группы"
+				[ngClass]="{'is-invalid': groupForm.get('name')?.invalid && groupForm.get('name')?.touched}" />
+			<!-- Сообщение об ошибке для поля названия -->
+			<div *ngIf="groupForm.get('name')?.invalid && groupForm.get('name')?.touched" class="invalid-feedback">
+				Название обязательно.
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="color">Цвет</label>
+			<input id="color" type="color" class="form-control form-control-color" formControlName="color"
+				title="Выберите цвет" />
+		</div>
+
+		<button type="submit" class="btn btn-primary" [disabled]="groupForm.invalid">Создать</button>
+		<button type="button" class="btn btn-secondary" routerLink="/pass-groups">Отмена</button>
+	</form>
+</div>

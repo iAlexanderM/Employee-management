@@ -1,0 +1,20 @@
+<div class="container mt-4">
+	<h2>Детали записи № {{ citizenship?.id }}</h2>
+
+	<div class="form-group">
+		<p><strong>Сортировка:</strong> {{ citizenship?.sortOrder }}</p>
+	</div>
+
+	<div class="form-group">
+		<p><strong>Название:</strong> {{ citizenship?.name }}</p>
+	</div>
+
+	<div class="form-group">
+		<p><strong>Архивирован: </strong> {{ citizenship?.isArchived ? 'Да' : 'Нет' }}
+		</p>
+	</div>
+
+	<div class="form-group">
+		<button class="btn btn-primary" (click)="editCitizenship()">Редактировать</button>
+	</div>
+</div>

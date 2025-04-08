@@ -1,0 +1,22 @@
+<div class="active-token-floating-container">
+	<div class="active-token-floating-header">
+		<h5>Активный талон {{ tokenData?.token }}</h5>
+		<!-- Кнопка закрытия окна вручную -->
+		<button type="button" class="btn-close" (click)="onCloseClick()"></button>
+	</div>
+
+	<div class="active-token-floating-body">
+		<ng-container *ngIf="tokenData; else noData">
+			<button class="btn btn-danger" (click)="onCloseTokenOnServer()">
+				Закрыть талон
+			</button>
+		</ng-container>
+		<ng-template #noData>
+			<p>Нет данных о талоне.</p>
+		</ng-template>
+	</div>
+
+	<div class="text-danger mt-2" *ngIf="errorMessage">
+		{{ errorMessage }}
+	</div>
+</div>

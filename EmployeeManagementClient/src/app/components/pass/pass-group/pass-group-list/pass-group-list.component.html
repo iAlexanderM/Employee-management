@@ -1,0 +1,26 @@
+<div class="container mt-4">
+	<h2>Группы пропусков</h2>
+	<button class="btn btn-primary mb-3" [routerLink]="'/pass-groups/create'">Создать группу</button>
+
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Название</th>
+				<th>Действия</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let group of passGroups" (dblclick)="openPassTypes(group.id, group.name)"
+				[style.background-color]="group.color">
+				<td>{{ group.id }}</td>
+				<td>{{ group.name }}</td>
+				<td>
+					<button class="btn btn-warning btn-sm" [routerLink]="'/pass-groups/' + group.id + '/edit'">
+						Редактировать
+					</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

@@ -1,0 +1,25 @@
+<div class="container mt-4">
+	<h2>Детали точки № {{ storeNumber?.id }}</h2>
+
+	<div class="form-group">
+		<p><strong>Сортировка:</strong> {{ storeNumber?.sortOrder }}</p>
+	</div>
+
+	<div class="form-group">
+		<p><strong>Название:</strong> {{ storeNumber?.name }}</p>
+	</div>
+
+	<div class="form-group">
+		<p><strong>Дата создания: </strong> {{ storeNumber?.createdAt | date: 'dd.MM.yyyy HH:mm:ss' }}
+		</p>
+	</div>
+
+	<div class="form-group">
+		<p><strong>Архивирован: </strong> {{ storeNumber?.isArchived ? 'Да' : 'Нет' }}
+		</p>
+	</div>
+
+	<div class="form-group">
+		<button class="btn btn-primary" (click)="editStoreNumber()">Редактировать</button>
+	</div>
+</div>

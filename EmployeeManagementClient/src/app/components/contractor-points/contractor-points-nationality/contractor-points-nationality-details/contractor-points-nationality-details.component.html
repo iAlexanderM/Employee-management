@@ -1,0 +1,20 @@
+<div class="container mt-4">
+	<h2>Детали записи № {{ nationality?.id }}</h2>
+
+	<div class="form-group">
+		<p><strong>Сортировка:</strong> {{ nationality?.sortOrder }}</p>
+	</div>
+
+	<div class="form-group">
+		<p><strong>Название:</strong> {{ nationality?.name }}</p>
+	</div>
+
+	<div class="form-group">
+		<p><strong>Архивирован: </strong> {{ nationality?.isArchived ? 'Да' : 'Нет' }}
+		</p>
+	</div>
+
+	<div class="form-group">
+		<button class="btn btn-primary" (click)="editNationality()">Редактировать</button>
+	</div>
+</div>

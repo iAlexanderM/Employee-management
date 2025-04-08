@@ -1,0 +1,126 @@
+<div class="container mt-4">
+	<h2>Редактирование торговой точки</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="alert alert-danger">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<form [formGroup]="storeForm" (ngSubmit)="updateStore()">
+		<div class="form-group">
+			<label>Здание:</label>
+			<div class="button-container">
+				<button type="button" class="btn btn-secondary me-2" (click)="openModal('building', 'select')">
+					Выбрать
+				</button>
+				<button type="button" class="btn btn-secondary" (click)="openModal('building', 'add')">
+					Добавить
+				</button>
+			</div>
+			<div class="input-container mt-2">
+				<input type="text" class="form-control" formControlName="building" readonly
+					placeholder="Выбранное здание" [ngClass]="{
+            'is-invalid':
+              storeForm.get('building')?.invalid && storeForm.get('building')?.touched
+          }" />
+				<!-- Сообщение об ошибке для поля здание -->
+				<div *ngIf="storeForm.get('building')?.invalid && storeForm.get('building')?.touched"
+					class="invalid-feedback">
+					Здание обязательно.
+				</div>
+			</div>
+		</div>
+
+		<!-- Повторяющийся блок "Здание" обнаружен. Предполагается, что это ошибка. Заменяем второй блок на "Этаж". -->
+		<div class="form-group">
+			<label>Этаж:</label>
+			<div class="button-container">
+				<button type="button" class="btn btn-secondary me-2" (click)="openModal('floor', 'select')">
+					Выбрать
+				</button>
+				<button type="button" class="btn btn-secondary" (click)="openModal('floor', 'add')">
+					Добавить
+				</button>
+			</div>
+			<div class="input-container mt-2">
+				<input type="text" class="form-control" formControlName="floor" readonly placeholder="Выбранный этаж"
+					[ngClass]="{
+            'is-invalid':
+              storeForm.get('floor')?.invalid && storeForm.get('floor')?.touched
+          }" />
+				<!-- Сообщение об ошибке для поля этаж -->
+				<div *ngIf="storeForm.get('floor')?.invalid && storeForm.get('floor')?.touched"
+					class="invalid-feedback">
+					Этаж обязателен.
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label>Линия:</label>
+			<div class="button-container">
+				<button type="button" class="btn btn-secondary me-2" (click)="openModal('line', 'select')">
+					Выбрать
+				</button>
+				<button type="button" class="btn btn-secondary" (click)="openModal('line', 'add')">
+					Добавить
+				</button>
+			</div>
+			<div class="input-container mt-2">
+				<input type="text" class="form-control" formControlName="line" readonly placeholder="Выбранная линия"
+					[ngClass]="{
+            'is-invalid':
+              storeForm.get('line')?.invalid && storeForm.get('line')?.touched
+          }" />
+				<!-- Сообщение об ошибке для поля линия -->
+				<div *ngIf="storeForm.get('line')?.invalid && storeForm.get('line')?.touched" class="invalid-feedback">
+					Линия обязательна.
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label>Торговая точка:</label>
+			<div class="button-container">
+				<button type="button" class="btn btn-secondary me-2" (click)="openModal('storeNumber', 'select')">
+					Выбрать
+				</button>
+				<button type="button" class="btn btn-secondary" (click)="openModal('storeNumber', 'add')">
+					Добавить
+				</button>
+			</div>
+			<div class="input-container mt-2">
+				<input type="text" class="form-control" formControlName="storeNumber" readonly
+					placeholder="Выбранная торговая точка" [ngClass]="{
+            'is-invalid':
+              storeForm.get('storeNumber')?.invalid && storeForm.get('storeNumber')?.touched
+          }" />
+				<!-- Сообщение об ошибке для поля торговая точка -->
+				<div *ngIf="storeForm.get('storeNumber')?.invalid && storeForm.get('storeNumber')?.touched"
+					class="invalid-feedback">
+					Торговая точка обязательна.
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label>Сортировка:</label>
+			<input type="number" class="form-control" formControlName="sortOrder"
+				placeholder="Введите порядок сортировки" [ngClass]="{
+          'is-invalid':
+            storeForm.get('sortOrder')?.invalid && storeForm.get('sortOrder')?.touched
+        }" required />
+			<!-- Сообщение об ошибке для поля сортировка -->
+			<div *ngIf="storeForm.get('sortOrder')?.invalid && storeForm.get('sortOrder')?.touched"
+				class="invalid-feedback">
+				Номер сортировки должен быть неотрицательным.
+			</div>
+		</div>
+
+		<button type="submit" class="btn btn-primary" [disabled]="storeForm.invalid">Сохранить</button>
+	</form>
+
+	<app-store-select-or-add-modal *ngIf="isModalOpen" [fieldName]="modalField" [mode]="modalMode"
+		(modalClose)="closeModal()" (itemSelected)="selectItem($event)"
+		(itemAdded)="addItem($event)"></app-store-select-or-add-modal>
+</div>

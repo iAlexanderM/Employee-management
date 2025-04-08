@@ -1,0 +1,61 @@
+<div class="container mt-4">
+	<h2>Выданные пропуска</h2>
+
+	<form [formGroup]="searchForm" (ngSubmit)="onSearch()">
+		<div>
+			<label for="contractorId" class="form-label">Поиск по ID контрагента:</label>
+			<input type="number" id="contractorId" class="form-control" formControlName="contractorId">
+			<button type="submit" class="btn btn-primary">Поиск</button>
+			<button type="button" class="btn btn-secondary" (click)="onReset()">Сброс</button>
+		</div>
+	</form>
+
+	<div class="d-flex justify-content-end align-items-center mb-2">
+		<label for="pageSize" class="me-2">Элементов на странице:</label>
+		<select id="pageSize" class="form-select" (change)="onPageSizeChange($event)">
+			<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+		</select>
+	</div>
+	<br>
+
+	<table *ngIf="passes.length > 0; else noPasses">
+		<thead>
+			<tr>
+				<th>Менеджер</th>
+				<th>ID транзакции</th>
+				<th>Тип услуги</th>
+				<th>Количество пропусков</th>
+				<th>Типы пропусков</th>
+				<th>Действия</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let pass of passes">
+				<td>{{ pass.manager }}</td>
+				<td>{{ pass.transactionId }}</td>
+				<td>{{ pass.serviceType }}</td>
+				<td>{{ pass.passCount }}</td>
+				<td>
+					<span *ngFor="let type of pass.passTypes" class="pass-type-circle"
+						[style.backgroundColor]="type.color"></span>
+				</td>
+				<td>
+					<button class="btn btn-success" (click)="printPass(pass.transactionId)">Печатать</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<ng-template #noPasses>
+		<p>Нет выданных пропусков.</p>
+	</ng-template>
+
+	<div *ngIf="totalPages > 1" class="pagination-container">
+		<div class="pagination-squares">
+			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+				[class.disabled]="page === '...'" (click)="onPageClick(page)">
+				{{ page }}
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,92 @@
+<div class="container mt-4">
+	<h2>Типы пропусков группы "{{ groupName }}"</h2>
+
+	<!-- Форма поиска (reactive) -->
+	<form [formGroup]="searchForm" (ngSubmit)="searchPassTypes()">
+		<div class="form-group">
+			<label for="id">ID:</label>
+			<!-- formControlName="id" -->
+			<input id="id" type="number" class="form-control" formControlName="id" />
+		</div>
+
+		<div class="form-group">
+			<label for="name">Название:</label>
+			<!-- formControlName="name" -->
+			<input id="name" type="text" class="form-control" formControlName="name" />
+		</div>
+
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary">Поиск</button>
+			<button type="button" class="btn btn-secondary" (click)="resetFilters()">Сбросить</button>
+		</div>
+	</form>
+
+	<!-- Пагинация (верхняя) -->
+	<div *ngIf="totalPages() > 1" class="pagination-container">
+		<div class="pagination-squares">
+			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+				[class.disabled]="page === '...'" (click)="onPageClick(page)">
+				{{ page }}
+			</div>
+		</div>
+	</div>
+
+	<!-- Выбор размера страницы (reactive) -->
+	<div>
+		<label for="pageSize">Элементов на странице:</label>
+		<select id="pageSize" [formControl]="pageSizeControl">
+			<option *ngFor="let size of pageSizeOptions" [value]="size">
+				{{ size }}
+			</option>
+		</select>
+	</div>
+
+	<button class="btn btn-primary mb-3" [routerLink]="'/pass-types/create'">
+		Создать тип пропуска
+	</button>
+
+	<!-- Если массив пуст, отображаем сообщение -->
+	<div *ngIf="displayedPassTypes.length === 0" class="text-center mt-4">
+		<p>Нет типов для отображения</p>
+	</div>
+
+	<!-- Таблица, если есть элементы -->
+	<table class="table table-striped" *ngIf="displayedPassTypes.length > 0">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Название</th>
+				<th>Срок (мес.)</th>
+				<th>Стоимость</th>
+				<th>Цвет</th>
+				<th>Действия</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let type of displayedPassTypes">
+				<td>{{ type.id }}</td>
+				<td>{{ type.name }}</td>
+				<td>{{ type.durationInMonths }}</td>
+				<td>{{ type.cost }}</td>
+				<td>
+					<div class="color-preview" [style.background-color]="type.color"></div>
+				</td>
+				<td>
+					<button class="btn btn-warning btn-sm" [routerLink]="'/pass-types/' + type.id + '/edit'">
+						Редактировать
+					</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<!-- Пагинация (нижняя) -->
+	<div *ngIf="totalPages() > 1" class="pagination-container">
+		<div class="pagination-squares">
+			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+				[class.disabled]="page === '...'" (click)="onPageClick(page)">
+				{{ page }}
+			</div>
+		</div>
+	</div>
+</div>

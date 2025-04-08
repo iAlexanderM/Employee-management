@@ -1,0 +1,57 @@
+<div class="container mt-4" *ngIf="transaction; else noTransaction">
+	<h2>Детали транзакции #{{ transaction.id }}</h2>
+	<div class="card">
+		<div class="card-body">
+			<p><strong>Талон:</strong> {{ transaction.token }}</p>
+			<p><strong>Пользователь:</strong> {{ transaction.user?.userName || transaction.userId }}</p>
+			<p><strong>Статус:</strong> {{ transaction.status }}</p>
+			<p><strong>Дата создания:</strong> {{ transaction.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</p>
+			<p><strong>Дата оплаты:</strong> {{ transaction.paymentDate ? (transaction.paymentDate | date:'dd.MM.yyyy
+				HH:mm:ss') : '0000-00-00 00:00:00' }}</p>
+
+			<table class="table table-bordered transaction-table">
+				<thead>
+					<tr>
+						<th>Торговая точка</th>
+						<th>Контрагент</th>
+						<th>Должность</th>
+						<th>Тип пропуска</th>
+						<th>Сумма</th>
+						<th>Дата начала</th>
+						<th>Дата окончания</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let csp of transaction.contractorStorePasses">
+						<td>{{ csp.store.building }} {{ csp.store.floor }} {{ csp.store.line }} {{
+							csp.store.storeNumber
+							}}</td>
+						<td>{{ csp.contractor.lastName }} {{ csp.contractor.firstName }} {{ csp.contractor.middleName
+							}}
+							({{ csp.contractor.passportSerialNumber }})</td>
+						<td>{{ csp.position }}</td>
+						<td>{{ csp.passType.name }} , {{ csp.passType.durationInMonths }}</td>
+						<td>{{ csp.passType.cost }}</td>
+						<td>{{ transaction.startDate | date:'dd.MM.yyyy' }}</td>
+						<td>{{ transaction.endDate | date:'dd.MM.yyyy' }}</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<div class="d-flex gap-2">
+				<button class="btn btn-success" (click)="confirmPayment()"
+					*ngIf="transaction.status === 'Ожидает оплату' && (hasRole('Admin') || hasRole('Cashier'))">
+					Подтвердить оплату
+				</button>
+				<button class="btn btn-secondary" (click)="goBack()">Назад</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<ng-template #noTransaction>
+	<div class="container mt-4">
+		<p>Транзакция не найдена.</p>
+		<button class="btn btn-secondary" (click)="goBack()">Назад</button>
+	</div>
+</ng-template>

@@ -1,0 +1,45 @@
+<div *ngIf="building" class="container mt-4">
+	<h2>Редактирование записи №{{ building.id }}</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="alert alert-danger">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма редактирования -->
+	<form [formGroup]="buildingForm" (ngSubmit)="updateBuilding()">
+		<div class="form-group">
+			<label for="buildingName">Название:</label>
+			<div class="input-container">
+				<input id="buildingName" type="text" class="form-control" placeholder="Введите название здания"
+					formControlName="buildingName" [ngClass]="{
+            'is-invalid':
+              buildingForm.get('buildingName')?.invalid && buildingForm.get('buildingName')?.touched
+          }" required />
+				<!-- Сообщение об ошибке для поля название -->
+				<div *ngIf="buildingForm.get('buildingName')?.invalid && buildingForm.get('buildingName')?.touched"
+					class="invalid-feedback">
+					Название здания обязательно.
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="sortOrder">Сортировка:</label>
+			<div class="input-container">
+				<input id="sortOrder" type="number" class="form-control" placeholder="Введите порядок сортировки"
+					formControlName="sortOrder" [ngClass]="{
+            'is-invalid':
+              buildingForm.get('sortOrder')?.invalid && buildingForm.get('sortOrder')?.touched
+          }" required />
+				<!-- Сообщение об ошибке для поля сортировка -->
+				<div *ngIf="buildingForm.get('sortOrder')?.invalid && buildingForm.get('sortOrder')?.touched"
+					class="invalid-feedback">
+					Номер сортировки должен быть неотрицательным.
+				</div>
+			</div>
+		</div>
+
+		<button type="submit" class="btn btn-primary" [disabled]="buildingForm.invalid">Сохранить</button>
+	</form>
+</div>

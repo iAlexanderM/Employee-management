@@ -1,0 +1,36 @@
+<div class="box">
+	<div class="box-form">
+		<div class="box-login">
+			<h2>Вход</h2>
+			<!-- Отображение сообщения об ошибке -->
+			<div *ngIf="errorMessage" class="error-message">
+				<p>{{ errorMessage }}</p>
+			</div>
+			<form [formGroup]="loginForm" (ngSubmit)="login()">
+				<div class="form-group">
+					<label for="username">Логин</label>
+					<input type="text" id="username" formControlName="username" placeholder="Введите ваш логин"
+						[ngClass]="{'is-invalid': loginForm.get('username')?.invalid && loginForm.get('username')?.touched}"
+						required />
+					<!-- Сообщение об ошибке для поля логина -->
+					<div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
+						class="invalid-feedback">
+						Логин обязателен.
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="password">Пароль</label>
+					<input type="password" id="password" formControlName="password" placeholder="Введите ваш пароль"
+						[ngClass]="{'is-invalid': loginForm.get('password')?.invalid && loginForm.get('password')?.touched}"
+						required />
+					<!-- Сообщение об ошибке для поля пароля -->
+					<div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+						class="invalid-feedback">
+						Пароль обязателен.
+					</div>
+				</div>
+				<button type="submit" class="b-cta" [disabled]="loginForm.invalid">Войти</button>
+			</form>
+		</div>
+	</div>
+</div>

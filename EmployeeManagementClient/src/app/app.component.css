@@ -1,0 +1,226 @@
+/* 
+  Обнуление отступов, чтобы height:100% корректно работало 
+  вместе с .app-layout { height:100vh }.
+*/
+html,
+body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: inherit;
+}
+
+/* 
+  Общая структура приложения: 
+  flex-контейнер на всю высоту экрана.
+*/
+.app-layout {
+	display: flex;
+	height: 100vh;
+	width: 100%;
+}
+
+/* Боковая панель */
+.sidebar {
+	width: 200px;
+	background-color: #f8f9fa;
+	padding: 15px;
+	box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+	display: flex;
+	flex-direction: column;
+}
+
+.footer {
+	margin-top: auto;
+	padding: 15px 0;
+	text-align: center;
+	width: 100%;
+}
+
+/* Основной контент */
+.content-container {
+	flex-grow: 1;
+	padding: 0px;
+	overflow-y: auto;
+}
+
+/* ----- Навигация в боковой панели ----- */
+.sidebar .navbar-nav {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	width: 100%;
+}
+
+.sidebar .navbar-nav .nav-item {
+	margin-bottom: 10px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+/* Ссылка в навигации, стилизованная как кнопка */
+.sidebar .navbar-nav .nav-item .nav-link {
+	color: #ffffff;
+	background-color: #6c757d;
+	/* серый фон */
+	width: 95%;
+	height: 45px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 15px;
+	border-radius: 5px;
+	transition: background-color 0.3s, color 0.3s;
+	text-decoration: none;
+	font-size: 0.8rem;
+	box-sizing: border-box;
+}
+
+.sidebar .navbar-nav .nav-item .nav-link:hover {
+	background-color: #007bff;
+	/* синий фон при наведении */
+	color: #ffffff;
+	/* белый текст при наведении */
+}
+
+/* ----- Общий стиль кнопок ----- */
+.btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	height: 55px;
+	padding: 0 15px;
+	border-radius: 5px;
+	transition: background-color 0.3s, color 0.3s;
+	font-size: 1rem;
+	font-weight: 500;
+	box-sizing: border-box;
+	cursor: pointer;
+}
+
+.accordion {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	height: 45px;
+	border-radius: 5px;
+	transition: background-color 0.3s, color 0.3s;
+	font-size: 1rem;
+	font-weight: 500;
+	box-sizing: border-box;
+	background-color: #007bff;
+	border: 1px solid #007bff;
+	color: #ffffff;
+	cursor: pointer;
+	padding: 25px;
+	width: 95%;
+	outline: none;
+	transition: 0.4s;
+}
+
+/* Основные стили .btn-primary */
+.btn-primary {
+	background-color: #007bff;
+	border: 1px solid #007bff;
+	color: #ffffff;
+	cursor: pointer;
+	padding: 25px;
+	width: 95%;
+	text-align: center;
+	outline: none;
+	transition: 0.4s;
+}
+
+.btn-primary:hover {
+	background-color: #0056b3;
+	border-color: #0056b3;
+}
+
+/* Кнопка "Выход" (допустим, .btn-secondary) */
+.btn-secondary {
+	background-color: #8c9ea3;
+	border: 1px solid #8c9ea3;
+	color: #ffffff;
+}
+
+.btn-secondary:hover {
+	background-color: #6b7b80;
+	border-color: #6b7b80;
+}
+
+/* ----- Выпадающее меню ----- */
+.nav-item.dropdown {
+	position: relative;
+}
+
+.dropdown-menu-container {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	width: 120%;
+	z-index: 1000;
+	background-color: #f8f9fa;
+	border-radius: 4px;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+	transition: max-height 0.3s ease-out;
+	max-height: 0;
+	overflow: hidden;
+}
+
+.dropdown-menu-container.show {
+	max-height: 200px;
+	/* Установите высоту выпадающего меню равную высоте кнопки */
+}
+
+.dropdown-menu-container .dropdown-menu.show {
+	background-color: #f8f9fa;
+	border: none;
+	border-radius: 4px;
+	margin: 0;
+	padding: 0;
+	width: 120%;
+}
+
+.dropdown-item {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	font-size: 0.85rem;
+	color: #495057;
+	text-decoration: none;
+	height: 35px;
+	padding: 5px 10px;
+	transition: background-color 0.3s, color 0.3s;
+	width: 120%;
+	box-sizing: border-box;
+}
+
+.dropdown-item:hover {
+	background-color: #007bff;
+	color: #ffffff;
+}
+
+/* Чтоб ссылки-блоки были на всю ширину */
+.navbar-nav .nav-item .btn-link,
+.navbar-nav .nav-item .nav-link,
+.dropdown-item {
+	width: 120%;
+}
+
+a.btn {
+	text-decoration: none;
+	color: white;
+}

@@ -1,0 +1,137 @@
+<div class="container mt-4">
+	<form [formGroup]="contractorForm" (ngSubmit)="saveChanges()">
+		<!-- Поля формы для редактирования контрагента -->
+		<div class="form-group">
+			<label for="firstName">Имя:</label>
+			<input id="firstName" formControlName="FirstName" class="form-control" type="text" />
+		</div>
+
+		<div class="form-group">
+			<label for="lastName">Фамилия:</label>
+			<input id="lastName" formControlName="LastName" class="form-control" type="text" />
+		</div>
+
+		<div class="form-group">
+			<label for="middleName">Отчество:</label>
+			<input id="middleName" formControlName="MiddleName" class="form-control" type="text" />
+		</div>
+
+		<div class="form-group">
+			<label for="birthDate">Дата рождения:</label>
+			<input id="birthDate" formControlName="BirthDate" class="form-control" type="date" />
+		</div>
+
+		<div class="form-group">
+			<label for="documentType">Тип документа:</label>
+			<select id="documentType" formControlName="DocumentType" class="form-control">
+				<option value="" disabled selected>Выберите тип документа</option>
+				<option value="Паспорт">Паспорт</option>
+				<option value="Водительское удостоверение">Водительское удостоверение</option>
+				<option value="Идентификационная карта">Идентификационная карта</option>
+				<option value="Вид на жительство">Вид на жительство</option>
+			</select>
+		</div>
+
+		<div class="form-group">
+			<label for="passportSerialNumber">Серия и номер паспорта:</label>
+			<input id="passportSerialNumber" formControlName="PassportSerialNumber" class="form-control" type="text" />
+		</div>
+
+		<div class="form-group">
+			<label for="passportIssuedBy">Кем выдан:</label>
+			<input id="passportIssuedBy" formControlName="PassportIssuedBy" class="form-control" type="text" />
+		</div>
+
+		<div class="form-group">
+			<label for="passportIssueDate">Дата выдачи:</label>
+			<input id="passportIssueDate" formControlName="PassportIssueDate" class="form-control" type="date" />
+		</div>
+
+		<div class="form-group">
+			<label for="citizenship">Гражданство:</label>
+			<div>
+				<button type="button" class="btn btn-primary"
+					(click)="openModal('Citizenship', 'select')">Выбрать</button>
+				<button type="button" class="btn btn-secondary"
+					(click)="openModal('Citizenship', 'add')">Добавить</button>
+			</div>
+			<input id="citizenship" formControlName="Citizenship" class="form-control" type="text" readonly />
+		</div>
+
+		<div class="form-group">
+			<label for="nationality">Национальность:</label>
+			<div>
+				<button type="button" class="btn btn-primary"
+					(click)="openModal('Nationality', 'select')">Выбрать</button>
+				<button type="button" class="btn btn-secondary"
+					(click)="openModal('Nationality', 'add')">Добавить</button>
+			</div>
+			<input id="nationality" formControlName="Nationality" class="form-control" type="text" readonly />
+		</div>
+
+		<app-citizenship-and-nationality-modal *ngIf="isModalOpen" [fieldName]="modalField" [mode]="modalMode"
+			[type]="modalField === 'Citizenship' ? 'citizenship' : 'nationality'" (modalClose)="closeModal()"
+			(itemSelected)="selectItem($event)" (itemAdded)="addItem($event)"></app-citizenship-and-nationality-modal>
+
+		<div class="form-group">
+			<label for="productType">Тип продукции:</label>
+			<input id="productType" formControlName="ProductType" class="form-control" type="text" />
+		</div>
+
+		<div class="form-group">
+			<label for="phoneNumber">Номер телефона:</label>
+			<input id="phoneNumber" formControlName="PhoneNumber" class="form-control" type="text"
+				mask="0 (000) 000-00-00" placeholder="8 (___) ___-__-__" />
+		</div>
+
+		<div class="form-group">
+			<label for="isArchived">Архивировать:</label>
+			<div class="form-check">
+				<input id="isArchived" type="checkbox" class="form-check-input" />
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="sortOrder">Порядок сортировки:</label>
+			<input id="sortOrder" formControlName="SortOrder" class="form-control" type="number" />
+		</div>
+
+		<!-- Обычные фотографии -->
+		<div class="form-group">
+			<label for="Photos">Фотографии:</label>
+			<input id="Photos" type="file" (change)="onPhotoChange($event, false)" multiple class="form-control" />
+			<div class="photo-previews mt-2">
+				<ng-container *ngFor="let preview of photoPreviews; let i = index">
+					<div class="photo-thumbnail" *ngIf="preview.url && preview.url.trim() !== ''">
+						<img [src]="preview.url" alt="Миниатюра фото" class="img-thumbnail"
+							style="width: 100px; height: 100px;" /> <br>
+						<button type="button" class="btn btn-danger btn-sm mt-1"
+							(click)="removePhoto(i, false)">Удалить</button>
+					</div>
+				</ng-container>
+			</div>
+		</div>
+
+		<div class="form-group mt-4">
+			<label for="DocumentPhotos">Документальные фото:</label>
+			<input id="DocumentPhotos" type="file" (change)="onPhotoChange($event, true)" multiple
+				class="form-control" />
+			<div class="document-photo-previews mt-2">
+				<ng-container *ngFor="let preview of documentPhotoPreviews; let i = index">
+					<div class="photo-thumbnail" *ngIf="preview.url && preview.url.trim() !== ''">
+						<img [src]="preview.url" alt="Миниатюра документального фото" class="img-thumbnail"
+							style="width: 100px; height: 100px;" /> <br>
+						<button type="button" class="btn btn-danger btn-sm mt-1"
+							(click)="removePhoto(i, true)">Удалить</button>
+					</div>
+				</ng-container>
+			</div>
+		</div>
+
+		<!-- Кнопки сохранения и отмены -->
+		<div class="form-group mt-4">
+			<button type="submit" class="btn btn-primary" [disabled]="contractorForm.invalid">Сохранить</button>
+			<button type="button" class="btn btn-secondary" (click)="router.navigate(['/contractors'])">Отмена</button>
+		</div>
+	</form>
+</div>

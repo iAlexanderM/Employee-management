@@ -1,0 +1,54 @@
+# Общие файлы операционных систем
+.DS_Store
+Thumbs.db
+
+# Лог-файлы
+*.log
+logs/
+
+# Файлы конфигурации
+appsettings.json
+appsettings.Development.json
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Angular
+.angular/
+.vscode/
+dist/
+out-tsc/
+coverage/
+build/
+
+# Бинарные и временные файлы C#
+bin/
+obj/
+*.exe
+*.pdb
+*.cache
+*.dll
+*.db
+*.lock.json
+
+# IDE и текстовые редакторы
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Bootstrap и jQuery библиотеки
+wwwroot/lib/
+wwwroot/uploads/
+
+# Пример конфигурации
+!appsettings.json.example

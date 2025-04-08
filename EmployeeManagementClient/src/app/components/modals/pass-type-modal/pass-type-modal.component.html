@@ -1,0 +1,78 @@
+<div class="modal-overlay" (click)="closeModal()">
+	<div class="modal-content" (click)="stopPropagation($event)">
+		<header>
+			<h2>Выбрать Тип Пропуска</h2>
+			<button type="button" class="close-button btn btn-secondary" (click)="closeModal()">×</button>
+		</header>
+
+		<!-- Таблица групп -->
+		<div *ngIf="!selectedGroup" class="table-container">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Название</th>
+						<th>Действия</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let group of passGroups" (click)="selectPassGroup(group)" style="cursor: pointer;">
+						<td>{{ group.id }}</td>
+						<td>{{ group.name }}</td>
+						<td>
+							<button class="btn btn-info btn-sm btn-equal-one" (click)="selectPassGroup(group)">
+								Выбрать
+							</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<div *ngIf="passGroups.length === 0 && !errorMessage">
+				<p>Нет групп пропусков для отображения.</p>
+			</div>
+			<div *ngIf="errorMessage" class="text-danger">
+				{{ errorMessage }}
+			</div>
+		</div>
+
+		<!-- Таблица типов пропусков -->
+		<div *ngIf="selectedGroup" class="table-container">
+			<h3>Типы пропусков группы "{{ selectedGroup.name }}"</h3>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Название</th>
+						<th>Срок (мес.)</th>
+						<th>Стоимость</th>
+						<th>Цвет</th>
+						<th>Действия</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let passType of displayedPassTypes" (click)="selectPassType(passType)"
+						style="cursor: pointer;">
+						<td>{{ passType.id }}</td>
+						<td>{{ passType.name }}</td>
+						<td>{{ passType.durationInMonths }}</td>
+						<td>{{ passType.cost }}</td>
+						<td>
+							<div class="color-preview" [style.background-color]="passType.color"></div>
+						</td>
+						<td>
+							<button class="btn btn-info btn-sm btn-equal-one" (click)="selectPassType(passType)">
+								Выбрать
+							</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<div *ngIf="displayedPassTypes.length === 0 && !errorMessage">
+				<p>Нет типов пропусков для отображения.</p>
+			</div>
+			<div *ngIf="errorMessage" class="text-danger">
+				{{ errorMessage }}
+			</div>
+		</div>
+	</div>
+</div>

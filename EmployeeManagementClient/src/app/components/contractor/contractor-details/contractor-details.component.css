@@ -1,0 +1,239 @@
+.container.contractor-details {
+	width: 100%;
+	max-width: 1600px;
+	margin-left: 30px;
+	margin-right: auto;
+	padding: 20px;
+	background-color: #f9f9f9;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	box-sizing: border-box;
+	position: relative;
+	overflow: visible;
+}
+
+h2 {
+	font-size: 30px;
+	margin-bottom: 20px;
+	text-align: left;
+}
+
+h3 {
+	font-size: 24px;
+	margin-bottom: 15px;
+}
+
+.card {
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	margin-bottom: 20px;
+	overflow: visible;
+}
+
+.card-body {
+	padding: 15px;
+}
+
+.card-body p {
+	margin: 10px 0;
+	font-size: 16px;
+	display: flex;
+	align-items: center;
+}
+
+.card-body p strong {
+	min-width: 200px;
+	font-weight: bold;
+}
+
+.card-body p .value {
+	margin-left: 20px;
+}
+
+.header-section {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+.edit-btn {
+	background-color: #007bff;
+	border-color: #007bff;
+	color: white;
+	font-size: 18px;
+	padding: 8px 16px;
+	border-radius: 4px;
+	transition: background-color 0.3s, border-color 0.3s;
+}
+
+.edit-btn:hover {
+	background-color: #0056b3;
+	border-color: #0056b3;
+}
+
+.photo-section {
+	display: flex;
+	gap: 20px;
+	flex-wrap: wrap;
+}
+
+.photo-block {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.img-cont {
+	width: 300px;
+	height: 300px;
+	object-fit: cover;
+	border-radius: 5px;
+	border: 1px solid #ddd;
+	transition: transform 0.3s ease;
+	position: relative;
+	z-index: 1;
+}
+
+.img-cont.enlarged {
+	transform: scale(2.5) translateX(30%);
+	z-index: 1001;
+}
+
+.photo-gallery {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 15px;
+	position: relative;
+}
+
+.document-photo {
+	width: 250px;
+	height: 250px;
+	object-fit: cover;
+	border-radius: 5px;
+	border: 1px solid #ddd;
+	transition: transform 0.3s ease;
+	position: relative;
+	z-index: 1;
+}
+
+.photo-gallery.small-photos .document-photo {
+	width: 150px;
+	height: 150px;
+}
+
+.document-photo.enlarged {
+	transform: scale(6) translateX(35%);
+	z-index: 1001;
+}
+
+.table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.table th,
+.table td {
+	padding: 12px;
+	border-bottom: 1px solid #ddd;
+	font-size: 16px;
+	text-align: left;
+	/* Выравнивание текста по левому краю */
+}
+
+.table th {
+	background-color: #f5f5f5;
+	padding-bottom: 15px;
+}
+
+/* Увеличиваем ширину второго столбца "Торговая точка" */
+.table th:nth-child(2),
+.table td:nth-child(2) {
+	width: 350px;
+	/* Увеличиваем ширину до 350px или больше по твоему желанию */
+	word-wrap: break-word;
+	/* Перенос длинных строк */
+}
+
+/* Опционально: задаём ширину другим столбцам для баланса */
+.table th:nth-child(1),
+.table td:nth-child(1) {
+	width: 150px;
+	/* Тип пропуска */
+}
+
+.table th:nth-child(3),
+.table td:nth-child(3) {
+	width: 120px;
+	/* Должность */
+}
+
+.table th:nth-child(4),
+.table td:nth-child(4) {
+	width: 100px;
+	/* Стоимость */
+}
+
+.table th:nth-child(5),
+.table td:nth-child(5) {
+	width: 150px;
+	/* Дата оформления */
+}
+
+.table th:nth-child(6),
+.table td:nth-child(6) {
+	width: 120px;
+	/* Дата начала */
+}
+
+.table th:nth-child(7),
+.table td:nth-child(7) {
+	width: 120px;
+	/* Дата окончания */
+}
+
+.table th:nth-child(8),
+.table td:nth-child(8) {
+	width: 200px;
+	/* Статус */
+}
+
+.table th:nth-child(9),
+.table td:nth-child(9) {
+	width: 100px;
+	/* Действия */
+}
+
+.table tr:hover {
+	background-color: #f9f9f9;
+}
+
+.btn-danger {
+	background-color: #dc3545;
+	border-color: #dc3545;
+	color: white;
+	font-size: 18px;
+	padding: 8px 12px;
+	border-radius: 4px;
+	transition: background-color 0.3s, border-color 0.3s;
+}
+
+.btn-danger:hover {
+	background-color: #c82333;
+	border-color: #c82333;
+}
+
+.text-danger {
+	color: #dc3545;
+}
+
+.text-muted {
+	color: #6c757d;
+}
+
+small {
+	font-size: 16px;
+	color: #666;
+}

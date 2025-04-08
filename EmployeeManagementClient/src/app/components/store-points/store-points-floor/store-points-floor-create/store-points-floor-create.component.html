@@ -1,0 +1,28 @@
+<div class="container">
+	<h2>Добавить запись в справочник "Этаж"</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="alert alert-danger">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма добавления -->
+	<form [formGroup]="floorForm" (ngSubmit)="addFloor()">
+		<div class="form-group">
+			<label for="floorName">Название этажа:</label>
+			<div class="input-container">
+				<input id="floorName" type="text" class="form-control" placeholder="Введите название этажа"
+					formControlName="floorName" [ngClass]="{
+            'is-invalid':
+              floorForm.get('floorName')?.invalid && floorForm.get('floorName')?.touched
+          }" required />
+				<!-- Сообщение об ошибке для поля название этажа -->
+				<div *ngIf="floorForm.get('floorName')?.invalid && floorForm.get('floorName')?.touched"
+					class="invalid-feedback">
+					Название этажа обязательно.
+				</div>
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary" [disabled]="floorForm.invalid">Добавить</button>
+	</form>
+</div>

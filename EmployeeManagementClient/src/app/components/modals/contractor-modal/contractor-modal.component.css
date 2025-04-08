@@ -1,0 +1,302 @@
+/* Модальное окно */
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+}
+
+.modal-content {
+	background: white;
+	border-radius: 8px;
+	padding: 20px;
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+	width: 90%;
+	max-width: 1000px;
+	max-height: 90%;
+	overflow-y: auto;
+	animation: fadeIn 0.3s ease-out;
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-20px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Форма поиска */
+.search-form {
+	margin-bottom: 20px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 15px;
+}
+
+.search-form label {
+	font-size: 14px;
+	margin-right: 5px;
+}
+
+.search-form input {
+	padding: 5px;
+	font-size: 14px;
+	width: 200px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+.search-form button {
+	padding: 5px 10px;
+	font-size: 14px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.search-form .btn-primary {
+	background-color: #007bff;
+	color: #fff;
+}
+
+.search-form .btn-secondary {
+	background-color: #6c757d;
+	color: #fff;
+}
+
+/* Таблица */
+.table-container {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+.contractor-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 20px 0;
+	table-layout: fixed;
+	/* Фиксированная компоновка */
+}
+
+.contractor-table thead th,
+.contractor-table tbody td {
+	padding: 10px;
+	text-align: left;
+	border: 1px solid #ddd;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Определение ширин для 9 столбцов */
+.contractor-table thead th:nth-child(1),
+.contractor-table tbody td:nth-child(1) {
+	width: 10%;
+}
+
+.contractor-table thead th:nth-child(2),
+.contractor-table tbody td:nth-child(2) {
+	width: 10%;
+}
+
+.contractor-table thead th:nth-child(3),
+.contractor-table tbody td:nth-child(3) {
+	width: 10%;
+	/* Фото */
+}
+
+.contractor-table thead th:nth-child(4),
+.contractor-table tbody td:nth-child(4) {
+	width: 10%;
+}
+
+.contractor-table thead th:nth-child(5),
+.contractor-table tbody td:nth-child(5) {
+	width: 10%;
+}
+
+.contractor-table thead th:nth-child(6),
+.contractor-table tbody td:nth-child(6) {
+	width: 10%;
+}
+
+.contractor-table thead th:nth-child(7),
+.contractor-table tbody td:nth-child(7) {
+	width: 15%;
+}
+
+.contractor-table thead th:nth-child(8),
+.contractor-table tbody td:nth-child(8) {
+	width: 15%;
+}
+
+.contractor-table thead th:nth-child(9),
+.contractor-table tbody td:nth-child(9) {
+	width: 10%;
+	/* Действия */
+}
+
+/* Стилизация изображений */
+.contractor-img {
+	width: 50px;
+	height: 50px;
+	object-fit: cover;
+	/* Заполнение области без искажений */
+	border-radius: 4px;
+}
+
+/* Пагинация */
+.pagination-container {
+	display: flex;
+	justify-content: center;
+	/* Центрирование пагинации */
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.pagination-squares {
+	display: flex;
+	gap: 8px;
+	/* Увеличение промежутка между вкладками */
+	flex-wrap: wrap;
+	/* Позволяет вкладкам переноситься на новую строку при малом размере экрана */
+	justify-content: center;
+	/* Равномерное распределение вкладок */
+}
+
+.square {
+	width: 35px;
+	/* Увеличение ширины вкладок */
+	height: 35px;
+	/* Увеличение высоты вкладок */
+	background-color: #e0e0e0;
+	color: #000;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: bold;
+	transition: background-color 0.2s, transform 0.2s;
+}
+
+.square:hover {
+	background-color: #c0c0c0;
+	transform: scale(1.05);
+	/* Добавление эффекта увеличения при наведении */
+}
+
+.square.active {
+	background-color: #007bff;
+	color: #fff;
+}
+
+.square.disabled {
+	cursor: default;
+	background-color: #f0f0f0;
+}
+
+.table-container .pagination-container:first-child {
+	margin-top: 0;
+}
+
+/* Кнопки */
+.btn {
+	padding: 5px 10px;
+	font-size: 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.3s, box-shadow 0.3s;
+	margin-right: 5px;
+}
+
+.btn-primary {
+	background-color: #007bff;
+	color: white;
+	border: none;
+}
+
+.btn-primary:hover {
+	background-color: #0056b3;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+	background-color: #6c757d;
+	color: white;
+	border: none;
+}
+
+.btn-secondary:hover {
+	background-color: #545b62;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.btn-danger {
+	background-color: #dc3545;
+	color: white;
+	border: none;
+}
+
+.btn-danger:hover {
+	background-color: #c82333;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.contractor-table tbody td:nth-child(9) .btn {
+	width: 70px;
+	/* Фиксированная ширина кнопок */
+	padding: 5px 10px;
+	font-size: 7px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.3s, box-shadow 0.3s;
+	margin-bottom: 5px;
+}
+
+.contractor-table tbody td:nth-child(9) .btn-primary {
+	background-color: #007bff;
+	color: white;
+	border: none;
+}
+
+.contractor-table tbody td:nth-child(9) .btn-primary:hover {
+	background-color: #0056b3;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.contractor-table tbody td:nth-child(9) .btn-secondary {
+	background-color: #6c757d;
+	color: white;
+	border: none;
+}
+
+.contractor-table tbody td:nth-child(9) .btn-secondary:hover {
+	background-color: #545b62;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.contractor-table tbody td:nth-child(9) .btn-danger {
+	background-color: #dc3545;
+	color: white;
+	border: none;
+}
+
+.contractor-table tbody td:nth-child(9) .btn-danger:hover {
+	background-color: #c82333;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}

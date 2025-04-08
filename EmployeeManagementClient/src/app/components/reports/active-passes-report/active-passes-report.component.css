@@ -1,0 +1,41 @@
+form {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1px;
+	margin-bottom: 20px;
+}
+
+mat-form-field {
+	width: 50%;
+	margin-bottom: 5px;
+	display: block;
+}
+
+mat-form-field .mat-icon {
+	margin-right: 8px;
+}
+
+.buttons {
+	display: flex;
+	gap: 10px;
+	margin-top: 10px;
+	flex-basis: 100%;
+	flex-wrap: wrap;
+}
+
+mat-table {
+	width: 100%;
+	margin-top: 20px;
+}
+
+@media (max-width: 992px) {
+	mat-form-field {
+		flex: 1 1 calc(50% - 15px);
+	}
+}
+
+@media (max-width: 576px) {
+	mat-form-field {
+		flex: 1 1 100%;
+	}
+}

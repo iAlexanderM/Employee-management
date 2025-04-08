@@ -1,0 +1,24 @@
+<div class="container mt-4">
+	<h2>Добавить запись в справочник "Должность"</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="error-message">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма добавления -->
+	<form [formGroup]="positionForm" (ngSubmit)="addPosition()">
+		<div class="form-group">
+			<label for="positionName">Название должности:</label>
+			<div class="input-container">
+				<input id="positionName" type="text" placeholder="Введите название должности"
+					formControlName="positionName" required />
+			</div>
+			<div *ngIf="positionForm.get('positionName')?.invalid && positionForm.get('positionName')?.touched"
+				class="error">
+				Название должности обязательно.
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary" [disabled]="positionForm.invalid">Добавить</button>
+	</form>
+</div>

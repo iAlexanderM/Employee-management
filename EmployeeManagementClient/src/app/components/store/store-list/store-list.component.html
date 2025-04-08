@@ -1,0 +1,177 @@
+<div class="container mt-4">
+	<h2 class="text-center mb-4">Список торговых точек</h2>
+
+	<!-- Форма поиска -->
+	<form [formGroup]="searchForm" (ngSubmit)="searchStores()" class="mb-4 border p-3 bg-light rounded">
+		<div class="row g-3">
+			<div class="col-md-2">
+				<label for="Id" class="form-label">ID:</label>
+				<input id="Id" formControlName="Id" type="number" class="form-control" placeholder="Введите ID" />
+			</div>
+
+			<div class="col-md-3 position-relative">
+				<label for="Building" class="form-label">Здание:</label>
+				<input id="Building" formControlName="Building" type="text" class="form-control" autocomplete="off"
+					(input)="onInput('Building', $event)" />
+				<div *ngIf="buildingSuggestions$ | async as suggestions" class="suggestions-container">
+					<ul *ngIf="suggestions.length > 0" class="dropdown-menu show">
+						<li *ngFor="let suggestion of suggestions" (click)="selectSuggestion('Building', suggestion)"
+							class="dropdown-item">
+							{{ suggestion }}
+						</li>
+					</ul>
+					<div *ngIf="
+                                suggestions.length === 0 &&
+                                searchForm.get('Building')?.value &&
+                                !isFieldConfirmed('Building')
+                            " class="alert alert-warning mt-2">
+						Результатов по вашему запросу не найдено
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-3 position-relative">
+				<label for="Floor" class="form-label">Этаж:</label>
+				<input id="Floor" formControlName="Floor" type="text" class="form-control" autocomplete="off"
+					(input)="onInput('Floor', $event)" />
+				<div *ngIf="floorSuggestions$ | async as suggestions" class="suggestions-container">
+					<ul *ngIf="suggestions.length > 0" class="dropdown-menu show">
+						<li *ngFor="let suggestion of suggestions" (click)="selectSuggestion('Floor', suggestion)"
+							class="dropdown-item">
+							{{ suggestion }}
+						</li>
+					</ul>
+					<div *ngIf="
+                                suggestions.length === 0 &&
+                                searchForm.get('Floor')?.value &&
+                                !isFieldConfirmed('Floor')
+                            " class="alert alert-warning mt-2">
+						Результатов по вашему запросу не найдено
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-2 position-relative">
+				<label for="Line" class="form-label">Линия:</label>
+				<input id="Line" formControlName="Line" type="text" class="form-control" autocomplete="off"
+					(input)="onInput('Line', $event)" />
+				<div *ngIf="lineSuggestions$ | async as suggestions" class="suggestions-container">
+					<ul *ngIf="suggestions.length > 0" class="dropdown-menu show">
+						<li *ngFor="let suggestion of suggestions" (click)="selectSuggestion('Line', suggestion)"
+							class="dropdown-item">
+							{{ suggestion }}
+						</li>
+					</ul>
+					<div *ngIf="
+                                suggestions.length === 0 &&
+                                searchForm.get('Line')?.value &&
+                                !isFieldConfirmed('Line')
+                            " class="alert alert-warning mt-2">
+						Результатов по вашему запросу не найдено
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-2 position-relative">
+				<label for="StoreNumber" class="form-label">Торговая точка:</label>
+				<input id="StoreNumber" formControlName="StoreNumber" type="text" class="form-control"
+					autocomplete="off" (input)="onInput('StoreNumber', $event)" />
+				<div *ngIf="storeNumberSuggestions$ | async as suggestions" class="suggestions-container">
+					<ul *ngIf="suggestions.length > 0" class="dropdown-menu show">
+						<li *ngFor="let suggestion of suggestions" (click)="selectSuggestion('StoreNumber', suggestion)"
+							class="dropdown-item">
+							{{ suggestion }}
+						</li>
+					</ul>
+					<div *ngIf="
+                                suggestions.length === 0 &&
+                                searchForm.get('StoreNumber')?.value &&
+                                !isFieldConfirmed('StoreNumber')
+                            " class="alert alert-warning mt-2">
+						Результатов по вашему запросу не найдено
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row mt-3">
+			<div class="col-md-12 text-end">
+				<button type="submit" class="btn btn-primary btn-equal">Найти</button>
+				<button type="button" class="btn btn-secondary btn-equal" (click)="resetFilters()">
+					Сбросить
+				</button>
+			</div>
+		</div>
+	</form>
+
+	<!-- Параметры отображения -->
+	<div class="d-flex align-items-center mb-3 justify-content-between">
+		<button routerLink="/stores/new" class="btn btn-info btn-sm btn-equal">
+			Добавить новую торговую точку
+		</button>
+		<div class="d-flex align-items-center">
+			<label for="pageSize" class="me-2">Элементов на странице:</label>
+			<select id="pageSize" [formControl]="pageSizeControl" class="form-select w-auto">
+				<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+			</select>
+		</div>
+	</div>
+
+	<!-- Пагинация (Верхняя) -->
+	<div *ngIf="totalPages > 1" class="pagination-container">
+		<div class="pagination-squares">
+			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+				[class.disabled]="page === '...'" (click)="onPageClick(page)">
+				{{ page }}
+			</div>
+		</div>
+	</div>
+	<br>
+
+	<!-- Таблица -->
+	<table class="table table-bordered table-hover" *ngIf="displayedStores.length > 0">
+		<thead>
+			<tr>
+				<th>Сортировка</th>
+				<th>ID</th>
+				<th>Здание</th>
+				<th>Этаж</th>
+				<th>Линия</th>
+				<th>Торговая точка</th>
+				<th>Действия</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let store of displayedStores">
+				<td>{{ store.sortOrder }}</td>
+				<td>{{ store.id }}</td>
+				<td>{{ store.building }}</td>
+				<td>{{ store.floor }}</td>
+				<td>{{ store.line }}</td>
+				<td>{{ store.storeNumber }}</td>
+				<td>
+					<button class="btn btn-info btn-sm btn-equal" (click)="viewStoreDetails(store.id)">
+						Просмотреть
+					</button>
+					<button class="btn btn-secondary btn-sm btn-equal" (click)="editStore(store.id)">
+						Редактировать
+					</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<p *ngIf="displayedStores.length === 0" class="text-center mt-4">
+		Нет торговых точек для отображения.
+	</p>
+
+	<!-- Пагинация (Нижняя) -->
+	<div *ngIf="totalPages > 1" class="pagination-container">
+		<div class="pagination-squares">
+			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+				[class.disabled]="page === '...'" (click)="onPageClick(page)">
+				{{ page }}
+			</div>
+		</div>
+	</div>
+</div>

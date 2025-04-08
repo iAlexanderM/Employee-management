@@ -1,0 +1,37 @@
+import { Routes } from '@angular/router';
+import { StorePointsBuildingListComponent } from '../components/store-points/store-points-building/store-points-building-list/store-points-building-list.component';
+import { StorePointsBuildingCreateComponent } from '../components/store-points/store-points-building/store-points-building-create/store-points-building-create.component';
+import { StorePointsBuildingDetailsComponent } from '../components/store-points/store-points-building/store-points-building-details/store-points-building-details.component';
+import { StorePointsBuildingEditComponent } from '../components/store-points/store-points-building/store-points-building-edit/store-points-building-edit.component';
+import { StorePointsFloorListComponent } from '../components/store-points/store-points-floor/store-points-floor-list/store-points-floor-list.component';
+import { StorePointsFloorCreateComponent } from '../components/store-points/store-points-floor/store-points-floor-create/store-points-floor-create.component';
+import { StorePointsFloorDetailsComponent } from '../components/store-points/store-points-floor/store-points-floor-details/store-points-floor-details.component';
+import { StorePointsFloorEditComponent } from '../components/store-points/store-points-floor/store-points-floor-edit/store-points-floor-edit.component';
+import { StorePointsLineListComponent } from '../components/store-points/store-points-line/store-points-line-list/store-points-line-list.component';
+import { StorePointsLineCreateComponent } from '../components/store-points/store-points-line/store-points-line-create/store-points-line-create.component';
+import { StorePointsLineDetailsComponent } from '../components/store-points/store-points-line/store-points-line-details/store-points-line-details.component';
+import { StorePointsLineEditComponent } from '../components/store-points/store-points-line/store-points-line-edit/store-points-line-edit.component';
+import { StorePointsStoreNumberListComponent } from '../components/store-points/store-points-store-number/store-points-store-number-list/store-points-store-number-list.component';
+import { StorePointsStoreNumberCreateComponent } from '../components/store-points/store-points-store-number/store-points-store-number-create/store-points-store-number-create.component';
+import { StorePointsStoreNumberDetailsComponent } from '../components/store-points/store-points-store-number/store-points-store-number-details/store-points-store-number-details.component';
+import { StorePointsStoreNumberEditComponent } from '../components/store-points/store-points-store-number/store-points-store-number-edit/store-points-store-number-edit.component';
+import { AuthGuard } from '../guards/auth.guard';
+
+export const storePointsRoutes: Routes = [
+	{ path: 'building', component: StorePointsBuildingListComponent },
+	{ path: 'building/new', component: StorePointsBuildingCreateComponent },
+	{ path: 'building/details/:id', component: StorePointsBuildingDetailsComponent },
+	{ path: 'building/edit/:id', component: StorePointsBuildingEditComponent },
+	{ path: 'floor', component: StorePointsFloorListComponent },
+	{ path: 'floor/new', component: StorePointsFloorCreateComponent },
+	{ path: 'floor/details/:id', component: StorePointsFloorDetailsComponent },
+	{ path: 'floor/edit/:id', component: StorePointsFloorEditComponent },
+	{ path: 'line', component: StorePointsLineListComponent },
+	{ path: 'line/new', component: StorePointsLineCreateComponent },
+	{ path: 'line/details/:id', component: StorePointsLineDetailsComponent },
+	{ path: 'line/edit/:id', component: StorePointsLineEditComponent },
+	{ path: 'storeNumber', component: StorePointsStoreNumberListComponent },
+	{ path: 'storeNumber/new', component: StorePointsStoreNumberCreateComponent },
+	{ path: 'storeNumber/details/:id', component: StorePointsStoreNumberDetailsComponent },
+	{ path: 'storeNumber/edit/:id', component: StorePointsStoreNumberEditComponent },
+];

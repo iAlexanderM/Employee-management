@@ -1,0 +1,45 @@
+<div *ngIf="floor" class="container mt-4">
+	<h2>Редактирование записи №{{ floor.id }}</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="alert alert-danger">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма редактирования -->
+	<form [formGroup]="floorForm" (ngSubmit)="updateFloor()">
+		<div class="form-group">
+			<label for="floorName">Название:</label>
+			<div class="input-container">
+				<input id="floorName" type="text" class="form-control" placeholder="Введите название этажа"
+					formControlName="floorName" [ngClass]="{
+            'is-invalid':
+              floorForm.get('floorName')?.invalid && floorForm.get('floorName')?.touched
+          }" required />
+				<!-- Сообщение об ошибке для поля название -->
+				<div *ngIf="floorForm.get('floorName')?.invalid && floorForm.get('floorName')?.touched"
+					class="invalid-feedback">
+					Название этажа обязательно.
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="sortOrder">Сортировка:</label>
+			<div class="input-container">
+				<input id="sortOrder" type="number" class="form-control" placeholder="Введите порядок сортировки"
+					formControlName="sortOrder" [ngClass]="{
+            'is-invalid':
+              floorForm.get('sortOrder')?.invalid && floorForm.get('sortOrder')?.touched
+          }" required />
+				<!-- Сообщение об ошибке для поля сортировка -->
+				<div *ngIf="floorForm.get('sortOrder')?.invalid && floorForm.get('sortOrder')?.touched"
+					class="invalid-feedback">
+					Номер сортировки должен быть неотрицательным.
+				</div>
+			</div>
+		</div>
+
+		<button type="submit" class="btn btn-primary" [disabled]="floorForm.invalid">Сохранить</button>
+	</form>
+</div>

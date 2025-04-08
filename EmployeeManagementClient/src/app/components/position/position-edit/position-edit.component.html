@@ -1,0 +1,38 @@
+<div *ngIf="position" class="container mt-4">
+	<h2>Редактирование записи №{{ position.id }}</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="error-message">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма редактирования -->
+	<form [formGroup]="positionForm" (ngSubmit)="updatePosition()">
+		<div class="form-group">
+			<label for="positionName">Название:</label>
+			<div class="input-container">
+				<input id="positionName" type="text" placeholder="Введите название должности"
+					formControlName="positionName" required />
+			</div>
+			<!-- Валидация поля -->
+			<div *ngIf="positionForm.get('positionName')?.invalid && positionForm.get('positionName')?.touched"
+				class="error">
+				Название должности обязательно.
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="sortOrder">Сортировка:</label>
+			<div class="input-container">
+				<input id="sortOrder" type="number" placeholder="Введите порядок сортировки" formControlName="sortOrder"
+					required />
+			</div>
+			<!-- Валидация поля -->
+			<div *ngIf="positionForm.get('sortOrder')?.invalid && positionForm.get('sortOrder')?.touched" class="error">
+				Порядок сортировки должен быть неотрицательным числом.
+			</div>
+		</div>
+
+		<button type="submit" class="btn btn-primary" [disabled]="positionForm.invalid">Сохранить</button>
+	</form>
+</div>

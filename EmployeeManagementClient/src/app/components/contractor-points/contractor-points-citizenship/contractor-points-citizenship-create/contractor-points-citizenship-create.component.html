@@ -1,0 +1,24 @@
+<div class="container mt-4">
+	<h2>Добавить запись в справочник "Гражданства"</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="error-message">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма добавления -->
+	<form [formGroup]="citizenshipForm" (ngSubmit)="addCitizenship()">
+		<div class="form-group">
+			<label for="citizenshipName">Название гражданства:</label>
+			<div class="input-container">
+				<input id="citizenshipName" type="text" placeholder="Введите название гражданства"
+					formControlName="citizenshipName" required />
+			</div>
+			<div *ngIf="citizenshipForm.get('citizenshipName')?.invalid && citizenshipForm.get('citizenshipName')?.touched"
+				class="error">
+				Название гражданства обязательно.
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary" [disabled]="citizenshipForm.invalid">Добавить</button>
+	</form>
+</div>

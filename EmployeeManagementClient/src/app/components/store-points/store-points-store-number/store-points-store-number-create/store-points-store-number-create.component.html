@@ -1,0 +1,20 @@
+<div class="container">
+	<h2>Добавить запись в справочник "Точки"</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="error-message">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<form [formGroup]="storeNumberForm" (ngSubmit)="addStoreNumber()">
+		<div class="form-group">
+			<label for="storeNumberName">Название точки:</label>
+			<div class="input-container">
+				<input id="storeNumberName" type="text" placeholder="Введите название точки" formControlName="name"
+					required />
+			</div>
+		</div>
+
+		<button type="submit" class="btn btn-primary">Добавить</button>
+	</form>
+</div>

@@ -1,0 +1,28 @@
+<div class="container mt-4">
+	<h2>Добавить запись в справочник "Здания"</h2>
+
+	<!-- Блок отображения ошибки -->
+	<div *ngIf="errorMessage" class="alert alert-danger">
+		<p>{{ errorMessage }}</p>
+	</div>
+
+	<!-- Форма добавления -->
+	<form [formGroup]="buildingForm" (ngSubmit)="addBuilding()">
+		<div class="form-group">
+			<label for="buildingName">Название здания:</label>
+			<div class="input-container">
+				<input id="buildingName" type="text" class="form-control" placeholder="Введите название здания"
+					formControlName="buildingName" [ngClass]="{
+            'is-invalid':
+              buildingForm.get('buildingName')?.invalid && buildingForm.get('buildingName')?.touched
+          }" required />
+				<!-- Сообщение об ошибке для поля название здания -->
+				<div *ngIf="buildingForm.get('buildingName')?.invalid && buildingForm.get('buildingName')?.touched"
+					class="invalid-feedback">
+					Название здания обязательно.
+				</div>
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary" [disabled]="buildingForm.invalid">Добавить</button>
+	</form>
+</div>
