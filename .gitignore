@@ -49,6 +49,7 @@ docker-compose.override.yml
 # Bootstrap и jQuery библиотеки
 wwwroot/lib/
 wwwroot/uploads/
+EmployeeManagementServer/wwwroot/
 
 # Пример конфигурации
 !appsettings.json.example
