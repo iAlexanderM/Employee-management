@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { PassService } from '../../../services/pass.service';
 import { PassPrintQueueItem } from '../../../models/pass-print-queue.model';
 import { TransactionService } from '../../../services/transaction.service';
-import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
 	selector: 'app-pass-print-queue',
@@ -25,8 +24,6 @@ export class PassPrintQueueComponent implements OnInit {
 	searchForm: FormGroup;
 	userMap: { [key: string]: string } = {};
 
-	private readonly cacheKey = 'printQueueSearchState'; // Ключ для localStorage
-
 	constructor(
 		private passService: PassService,
 		private transactionService: TransactionService,
@@ -41,8 +38,7 @@ export class PassPrintQueueComponent implements OnInit {
 
 	ngOnInit(): void {
 		this.loadUsersFromTransactions();
-		this.restoreSearchState();
-		this.loadPrintQueue();
+		this.loadPrintQueue(); // Загружаем очередь с page=1
 	}
 
 	loadUsersFromTransactions(): void {
@@ -62,11 +58,10 @@ export class PassPrintQueueComponent implements OnInit {
 		const contractorId = this.searchForm.value.contractorId;
 		this.passService.getPrintQueue(this.currentPage, this.pageSize, contractorId).subscribe({
 			next: (result) => {
-				this.passes = result.items;
-				this.totalItems = result.total;
-				this.totalPages = Math.ceil(this.totalItems / this.pageSize);
+				this.passes = result.items || [];
+				this.totalItems = result.total || 0;
+				this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
 				this.updateVisiblePages();
-				this.saveSearchState(); // Сохраняем состояние после загрузки
 			},
 			error: (error) => console.error('Ошибка при загрузке очереди на печать:', error)
 		});
@@ -77,7 +72,9 @@ export class PassPrintQueueComponent implements OnInit {
 		const maxVisible = 7;
 
 		if (this.totalPages <= maxVisible) {
-			for (let i = 1; i <= this.totalPages; i++) pages.push(i);
+			for (let i = 1; i <= this.totalPages; i++) {
+				pages.push(i);
+			}
 		} else {
 			if (this.currentPage <= 4) {
 				for (let i = 1; i <= 6; i++) pages.push(i);
@@ -101,22 +98,21 @@ export class PassPrintQueueComponent implements OnInit {
 	}
 
 	onPageClick(page: number | string): void {
-		if (page === '...') return;
-		const pageNumber = page as number;
-		if (pageNumber < 1 || pageNumber > this.totalPages) return;
-		this.currentPage = pageNumber;
+		if (page === '...' || typeof page === 'string') return;
+		if (page < 1 || page > this.totalPages) return;
+		this.currentPage = page;
 		this.loadPrintQueue();
 	}
 
 	onPageSizeChange(event: Event): void {
 		const target = event.target as HTMLSelectElement;
 		this.pageSize = +target.value;
-		this.currentPage = 1;
+		this.currentPage = 1; // Сбрасываем на первую страницу при изменении размера
 		this.loadPrintQueue();
 	}
 
 	onSearch(): void {
-		this.currentPage = 1;
+		this.currentPage = 1; // Сбрасываем на первую страницу при поиске
 		this.loadPrintQueue();
 	}
 
@@ -124,7 +120,6 @@ export class PassPrintQueueComponent implements OnInit {
 		this.searchForm.reset({ contractorId: null });
 		this.currentPage = 1;
 		this.pageSize = 25;
-		this.clearSearchState(); // Очищаем кэш при сбросе
 		this.loadPrintQueue();
 	}
 
@@ -132,28 +127,5 @@ export class PassPrintQueueComponent implements OnInit {
 		this.router.navigate(['/passes/print', transactionId], {
 			queryParams: { from: 'print-queue' }
 		});
-	}
-
-	private saveSearchState(): void {
-		const state = {
-			contractorId: this.searchForm.value.contractorId,
-			page: this.currentPage,
-			pageSize: this.pageSize
-		};
-		localStorage.setItem(this.cacheKey, JSON.stringify(state));
-	}
-
-	private restoreSearchState(): void {
-		const cachedState = localStorage.getItem(this.cacheKey);
-		if (cachedState) {
-			const state = JSON.parse(cachedState);
-			this.searchForm.patchValue({ contractorId: state.contractorId });
-			this.currentPage = state.page || 1;
-			this.pageSize = state.pageSize || 25;
-		}
-	}
-
-	private clearSearchState(): void {
-		localStorage.removeItem(this.cacheKey);
 	}
 }

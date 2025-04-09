@@ -34,69 +34,45 @@ namespace EmployeeManagementServer.Controllers
             _queueService = queueService;
         }
 
-        [HttpGet("financial")]
-        [Authorize(Roles = "Admin, Cashier")]
-        public async Task<IActionResult> GetFinancialReport(DateTime startDate, DateTime endDate)
-            => await GenerateExcel("financial", startDate, endDate);
-
         [HttpGet("financial-data")]
         [Authorize(Roles = "Admin, Cashier")]
         public async Task<IActionResult> GetFinancialReportData(DateTime startDate, DateTime endDate)
         {
+            endDate = endDate.Date.AddDays(1).AddTicks(-1);
             var searchDto = new PassTransactionSearchDto { CreatedAfter = startDate, CreatedBefore = endDate };
             var (totalCount, transactions) = await _passTransactionSearchService.SearchPassTransactionsAsync(searchDto, 0, int.MaxValue);
+
+            Console.WriteLine($"Transactions found: {transactions.Count}");
+            foreach (var t in transactions)
+            {
+                Console.WriteLine($"Id: {t.Id}, TokenType: {t.TokenType}, Status: '{t.Status}', Amount: {t.Amount}, Created: {t.CreatedAt}");
+            }
+
             var groupedData = transactions
-                .GroupBy(t => t.TokenType == "Р" ? "Пропуск" : t.TokenType)
+                .GroupBy(t => t.TokenType == "P" ? "Пропуск" : t.TokenType)
                 .Select(g => new
                 {
                     TokenType = g.Key,
-                    PaidAmount = g.Where(t => t.Status == "Оплачено").Sum(t => t.Amount),
+                    PaidAmount = g.Where(t => t.Status?.Trim() == "Оплачено").Sum(t => t.Amount),
                     TransactionCount = g.Count()
                 });
+
             return Ok(groupedData);
         }
 
-        [HttpGet("passes-summary")]
+        [HttpGet("financial")]
         [Authorize(Roles = "Admin, Cashier")]
-        public async Task<IActionResult> GetPassesSummaryReport(DateTime startDate, DateTime endDate)
-    => await GenerateExcel("passes-summary", startDate, endDate);
-
-        [HttpGet("passes-summary-details")]
-        [Authorize(Roles = "Admin, Cashier")]
-        public async Task<IActionResult> GetPassesSummaryDetails(string queueType, DateTime startDate, DateTime endDate)
+        public async Task<IActionResult> GetFinancialReport(DateTime startDate, DateTime endDate)
         {
-            var query = from pt in _context.PassTransactions
-                        join qt in _context.QueueTokens on pt.Token equals qt.Token into queueTokens
-                        from qt in queueTokens.DefaultIfEmpty()
-                        where pt.CreatedAt >= startDate && pt.CreatedAt <= endDate
-                        select new { PassTransaction = pt, QueueToken = qt };
-
-            var passTransactionsWithQueue = await query.ToListAsync();
-            var transactionIds = passTransactionsWithQueue.Select(ptq => ptq.PassTransaction.Id).ToList();
-
-            var passes = await _context.Passes
-              .Include(p => p.PassType)
-              .Where(p => transactionIds.Contains(p.PassTransactionId))
-              .ToListAsync();
-
-            var effectiveQueueType = queueType == "Пропуск" ? "P" : queueType;
-            var details = passes
-              .Where(p => (passTransactionsWithQueue.FirstOrDefault(ptq => ptq.PassTransaction.Id == p.PassTransactionId)?.QueueToken?.TokenType ?? "Неизвестно") == effectiveQueueType)
-              .GroupBy(p => p.PassType.Name)
-              .Select(g => new
-              {
-                  PassType = g.Key,
-                  Amount = g.Sum(p => p.PassType.Cost),
-                  Count = g.Count()
-              })
-              .ToList();
-
-            return Ok(details);
+            endDate = endDate.Date.AddDays(1).AddTicks(-1);
+            return await GenerateExcel("financial", startDate, endDate);
         }
 
         [HttpGet("passes-summary-data")]
+        [Authorize(Roles = "Admin, Cashier")]
         public async Task<IActionResult> GetPassesSummaryReportData(DateTime startDate, DateTime endDate)
         {
+            endDate = endDate.Date.AddDays(1).AddTicks(-1);
             var query = from pt in _context.PassTransactions
                         join qt in _context.QueueTokens on pt.Token equals qt.Token into queueTokens
                         from qt in queueTokens.DefaultIfEmpty()
@@ -104,12 +80,15 @@ namespace EmployeeManagementServer.Controllers
                         select new { PassTransaction = pt, QueueToken = qt };
 
             var passTransactionsWithQueue = await query.ToListAsync();
-            var transactionIds = passTransactionsWithQueue.Select(ptq => ptq.PassTransaction.Id).ToList();
+            Console.WriteLine($"Pass transactions found: {passTransactionsWithQueue.Count}");
 
+            var transactionIds = passTransactionsWithQueue.Select(ptq => ptq.PassTransaction.Id).ToList();
             var passes = await _context.Passes
                 .Include(p => p.PassType)
                 .Where(p => transactionIds.Contains(p.PassTransactionId))
                 .ToListAsync();
+
+            Console.WriteLine($"Passes found: {passes.Count}");
 
             var groupedData = passes
                 .GroupBy(p => passTransactionsWithQueue.FirstOrDefault(ptq => ptq.PassTransaction.Id == p.PassTransactionId)?.QueueToken?.TokenType ?? "Неизвестно")
@@ -124,13 +103,54 @@ namespace EmployeeManagementServer.Controllers
             return Ok(groupedData);
         }
 
-        [HttpGet("issued-passes")]
-        public async Task<IActionResult> GetIssuedPassesReport(DateTime startDate, DateTime endDate, string? building = null, string? floor = null, string? line = null, string? passType = null)
-            => await GenerateExcel("issued-passes", startDate, endDate, building, floor, line, null, passType);
+        [HttpGet("passes-summary")]
+        [Authorize(Roles = "Admin, Cashier")]
+        public async Task<IActionResult> GetPassesSummaryReport(DateTime startDate, DateTime endDate)
+        {
+            endDate = endDate.Date.AddDays(1).AddTicks(-1);
+            return await GenerateExcel("passes-summary", startDate, endDate);
+        }
+
+        [HttpGet("passes-summary-details")]
+        [Authorize(Roles = "Admin, Cashier")]
+        public async Task<IActionResult> GetPassesSummaryDetails(string queueType, DateTime startDate, DateTime endDate)
+        {
+            endDate = endDate.Date.AddDays(1).AddTicks(-1);
+            var query = from pt in _context.PassTransactions
+                        join qt in _context.QueueTokens on pt.Token equals qt.Token into queueTokens
+                        from qt in queueTokens.DefaultIfEmpty()
+                        where pt.CreatedAt >= startDate && pt.CreatedAt <= endDate
+                        select new { PassTransaction = pt, QueueToken = qt };
+
+            var passTransactionsWithQueue = await query.ToListAsync();
+            var transactionIds = passTransactionsWithQueue.Select(ptq => ptq.PassTransaction.Id).ToList();
+
+            var passes = await _context.Passes
+                .Include(p => p.PassType)
+                .Where(p => transactionIds.Contains(p.PassTransactionId))
+                .ToListAsync();
+
+            var effectiveQueueType = queueType == "Пропуск" ? "P" : queueType;
+            var details = passes
+                .Where(p => (passTransactionsWithQueue.FirstOrDefault(ptq => ptq.PassTransaction.Id == p.PassTransactionId)?.QueueToken?.TokenType ?? "Неизвестно") == effectiveQueueType)
+                .GroupBy(p => p.PassType.Name)
+                .Select(g => new
+                {
+                    PassType = g.Key,
+                    Amount = g.Sum(p => p.PassType.Cost),
+                    Count = g.Count()
+                })
+                .ToList();
+
+            Console.WriteLine($"Details for {queueType}: {details.Count}");
+            return Ok(details);
+        }
 
         [HttpGet("issued-passes-data")]
+        [Authorize(Roles = "Admin, Cashier")]
         public async Task<IActionResult> GetIssuedPassesReportData(DateTime startDate, DateTime endDate, string? building = null, string? floor = null, string? line = null, string? passType = null)
         {
+            endDate = endDate.Date.AddDays(1).AddTicks(-1);
             var query = _context.Passes
                 .Include(p => p.PassType)
                 .Include(p => p.Store)
@@ -162,16 +182,24 @@ namespace EmployeeManagementServer.Controllers
                     ProductType = p.Contractor.ProductType
                 })
                 .ToListAsync();
+
+            Console.WriteLine($"Issued passes found: {passes.Count}");
             return Ok(passes);
         }
 
-        [HttpGet("expiring-passes")]
-        public async Task<IActionResult> GetExpiringPassesReport(DateTime startDate, DateTime endDate)
-            => await GenerateExcel("expiring-passes", startDate, endDate);
+        [HttpGet("issued-passes")]
+        [Authorize(Roles = "Admin, Cashier")]
+        public async Task<IActionResult> GetIssuedPassesReport(DateTime startDate, DateTime endDate, string? building = null, string? floor = null, string? line = null, string? passType = null)
+        {
+            endDate = endDate.Date.AddDays(1).AddTicks(-1);
+            return await GenerateExcel("issued-passes", startDate, endDate, building, floor, line, null, passType);
+        }
 
         [HttpGet("expiring-passes-data")]
+        [Authorize(Roles = "Admin, Cashier")]
         public async Task<IActionResult> GetExpiringPassesReportData(DateTime startDate, DateTime endDate)
         {
+            endDate = endDate.Date.AddDays(1).AddTicks(-1);
             var passes = await _context.Passes
                 .Include(p => p.PassType)
                 .Include(p => p.Store)
@@ -191,14 +219,21 @@ namespace EmployeeManagementServer.Controllers
                     Note = p.Contractor.Note
                 })
                 .ToListAsync();
+
+            Console.WriteLine($"Expiring passes found: {passes.Count}");
             return Ok(passes);
         }
 
-        [HttpGet("active-passes")]
-        public async Task<IActionResult> GetActivePassesReport(string? passType = null, string? building = null, string? floor = null, string? line = null)
-            => await GenerateExcel("active-passes", null, null, building, floor, line, null, passType);
+        [HttpGet("expiring-passes")]
+        [Authorize(Roles = "Admin, Cashier")]
+        public async Task<IActionResult> GetExpiringPassesReport(DateTime startDate, DateTime endDate)
+        {
+            endDate = endDate.Date.AddDays(1).AddTicks(-1);
+            return await GenerateExcel("expiring-passes", startDate, endDate);
+        }
 
         [HttpGet("active-passes-data")]
+        [Authorize(Roles = "Admin, Cashier")]
         public async Task<IActionResult> GetActivePassesReportData(string? passType = null, string? building = null, string? floor = null, string? line = null)
         {
             var query = _context.Passes
@@ -237,10 +272,20 @@ namespace EmployeeManagementServer.Controllers
                     BirthDate = p.Contractor.BirthDate
                 })
                 .ToListAsync();
+
+            Console.WriteLine($"Active passes found: {passes.Count}");
             return Ok(passes);
         }
 
+        [HttpGet("active-passes")]
+        [Authorize(Roles = "Admin, Cashier")]
+        public async Task<IActionResult> GetActivePassesReport(string? passType = null, string? building = null, string? floor = null, string? line = null)
+        {
+            return await GenerateExcel("active-passes", null, null, building, floor, line, null, passType);
+        }
+
         [HttpGet("suggestions/building")]
+        [Authorize(Roles = "Admin, Cashier")]
         public async Task<IActionResult> GetBuildingSuggestions([FromQuery] string query)
         {
             if (string.IsNullOrWhiteSpace(query)) return Ok(new List<string>());
@@ -254,6 +299,7 @@ namespace EmployeeManagementServer.Controllers
         }
 
         [HttpGet("suggestions/floor")]
+        [Authorize(Roles = "Admin, Cashier")]
         public async Task<IActionResult> GetFloorSuggestions([FromQuery] string query, [FromQuery] string? building = null)
         {
             if (string.IsNullOrWhiteSpace(query)) return Ok(new List<string>());
@@ -269,6 +315,7 @@ namespace EmployeeManagementServer.Controllers
         }
 
         [HttpGet("suggestions/line")]
+        [Authorize(Roles = "Admin, Cashier")]
         public async Task<IActionResult> GetLineSuggestions([FromQuery] string query, [FromQuery] string? building = null, [FromQuery] string? floor = null)
         {
             if (string.IsNullOrWhiteSpace(query)) return Ok(new List<string>());
@@ -278,19 +325,6 @@ namespace EmployeeManagementServer.Controllers
             var suggestions = await queryable
                 .Where(s => EF.Functions.ILike(s.Line, $"%{query}%"))
                 .Select(s => s.Line)
-                .Distinct()
-                .Take(10)
-                .ToListAsync();
-            return Ok(suggestions);
-        }
-
-        [HttpGet("suggestions/pass-types")]
-        public async Task<IActionResult> GetPassTypeSuggestions([FromQuery] string query)
-        {
-            if (string.IsNullOrWhiteSpace(query)) return Ok(new List<string>());
-            var suggestions = await _context.PassTypes
-                .Where(pt => EF.Functions.ILike(pt.Name, $"%{query}%"))
-                .Select(pt => pt.Name)
                 .Distinct()
                 .Take(10)
                 .ToListAsync();

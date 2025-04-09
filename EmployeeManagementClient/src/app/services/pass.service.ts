@@ -25,11 +25,14 @@ export class PassService {
 	}
 
 	getPrintQueue(page: number, pageSize: number, contractorId?: number): Observable<{ items: PassPrintQueueItem[], total: number }> {
-		let url = `${this.baseUrl}/print-queue?page=${page}&pageSize=${pageSize}`;
+		let params = new HttpParams()
+			.set('page', page.toString())
+			.set('pageSize', pageSize.toString());
 		if (contractorId) {
-			url += `&contractorId=${contractorId}`;
+			params = params.set('contractorId', contractorId.toString());
 		}
-		return this.http.get<{ items: PassPrintQueueItem[], total: number }>(url);
+		console.log('Параметры:', params.toString());
+		return this.http.get<{ items: PassPrintQueueItem[], total: number }>(`${this.baseUrl}/print-queue`, { params });
 	}
 
 	getIssuedPasses(page: number, pageSize: number, contractorId?: number): Observable<{ items: PassPrintQueueItem[], total: number }> {

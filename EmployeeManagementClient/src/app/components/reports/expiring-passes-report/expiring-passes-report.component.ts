@@ -1,28 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import {
-	MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter,
-	MAT_DATE_FORMATS, NativeDateAdapter
-} from '@angular/material/core';
+import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS, NativeDateAdapter } from '@angular/material/core';
 import { MatTableModule } from '@angular/material/table';
 import { ReportService } from '../../../services/report.service';
 import { ExpiringPassesReportData } from '../../../models/report.models';
 import { MatIconModule } from '@angular/material/icon';
 
-// Копируем определение форматов
 export const MY_DATE_FORMATS = {
-	parse: { dateInput: 'LL' },
-	display: {
-		dateInput: 'DD.MM.YYYY',
-		monthYearLabel: 'MMM YYYY',
-		dateA11yLabel: 'LL',
-		monthYearA11yLabel: 'MMMM YYYY',
-	},
+	parse: { dateInput: 'DD.MM.YYYY' },
+	display: { dateInput: 'DD.MM.YYYY', monthYearLabel: 'MMM YYYY', dateA11yLabel: 'LL', monthYearA11yLabel: 'MMMM YYYY' },
 };
 
 @Component({
@@ -31,15 +22,14 @@ export const MY_DATE_FORMATS = {
 	imports: [
 		CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
 		MatButtonModule, MatDatepickerModule, MatNativeDateModule, MatTableModule,
-		MatIconModule, DatePipe
+		MatIconModule
 	],
 	templateUrl: './expiring-passes-report.component.html',
 	styleUrls: ['./expiring-passes-report.component.css'],
-	providers: [ // Добавляем провайдеры
+	providers: [
 		{ provide: MAT_DATE_LOCALE, useValue: 'ru-RU' },
 		{ provide: DateAdapter, useClass: NativeDateAdapter },
-		{ provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
-		DatePipe
+		{ provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
 	]
 })
 export class ExpiringPassesReportComponent implements OnInit {
@@ -51,8 +41,7 @@ export class ExpiringPassesReportComponent implements OnInit {
 
 	constructor(
 		private fb: FormBuilder,
-		private reportService: ReportService,
-		private datePipe: DatePipe
+		private reportService: ReportService
 	) {
 		this.reportForm = this.fb.group({
 			startDate: [null, Validators.required],
@@ -62,8 +51,11 @@ export class ExpiringPassesReportComponent implements OnInit {
 
 	ngOnInit(): void { }
 
-	private formatDate(date: Date | null): string | null {
-		return date ? this.datePipe.transform(date, 'yyyy-MM-dd') : null;
+	private formatDate(date: Date): string {
+		const day = String(date.getDate()).padStart(2, '0');
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const year = date.getFullYear();
+		return `${year}-${month}-${day}`;
 	}
 
 	generateReport(): void {
@@ -76,8 +68,15 @@ export class ExpiringPassesReportComponent implements OnInit {
 			startDate: this.formatDate(startDate),
 			endDate: this.formatDate(endDate)
 		};
-		this.reportService.getReportData('expiring-passes', params).subscribe((data: ExpiringPassesReportData[]) => {
-			this.dataSource = data;
+
+		console.log('Generated params:', params);
+
+		this.reportService.getReportData('expiring-passes', params).subscribe({
+			next: (data: ExpiringPassesReportData[]) => {
+				console.log('Received data:', data);
+				this.dataSource = data;
+			},
+			error: (err) => console.error('Error fetching expiring passes:', err)
 		});
 	}
 
@@ -96,6 +95,7 @@ export class ExpiringPassesReportComponent implements OnInit {
 			startDate: this.formatDate(startDate),
 			endDate: this.formatDate(endDate)
 		};
+
 		this.reportService.downloadReport('expiring-passes', params).subscribe(blob => {
 			const url = window.URL.createObjectURL(blob);
 			const link = document.createElement('a');

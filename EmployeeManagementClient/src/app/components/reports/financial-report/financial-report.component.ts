@@ -76,12 +76,17 @@ export class FinancialReportComponent implements OnInit {
 			return;
 		}
 		const { startDate, endDate } = this.reportForm.value;
-		// При отправке дата ВСЕГДА будет в стандартном формате JS Date,
-		// форматируем перед отправкой на бэкенд
-		const params = {
-			startDate: startDate.toISOString().split('T')[0],
-			endDate: endDate.toISOString().split('T')[0]
+		const formatDate = (date: Date) => {
+			const day = String(date.getDate()).padStart(2, '0');
+			const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() возвращает 0-11
+			const year = date.getFullYear();
+			return `${year}-${month}-${day}`;
 		};
+		const params = {
+			startDate: formatDate(startDate),
+			endDate: formatDate(endDate)
+		};
+		console.log('Params:', params);
 		this.reportService.getReportData('financial', params).subscribe((data: FinancialReportData[]) => {
 			this.dataSource = data;
 		});
