@@ -3,7 +3,6 @@
 		<div class="brand">Бюро пропусков v0.01</div>
 		<ul class="navbar-nav ms-auto">
 			<div *ngFor="let item of data; let i = index;">
-				<!-- Аккордеон для элементов с подменю -->
 				<div *ngIf="item.childProperties">
 					<ng-container *ngIf="hasAccessToChild(item.childProperties)">
 						<button class="accordion" (click)="toggleAccordian($event, i)">

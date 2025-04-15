@@ -77,7 +77,6 @@ export class TransactionListComponent implements OnInit {
 		this.contractorOptions$ = this.searchForm
 			.get('contractorName')!
 			.valueChanges.pipe(
-				debounceTime(300),
 				distinctUntilChanged(),
 				switchMap(value => {
 					const searchValue = typeof value === 'string' ? value : (value ? this.displayContractor(value) : '');
@@ -188,8 +187,7 @@ export class TransactionListComponent implements OnInit {
 			return transaction.contractorStorePasses
 				.map(csp => {
 					const s = csp.store;
-					const position = csp.position ? ` (${csp.position})` : '';
-					return `${s.building || ''} ${s.floor || ''} ${s.line || ''} ${s.storeNumber || ''}`.trim() + position;
+					return `${s.building || ''} ${s.floor || ''} ${s.line || ''} ${s.storeNumber || ''}`.trim();
 				})
 				.join('\n');
 		}

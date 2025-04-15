@@ -1,7 +1,3 @@
-/* 
-  Обнуление отступов, чтобы height:100% корректно работало 
-  вместе с .app-layout { height:100vh }.
-*/
 html,
 body {
 	margin: 0;
@@ -16,24 +12,10 @@ body {
 	box-sizing: inherit;
 }
 
-/* 
-  Общая структура приложения: 
-  flex-контейнер на всю высоту экрана.
-*/
 .app-layout {
 	display: flex;
 	height: 100vh;
 	width: 100%;
-}
-
-/* Боковая панель */
-.sidebar {
-	width: 200px;
-	background-color: #f8f9fa;
-	padding: 15px;
-	box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-	display: flex;
-	flex-direction: column;
 }
 
 .footer {
@@ -43,14 +25,27 @@ body {
 	width: 100%;
 }
 
-/* Основной контент */
 .content-container {
 	flex-grow: 1;
 	padding: 0px;
 	overflow-y: auto;
 }
 
-/* ----- Навигация в боковой панели ----- */
+.sidebar {
+	width: 200px;
+	background-color: #f8f9fa;
+	padding: 15px;
+	box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+	height: 100vh;
+}
+
+.sidebar::-webkit-scrollbar {
+	display: none;
+}
+
 .sidebar .navbar-nav {
 	list-style: none;
 	padding: 0;
@@ -85,12 +80,9 @@ body {
 
 .sidebar .navbar-nav .nav-item .nav-link:hover {
 	background-color: #007bff;
-	/* синий фон при наведении */
 	color: #ffffff;
-	/* белый текст при наведении */
 }
 
-/* ----- Общий стиль кнопок ----- */
 .btn {
 	display: flex;
 	align-items: center;
@@ -127,7 +119,6 @@ body {
 	transition: 0.4s;
 }
 
-/* Основные стили .btn-primary */
 .btn-primary {
 	background-color: #007bff;
 	border: 1px solid #007bff;
@@ -145,7 +136,6 @@ body {
 	border-color: #0056b3;
 }
 
-/* Кнопка "Выход" (допустим, .btn-secondary) */
 .btn-secondary {
 	background-color: #8c9ea3;
 	border: 1px solid #8c9ea3;
@@ -157,7 +147,6 @@ body {
 	border-color: #6b7b80;
 }
 
-/* ----- Выпадающее меню ----- */
 .nav-item.dropdown {
 	position: relative;
 }
@@ -181,7 +170,6 @@ body {
 
 .dropdown-menu-container.show {
 	max-height: 200px;
-	/* Установите высоту выпадающего меню равную высоте кнопки */
 }
 
 .dropdown-menu-container .dropdown-menu.show {
@@ -213,7 +201,6 @@ body {
 	color: #ffffff;
 }
 
-/* Чтоб ссылки-блоки были на всю ширину */
 .navbar-nav .nav-item .btn-link,
 .navbar-nav .nav-item .nav-link,
 .dropdown-item {

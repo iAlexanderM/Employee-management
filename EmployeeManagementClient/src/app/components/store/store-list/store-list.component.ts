@@ -303,7 +303,6 @@ export class StoreListComponent implements OnInit, OnDestroy {
 			this.subscriptions.push(
 				control.valueChanges
 					.pipe(
-						debounceTime(300),
 						distinctUntilChanged(),
 						switchMap((query) => {
 							const trimmedQuery = query?.trim() || '';

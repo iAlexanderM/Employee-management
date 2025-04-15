@@ -119,7 +119,7 @@ namespace EmployeeManagementServer.Controllers
         }
 
         [HttpPost("logout")]
-        [Authorize] // Убрал Roles = "Admin", если logout доступен всем
+        [Authorize] 
         public async Task<IActionResult> Logout()
         {
             var userId = User.FindFirst("userId")?.Value;

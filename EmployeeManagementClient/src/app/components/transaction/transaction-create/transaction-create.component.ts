@@ -76,16 +76,24 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 			this.hasLoadedFromStorage = true;
 		}
 
+		// Обработка сценария продления
 		if (state && state.contractorId && state.passTypeId && state.store) {
 			const stateKey = `${JSON.stringify(state)}_${Date.now()}`;
 			if (!this.processedStates.has(stateKey)) {
-				console.log('Обрабатывается новое состояние:', state);
+				console.log('Обрабатывается новое состояние для продления:', state);
 				this.handleExtendPass(state);
 				this.processedStates.add(stateKey);
 				history.replaceState({}, document.title, window.location.pathname);
 			} else {
 				console.log('Состояние уже обработано, пропускаем:', state);
 			}
+		}
+		// Обработка сценария создания транзакции с предзаполненной торговой точкой
+		else if (state && state.store && !state.contractorId && !state.passTypeId && !this.processedStates.has(JSON.stringify(state))) {
+			console.log('Обработка state для создания транзакции с предзаполненной торговой точкой:', state);
+			this.handleCreateTransactionWithStore(state.store);
+			this.processedStates.add(JSON.stringify(state));
+			history.replaceState({}, document.title, window.location.pathname);
 		}
 
 		if (!this.transactionForms.length) {
@@ -121,15 +129,13 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 	}
 
 	handleExtendPass(state: any): void {
-		// ... (проверка isExtending) ...
 		console.log('handleExtendPass вызван с состоянием:', state);
 
-		const formData = this.addTransactionForm(); // Добавляем форму для данных продления
+		const formData = this.addTransactionForm();
 
 		const contractorId = state.contractorId;
-		const store = state.store; // Получаем объект Store из state
+		const store = state.store;
 		const passTypeId = state.passTypeId;
-		// Парсим дату из ISO строки, переданной в state
 		const startDate = state.startDate ? this.formatDateToYYYYMMDD(new Date(state.startDate)) : this.formatDateToYYYYMMDD(new Date());
 		const position = state.position;
 		const passType = state.passType; // Получаем объект PassType из state
@@ -442,6 +448,39 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 		formData.totalCost = 0;
 		formData.modalPosition = undefined;
 		this.saveToLocalStorage();
+		this.cdr.detectChanges();
+	}
+
+	handleCreateTransactionWithStore(store: Store): void {
+		console.log('handleCreateTransactionWithStore вызван с магазином:', store);
+
+		if (!store || !store.id || !store.building || !store.floor || !store.line || !store.storeNumber) {
+			this.errorMessage = 'Неверные данные магазина для создания транзакции.';
+			this.isLoading = false;
+			this.cdr.detectChanges();
+			return;
+		}
+
+		if (!this.activeTokenData?.token) {
+			this.errorMessage = 'Токен не установлен. Пожалуйста, выберите активный токен.';
+			this.isLoading = false;
+			this.cdr.detectChanges();
+			return;
+		}
+
+		const formData = this.addTransactionForm();
+		formData.store = store;
+		formData.form.patchValue({
+			storeId: store.id,
+			startDate: this.formatDateToYYYYMMDD(new Date()),
+			token: this.activeTokenData.token
+		});
+
+		console.log('Новая форма добавлена с предзаполненной торговой точкой:', formData.form.getRawValue());
+		console.log('Все формы после добавления:', this.transactionForms.map(f => f.form.getRawValue()));
+
+		this.saveToLocalStorage();
+		this.isLoading = false;
 		this.cdr.detectChanges();
 	}
 }

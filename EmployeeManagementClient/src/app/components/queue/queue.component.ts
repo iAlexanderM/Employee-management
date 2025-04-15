@@ -147,7 +147,7 @@ export class QueueComponent implements OnInit { // Убрали OnDestroy т.к.
 			next: (res) => {
 				alert(`Талон создан: ${res.token}`);
 				this.createTokenForm.reset({ type: 'P' });
-				// loadTokens вызовется через SignalR
+				this.router.navigate(['/passes/store-pass-search']);
 			},
 			error: (err) => {
 				console.error('Ошибка при создании талона:', err);
@@ -163,8 +163,7 @@ export class QueueComponent implements OnInit { // Убрали OnDestroy т.к.
 			next: (res) => {
 				alert(res.message);
 				this.searchFilterResetService.triggerReset();
-				this.queueSyncService.setActiveToken(''); // Очищаем токен пустой строкой
-				// loadTokens вызовется через SignalR (если бэкенд исправлен)
+				this.queueSyncService.setActiveToken('');
 			},
 			error: (err) => {
 				console.error('Ошибка при закрытии талона:', err);

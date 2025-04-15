@@ -24,17 +24,24 @@ namespace EmployeeManagementServer.Controllers
         [HttpGet("search")]
         public async Task<IActionResult> SearchPassesByStore([FromQuery] PassByStoreSearchDto searchDto)
         {
-            if (searchDto == null ||
-                string.IsNullOrEmpty(searchDto.Building) ||
-                string.IsNullOrEmpty(searchDto.Floor) ||
-                string.IsNullOrEmpty(searchDto.Line) ||
-                string.IsNullOrEmpty(searchDto.StoreNumber))
+            try
             {
-                return BadRequest("Все поля (Building, Floor, Line, StoreNumber) должны быть заполнены.");
-            }
+                if (searchDto == null ||
+                    string.IsNullOrEmpty(searchDto.Building) ||
+                    string.IsNullOrEmpty(searchDto.Floor) ||
+                    string.IsNullOrEmpty(searchDto.Line) ||
+                    string.IsNullOrEmpty(searchDto.StoreNumber))
+                {
+                    return BadRequest("Все поля (Building, Floor, Line, StoreNumber) должны быть заполнены.");
+                }
 
-            var results = await _searchService.SearchPassesByStoreAsync(searchDto);
-            return Ok(results);
+                var results = await _searchService.SearchPassesByStoreAsync(searchDto);
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }

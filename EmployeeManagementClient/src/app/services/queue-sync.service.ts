@@ -7,8 +7,13 @@ export class QueueSyncService {
 	activeToken$ = this.activeTokenSubject.asObservable();
 
 	setActiveToken(token: string) {
-		this.activeTokenSubject.next(token);
+		if (!token && this.activeTokenSubject.value) {
+			console.log(`QueueSyncService: Clearing transaction forms from localStorage for token ${this.activeTokenSubject.value}`);
+			localStorage.removeItem(`transactionForms_${this.activeTokenSubject.value}`);
+		}
 		localStorage.setItem('active_token', token);
+		this.activeTokenSubject.next(token);
+		console.log(`QueueSyncService: Active token set to ${token}`);
 	}
 
 	getActiveToken(): string {
