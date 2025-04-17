@@ -1,78 +1,157 @@
-.compact-container {
-	width: 95%;
-	max-width: 1400px;
-	margin: 0 auto;
+.panel-header-sm {
+	height: 60px;
+	background: linear-gradient(60deg, #26c6da, #00acc1);
+	box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(0, 188, 212, 0.4);
 }
 
-h2 {
-	text-align: left;
-	margin-bottom: 20px;
-}
-
-.btn-link {
-	color: #007bff;
-	padding: 0;
-	margin-bottom: 15px;
-	background: none;
-	border: none;
-	font-size: 16px;
-}
-
-.btn-link:hover {
-	color: #0056b3;
-	text-decoration: underline;
-}
-
-.search-form-container {
-	width: 50%;
-	text-align: left;
+.main-content {
 	padding: 20px;
-	background: #f5f5f5;
+	overflow-y: auto;
+	height: calc(100vh - 60px);
+}
+
+.card {
 	border-radius: 8px;
-	border: 1px solid #ddd;
-}
-
-form {
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	margin-bottom: 20px;
-	padding: 10px;
 }
 
-.row {
-	margin-left: -15px;
-	margin-right: -15px;
+.card-header {
+	padding: 16px;
+	border-bottom: 1px solid #ddd;
 }
 
-.col-md-3 {
-	padding-left: 15px;
-	padding-right: 15px;
+.card-title {
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: 400;
 }
 
-mat-form-field {
+.card-body {
+	padding: 16px;
+}
+
+.table-responsive {
 	width: 100%;
-	margin-bottom: 8px;
+	height: auto;
+	overflow: visible;
+	/* Remove nested scrollbar */
 }
 
-.mat-mdc-form-field {
+.table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.mat-table {
+	background: transparent;
+}
+
+.mat-header-cell,
+.mat-cell {
+	padding: 16px 20px;
+	/* Увеличены отступы для больших строк */
+	border-bottom: 1px solid #ddd;
+	white-space: nowrap;
+	font-size: 18px;
+	/* Увеличен шрифт для основной таблицы */
+	vertical-align: middle;
+	/* Центрирование содержимого */
+}
+
+.mat-header-cell {
+	font-weight: 500;
+	color: #3f51b5;
+	height: 220px;
+	/* Высота заголовков основной таблицы */
+}
+
+.mat-row {
+	height: 400px;
+	/* Высота строк данных основной таблицы */
+}
+
+.inner-table .mat-header-cell,
+.inner-table .mat-cell {
+	padding: 12px 20px;
+	/* Отступы для вложенной таблицы */
 	font-size: 16px;
+	/* Шрифт для вложенной таблицы */
+	vertical-align: middle;
+	/* Центрирование содержимого */
 }
 
-.mat-mdc-form-field .mdc-text-field {
-	padding: 6px 0;
+.inner-table .mat-header-cell {
+	height: 220px;
+	/* Высота заголовков вложенной таблицы */
 }
 
-.mat-mdc-form-field .mdc-text-field__input {
-	height: 28px;
+.inner-table .mat-row {
+	height: 400px;
+	/* Высота строк данных вложенной таблицы */
 }
 
-mat-option {
-	height: 32px;
-	line-height: 32px;
+.contractor-img,
+.document-img {
+	width: 200px;
+	/* Увеличены изображения для соответствия высоте строк */
+	height: 100px;
+	object-fit: cover;
+	cursor: pointer;
+	border-radius: 4px;
+	margin-right: 12px;
+	vertical-align: middle;
 }
 
-button[mat-raised-button] {
-	padding: 8px 12px;
+.action-buttons {
+	display: flex;
+	gap: 12px;
+	/* Увеличен отступ между кнопками */
+	flex-wrap: wrap;
+	align-items: center;
+	/* Центрирование кнопок по вертикали */
+}
+
+.action-buttons-inline {
+	display: flex;
+	gap: 12px;
+}
+
+.pass-list-container {
+	padding: 20px;
+	/* Увеличены отступы для панели пропусков */
+	background: #f9f9f9;
+}
+
+.inner-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 8px;
+}
+
+.color-circle {
+	display: inline-block;
+	width: 20px;
+	/* Увеличен размер круга */
+	height: 20px;
+	border-radius: 50%;
+	vertical-align: middle;
+}
+
+.text-center {
+	text-align: center;
+}
+
+.text-muted {
+	color: #6c757d;
+}
+
+.error-message {
 	font-size: 14px;
-	line-height: 1.5;
+}
+
+.w-100 {
+	width: 100%;
 }
 
 .d-flex {
@@ -80,179 +159,35 @@ button[mat-raised-button] {
 }
 
 .gap-2 {
-	gap: 0.5rem;
+	gap: 8px;
+}
+
+.justify-content-between {
+	justify-content: space-between;
+}
+
+.align-items-center {
+	align-items: center;
+}
+
+.mb-4 {
+	margin-bottom: 16px;
+}
+
+.mt-3 {
+	margin-top: 12px;
+}
+
+.ms-3 {
+	margin-left: 12px;
 }
 
 .text-danger {
 	color: #dc3545;
-	font-size: 16px;
 }
 
-table {
-	width: 100%;
-	border-collapse: collapse;
-	margin-bottom: 20px;
-	font-size: 16px;
-	table-layout: fixed;
-}
-
-.contractor-table thead th {
-	background-color: #007bff;
-	color: #ffffff;
-	text-align: center;
-	padding: 5px;
-	border-bottom: 2px solid #ddd;
-	height: 30px;
-	font-size: 13px;
-}
-
-.contractor-table .id-store-column {
-	width: 16%;
-	text-align: left;
-	padding-left: 10px;
-}
-
-.contractor-table .scan-column {
-	width: 7%;
-}
-
-tbody td {
-	padding: 10px;
-	border-bottom: 1px solid #ddd;
-	text-align: center;
-	vertical-align: middle;
-	word-wrap: break-word;
-}
-
-.id-store-content {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-}
-
-.contractor-img {
-	width: 150px;
-	height: 150px;
-	object-fit: cover;
-	border-radius: 0px;
-	margin-right: 0px;
-	cursor: pointer;
-}
-
-.document-photos {
-	display: flex;
-	justify-content: center;
-}
-
-.document-img {
-	width: 100px;
-	height: 100px;
-	object-fit: cover;
-	border-radius: 4px;
-	cursor: pointer;
-}
-
-.inner-table {
-	width: 100%;
-	table-layout: fixed;
-	border-collapse: collapse;
-	margin-top: 10px;
-	font-size: 15px;
-}
-
-.inner-table th {
-	background-color: #ffffff;
-	color: #000000;
-	text-align: center;
-	padding: 5px;
-	border-bottom: 2px solid #ddd;
-	height: 30px;
-	font-size: 15px;
-}
-
-.inner-table td {
-	padding: 3px;
-	border-bottom: 1px solid #ddd;
-}
-
-.color-circle {
-	display: inline-block;
-	width: 12px;
-	height: 12px;
-	border-radius: 50%;
-	vertical-align: middle;
-}
-
-mat-expansion-panel {
-	width: 100%;
-	box-shadow: none;
-	background: transparent;
-	margin-bottom: 10px;
-}
-
-.expand-toggle {
-	cursor: pointer;
-	font-size: 16px;
-	font-weight: 500;
-	display: inline-block;
-	margin-bottom: 10px;
-}
-
-.expand-toggle:hover {
-	text-decoration: underline;
-}
-
-.transaction-table td {
-	white-space: pre-wrap;
-}
-
-tr:nth-child(even) {
-	background-color: #f2f2f2;
-}
-
-tr:hover {
-	background-color: #e9ecef;
-}
-
-.text-center {
-	text-align: left;
-}
-
-.mt-4 {
-	margin-top: 1rem;
-}
-
-.text-muted {
-	color: #6c757d;
-}
-
-.expand-btn {
-	width: 24px;
-	height: 24px;
-	min-width: 24px;
-	padding: 0;
-	margin-right: 8px;
-}
-
-.action-buttons {
-	display: flex;
-	flex-direction: column;
-	gap: 5px;
-	/* Расстояние между кнопками */
-}
-
-.contractor-table th,
-.contractor-table td {
-	vertical-align: middle;
-}
-
-.inner-table {
-	width: 100%;
-}
-
-.color-circle {
-	display: inline-block;
-	width: 12px;
-	height: 12px;
-	border-radius: 50%;
+tr.detail-row,
+.mat-row.detail-row {
+	height: auto !important;
+	background: #f9f9f9;
 }

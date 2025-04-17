@@ -12,12 +12,6 @@ body {
 	box-sizing: inherit;
 }
 
-.app-layout {
-	display: flex;
-	height: 100vh;
-	width: 100%;
-}
-
 .footer {
 	margin-top: auto;
 	padding: 15px 0;
@@ -27,19 +21,29 @@ body {
 
 .content-container {
 	flex-grow: 1;
+	margin-left: 200px;
 	padding: 0px;
-	overflow-y: auto;
 }
 
 .sidebar {
+	position: fixed;
+	left: 0;
+	top: 0;
 	width: 200px;
+	height: 100vh;
 	background-color: #f8f9fa;
 	padding: 15px;
 	box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 	display: flex;
 	flex-direction: column;
 	overflow-y: auto;
+	z-index: 100;
+}
+
+.app-layout {
+	display: flex;
 	height: 100vh;
+	width: 100%;
 }
 
 .sidebar::-webkit-scrollbar {

@@ -2,11 +2,9 @@
 html,
 body {
 	font-family: 'Roboto', sans-serif;
-	margin: 0px 0px 0px 0px;
-	padding: 0px 0px 0px 0px;
-	;
+	margin: 0;
+	padding: 0;
 	height: 100%;
-	overflow: hidden;
 	box-sizing: border-box;
 }
 
@@ -14,7 +12,8 @@ body {
 	display: flex;
 	height: 100vh;
 	width: 100%;
-	padding-bottom: 100px;
+	overflow: hidden;
+	/* Prevent app-level scrollbar */
 }
 
 button,
@@ -72,20 +71,16 @@ button,
 
 .local-overlay-root {
 	position: fixed;
-	/* Фиксированное позиционирование относительно окна */
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
 	pointer-events: none;
-	/* Чтобы контейнер не блокировал клики */
 	z-index: 1000;
-	/* Обеспечивает, что оверлеи будут выше других элементов */
 }
 
 .local-overlay-root .cdk-overlay-container {
 	pointer-events: auto;
-	/* Позволяет взаимодействовать с оверлеями */
 }
 
 .is-invalid {
@@ -105,10 +100,10 @@ button,
 .container {
 	width: 100%;
 	max-width: 1600px;
-	margin-left: 30px;
-	margin-right: auto;
+	margin: 0 auto;
+	padding: 20px;
 	box-sizing: border-box;
-	padding-bottom: 20px;
+	overflow: visible;
 }
 
 .mt-4 {
