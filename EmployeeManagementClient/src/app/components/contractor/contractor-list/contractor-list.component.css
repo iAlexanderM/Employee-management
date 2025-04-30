@@ -1,211 +1,57 @@
-.compact-container {
-	width: 95%;
-	margin: 0 auto;
-}
-
-h2 {
-	text-align: left;
-	margin-bottom: 20px;
-}
-
-form {
-	margin-bottom: 20px;
-	padding: 10px;
-	border: 1px solid #ddd;
-	border-radius: 5px;
-	background-color: #f9f9f9;
-}
-
-label {
-	font-weight: bold;
-}
-
-/* Общие стили для кнопок */
-button,
-.btn {
-	display: inline-block;
-	font-size: 14px;
-	font-weight: 500;
-	padding: 8px 12px;
-	border-radius: 4px;
-	cursor: pointer;
-	border: 1px solid transparent;
-	transition: background-color 0.3s, border-color 0.3s;
-	margin: 5px;
-}
-
-/* Цветовые стили */
-.btn-primary,
-.btn-warning,
-.btn-info {
-	background-color: #007bff;
-	border-color: #007bff;
-	color: #fff;
-}
-
-.btn-primary:hover,
-.btn-warning:hover,
-.btn-info:hover {
-	background-color: #0056b3;
-	border-color: #0056b3;
-}
-
-.btn-secondary {
-	background-color: #6c757d;
-	border-color: #6c757d;
-	color: #fff;
-}
-
-.btn-secondary:hover {
-	background-color: #5a6268;
-	border-color: #545b62;
-}
-
-/* Выравнивание размера кнопок */
-.btn-equal {
-	min-width: 120px;
-	text-align: center;
-}
-
-/* Таблица */
-table {
-	width: 100%;
-	border-collapse: collapse;
-	margin-bottom: 20px;
-	font-size: 14px;
-}
-
-/* Фиксированная ширина колонок */
-table th,
-table td {
-	text-align: left;
-	word-wrap: break-word;
-}
-
-/* Фиксированная ширина колонок */
-table th,
-table td {
-	text-align: left;
-	word-wrap: break-word;
-}
-
-/* Стили для выпадающего списка */
-.dropdown-menu {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	background-color: #fff;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-	max-height: 200px;
-	/* Ограничение по высоте */
-	overflow-y: auto;
-	/* Прокрутка для длинного списка */
-	width: 100%;
-	/* Занимает всю ширину */
-	position: absolute;
-	z-index: 1000;
-	/* Поверх других элементов */
-}
-
-/* Элементы списка */
-.dropdown-menu li {
-	padding: 8px 12px;
-	font-size: 14px;
-	cursor: pointer;
-	transition: background-color 0.2s, color 0.2s;
-	color: #333;
-}
-
-/* Эффекты при наведении */
-.dropdown-menu li:hover {
-	background-color: #007bff;
-	color: white;
-}
-
-/* Прокрутка */
-.dropdown-menu::-webkit-scrollbar {
-	width: 8px;
-}
-
-.dropdown-menu::-webkit-scrollbar-thumb {
-	background-color: #007bff;
-	border-radius: 4px;
-}
-
-.dropdown-menu::-webkit-scrollbar-thumb:hover {
-	background-color: #0056b3;
-}
-
-thead th {
-	background-color: #007bff;
-	color: white;
-	text-align: left;
-	padding: 10px;
-	border-bottom: 2px solid #ddd;
-}
-
-tbody td {
-	padding: 10px;
-	border-bottom: 1px solid #ddd;
-}
-
-tr:nth-child(even) {
-	background-color: #f2f2f2;
-}
-
-tr:hover {
-	background-color: #e9ecef;
-}
-
-/* пагинация */
-.pagination-container {
+/* Специфические стили для формы поиска */
+.row.mb-2 {
 	display: flex;
-	margin-top: 10px;
-	gap: 5px;
+	flex-direction: column;
+	gap: 0px !important;
+	width: 400px !important;
+	margin: 0 !important;
+	padding: 0px !important;
 }
 
-.pagination-squares {
-	display: flex;
-	gap: 5px;
+.col-md-3 {
+	width: 100% !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	margin-bottom: -20px !important;
 }
 
-.square {
-	width: 30px;
-	height: 30px;
-	background-color: #e0e0e0;
-	color: #000;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	border-radius: 5px;
-	cursor: pointer;
-	font-size: 14px;
-	font-weight: bold;
-	flex-shrink: 0;
-	transition: background-color 0.2s;
+/* Распределение ширины столбцов - Contractor Table */
+.contractor-table th:nth-child(1),
+.contractor-table td:nth-child(1) {
+	width: 3%;
 }
 
-.square:hover {
-	background-color: #c0c0c0;
+.contractor-table th:nth-child(2),
+.contractor-table td:nth-child(2) {
+	width: 3%;
 }
 
-.square.active {
-	background-color: #007bff;
-	color: #fff;
+.contractor-table th:nth-child(3),
+.contractor-table td:nth-child(3),
+.contractor-table th:nth-child(4),
+.contractor-table td:nth-child(4) {
+	width: 15%;
 }
 
-.square.disabled {
-	pointer-events: none;
-	background-color: transparent;
-	color: #aaa;
-	cursor: default;
+.contractor-table th:nth-child(5),
+.contractor-table td:nth-child(5),
+.contractor-table th:nth-child(6),
+.contractor-table td:nth-child(6),
+.contractor-table th:nth-child(7),
+.contractor-table td:nth-child(7),
+.contractor-table th:nth-child(8),
+.contractor-table td:nth-child(8) {
+	width: 15%;
 }
 
-.contractor-img {
-	width: 50px;
-	height: 50px;
-	object-fit: cover;
-	border-radius: 4px;
+.contractor-table th:nth-child(9),
+.contractor-table td:nth-child(9),
+.contractor-table th:nth-child(10),
+.contractor-table td:nth-child(10) {
+	width: 8%;
+}
+
+.contractor-table th:nth-child(11),
+.contractor-table td:nth-child(11) {
+	width: 150px;
 }

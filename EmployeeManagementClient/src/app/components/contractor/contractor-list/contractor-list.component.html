@@ -1,140 +1,154 @@
-<!-- contractor-list.component.html -->
-<div class="container mt-4">
-	<h2>Поиск контрагентов</h2>
+<div class="panel-header panel-header-sm"></div>
+<div class="main-content">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-header">
+					<h4 class="card-title">Поиск контрагентов</h4>
+				</div>
+				<div class="card-body">
+					<button mat-stroked-button class="mb-3" (click)="toggleSearchForm()">
+						{{ isExpanded ? 'Свернуть' : 'Развернуть' }}
+					</button>
 
-	<button type="button" class="btn btn-link mb-3" (click)="toggleSearchForm()">
-		{{ isExpanded ? 'Свернуть' : 'Развернуть' }}
-	</button>
+					<!-- Форма поиска -->
+					<form *ngIf="isExpanded" [formGroup]="searchForm" (ngSubmit)="searchContractors()" class="mb-4">
+						<div class="row">
+							<div class="col-md-4">
+								<label for="Id">Код контрагента:</label>
+								<input id="Id" formControlName="Id" type="text" class="form-control" />
+							</div>
+							<div class="col-md-4">
+								<label for="FirstName">Имя:</label>
+								<input id="FirstName" formControlName="FirstName" type="text" class="form-control" />
+							</div>
+							<div class="col-md-4">
+								<label for="LastName">Фамилия:</label>
+								<input id="LastName" formControlName="LastName" type="text" class="form-control" />
+							</div>
+							<div class="col-md-4 mt-3">
+								<label for="MiddleName">Отчество:</label>
+								<input id="MiddleName" formControlName="MiddleName" type="text" class="form-control" />
+							</div>
+							<div class="col-md-4 mt-3">
+								<label for="BirthDate">Дата рождения:</label>
+								<input id="BirthDate" formControlName="BirthDate" type="date" class="form-control" />
+							</div>
+							<div class="col-md-4 mt-3">
+								<label for="DocumentType">Тип документа:</label>
+								<input id="DocumentType" formControlName="DocumentType" type="text"
+									class="form-control" />
+							</div>
+							<div class="col-md-4 mt-3">
+								<label for="PassportSerialNumber">Серия и номер паспорта:</label>
+								<input id="PassportSerialNumber" formControlName="PassportSerialNumber" type="text"
+									class="form-control" />
+							</div>
+							<div class="col-md-4 mt-3">
+								<label for="PassportIssuedBy">Кем выдан:</label>
+								<input id="PassportIssuedBy" formControlName="PassportIssuedBy" type="text"
+									class="form-control" />
+							</div>
+							<div class="col-md-4 mt-3">
+								<label for="PassportIssueDate">Дата выдачи:</label>
+								<input id="PassportIssueDate" formControlName="PassportIssueDate" type="date"
+									class="form-control" />
+							</div>
+							<div class="col-md-4 mt-3">
+								<label for="PhoneNumber">Номер телефона:</label>
+								<input id="PhoneNumber" formControlName="PhoneNumber" type="text"
+									mask="0 (000) 000-00-00" placeholder="8 (___) ___-__-__" class="form-control" />
+							</div>
+						</div>
+						<div class="row mt-4">
+							<div class="col-md-12 text-end">
+								<button mat-raised-button color="primary" type="submit">Найти</button>
+								<button mat-stroked-button color="primary" type="button"
+									(click)="resetFilters()">Сбросить</button>
+							</div>
+						</div>
+					</form>
 
-	<!-- Форма поиска -->
-	<form *ngIf="isExpanded" [formGroup]="searchForm" (ngSubmit)="searchContractors()" class="mb-4">
-		<div class="row">
-			<div class="col-md-4">
-				<label for="Id">Код контрагента:</label>
-				<input id="Id" formControlName="Id" type="text" class="form-control" />
-			</div>
-			<div class="col-md-4">
-				<label for="FirstName">Имя:</label>
-				<input id="FirstName" formControlName="FirstName" type="text" class="form-control" />
-			</div>
-			<div class="col-md-4">
-				<label for="LastName">Фамилия:</label>
-				<input id="LastName" formControlName="LastName" type="text" class="form-control" />
-			</div>
-			<div class="col-md-4 mt-3">
-				<label for="MiddleName">Отчество:</label>
-				<input id="MiddleName" formControlName="MiddleName" type="text" class="form-control" />
-			</div>
-			<div class="col-md-4 mt-3">
-				<label for="BirthDate">Дата рождения:</label>
-				<input id="BirthDate" formControlName="BirthDate" type="date" class="form-control" />
-			</div>
-			<div class="col-md-4 mt-3">
-				<label for="DocumentType">Тип документа:</label>
-				<input id="DocumentType" formControlName="DocumentType" type="text" class="form-control" />
-			</div>
-			<div class="col-md-4 mt-3">
-				<label for="PassportSerialNumber">Серия и номер паспорта:</label>
-				<input id="PassportSerialNumber" formControlName="PassportSerialNumber" type="text"
-					class="form-control" />
-			</div>
-			<div class="col-md-4 mt-3">
-				<label for="PassportIssuedBy">Кем выдан:</label>
-				<input id="PassportIssuedBy" formControlName="PassportIssuedBy" type="text" class="form-control" />
-			</div>
-			<div class="col-md-4 mt-3">
-				<label for="PassportIssueDate">Дата выдачи:</label>
-				<input id="PassportIssueDate" formControlName="PassportIssueDate" type="date" class="form-control" />
-			</div>
-			<div class="col-md-4 mt-3">
-				<label for="PhoneNumber">Номер телефона:</label>
-				<input id="PhoneNumber" formControlName="PhoneNumber" type="text" mask="0 (000) 000-00-00"
-					placeholder="8 (___) ___-__-__" class="form-control" />
-			</div>
-		</div>
-		<div class="row mt-4">
-			<div class="col-md-12 text-end">
-				<button type="submit" class="btn btn-primary">Найти</button>
-				<button type="button" class="btn btn-secondary" (click)="resetFilters()">Сбросить</button>
-			</div>
-		</div>
-	</form>
+					<div class="d-flex align-items-center justify-content-between mb-2">
+						<button mat-flat-button color="accent" routerLink="/contractors/new">Добавить нового
+							контрагента</button>
+						<div class="d-flex justify-content-end align-items-center mb-3">
+							<label for="pageSize" class="me-2">Элементов на странице:</label>
+							<select id="pageSize" class="form-select w-auto" [value]="pageSize"
+								(change)="onPageSizeChange($event)">
+								<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+							</select>
+						</div>
+					</div>
 
-	<div class="d-flex align-items-center justify-content-between mb-2">
-		<button routerLink="/contractors/new" class="btn btn-info btn-sm btn-equal">Добавить нового
-			контрагента</button>
-		<div class="d-flex justify-content-end align-items-center mb-3">
-			<label for="pageSize" class="me-2">Элементов на странице:</label>
-			<select id="pageSize" class="form-select w-auto" [value]="pageSize" (change)="onPageSizeChange($event)">
-				<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
-			</select>
-		</div>
-	</div>
+					<!-- Пагинация -->
+					<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
+						<div class="pagination-squares">
+							<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+								[class.disabled]="page === '...'" (click)="onPageClick(page)">
+								{{ page }}
+							</div>
+						</div>
+					</div>
 
-	<!-- Пагинация -->
-	<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
-		<div class="pagination-squares">
-			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-				[class.disabled]="page === '...'" (click)="onPageClick(page)">
-				{{ page }}
-			</div>
-		</div>
-	</div>
+					<!-- Сообщение при загрузке -->
+					<div *ngIf="isLoading" class="text-center mt-4">
+						<p>Загрузка данных...</p>
+					</div>
+					<br>
+					<!-- Таблица контрагентов -->
+					<div *ngIf="!isLoading">
+						<table class="table table-bordered contractor-table" *ngIf="displayedContractors.length > 0">
+							<thead>
+								<tr>
+									<th>Сортировка</th>
+									<th>ID</th>
+									<th>Имя</th>
+									<th>Фамилия</th>
+									<th>Отчество</th>
+									<th>Дата рождения</th>
+									<th>Фото</th>
+									<th>Действия</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr *ngFor="let contractor of displayedContractors">
+									<td>{{ contractor.sortOrder }}</td>
+									<td>{{ contractor.id }}</td>
+									<td>{{ contractor.firstName }}</td>
+									<td>{{ contractor.lastName }}</td>
+									<td>{{ contractor.middleName }}</td>
+									<td>{{ contractor.birthDate | date: 'dd.MM.yyyy' }}</td>
+									<td>
+										<img *ngIf="getFirstPhoto(contractor)" [src]="getFirstPhoto(contractor)"
+											alt="Фото контрагента" class="contractor-img" />
+									</td>
+									<td>
+										<button mat-raised-button color="primary"
+											(click)="navigateToDetails(contractor.id)">Просмотреть</button>
+										<button mat-flat-button color="accent"
+											(click)="navigateToEdit(contractor.id)">Редактировать</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
 
-	<!-- Сообщение при загрузке -->
-	<div *ngIf="isLoading" class="text-center mt-4">
-		<p>Загрузка данных...</p>
-	</div>
-	<br>
-	<!-- Таблица контрагентов -->
-	<div *ngIf="!isLoading">
-		<table class="table table-bordered contractor-table" *ngIf="displayedContractors.length > 0">
-			<thead>
-				<tr>
-					<th>Сортировка</th>
-					<th>ID</th>
-					<th>Имя</th>
-					<th>Фамилия</th>
-					<th>Отчество</th>
-					<th>Дата рождения</th>
-					<th>Фото</th>
-					<th>Действия</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr *ngFor="let contractor of displayedContractors">
-					<td>{{ contractor.sortOrder }}</td>
-					<td>{{ contractor.id }}</td>
-					<td>{{ contractor.firstName }}</td>
-					<td>{{ contractor.lastName }}</td>
-					<td>{{ contractor.middleName }}</td>
-					<td>{{ contractor.birthDate | date: 'dd.MM.yyyy' }}</td>
-					<td>
-						<img *ngIf="getFirstPhoto(contractor)" [src]="getFirstPhoto(contractor)" alt="Фото контрагента"
-							class="contractor-img" />
-					</td>
-					<td>
-						<button class="btn btn-info btn-sm btn-equal"
-							(click)="navigateToDetails(contractor.id)">Просмотреть</button>
-						<button class="btn btn-secondary btn-sm btn-equal"
-							(click)="navigateToEdit(contractor.id)">Редактировать</button>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+						<!-- Нет данных -->
+						<ng-template #noData>
+							<p class="text-center mt-4">Нет данных для отображения</p>
+						</ng-template>
+					</div>
 
-		<!-- Нет данных -->
-		<ng-template #noData>
-			<p class="text-center mt-4">Нет данных для отображения</p>
-		</ng-template>
-	</div>
-
-	<!-- Пагинация -->
-	<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
-		<div class="pagination-squares">
-			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-				[class.disabled]="page === '...'" (click)="onPageClick(page)">
-				{{ page }}
+					<!-- Пагинация -->
+					<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
+						<div class="pagination-squares">
+							<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+								[class.disabled]="page === '...'" (click)="onPageClick(page)">
+								{{ page }}
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

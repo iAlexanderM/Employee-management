@@ -1,5 +1,5 @@
 <div class="panel-header panel-header-sm"></div>
-<div class="main-content" style="overflow-y: auto; height: calc(100vh - 60px);">
+<div class="main-content">
 	<div class="row">
 		<div class="col-md-12">
 			<div class="card">
@@ -91,10 +91,9 @@
 							<div class="d-flex gap-2">
 								<button mat-raised-button color="primary" type="submit"
 									[disabled]="isLoading">Поиск</button>
-								<button mat-stroked-button type="button" (click)="resetFilters()"
+								<button mat-stroked-button color="primary" type="button" (click)="resetFilters()"
 									[disabled]="isLoading">Сбросить</button>
-								<button mat-flat-button color="accent" type="button"
-									(click)="goToCreateTransactionFromSearch()"
+								<button mat-flat-button color="accent" type="button" (click)="goToCreateTransaction()"
 									[disabled]="isLoading || !showAddTransactionButton"
 									matTooltip="Заполните и подтвердите все поля, чтобы добавить транзакцию"
 									[matTooltipDisabled]="showAddTransactionButton">
@@ -107,468 +106,170 @@
 						</div>
 					</form>
 
-					<!-- Table Container -->
-					<div #tableContainer class="table-container">
-						<!-- Элемент для наблюдения за верхом таблицы -->
-						<div #tableTop style="height: 20px;"></div>
-
-						<!-- Активные пропуска -->
-						<div *ngIf="activeDataSource.data.length > 0">
-							<h5 class="section-header">Активные пропуска</h5>
-							<div class="table-responsive">
-								<table mat-table [dataSource]="activeDataSource" class="table">
-									<!-- Магазин -->
-									<ng-container matColumnDef="store">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Магазин</th>
-										<td mat-cell *matCellDef="let item">{{ formatStore(item.result) }}</td>
-									</ng-container>
-
-									<!-- Статус -->
-									<ng-container matColumnDef="status">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Статус</th>
-										<td mat-cell *matCellDef="let item">{{ item.status === 'active' ? 'Активный' :
-											'Закрытый' }}</td>
-									</ng-container>
-
-									<!-- ID и фото -->
-									<ng-container matColumnDef="id">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">ID</th>
-										<td mat-cell *matCellDef="let item">
-											<img [src]="getFirstPhotoUrl(item.contractor)" class="contractor-img"
-												alt="Фото"
-												(click)="openImageInNewWindow(getFirstPhotoUrl(item.contractor))"
-												onerror="this.src='/assets/images/default-photo.jpg'" />
-											{{ item.contractor.contractorId }}
-										</td>
-									</ng-container>
-
-									<!-- Сканы -->
-									<ng-container matColumnDef="scan">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Сканы</th>
-										<td mat-cell *matCellDef="let item">
-											<img *ngIf="getLastDocumentPhotoUrl(item.contractor) as photoUrl"
-												[src]="photoUrl" class="document-img" alt="Скан"
-												(click)="openImageInNewWindow(photoUrl)"
-												onerror="this.src='/assets/images/default-doc.png'" />
-											<span *ngIf="!getLastDocumentPhotoUrl(item.contractor)">-</span>
-										</td>
-									</ng-container>
-
-									<!-- ФИО -->
-									<ng-container matColumnDef="name">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">ФИО</th>
-										<td mat-cell *matCellDef="let item">{{ item.contractor.contractorName || '-' }}
-										</td>
-									</ng-container>
-
-									<!-- Должность -->
-									<ng-container matColumnDef="position">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Должность</th>
-										<td mat-cell *matCellDef="let item">
-											{{ getLatestPass(item.status === 'active' ? item.contractor.activePasses :
-											item.contractor.closedPasses)?.position || '-' }}
-										</td>
-									</ng-container>
-
-									<!-- Телефон -->
-									<ng-container matColumnDef="phone">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Телефон</th>
-										<td mat-cell *matCellDef="let item">{{ item.contractor.phoneNumber || '-' }}
-										</td>
-									</ng-container>
-
-									<!-- Гражданство -->
-									<ng-container matColumnDef="citizenship">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Гражданство</th>
-										<td mat-cell *matCellDef="let item">{{ item.contractor.citizenship || '-' }}
-										</td>
-									</ng-container>
-
-									<!-- Тип продукции -->
-									<ng-container matColumnDef="productType">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Тип продукции</th>
-										<td mat-cell *matCellDef="let item">{{ item.contractor.productType || '-' }}
-										</td>
-									</ng-container>
-
-									<!-- Начало -->
-									<ng-container matColumnDef="startDate">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Начало</th>
-										<td mat-cell *matCellDef="let item">
-											{{ getLatestPass(item.status === 'active' ? item.contractor.activePasses :
-											item.contractor.closedPasses)?.startDate | date: 'dd.MM.yyyy' }}
-										</td>
-									</ng-container>
-
-									<!-- Окончание -->
-									<ng-container matColumnDef="endDate">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Окончание</th>
-										<td mat-cell *matCellDef="let item">
-											{{ getLatestPass(item.status === 'active' ? item.contractor.activePasses :
-											item.contractor.closedPasses)?.endDate | date: 'dd.MM.yyyy' }}
-										</td>
-									</ng-container>
-
-									<!-- Действия -->
-									<ng-container matColumnDef="actions">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Действия</th>
-										<td mat-cell *matCellDef="let item">
-											<div class="action-buttons">
-												<button mat-button color="primary"
-													(click)="viewContractor(item.contractor.contractorId)">Просмотр</button>
-												<button mat-button color="accent"
-													(click)="editContractor(item.contractor.contractorId)">Редактировать</button>
-												<button mat-button
-													(click)="toggleActivePanel(item.resultIndex, item.contractorIndex)">Пропуска</button>
-											</div>
-										</td>
-									</ng-container>
-
-									<!-- Расширяемая панель для пропусков -->
-									<ng-container matColumnDef="expandedDetail">
-										<td mat-cell *matCellDef="let item" [attr.colspan]="displayedColumns.length">
-											<div class="pass-list-container"
-												[@expandCollapse]="isActivePanelExpanded(item.resultIndex, item.contractorIndex) || isClosedPanelExpanded(item.resultIndex, item.contractorIndex) ? 'open' : 'closed'">
-												<table mat-table [dataSource]="getPassDataSource(item)"
-													class="inner-table">
-													<!-- Цвет -->
-													<ng-container matColumnDef="color">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">Цвет
-														</th>
-														<td mat-cell *matCellDef="let pass">
-															<span class="color-circle"
-																[style.backgroundColor]="pass.passTypeColor || '#000'"></span>
-														</td>
-													</ng-container>
-
-													<!-- Тип -->
-													<ng-container matColumnDef="type">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">Тип
-														</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.passTypeName || '-'
-															}}</td>
-													</ng-container>
-
-													<!-- Срок -->
-													<ng-container matColumnDef="duration">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">Срок
-														</th>
-														<td mat-cell *matCellDef="let pass">{{
-															(pass.passTypeDurationInMonths || 0) + ' мес.' }}</td>
-													</ng-container>
-
-													<!-- Стоимость -->
-													<ng-container matColumnDef="cost">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">
-															Стоимость</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.cost | number:
-															'1.0-0' }}</td>
-													</ng-container>
-
-													<!-- Дата выдачи -->
-													<ng-container matColumnDef="transactionDate">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">Дата
-															выдачи</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.transactionDate |
-															date: 'dd.MM.yyyy' }}</td>
-													</ng-container>
-
-													<!-- Начало -->
-													<ng-container matColumnDef="startDate">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">
-															Начало</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.startDate | date:
-															'dd.MM.yyyy' }}</td>
-													</ng-container>
-
-													<!-- Окончание -->
-													<ng-container matColumnDef="endDate">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">
-															Окончание</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.endDate | date:
-															'dd.MM.yyyy' }}</td>
-													</ng-container>
-
-													<!-- Место -->
-													<ng-container matColumnDef="location">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">Место
-														</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.building }} {{
-															pass.floor }} {{ pass.line }} {{ pass.storeNumber }}</td>
-													</ng-container>
-
-													<!-- Должность -->
-													<ng-container matColumnDef="position">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">
-															Должность</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.position || '-' }}
-														</td>
-													</ng-container>
-
-													<!-- Действия (для активных пропусков) -->
-													<ng-container matColumnDef="passActions">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">
-															Действия</th>
-														<td mat-cell *matCellDef="let pass">
-															<div class="action-buttons-inline">
-																<button mat-button color="primary"
-																	class="pass-action-button"
-																	(click)="extendPass(pass, item.result)"
-																	[disabled]="isLoading">Продлить</button>
-																<button mat-button color="warn"
-																	class="pass-action-button"
-																	(click)="closePass(pass.id, item.contractorIndex, item.resultIndex)"
-																	[disabled]="isLoading">Закрыть</button>
-															</div>
-														</td>
-													</ng-container>
-
-													<tr mat-header-row *matHeaderRowDef="passColumnsActive"></tr>
-													<tr mat-row *matRowDef="let pass; columns: passColumnsActive"></tr>
-												</table>
-												<div *ngIf="!(item.contractor.activePasses)?.length"
-													class="text-center text-muted">
-													Нет активных пропусков
+					<!-- Контейнер для результатов -->
+					<div class="table-container">
+						<div *ngFor="let result of results; let resultIndex = index" class="mb-4"
+							[attr.data-result-index]="resultIndex">
+							<ng-container
+								*ngFor="let item of getContractorsWindowedFor(resultIndex); let i = index; trackBy: trackByFn">
+								<table class="table table-bordered contractor-table"
+									[attr.data-result-index]="resultIndex"
+									[attr.data-contractor-index]="i + windows[resultIndex].start">
+									<thead>
+										<tr>
+											<th>ID</th>
+											<th>Фото</th>
+											<th>Сканы</th>
+											<th>ФИО</th>
+											<th>Должность</th>
+											<th>Телефон</th>
+											<th>Гражданство</th>
+											<th>Тип продукции</th>
+											<th>Начало</th>
+											<th>Окончание</th>
+											<th>Действия</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>{{ item.contractor.contractorId }}</td>
+											<td class="img-cell">
+												<img [src]="getFirstPhotoUrl(item.contractor)" class="contractor-img"
+													alt="Фото" (click)="openImage(getFirstPhotoUrl(item.contractor))"
+													loading="lazy"
+													onerror="this.src='/assets/images/default-photo.jpg'" />
+											</td>
+											<td class="img-cell">
+												<img *ngIf="getLastDocumentPhotoUrl(item.contractor)"
+													[src]="getLastDocumentPhotoUrl(item.contractor)"
+													class="document-img" alt="Скан"
+													(click)="openImage(getLastDocumentPhotoUrl(item.contractor))"
+													loading="lazy"
+													onerror="this.src='/assets/images/default-doc.png'" />
+											</td>
+											<td>
+												<div class="name-cell">
+													<span>{{ getNameParts(item.contractor.contractorName)[0] }}</span>
+													<span>{{ getNameParts(item.contractor.contractorName)[1] }}</span>
+													<span>{{ getNameParts(item.contractor.contractorName)[2] }}</span>
 												</div>
-											</div>
-										</td>
-									</ng-container>
-
-									<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-									<tr mat-row *matRowDef="let item; columns: displayedColumns"></tr>
-									<tr mat-row
-										*matRowDef="let item; columns: ['expandedDetail']; when: isActivePanelExpandedWhen">
-									</tr>
+											</td>
+											<td>
+												{{ (item.isActive ? getLatestPass(item.contractor.activePasses) :
+												getLatestPass(item.contractor.closedPasses))?.position || '-' }}
+											</td>
+											<td>{{ item.contractor.phoneNumber }}</td>
+											<td>{{ item.contractor.citizenship }}</td>
+											<td>{{ item.contractor.productType }}</td>
+											<td>
+												{{
+												(item.isActive ? getLatestPass(item.contractor.activePasses) :
+												getLatestPass(item.contractor.closedPasses))?.startDate
+												| date: 'dd.MM.yyyy'
+												}}
+											</td>
+											<td>
+												{{
+												(item.isActive ? getLatestPass(item.contractor.activePasses) :
+												getLatestPass(item.contractor.closedPasses))?.endDate
+												| date: 'dd.MM.yyyy'
+												}}
+											</td>
+											<td class="actions-cell">
+												<button mat-raised-button color="primary"
+													(click)="viewContractor(item.contractor.contractorId)">Просмотр</button>
+												<button mat-flat-button color="accent"
+													(click)="editContractor(item.contractor.contractorId)">Редактировать</button>
+												<button mat-stroked-button color="primary"
+													(click)="toggleExpansionPanel(resultIndex, i + windows[resultIndex].start)">Пропуска</button>
+											</td>
+										</tr>
+										<tr>
+											<td colspan="11" style="padding: 0">
+												<mat-expansion-panel
+													[expanded]="isExpanded(resultIndex, i + windows[resultIndex].start)">
+													<table class="inner-table">
+														<thead>
+															<tr>
+																<th>Цвет</th>
+																<th>Тип</th>
+																<th>Срок</th>
+																<th>Стоимость</th>
+																<th>Дата выдачи</th>
+																<th>Дата начала</th>
+																<th>Дата окончания</th>
+																<th>Место</th>
+																<th>Должность</th>
+																<th *ngIf="item.isActive">Действия</th>
+																<th *ngIf="!item.isActive">Причина закрытия</th>
+															</tr>
+														</thead>
+														<tbody>
+															<ng-container *ngIf="item.isActive; else closedPasses">
+																<tr
+																	*ngFor="let pass of getSortedPasses(item.contractor.activePasses, result)">
+																	<td><span class="color-circle"
+																			[style.backgroundColor]="pass.passTypeColor || '#ccc'"></span>
+																	</td>
+																	<td>{{ pass.passTypeName }}</td>
+																	<td>{{ pass.passTypeDurationInMonths + ' мес.' }}
+																	</td>
+																	<td>{{ pass.cost | number: '1.0-0' }}</td>
+																	<td>{{ pass.transactionDate | date: 'dd.MM.yyyy' }}
+																	</td>
+																	<td>{{ pass.startDate | date: 'dd.MM.yyyy' }}</td>
+																	<td>{{ pass.endDate | date: 'dd.MM.yyyy' }}</td>
+																	<td>{{ pass.building }} {{ pass.floor }} {{
+																		pass.line }} {{ pass.storeNumber }}</td>
+																	<td>{{ pass.position }}</td>
+																	<td>
+																		<button mat-raised-button color="primary"
+																			(click)="extendPass(pass, result)">Продлить</button>
+																		<button mat-flat-button color="warn"
+																			(click)="closePass(pass.id)">Закрыть</button>
+																	</td>
+																</tr>
+																<tr *ngIf="item.contractor.activePasses.length === 0">
+																	<td colspan="10">Нет активных пропусков у
+																		контрагента</td>
+																</tr>
+															</ng-container>
+															<ng-template #closedPasses>
+																<tr
+																	*ngFor="let pass of getSortedPasses(item.contractor.closedPasses, result)">
+																	<td><span class="color-circle"
+																			[style.backgroundColor]="pass.passTypeColor || '#ccc'"></span>
+																	</td>
+																	<td>{{ pass.passTypeName }}</td>
+																	<td>{{ pass.passTypeDurationInMonths + ' мес.' }}
+																	</td>
+																	<td>{{ pass.cost | number: '1.0-0' }}</td>
+																	<td>{{ pass.transactionDate | date: 'dd.MM_e.g.,
+																		yyyy' }}</td>
+																	<td>{{ pass.startDate | date: 'dd.MM.yyyy' }}</td>
+																	<td>{{ pass.endDate | date: 'dd.MM.yyyy' }}</td>
+																	<td>{{ pass.building }} {{ pass.floor }} {{
+																		pass.line }} {{ pass.storeNumber }}</td>
+																	<td>{{ pass.position }}</td>
+																	<td>{{ pass.closeReason || '-' }}</td>
+																</tr>
+																<tr *ngIf="item.contractor.closedPasses.length === 0">
+																	<td colspan="10">Нет закрытых пропусков у
+																		контрагента</td>
+																</tr>
+															</ng-template>
+														</tbody>
+													</table>
+												</mat-expansion-panel>
+											</td>
+										</tr>
+									</tbody>
 								</table>
+							</ng-container>
+							<div *ngIf="getContractorsWindowedFor(resultIndex).length === 0" class="text-center">
+								Нет контрагентов для отображения
 							</div>
 						</div>
-
-						<!-- Закрытые пропуска -->
-						<div *ngIf="closedDataSource.data.length > 0">
-							<h5 class="section-header">Закрытые пропуска</h5>
-							<div class="table-responsive">
-								<table mat-table [dataSource]="closedDataSource" class="table">
-									<!-- Магазин -->
-									<ng-container matColumnDef="store">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Магазин</th>
-										<td mat-cell *matCellDef="let item">{{ formatStore(item.result) }}</td>
-									</ng-container>
-
-									<!-- Статус -->
-									<ng-container matColumnDef="status">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Статус</th>
-										<td mat-cell *matCellDef="let item">{{ item.status === 'active' ? 'Активный' :
-											'Закрытый' }}</td>
-									</ng-container>
-
-									<!-- ID и фото -->
-									<ng-container matColumnDef="id">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">ID</th>
-										<td mat-cell *matCellDef="let item">
-											<img [src]="getFirstPhotoUrl(item.contractor)" class="contractor-img"
-												alt="Фото"
-												(click)="openImageInNewWindow(getFirstPhotoUrl(item.contractor))"
-												onerror="this.src='/assets/images/default-photo.jpg'" />
-											{{ item.contractor.contractorId }}
-										</td>
-									</ng-container>
-
-									<!-- Сканы -->
-									<ng-container matColumnDef="scan">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Сканы</th>
-										<td mat-cell *matCellDef="let item">
-											<img *ngIf="getLastDocumentPhotoUrl(item.contractor) as photoUrl"
-												[src]="photoUrl" class="document-img" alt="Скан"
-												(click)="openImageInNewWindow(photoUrl)"
-												onerror="this.src='/assets/images/default-doc.png'" />
-											<span *ngIf="!getLastDocumentPhotoUrl(item.contractor)">-</span>
-										</td>
-									</ng-container>
-
-									<!-- ФИО -->
-									<ng-container matColumnDef="name">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">ФИО</th>
-										<td mat-cell *matCellDef="let item">{{ item.contractor.contractorName || '-' }}
-										</td>
-									</ng-container>
-
-									<!-- Должность -->
-									<ng-container matColumnDef="position">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Должность</th>
-										<td mat-cell *matCellDef="let item">
-											{{ getLatestPass(item.status === 'active' ? item.contractor.activePasses :
-											item.contractor.closedPasses)?.position || '-' }}
-										</td>
-									</ng-container>
-
-									<!-- Телефон -->
-									<ng-container matColumnDef="phone">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Телефон</th>
-										<td mat-cell *matCellDef="let item">{{ item.contractor.phoneNumber || '-' }}
-										</td>
-									</ng-container>
-
-									<!-- Гражданство -->
-									<ng-container matColumnDef="citizenship">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Гражданство</th>
-										<td mat-cell *matCellDef="let item">{{ item.contractor.citizenship || '-' }}
-										</td>
-									</ng-container>
-
-									<!-- Тип продукции -->
-									<ng-container matColumnDef="productType">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Тип продукции</th>
-										<td mat-cell *matCellDef="let item">{{ item.contractor.productType || '-' }}
-										</td>
-									</ng-container>
-
-									<!-- Начало -->
-									<ng-container matColumnDef="startDate">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Начало</th>
-										<td mat-cell *matCellDef="let item">
-											{{ getLatestPass(item.status === 'active' ? item.contractor.activePasses :
-											item.contractor.closedPasses)?.startDate | date: 'dd.MM.yyyy' }}
-										</td>
-									</ng-container>
-
-									<!-- Окончание -->
-									<ng-container matColumnDef="endDate">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Окончание</th>
-										<td mat-cell *matCellDef="let item">
-											{{ getLatestPass(item.status === 'active' ? item.contractor.activePasses :
-											item.contractor.closedPasses)?.endDate | date: 'dd.MM.yyyy' }}
-										</td>
-									</ng-container>
-
-									<!-- Действия -->
-									<ng-container matColumnDef="actions">
-										<th mat-header-cell *matHeaderCellDef class="text-primary">Действия</th>
-										<td mat-cell *matCellDef="let item">
-											<div class="action-buttons">
-												<button mat-button color="primary"
-													(click)="viewContractor(item.contractor.contractorId)">Просмотр</button>
-												<button mat-button color="accent"
-													(click)="editContractor(item.contractor.contractorId)">Редактировать</button>
-												<button mat-button
-													(click)="toggleClosedPanel(item.resultIndex, item.contractorIndex)">
-													Пропуска
-												</button>
-											</div>
-										</td>
-									</ng-container>
-
-									<!-- Расширяемая панель для пропусков -->
-									<ng-container matColumnDef="expandedDetail">
-										<td mat-cell *matCellDef="let item" [attr.colspan]="displayedColumns.length">
-											<div style="color:red">РАСКРЫТО!</div>
-											<div class="pass-list-container"
-												[@expandCollapse]="isClosedPanelExpanded(item.resultIndex, item.contractorIndex) ? 'open' : 'closed'">
-												<table mat-table [dataSource]="getPassDataSource(item)"
-													class="inner-table">
-													<!-- Цвет -->
-													<ng-container matColumnDef="color">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">Цвет
-														</th>
-														<td mat-cell *matCellDef="let pass">
-															<span class="color-circle"
-																[style.backgroundColor]="pass.passTypeColor || '#000'"></span>
-														</td>
-													</ng-container>
-
-													<!-- Тип -->
-													<ng-container matColumnDef="type">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">Тип
-														</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.passTypeName || '-'
-															}}</td>
-													</ng-container>
-
-													<!-- Срок -->
-													<ng-container matColumnDef="duration">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">Срок
-														</th>
-														<td mat-cell *matCellDef="let pass">{{
-															(pass.passTypeDurationInMonths || 0) + ' мес.' }}</td>
-													</ng-container>
-
-													<!-- Стоимость -->
-													<ng-container matColumnDef="cost">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">
-															Стоимость</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.cost | number:
-															'1.0-0' }}</td>
-													</ng-container>
-
-													<!-- Дата выдачи -->
-													<ng-container matColumnDef="transactionDate">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">Дата
-															выдачи</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.transactionDate |
-															date: 'dd.MM.yyyy' }}</td>
-													</ng-container>
-
-													<!-- Начало -->
-													<ng-container matColumnDef="startDate">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">
-															Начало</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.startDate | date:
-															'dd.MM.yyyy' }}</td>
-													</ng-container>
-
-													<!-- Окончание -->
-													<ng-container matColumnDef="endDate">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">
-															Окончание</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.endDate | date:
-															'dd.MM.yyyy' }}</td>
-													</ng-container>
-
-													<!-- Место -->
-													<ng-container matColumnDef="location">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">Место
-														</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.building }} {{
-															pass.floor }} {{ pass.line }} {{ pass.storeNumber }}</td>
-													</ng-container>
-
-													<!-- Должность -->
-													<ng-container matColumnDef="position">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">
-															Должность</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.position || '-' }}
-														</td>
-													</ng-container>
-
-													<!-- Причина закрытия (для закрытых пропусков) -->
-													<ng-container matColumnDef="closeReason">
-														<th mat-header-cell *matHeaderCellDef class="text-primary">
-															Причина закрытия</th>
-														<td mat-cell *matCellDef="let pass">{{ pass.closeReason || '-'
-															}}</td>
-													</ng-container>
-
-													<tr mat-header-row *matHeaderRowDef="passColumnsClosed"></tr>
-													<tr mat-row *matRowDef="let pass; columns: passColumnsClosed"></tr>
-												</table>
-												<div *ngIf="!(item.contractor.closedPasses)?.length"
-													class="text-center text-muted">
-													Нет закрытых пропусков
-												</div>
-											</div>
-										</td>
-									</ng-container>
-
-									<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-									<tr mat-row *matRowDef="let item; columns: displayedColumns"></tr>
-									<tr mat-row
-										*matRowDef="let item; columns: ['expandedDetail']; when: isClosedPanelExpandedWhen">
-									</tr>
-								</table>
-							</div>
-						</div>
-
-						<!-- Элемент для наблюдения за низом таблицы -->
-						<div #tableBottom style="height: 20px;"></div>
 					</div>
 				</div>
 			</div>

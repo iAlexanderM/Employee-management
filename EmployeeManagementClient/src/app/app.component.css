@@ -1,217 +1,263 @@
-html,
-body {
-	margin: 0;
-	padding: 0;
-	height: 100%;
-	box-sizing: border-box;
-}
-
-*,
-*::before,
-*::after {
-	box-sizing: inherit;
-}
-
-.footer {
-	margin-top: auto;
-	padding: 15px 0;
-	text-align: center;
-	width: 100%;
-}
-
-.content-container {
-	flex-grow: 1;
-	margin-left: 200px;
-	padding: 0px;
-}
+/* === app.component.css (ИСПОЛЬЗУЯ ПРАВИЛЬНЫЕ СЕЛЕКТОРЫ ИЗ HTML) === */
 
 .sidebar {
-	position: fixed;
-	left: 0;
-	top: 0;
-	width: 200px;
-	height: 100vh;
-	background-color: #f8f9fa;
-	padding: 15px;
-	box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-	display: flex;
-	flex-direction: column;
-	overflow-y: auto;
-	z-index: 100;
-}
-
-.app-layout {
-	display: flex;
-	height: 100vh;
-	width: 100%;
+	position: fixed !important;
+	left: 0 !important;
+	top: 0 !important;
+	width: 260px !important;
+	height: 100vh !important;
+	background-color: #FFFFFF !important;
+	padding: 24px 16px !important;
+	box-shadow: 2px 0 12px rgba(0, 0, 0, 0.05) !important;
+	display: flex !important;
+	flex-direction: column !important;
+	overflow-y: auto !important;
+	z-index: 1000 !important;
+	transition: width 0.3s ease !important;
+	scrollbar-width: none !important;
+	-ms-overflow-style: none !important;
 }
 
 .sidebar::-webkit-scrollbar {
-	display: none;
+	display: none !important;
+}
+
+.sidebar .brand {
+	font-size: 20px !important;
+	font-weight: 600 !important;
+	color: #3366FF !important;
+	margin-bottom: 32px !important;
+	text-align: center !important;
+	letter-spacing: 0.5px !important;
+	flex-shrink: 0 !important;
 }
 
 .sidebar .navbar-nav {
-	list-style: none;
-	padding: 0;
-	margin: 0;
-	width: 100%;
+	list-style: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	width: 100% !important;
+	flex-grow: 1 !important;
+	overflow-y: auto !important;
+	overflow-x: hidden !important;
+	scrollbar-width: none !important;
+	-ms-overflow-style: none !important;
 }
 
-.sidebar .navbar-nav .nav-item {
-	margin-bottom: 10px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
+.sidebar .navbar-nav::-webkit-scrollbar {
+	display: none !important;
 }
 
-/* Ссылка в навигации, стилизованная как кнопка */
-.sidebar .navbar-nav .nav-item .nav-link {
-	color: #ffffff;
-	background-color: #6c757d;
-	/* серый фон */
-	width: 95%;
-	height: 45px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 0 15px;
-	border-radius: 5px;
-	transition: background-color 0.3s, color 0.3s;
-	text-decoration: none;
-	font-size: 0.8rem;
-	box-sizing: border-box;
+.sidebar .nav-item {
+	margin-bottom: 16px !important;
+	/* Увеличено расстояние */
+	width: 100% !important;
+	flex-shrink: 0 !important;
+	list-style: none !important;
+	/* Убираем маркеры списка */
 }
 
-.sidebar .navbar-nav .nav-item .nav-link:hover {
-	background-color: #007bff;
-	color: #ffffff;
+.sidebar .nav-item>a.btn.btn-primary,
+
+.sidebar .nav-item>button.accordion,
+
+.sidebar .footer .btn.btn-primary
+
+/* Кнопки в футере */
+	{
+	display: flex !important;
+	align-items: center !important;
+	justify-content: flex-start !important;
+	padding: 10px 16px !important;
+	font-size: 13px !important;
+	font-weight: 500 !important;
+	text-decoration: none !important;
+	border-radius: 6px !important;
+	transition: background-color 0.3s, box-shadow 0.2s, color 0.3s;
+	width: 100% !important;
+	box-sizing: border-box !important;
+	min-height: 48px !important;
+	line-height: 1.4 !important;
+	border: none !important;
+	text-align: left !important;
+	white-space: normal !important;
+	/* Разрешен перенос */
+	overflow-wrap: break-word !important;
+	cursor: pointer !important;
+	background-color: #3366FF !important;
+	/* Синий фон */
+	color: #FFFFFF !important;
+	/* Белый текст */
+	margin: 0 !important;
+	/* Убираем внешние отступы у самих кнопок */
 }
 
-.btn {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	text-align: center;
-	height: 55px;
-	padding: 0 15px;
-	border-radius: 5px;
-	transition: background-color 0.3s, color 0.3s;
-	font-size: 1rem;
-	font-weight: 500;
-	box-sizing: border-box;
-	cursor: pointer;
+/* --- СТИЛИ ПРИ НАВЕДЕНИИ --- */
+.sidebar .nav-item>a.btn.btn-primary:hover,
+.sidebar .nav-item>button.accordion:hover,
+.sidebar .footer .btn.btn-primary:hover {
+	background-color: #254EDA !important;
+	/* Темно-синий */
+	box-shadow: 0 2px 8px rgba(37, 78, 218, 0.3) !important;
+	color: #FFFFFF !important;
+	transform: none !important;
+	/* Убираем сдвиг из styles.css */
 }
 
-.accordion {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	text-align: center;
-	height: 45px;
-	border-radius: 5px;
-	transition: background-color 0.3s, color 0.3s;
-	font-size: 1rem;
-	font-weight: 500;
-	box-sizing: border-box;
-	background-color: #007bff;
-	border: 1px solid #007bff;
-	color: #ffffff;
-	cursor: pointer;
-	padding: 25px;
-	width: 95%;
-	outline: none;
-	transition: 0.4s;
+/* --- СПЕЦИФИЧНЫЕ СТИЛИ ДЛЯ АККОРДЕОНА --- */
+.sidebar .nav-item>button.accordion {
+	position: relative !important;
 }
 
-.btn-primary {
-	background-color: #007bff;
-	border: 1px solid #007bff;
-	color: #ffffff;
-	cursor: pointer;
-	padding: 25px;
-	width: 95%;
-	text-align: center;
-	outline: none;
-	transition: 0.4s;
-}
-
-.btn-primary:hover {
-	background-color: #0056b3;
-	border-color: #0056b3;
-}
-
-.btn-secondary {
-	background-color: #8c9ea3;
-	border: 1px solid #8c9ea3;
-	color: #ffffff;
-}
-
-.btn-secondary:hover {
-	background-color: #6b7b80;
-	border-color: #6b7b80;
-}
-
-.nav-item.dropdown {
-	position: relative;
-}
-
-.dropdown-menu-container {
+.sidebar .nav-item>button.accordion::after {
+	content: '▾';
+	font-size: 12px;
+	color: #FFFFFF;
+	margin-left: auto;
+	transition: transform 0.3s ease-out;
 	position: absolute;
-	top: 100%;
-	left: 0;
-	width: 120%;
-	z-index: 1000;
-	background-color: #f8f9fa;
-	border-radius: 4px;
-	padding: 0;
-	margin: 0;
-	list-style: none;
-	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-	transition: max-height 0.3s ease-out;
+	right: 16px;
+	top: 50%;
+	transform: translateY(-50%);
+	flex-shrink: 0;
+}
+
+.sidebar .nav-item>button.accordion.active::after {
+	transform: translateY(-50%) rotate(180deg);
+}
+
+.sidebar .panel {
 	max-height: 0;
 	overflow: hidden;
-}
-
-.dropdown-menu-container.show {
-	max-height: 200px;
-}
-
-.dropdown-menu-container .dropdown-menu.show {
-	background-color: #f8f9fa;
-	border: none;
-	border-radius: 4px;
-	margin: 0;
+	transition: max-height 0.3s ease-out;
+	width: 100%;
+	background-color: #F8FAFC;
+	border-radius: 0 0 6px 6px;
 	padding: 0;
-	width: 120%;
-}
-
-.dropdown-item {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	text-align: center;
-	font-size: 0.85rem;
-	color: #495057;
-	text-decoration: none;
-	height: 35px;
-	padding: 5px 10px;
-	transition: background-color 0.3s, color 0.3s;
-	width: 120%;
 	box-sizing: border-box;
 }
 
-.dropdown-item:hover {
-	background-color: #007bff;
-	color: #ffffff;
+.sidebar .panel.show {
+	max-height: 1000px;
+	/* Или больше */
+	padding: 8px 0;
 }
 
-.navbar-nav .nav-item .btn-link,
-.navbar-nav .nav-item .nav-link,
-.dropdown-item {
-	width: 120%;
+/* --- СТИЛИ ДЛЯ ЭЛЕМЕНТОВ ВНУТРИ ПАНЕЛИ --- */
+.sidebar .panel .dropdown-menu {
+	list-style: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	width: 100% !important;
+	display: block !important;
+	position: static !important;
+	float: none !important;
+	border: none !important;
+	box-shadow: none !important;
+	background-color: transparent !important;
 }
 
-a.btn {
-	text-decoration: none;
-	color: white;
+.sidebar .panel .dropdown-menu .nav-item {
+	padding: 0 8px !important;
+	margin-bottom: 4px !important;
+	width: 100% !important;
+	box-sizing: border-box !important;
+}
+
+.sidebar .panel .dropdown-menu .nav-item:last-child {
+	margin-bottom: 0 !important;
+}
+
+.sidebar .panel .dropdown-item {
+	/* Селектор совпадает с HTML */
+	display: block !important;
+	background-color: transparent !important;
+	color: #4B5EAA !important;
+	padding: 8px 16px 8px 24px !important;
+	font-size: 12px !important;
+	font-weight: 400 !important;
+	text-decoration: none !important;
+	border-radius: 4px !important;
+	transition: background-color 0.3s, color 0.3s;
+	width: 100% !important;
+	box-sizing: border-box !important;
+	min-height: auto !important;
+	line-height: 1.4 !important;
+	white-space: normal !important;
+	/* Разрешен перенос */
+	overflow-wrap: break-word !important;
+	cursor: pointer !important;
+	border: none !important;
+	/* Убираем границу на всякий случай */
+}
+
+.sidebar .panel .dropdown-item:hover {
+	background-color: #EDF2FF !important;
+	color: #3366FF !important;
+}
+
+/* --- ФУТЕР --- */
+.sidebar .footer {
+	margin-top: auto !important;
+	padding: 16px 0 !important;
+	text-align: center !important;
+	flex-shrink: 0 !important;
+}
+
+.sidebar .footer .btn.btn-primary {
+	justify-content: center !important;
+}
+
+/* --- КОНТЕЙНЕР КОНТЕНТА --- */
+.content-container {
+	flex-grow: 1;
+	margin-left: 260px;
+	padding: 24px;
+	background-color: #F5F7FA;
+	transition: margin-left 0.3s ease;
+	height: 100vh;
+	overflow-y: auto;
+	box-sizing: border-box;
+}
+
+/* --- АДАПТИВНОСТЬ --- */
+@media (max-width: 768px) {
+	.sidebar {
+		width: 200px !important;
+	}
+
+	.content-container {
+		margin-left: 200px;
+	}
+
+	.sidebar .brand {
+		font-size: 18px !important;
+		margin-bottom: 24px !important;
+	}
+
+	.sidebar .nav-item>a.btn.btn-primary,
+	.sidebar .nav-item>button.accordion,
+	.sidebar .footer .btn.btn-primary {
+		padding: 8px 12px !important;
+		font-size: 12px !important;
+		min-height: 44px !important;
+	}
+
+	.sidebar .panel .dropdown-item {
+		padding: 6px 12px 6px 20px !important;
+		font-size: 11px !important;
+	}
+
+	.sidebar .nav-item>button.accordion::after {
+		font-size: 10px;
+		right: 12px;
+	}
+
+	.sidebar .panel.show {
+		margin-top: 6px;
+	}
+
+	.sidebar .nav-item {
+		margin-bottom: 12px !important;
+	}
 }

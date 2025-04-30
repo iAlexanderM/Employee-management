@@ -7,19 +7,28 @@ import { Contractor } from '../../../models/contractor.model';
 import { CommonModule } from '@angular/common';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { Subscription } from 'rxjs';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 @Component({
 	selector: 'app-contractor-list',
 	standalone: true,
-	imports: [ReactiveFormsModule, CommonModule, RouterModule, NgxMaskDirective],
+	imports: [
+		ReactiveFormsModule,
+		CommonModule,
+		RouterModule,
+		NgxMaskDirective,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule
+	],
 	providers: [provideNgxMask()],
 	templateUrl: './contractor-list.component.html',
 	styleUrls: ['./contractor-list.component.css']
 })
 export class ContractorListComponent implements OnInit, OnDestroy {
-	// Все контрагенты (используется только в режиме поиска)
 	allContractors: Contractor[] = [];
-	// Отображаемые контрагенты (для таблицы)
 	displayedContractors: Contractor[] = [];
 
 	// Общие параметры пагинации

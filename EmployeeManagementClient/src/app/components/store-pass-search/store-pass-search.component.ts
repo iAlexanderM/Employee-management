@@ -1,38 +1,24 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { BehaviorSubject, Subscription, Observable, of, forkJoin, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, catchError, takeUntil } from 'rxjs/operators';
+import { BehaviorSubject, Subscription, Observable, of, forkJoin } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import { NgZone } from '@angular/core';
 
 import { PassService } from '../../services/pass.service';
 import { TransactionService } from '../../services/transaction.service';
 import { SearchFilterResetService } from '../../services/search-filter-reset.service';
 import { PassByStoreResponseDto, ContractorPassesDto, PassDetailsDto } from '../../models/store-pass-search.model';
 import { Store } from '../../models/transaction.model';
-
-interface DisplayablePassByStoreResponseDto extends PassByStoreResponseDto {
-	_activeContractorsList?: ContractorPassesDto[];
-	_closedContractorsList?: ContractorPassesDto[];
-}
-
-interface ContractorItem {
-	result: DisplayablePassByStoreResponseDto;
-	resultIndex: number;
-	contractor: ContractorPassesDto;
-	contractorIndex: number;
-	status: 'active' | 'closed';
-}
+import { environment } from '../../../environments/environment';
 
 @Component({
 	selector: 'app-store-pass-search',
@@ -44,81 +30,20 @@ interface ContractorItem {
 		MatFormFieldModule,
 		MatInputModule,
 		MatButtonModule,
-		MatTableModule,
 		MatExpansionModule,
 		MatIconModule,
-		MatProgressSpinnerModule,
-		MatTooltipModule,
+		MatTooltipModule
 	],
 	templateUrl: './store-pass-search.component.html',
 	styleUrls: ['./store-pass-search.component.css'],
-	providers: [DatePipe],
-	changeDetection: ChangeDetectionStrategy.OnPush,
-	animations: [
-		trigger('expandCollapse', [
-			state('open', style({ height: '*', opacity: 1 })),
-			state('closed', style({ height: '0px', opacity: 0 })),
-			transition('open <=> closed', animate('300ms ease-in-out')),
-		]),
-	],
 })
 export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewInit {
 	searchForm: FormGroup;
-	results: DisplayablePassByStoreResponseDto[] = [];
-	activeDataSource = new MatTableDataSource<ContractorItem>([]);
-	closedDataSource = new MatTableDataSource<ContractorItem>([]);
-	displayedColumns: string[] = [
-		'store',
-		'status',
-		'id',
-		'scan',
-		'name',
-		'position',
-		'phone',
-		'citizenship',
-		'productType',
-		'startDate',
-		'endDate',
-		'actions',
-	];
-	passColumnsActive: string[] = [
-		'color',
-		'type',
-		'duration',
-		'cost',
-		'transactionDate',
-		'startDate',
-		'endDate',
-		'location',
-		'position',
-		'passActions',
-	];
-	passColumnsClosed: string[] = [
-		'color',
-		'type',
-		'duration',
-		'cost',
-		'transactionDate',
-		'startDate',
-		'endDate',
-		'location',
-		'position',
-		'closeReason',
-	];
-
-	activePanelKey: string | null = null;
-	closedPanelKey: string | null = null;
-
+	results: PassByStoreResponseDto[] = [];
 	isLoading = false;
 	errorMessage: string | null = null;
 	showAddTransactionButton = false;
 	private readonly apiBaseUrl = 'http://localhost:8080';
-	private pageSize = 100;
-	private bufferSize = 300;
-	private currentPage = 0;
-	private allContractors: ContractorItem[] = [];
-	private hasMoreData = true;
-	private hasPreviousData = false;
 
 	buildingSuggestions$ = new BehaviorSubject<string[]>([]);
 	floorSuggestions$ = new BehaviorSubject<string[]>([]);
@@ -127,19 +52,20 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 
 	private resetSubscription: Subscription | undefined;
 	private subscriptions: Subscription[] = [];
-	private destroy$ = new Subject<void>();
 	private confirmedFields: { [key: string]: string | null } = {
 		Building: null,
 		Floor: null,
 		Line: null,
 		StoreNumber: null,
 	};
-	private activePanelStates: { [key: string]: boolean } = {};
-	private closedPanelStates: { [key: string]: boolean } = {};
+	private panelStates: { [key: string]: boolean } = {};
 
-	@ViewChild('tableTop') tableTop!: ElementRef;
-	@ViewChild('tableBottom') tableBottom!: ElementRef;
-	@ViewChild('tableContainer') tableContainer!: ElementRef;
+	// Virtual scrolling properties
+	private allContractors: { resultIndex: number; contractor: ContractorPassesDto; isActive: boolean }[] = [];
+	public windows: { [resultIndex: number]: { start: number; end: number } } = {};
+	private windowSize = 100;
+	private windowStep = 50;
+	private observer: IntersectionObserver | null = null;
 
 	constructor(
 		private fb: FormBuilder,
@@ -148,7 +74,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		private router: Router,
 		private searchFilterResetService: SearchFilterResetService,
 		private cdr: ChangeDetectorRef,
-		private datePipe: DatePipe
+		private zone: NgZone
 	) {
 		this.searchForm = this.fb.group({
 			Building: [''],
@@ -159,114 +85,118 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 	}
 
 	ngOnInit(): void {
-		this.resetSubscription = this.searchFilterResetService.resetTrigger$
-			.pipe(takeUntil(this.destroy$))
-			.subscribe(needsReset => {
-				if (needsReset) {
-					this.resetFilters();
-					this.searchFilterResetService.consumeReset();
-				}
-			});
+		this.resetSubscription = this.searchFilterResetService.resetTrigger$.subscribe((needsReset) => {
+			if (needsReset) {
+				this.resetFilters();
+				this.searchFilterResetService.consumeReset();
+			}
+		});
 		this.loadStoredSearchCriteria();
 		this.initializeAutocompleteHandlers();
 	}
 
 	ngAfterViewInit(): void {
-		this.setupIntersectionObservers();
+		this.setupIntersectionObserver();
 	}
 
 	ngOnDestroy(): void {
-		this.destroy$.next();
-		this.destroy$.complete();
-		this.subscriptions.forEach(sub => sub.unsubscribe());
+		this.subscriptions.forEach((sub) => sub.unsubscribe());
 		this.resetSubscription?.unsubscribe();
+		this.observer?.disconnect();
 	}
 
-	private setupIntersectionObservers(): void {
-		const options = { threshold: 0.1 };
+	private setupIntersectionObserver(): void {
+		this.observer = new IntersectionObserver(
+			(entries) => {
+				this.zone.run(() => {
+					entries.forEach((entry) => {
+						const resultIndex = parseInt(entry.target.getAttribute('data-result-index') || '0', 10);
+						const contractorIndex = parseInt(entry.target.getAttribute('data-contractor-index') || '0', 10);
+						const window = this.windows[resultIndex] || { start: 0, end: this.windowSize };
+						const totalContractors = this.allContractors.filter((c) => c.resultIndex === resultIndex).length;
 
-		const bottomObserver = new IntersectionObserver(entries => {
-			if (entries[0].isIntersecting && !this.isLoading && this.hasMoreData) {
-				this.loadNextPage();
-			}
-		}, options);
-		bottomObserver.observe(this.tableBottom.nativeElement);
+						if (entry.isIntersecting) {
+							if (contractorIndex >= window.end - 10 && totalContractors > window.end) {
+								window.start = window.start + this.windowStep;
+								window.end = Math.min(window.start + this.windowSize, totalContractors);
+								this.windows[resultIndex] = window;
+								this.cdr.detectChanges();
+								this.updateObservers();
+							} else if (contractorIndex <= window.start + 10 && window.start > 0) {
+								window.start = Math.max(window.start - this.windowStep, 0);
+								window.end = window.start + this.windowSize;
+								this.windows[resultIndex] = window;
+								this.cdr.detectChanges();
+								this.updateObservers();
+							}
+						}
+					});
+				});
+			},
+			{ root: null, threshold: 0.1, rootMargin: '200px' } // Use page scroll (null root)
+		);
 
-		const topObserver = new IntersectionObserver(entries => {
-			if (entries[0].isIntersecting && !this.isLoading && this.hasPreviousData) {
-				this.loadPreviousPage();
-			}
-		}, options);
-		topObserver.observe(this.tableTop.nativeElement);
+		this.updateObservers();
 	}
 
-	private loadNextPage(): void {
-		this.isLoading = true;
-		const previousScrollHeight = this.tableContainer.nativeElement.scrollHeight;
-		const previousScrollTop = this.tableContainer.nativeElement.scrollTop;
+	private updateObservers(): void {
+		if (!this.observer) return;
+		this.observer.disconnect();
+		this.results.forEach((_, resultIndex) => {
+			const contractors = this.getContractorsWindowedFor(resultIndex);
+			contractors.forEach((_, contractorIndex) => {
+				const table = document.querySelector(
+					`[data-result-index="${resultIndex}"][data-contractor-index="${contractorIndex + this.windows[resultIndex].start}"]`
+				);
+				if (table) {
+					this.observer!.observe(table);
+				}
+			});
+		});
+	}
 
-		this.currentPage++;
-		const start = Math.max(0, this.currentPage * this.pageSize - this.pageSize);
-		const end = start + this.bufferSize;
-		const nextBatch = this.allContractors.slice(start, end);
+	private resetVirtualScrollState(): void {
+		this.allContractors = [];
+		this.windows = {};
+		this.observer?.disconnect();
+	}
 
-		if (nextBatch.length < this.pageSize) {
-			this.hasMoreData = false;
+	private prepareContractorsForVirtualScroll(): void {
+		this.allContractors = [];
+		this.windows = {};
+		this.results.forEach((result, resultIndex) => {
+			const activeContractors = this.getActiveContractors(result).map((contractor) => ({
+				resultIndex,
+				contractor,
+				isActive: true,
+			}));
+			const closedContractors = this.getClosedContractors(result).map((contractor) => ({
+				resultIndex,
+				contractor,
+				isActive: false,
+			}));
+			this.allContractors.push(...activeContractors, ...closedContractors);
+			this.windows[resultIndex] = { start: 0, end: this.windowSize };
+		});
+		if (environment.debug) {
+			console.log(`[PrepareContractors] Total contractors: ${this.allContractors.length}`);
+			this.results.forEach((_, resultIndex) => {
+				const count = this.allContractors.filter((c) => c.resultIndex === resultIndex).length;
+				console.log(`[PrepareContractors][${resultIndex}] Contractors: ${count}`);
+			});
 		}
-		this.hasPreviousData = this.currentPage > 0;
-
-		const validBatch = nextBatch.filter(
-			item =>
-				item.resultIndex !== undefined &&
-				item.contractorIndex !== undefined &&
-				item.status &&
-				item.contractor.contractorId
-		);
-
-		this.activeDataSource.data = validBatch.filter(item => item.status === 'active');
-		this.closedDataSource.data = validBatch.filter(item => item.status === 'closed');
-
-		setTimeout(() => {
-			const container = this.tableContainer.nativeElement;
-			const newScrollHeight = container.scrollHeight;
-			container.scrollTop = previousScrollTop + (newScrollHeight - previousScrollHeight);
-			this.isLoading = false;
-			this.cdr.markForCheck();
-		}, 0);
 	}
 
-	private loadPreviousPage(): void {
-		if (this.currentPage <= 0) return;
-		this.isLoading = true;
-		const previousScrollHeight = this.tableContainer.nativeElement.scrollHeight;
-		const previousScrollTop = this.tableContainer.nativeElement.scrollTop;
-
-		this.currentPage--;
-		const start = Math.max(0, this.currentPage * this.pageSize);
-		const end = start + this.bufferSize;
-		const previousBatch = this.allContractors.slice(start, end);
-
-		this.hasMoreData = true;
-		this.hasPreviousData = this.currentPage > 0;
-
-		const validBatch = previousBatch.filter(
-			item =>
-				item.resultIndex !== undefined &&
-				item.contractorIndex !== undefined &&
-				item.status &&
-				item.contractor.contractorId
-		);
-
-		this.activeDataSource.data = validBatch.filter(item => item.status === 'active');
-		this.closedDataSource.data = validBatch.filter(item => item.status === 'closed');
-
-		setTimeout(() => {
-			const container = this.tableContainer.nativeElement;
-			const newScrollHeight = container.scrollHeight;
-			container.scrollTop = previousScrollTop - (previousScrollHeight - newScrollHeight);
-			this.isLoading = false;
-			this.cdr.markForCheck();
-		}, 0);
+	public getContractorsWindowedFor(resultIndex: number): { contractor: ContractorPassesDto; isActive: boolean }[] {
+		const window = this.windows[resultIndex] || { start: 0, end: this.windowSize };
+		const contractors = this.allContractors
+			.filter((c) => c.resultIndex === resultIndex)
+			.slice(window.start, window.end)
+			.map((c) => ({ contractor: c.contractor, isActive: c.isActive }));
+		if (environment.debug) {
+			console.log(`[GetContractors][${resultIndex}] Window=[${window.start},${window.end}], Count=${contractors.length}`);
+		}
+		return contractors;
 	}
 
 	private loadStoredSearchCriteria(): void {
@@ -286,169 +216,61 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 					Line: criteria.line || null,
 					StoreNumber: criteria.storeNumber || null,
 				};
-				if (this.areAllSearchFieldsConfirmed()) {
-					this.searchPasses();
-				} else {
-					localStorage.removeItem('storeSearchCriteria');
-				}
+				this.searchPasses();
 			} catch (e) {
-				console.error('Error parsing stored criteria:', e);
 				localStorage.removeItem('storeSearchCriteria');
 			}
 		}
 	}
 
 	private saveSearchCriteria(): void {
-		if (this.areAllSearchFieldsConfirmed() && (!this.errorMessage || this.errorMessage.includes('не найден(ы)'))) {
-			const criteria = this.prepareSearchCriteria();
-			localStorage.setItem('storeSearchCriteria', JSON.stringify(criteria));
-		} else {
-			localStorage.removeItem('storeSearchCriteria');
-		}
-	}
-
-	private prepareSearchCriteria(): any {
-		return {
-			building: this.confirmedFields['Building'] ?? '',
-			floor: this.confirmedFields['Floor'] ?? '',
-			line: this.confirmedFields['Line'] ?? '',
-			storeNumber: this.confirmedFields['StoreNumber'] ?? '',
-			showActive: true,
-			showClosed: true,
-		};
-	}
-
-	private getActiveContractorsInternal(result: PassByStoreResponseDto): ContractorPassesDto[] {
-		return result.contractors?.filter(c => c.activePasses && c.activePasses.length > 0) || [];
-	}
-
-	private getClosedContractorsInternal(result: PassByStoreResponseDto): ContractorPassesDto[] {
-		return result.contractors?.filter(c => (!c.activePasses || c.activePasses.length === 0) && c.closedPasses && c.closedPasses.length > 0) || [];
+		const criteria = this.prepareSearchCriteria();
+		localStorage.setItem('storeSearchCriteria', JSON.stringify(criteria));
 	}
 
 	searchPasses(): void {
 		this.errorMessage = null;
 		this.showAddTransactionButton = false;
 		this.results = [];
-		this.activeDataSource.data = [];
-		this.closedDataSource.data = [];
-		this.allContractors = [];
-		this.currentPage = 0;
-		this.hasMoreData = true;
-		this.hasPreviousData = false;
-		this.activePanelStates = {};
-		this.closedPanelStates = {};
+		this.resetVirtualScrollState();
 
-		const allFilledFieldsConfirmed = Object.keys(this.confirmedFields).every(key => {
-			const controlValue = this.searchForm.get(key)?.value;
-			return !controlValue || this.isFieldConfirmed(key);
-		});
-		if (!allFilledFieldsConfirmed) {
-			this.errorMessage = 'Выберите значения для всех заполненных полей из списка автодополнения.';
-			this.isLoading = false;
-			this.cdr.markForCheck();
-			return;
-		}
-		if (!this.areAllSearchFieldsConfirmed()) {
-			this.errorMessage = 'Все поля (Здание, Этаж, Линия, Торговая точка) должны быть заполнены и подтверждены для поиска.';
-			this.isLoading = false;
-			this.cdr.markForCheck();
+		const allFieldsConfirmed = Object.values(this.confirmedFields).every((value) => value !== null && value.trim() !== '');
+		if (!allFieldsConfirmed) {
+			this.errorMessage = 'Выберите значения для всех полей из списка автодополнения';
 			return;
 		}
 
 		this.isLoading = true;
-		this.cdr.markForCheck();
 		const criteria = this.prepareSearchCriteria();
 
 		this.passService
 			.searchPassesByStore(criteria)
 			.pipe(
-				takeUntil(this.destroy$),
-				catchError(error => {
-					console.error('Search error:', error);
-					this.errorMessage = error.error?.message || error.message || 'Ошибка при выполнении поиска.';
-					if (error.status === 404) {
-						this.errorMessage = `Торговая точка ${criteria.building}-${criteria.floor}-${criteria.line}-${criteria.storeNumber} не найдена.`;
-					}
+				catchError((error) => {
+					this.errorMessage = error?.status === 404 ? 'Торговая точка не найдена или не существует.' : error?.message || 'Ошибка при выполнении поиска.';
 					this.results = [];
-					this.activeDataSource.data = [];
-					this.closedDataSource.data = [];
 					this.isLoading = false;
-					this.activePanelStates = {};
-					this.closedPanelStates = {};
-					this.saveSearchCriteria();
+					this.resetVirtualScrollState();
 					this.cdr.markForCheck();
 					return of([]);
 				})
 			)
-			.subscribe({
-				next: (response: PassByStoreResponseDto[]) => {
-					console.log('API response:', response); // Отладка
-					const processedResults: DisplayablePassByStoreResponseDto[] = response.map(result => {
-						const processedContractors = (result.contractors || []).map(contractor => ({
-							...contractor,
-							activePasses: this.getSortedPasses(contractor.activePasses || [], result),
-							closedPasses: this.getSortedPasses(contractor.closedPasses || [], result),
-							allActivePasses: this.getSortedPasses(contractor.allActivePasses || [], result),
-						}));
-						const processedResult: PassByStoreResponseDto = { ...result, contractors: processedContractors };
-						const activeList = this.getActiveContractorsInternal(processedResult);
-						const closedList = this.getClosedContractorsInternal(processedResult);
-						return { ...processedResult, _activeContractorsList: activeList, _closedContractorsList: closedList };
-					});
-					this.results = processedResults;
-
-					const flattenedContractors: ContractorItem[] = [];
-					processedResults.forEach((result, resultIndex) => {
-						result._activeContractorsList?.forEach((contractor, contractorIndex) => {
-							if (contractor?.contractorId && contractor.activePasses?.length) {
-								flattenedContractors.push({
-									result,
-									resultIndex,
-									contractor,
-									contractorIndex,
-									status: 'active',
-								});
-							}
-						});
-						result._closedContractorsList?.forEach((contractor, contractorIndex) => {
-							if (contractor?.contractorId && contractor.closedPasses?.length) {
-								flattenedContractors.push({
-									result,
-									resultIndex,
-									contractor,
-									contractorIndex,
-									status: 'closed',
-								});
-							}
-						});
-					});
-
-					this.allContractors = flattenedContractors;
-					console.log('allContractors:', this.allContractors); // Отладка
-
-					const firstBatch = this.allContractors.slice(0, this.bufferSize);
-					this.activeDataSource.data = firstBatch.filter(item => item.status === 'active');
-					this.closedDataSource.data = firstBatch.filter(item => item.status === 'closed');
-					this.hasMoreData = this.allContractors.length > this.bufferSize;
-					this.hasPreviousData = false;
-
-					if (this.results.length > 0) {
-						const firstResult = this.results[0];
-						if ((firstResult._activeContractorsList?.length ?? 0) === 0 && (firstResult._closedContractorsList?.length ?? 0) === 0) {
-							this.errorMessage = 'Торговая точка найдена, но связанных пропусков не существует.';
-							this.showAddTransactionButton = true;
-						} else {
-							this.errorMessage = null;
-							this.showAddTransactionButton = true;
-						}
-					} else if (!this.errorMessage) {
-						this.errorMessage = 'Поиск не вернул результатов.';
-					}
-
-					this.isLoading = false;
-					this.cdr.markForCheck();
-				},
+			.subscribe((response: PassByStoreResponseDto[]) => {
+				this.results = response.map((result) => ({
+					...result,
+					contractors: (result.contractors || []).map((contractor) => ({
+						...contractor,
+						activePasses: this.getSortedPasses(contractor.activePasses, result),
+						closedPasses: this.getSortedPasses(contractor.closedPasses, result),
+					})),
+				}));
+				this.isLoading = false;
+				this.saveSearchCriteria();
+				this.panelStates = {};
+				this.showAddTransactionButton = true;
+				this.prepareContractorsForVirtualScroll();
+				setTimeout(() => this.updateObservers(), 100);
+				this.cdr.markForCheck();
 			});
 	}
 
@@ -457,21 +279,25 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		this.confirmedFields = { Building: null, Floor: null, Line: null, StoreNumber: null };
 		localStorage.removeItem('storeSearchCriteria');
 		this.results = [];
-		this.activeDataSource.data = [];
-		this.closedDataSource.data = [];
-		this.allContractors = [];
-		this.currentPage = 0;
-		this.hasMoreData = true;
-		this.hasPreviousData = false;
 		this.errorMessage = null;
-		this.showAddTransactionButton = false;
 		this.buildingSuggestions$.next([]);
 		this.floorSuggestions$.next([]);
 		this.lineSuggestions$.next([]);
 		this.storeNumberSuggestions$.next([]);
-		this.activePanelStates = {};
-		this.closedPanelStates = {};
-		this.cdr.markForCheck();
+		this.panelStates = {};
+		this.resetVirtualScrollState();
+		this.cdr.detectChanges();
+	}
+
+	prepareSearchCriteria(): any {
+		return {
+			building: this.confirmedFields['Building'] || '',
+			floor: this.confirmedFields['Floor'] || '',
+			line: this.confirmedFields['Line'] || '',
+			storeNumber: this.confirmedFields['StoreNumber'] || '',
+			showActive: true,
+			showClosed: true,
+		};
 	}
 
 	initializeAutocompleteHandlers(): void {
@@ -481,44 +307,33 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		this.setupAutocomplete('StoreNumber', this.passService.getStoreNumberSuggestions.bind(this.passService));
 	}
 
-	private setupAutocomplete(controlName: string, suggestionServiceMethod: (query: string) => Observable<string[]>): void {
+	setupAutocomplete(controlName: string, suggestionServiceMethod: (query: string) => Observable<string[]>): void {
 		const control = this.searchForm.get(controlName);
 		if (control) {
-			const subscription = control.valueChanges
-				.pipe(
-					takeUntil(this.destroy$),
-					debounceTime(300),
-					distinctUntilChanged(),
-					switchMap(query => {
-						const trimmedQuery = query?.trim() ?? '';
-						if (this.confirmedFields[controlName] === trimmedQuery && trimmedQuery) {
-							this.getSuggestionSubject(controlName).next([]);
-							return of([]);
-						}
-						if (this.confirmedFields[controlName] !== trimmedQuery) {
-							this.confirmedFields[controlName] = null;
-						}
-						if (!trimmedQuery) {
-							this.confirmedFields[controlName] = null;
-							this.getSuggestionSubject(controlName).next([]);
-							return of([]);
-						}
-						return suggestionServiceMethod(trimmedQuery).pipe(catchError(() => of([])));
-					})
-				)
-				.subscribe(suggestions => {
-					this.getSuggestionSubject(controlName).next(suggestions);
-					this.cdr.markForCheck();
-				});
-			this.subscriptions.push(subscription);
+			this.subscriptions.push(
+				control.valueChanges
+					.pipe(
+						debounceTime(300),
+						distinctUntilChanged(),
+						switchMap((query) => {
+							const trimmedQuery = query?.trim() || '';
+							if (this.confirmedFields[controlName] === trimmedQuery) return of([]);
+							if (!trimmedQuery) {
+								this.confirmedFields[controlName] = null;
+								return of([]);
+							}
+							return suggestionServiceMethod(trimmedQuery).pipe(catchError(() => of([])));
+						})
+					)
+					.subscribe((suggestions) => this.getSuggestionSubject(controlName).next(suggestions))
+			);
 		}
 	}
 
 	onInput(controlName: string, event: Event): void {
-		const value = (event.target as HTMLInputElement).value;
-		if (this.confirmedFields[controlName] !== null && this.confirmedFields[controlName] !== value) {
+		const value = (event.target as HTMLInputElement).value.trim();
+		if (!this.confirmedFields[controlName] || this.confirmedFields[controlName] !== value) {
 			this.confirmedFields[controlName] = null;
-			this.cdr.markForCheck();
 		}
 	}
 
@@ -527,73 +342,83 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		this.searchForm.get(controlName)?.setValue(value, { emitEvent: false });
 		this.confirmedFields[controlName] = value;
 		this.getSuggestionSubject(controlName).next([]);
-		this.cdr.markForCheck();
 	}
 
 	isFieldConfirmed(controlName: string): boolean {
-		const controlValue = this.searchForm.get(controlName)?.value;
-		return !!controlValue && this.confirmedFields[controlName] === controlValue;
+		const currentValue = this.searchForm.get(controlName)?.value?.trim() || '';
+		return this.confirmedFields[controlName] === currentValue && currentValue !== '';
 	}
 
-	areAllSearchFieldsConfirmed(): boolean {
-		return this.isFieldConfirmed('Building') && this.isFieldConfirmed('Floor') && this.isFieldConfirmed('Line') && this.isFieldConfirmed('StoreNumber');
-	}
-
-	private getSuggestionSubject(controlName: string): BehaviorSubject<string[]> {
-		switch (controlName) {
-			case 'Building':
-				return this.buildingSuggestions$;
-			case 'Floor':
-				return this.floorSuggestions$;
-			case 'Line':
-				return this.lineSuggestions$;
-			case 'StoreNumber':
-				return this.storeNumberSuggestions$;
-			default:
-				return new BehaviorSubject<string[]>([]);
-		}
+	getSuggestionSubject(controlName: string): BehaviorSubject<string[]> {
+		return {
+			Building: this.buildingSuggestions$,
+			Floor: this.floorSuggestions$,
+			Line: this.lineSuggestions$,
+			StoreNumber: this.storeNumberSuggestions$,
+		}[controlName as 'Building' | 'Floor' | 'Line' | 'StoreNumber'];
 	}
 
 	formatStore(store: PassByStoreResponseDto): string {
 		return `${store.building} ${store.floor} ${store.line} ${store.storeNumber}`.trim();
 	}
 
-	getFirstPhotoUrl(contractor: ContractorPassesDto): string {
-		if (!contractor.contractorPhotoPath) return '/assets/images/default-photo.jpg';
-		const filePath = contractor.contractorPhotoPath.replace(/\\/g, '/').replace(/^.*wwwroot\//, '');
-		return filePath ? `${this.apiBaseUrl}/${filePath}` : '/assets/images/default-photo.jpg';
+	getFirstPhotoUrl(pass: ContractorPassesDto): string {
+		if (!pass.contractorPhotoPath) return '/assets/images/default-photo.jpg';
+		const filePath = pass.contractorPhotoPath.replace(/\\/g, '/').replace(/^.*wwwroot\//, '');
+		return `${this.apiBaseUrl}/${filePath}`;
 	}
 
-	getLastDocumentPhotoUrl(contractor: ContractorPassesDto): string {
-		if (!contractor.documentPhotos) return '/assets/images/default-doc.png';
-		const photos = contractor.documentPhotos.split(',').map(p => p.trim()).filter(p => !!p);
-		const lastPhotoPath = photos.length > 0 ? photos[photos.length - 1] : null;
-		if (!lastPhotoPath) return '/assets/images/default-doc.png';
-		const filePath = lastPhotoPath.replace(/\\/g, '/').replace(/^.*wwwroot\//, '');
-		return filePath ? `${this.apiBaseUrl}/${filePath}` : '/assets/images/default-doc.png';
+	getLastDocumentPhotoUrl(contractor: ContractorPassesDto): string | null {
+		if (!contractor.documentPhotos) return null;
+		const photos = contractor.documentPhotos.split(',');
+		const lastPhoto = photos[photos.length - 1];
+		const filePath = lastPhoto.replace(/\\/g, '/').replace(/^.*wwwroot\//, '');
+		return `${this.apiBaseUrl}/${filePath}`;
 	}
 
-	getLatestPass(passes: PassDetailsDto[] | undefined): PassDetailsDto | undefined {
+	getLatestPass(passes: PassDetailsDto[]): PassDetailsDto | undefined {
 		if (!passes || passes.length === 0) return undefined;
-		return [...passes].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())[0];
+		return passes.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())[0];
 	}
 
 	getSortedPasses(passes: PassDetailsDto[], currentStore?: PassByStoreResponseDto): PassDetailsDto[] {
 		if (!passes || passes.length === 0) return [];
-		return [...passes].sort((a, b) => {
-			if (currentStore) {
-				const aMatches = a.building === currentStore.building && a.floor === currentStore.floor && a.line === currentStore.line && a.storeNumber === currentStore.storeNumber;
-				const bMatches = b.building === currentStore.building && b.floor === currentStore.floor && b.line === currentStore.line && b.storeNumber === currentStore.storeNumber;
-				if (aMatches && !bMatches) return -1;
-				if (!aMatches && bMatches) return 1;
-			}
+		if (environment.debug) {
+			passes.forEach((pass, index) => {
+				if (!pass.passTypeColor) {
+					console.warn(`[GetSortedPasses] Pass ${index} missing passTypeColor for ${pass.passTypeName}`);
+				}
+			});
+		}
+		if (!currentStore) {
+			return passes.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+		}
+		return passes.sort((a, b) => {
+			const aMatchesCurrentStore =
+				a.building === currentStore.building &&
+				a.floor === currentStore.floor &&
+				a.line === currentStore.line &&
+				a.storeNumber === currentStore.storeNumber;
+			const bMatchesCurrentStore =
+				b.building === currentStore.building &&
+				b.floor === currentStore.floor &&
+				b.line === currentStore.line &&
+				b.storeNumber === currentStore.storeNumber;
+
+			if (aMatchesCurrentStore && !bMatchesCurrentStore) return -1;
+			if (!aMatchesCurrentStore && bMatchesCurrentStore) return 1;
 			return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
 		});
 	}
 
-	getPassDataSource(item: ContractorItem): MatTableDataSource<PassDetailsDto> {
-		const passes = item.status === 'active' ? item.contractor.activePasses || [] : item.contractor.closedPasses || [];
-		return new MatTableDataSource<PassDetailsDto>(passes);
+	getActiveContractors(result: PassByStoreResponseDto): ContractorPassesDto[] {
+		return result.contractors.filter((contractor) => contractor.activePasses && contractor.activePasses.length > 0);
+	}
+
+	getClosedContractors(result: PassByStoreResponseDto): ContractorPassesDto[] {
+		return result.contractors.filter(
+			(contractor) => (!contractor.activePasses || contractor.activePasses.length === 0) && contractor.closedPasses && contractor.closedPasses.length > 0
+		);
 	}
 
 	viewContractor(contractorId: number): void {
@@ -606,8 +431,113 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		window.open(url, '_blank');
 	}
 
-	goToCreateTransactionFromSearch(): void {
-		if (!this.areAllSearchFieldsConfirmed()) {
+	extendPass(pass: PassDetailsDto, result: PassByStoreResponseDto): void {
+		let newStartDate: Date;
+		try {
+			const previousEndDate = new Date(pass.endDate);
+			if (isNaN(previousEndDate.getTime())) {
+				throw new Error(`Invalid pass end date format: ${pass.endDate}`);
+			}
+			newStartDate = new Date(previousEndDate);
+			newStartDate.setDate(newStartDate.getDate() + 1);
+		} catch (error) {
+			this.errorMessage = 'Неверный формат даты окончания предыдущего пропуска.';
+			return;
+		}
+
+		this.isLoading = true;
+		this.errorMessage = null;
+
+		forkJoin({
+			contractor: this.transactionService.getContractorById(pass.contractorId),
+			store: this.transactionService.getStoreByDetails(pass.building, pass.floor, pass.line, pass.storeNumber),
+			passType: this.transactionService.getPassTypeById(pass.passTypeId),
+		}).subscribe({
+			next: (response: { contractor: any; store: Store; passType: any }) => {
+				const { contractor, store, passType } = response;
+				if (!contractor || !store || !passType) {
+					this.errorMessage = 'Не удалось получить все данные (контрагент, магазин или тип пропуска) для продления.';
+					this.isLoading = false;
+					return;
+				}
+				const extendData = {
+					contractorId: contractor.id,
+					passTypeId: passType.id,
+					store: {
+						id: store.id,
+						building: store.building,
+						floor: store.floor,
+						line: store.line,
+						storeNumber: store.storeNumber,
+					},
+					startDate: newStartDate.toISOString(),
+					position: pass.position || 'Наёмный работник',
+					contractorDetails: {
+						id: contractor.id,
+						lastName: contractor.lastName || '',
+						firstName: contractor.firstName || '',
+						middleName: contractor.middleName || '',
+						passportSerialNumber: contractor.passportSerialNumber || '',
+					},
+					passType: {
+						id: passType.id,
+						name: passType.name,
+						durationInMonths: passType.durationInMonths,
+						cost: passType.cost,
+					},
+				};
+				this.isLoading = false;
+				this.router.navigate(['/transactions/create'], { state: extendData });
+			},
+			error: (err: any) => {
+				const message = err?.error?.message || err?.message || 'Неизвестная ошибка сервера';
+				this.errorMessage = `Ошибка при загрузке данных для продления: ${message}`;
+				this.isLoading = false;
+			},
+		});
+	}
+
+	closePass(passId: number): void {
+		const closeReason = prompt('Введите причину закрытия пропуска:');
+		if (!closeReason) return;
+
+		this.passService.closePass(passId, closeReason).subscribe({
+			next: () => {
+				this.searchPasses();
+			},
+			error: (err: any) => {
+				if (err.status === 400) {
+					this.searchPasses();
+				} else {
+					this.errorMessage = 'Ошибка закрытия пропуска';
+				}
+			},
+		});
+	}
+
+	toggleExpansionPanel(resultIndex: number, contractorIndex: number): void {
+		const key = `${resultIndex}-${contractorIndex}`;
+		this.panelStates[key] = !this.panelStates[key];
+		this.cdr.markForCheck();
+	}
+
+	isExpanded(resultIndex: number, contractorIndex: number): boolean {
+		const key = `${resultIndex}-${contractorIndex}`;
+		return !!this.panelStates[key];
+	}
+
+	openImage(url: string | null): void {
+		if (url) {
+			window.open(url, '_blank');
+		}
+	}
+
+	trackByFn(index: number, item: { contractor: ContractorPassesDto; isActive: boolean }): number {
+		return item.contractor.contractorId;
+	}
+
+	goToCreateTransaction(): void {
+		if (!this.isFieldConfirmed('Building') || !this.isFieldConfirmed('Floor') || !this.isFieldConfirmed('Line') || !this.isFieldConfirmed('StoreNumber')) {
 			this.errorMessage = 'Все поля должны быть заполнены и подтверждены.';
 			this.cdr.markForCheck();
 			return;
@@ -622,9 +552,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		this.transactionService
 			.getStoreByDetails(building, floor, line, storeNumber)
 			.pipe(
-				takeUntil(this.destroy$),
-				catchError(err => {
-					console.error('getStoreByDetails error:', err);
+				catchError((err) => {
 					this.errorMessage =
 						err.status === 404
 							? `Торговая точка ${building}-${floor}-${line}-${storeNumber} не найдена.`
@@ -648,152 +576,13 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 			});
 	}
 
-	extendPass(pass: PassDetailsDto, result: DisplayablePassByStoreResponseDto): void {
-		let newStartDate: Date;
-		try {
-			const previousEndDate = new Date(pass.endDate);
-			if (isNaN(previousEndDate.getTime())) throw new Error(`Invalid date: ${pass.endDate}`);
-			newStartDate = new Date(previousEndDate);
-			newStartDate.setDate(newStartDate.getDate() + 1);
-		} catch (error: any) {
-			console.error('Date parse error:', error);
-			this.errorMessage = `Ошибка даты: ${error.message}`;
-			this.cdr.markForCheck();
-			return;
-		}
-		this.isLoading = true;
-		this.errorMessage = null;
-		this.cdr.markForCheck();
-		forkJoin({
-			contractor: this.transactionService.getContractorById(pass.contractorId),
-			store: this.transactionService.getStoreByDetails(pass.building, pass.floor, pass.line, pass.storeNumber),
-			passType: this.transactionService.getPassTypeById(pass.passTypeId),
-		})
-			.pipe(
-				takeUntil(this.destroy$),
-				catchError(err => {
-					console.error('Extend forkJoin error:', err);
-					this.errorMessage = `Ошибка продления: ${err?.error?.message || err?.message || 'Ошибка сервера'}`;
-					this.isLoading = false;
-					this.cdr.markForCheck();
-					return of(null);
-				})
-			)
-			.subscribe({
-				next: (data) => {
-					if (!data || !data.contractor || !data.store || !data.passType) {
-						this.isLoading = false;
-						if (!this.errorMessage) this.errorMessage = 'Неполные данные для продления.';
-						console.error('Incomplete extend data:', data);
-						this.cdr.markForCheck();
-						return;
-					}
-					const { contractor, store, passType } = data;
-					const formattedStartDate = this.datePipe.transform(newStartDate, 'yyyy-MM-dd');
-					const extendData = {
-						contractorId: contractor.id,
-						passTypeId: passType.id,
-						store,
-						startDate: formattedStartDate,
-						position: pass.position || 'Employee',
-						contractorDetails: {
-							id: contractor.id,
-							lastName: contractor.lastName || '',
-							firstName: contractor.firstName || '',
-							middleName: contractor.middleName || '',
-							passportSerialNumber: contractor.passportSerialNumber || '',
-						},
-						passType: {
-							id: passType.id,
-							name: passType.name,
-							durationInMonths: passType.durationInMonths,
-							cost: passType.cost,
-						},
-					};
-					this.isLoading = false;
-					this.cdr.markForCheck();
-					this.router.navigate(['/transactions/create'], { state: extendData });
-				},
-			});
-	}
-
-	closePass(passId: number, contractorIndex: number, resultIndex: number): void {
-		const closeReason = prompt('Причина закрытия:');
-		if (closeReason === null) return;
-		if (closeReason.trim() === '') {
-			alert('Причина не может быть пустой.');
-			return;
-		}
-		this.isLoading = true;
-		this.errorMessage = null;
-		this.cdr.markForCheck();
-		this.passService
-			.closePass(passId, closeReason.trim())
-			.pipe(
-				takeUntil(this.destroy$),
-				catchError(err => {
-					console.error('Close pass error:', err);
-					let msg = 'Ошибка закрытия пропуска.';
-					if (err.error && typeof err.error === 'string') msg = `Ошибка: ${err.error}`;
-					else if (err.error?.message) msg = `Ошибка: ${err.error.message}`;
-					else if (err.message) msg = `Ошибка: ${err.message}`;
-					this.errorMessage = msg;
-					this.isLoading = false;
-					this.cdr.markForCheck();
-					return of(null);
-				})
-			)
-			.subscribe({
-				next: (response) => {
-					if (response !== null || !this.errorMessage) {
-						this.isLoading = false;
-						this.searchPasses();
-					}
-				},
-			});
-	}
-
-	toggleActivePanel(resultIndex: number, contractorIndex: number): void {
-		const key = `active-${resultIndex}-${contractorIndex}`;
-		this.activePanelKey = this.activePanelKey === key ? null : key;
-		this.cdr.detectChanges();
-	}
-
-	isActivePanelExpanded(resultIndex: number, contractorIndex: number): boolean {
-		return this.activePanelKey === `active-${resultIndex}-${contractorIndex}`;
-	}
-
-	isActivePanelExpandedWhen = (_index: number, item: ContractorItem): boolean => {
-		return this.isActivePanelExpanded(item.resultIndex, item.contractorIndex);
-	};
-
-	toggleClosedPanel(resultIndex: number, contractorIndex: number): void {
-		const key = `closed-${resultIndex}-${contractorIndex}`;
-		this.closedPanelKey = this.closedPanelKey === key ? null : key;
-		this.cdr.detectChanges();
-	}
-
-	isClosedPanelExpanded(resultIndex: number, contractorIndex: number): boolean {
-		return this.closedPanelKey === `closed-${resultIndex}-${contractorIndex}`;
-	}
-
-	isClosedPanelExpandedWhen = (_index: number, item: ContractorItem): boolean => {
-		return this.isClosedPanelExpanded(item.resultIndex, item.contractorIndex);
-	};
-
-	isActiveDetailRow = (index: number, row: any) => row.isDetailRow && this.isActivePanelExpanded(row.resultIndex, row.contractorIndex);
-
-	openImageInNewWindow(url: string | null): void {
-		if (url && !url.includes('default-photo.jpg') && !url.includes('default-doc.png')) {
-			window.open(url, '_blank');
-		}
-	}
-
-	trackByResult(_index: number, data: DisplayablePassByStoreResponseDto): string {
-		return `${data.building}-${data.floor}-${data.line}-${data.storeNumber}`;
-	}
-
-	trackByContractor(_index: number, data: ContractorPassesDto): number {
-		return data.contractorId;
+	getNameParts(fullName: string): string[] {
+		if (!fullName) return ['', '', ''];
+		const parts = fullName.trim().split(' ');
+		return [
+			parts[0] || '',
+			parts[1] || '',
+			parts.slice(2).join(' ') || ''
+		];
 	}
 }
