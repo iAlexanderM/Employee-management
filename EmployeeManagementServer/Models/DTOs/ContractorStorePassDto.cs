@@ -9,5 +9,6 @@
         public int PassTypeId { get; set; }
         public PassType PassType { get; set; } = null!;
         public string? Position { get; set; }
+        public int? OriginalPassId { get; set; }
     }
 }

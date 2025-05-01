@@ -138,8 +138,9 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 		const passTypeId = state.passTypeId;
 		const startDate = state.startDate ? this.formatDateToYYYYMMDD(new Date(state.startDate)) : this.formatDateToYYYYMMDD(new Date());
 		const position = state.position;
-		const passType = state.passType; // Получаем объект PassType из state
-		const contractorDetails = state.contractorDetails; // Получаем детали контрагента
+		const passType = state.passType;
+		const contractorDetails = state.contractorDetails;
+		const originalPassId = state.originalPassId;
 
 		const basePositions = ['Сотрудник', 'Подрядчик', 'Наёмный работник'];
 		const isBasePosition = basePositions.includes(position);
@@ -161,7 +162,8 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 			startDate: startDate, // Используем отформатированную дату
 			position: formPositionValue,
 			endDate: this.formatDateToYYYYMMDD(this.addMonths(new Date(startDate), passType?.durationInMonths || 0)),
-			token: this.activeTokenData?.token || '' // Убедись, что токен устанавливается
+			token: this.activeTokenData?.token || '',
+			originalPassId: state.originalPassId
 		});
 
 		console.log('Новая форма добавлена и заполнена данными продления:', formData.form.getRawValue());
@@ -190,7 +192,8 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 				contractorId: fv.contractorId,
 				storeId: fv.storeId,
 				passTypeId: fv.passTypeId,
-				position: positionToSend
+				position: positionToSend,
+				originalPassId: fv.originalPassId || null
 			} as ContractorStorePassCreateDto;
 		});
 
@@ -329,7 +332,8 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 			showContractorModal: [false],
 			showStoreModal: [false],
 			showPassTypeModal: [false],
-			showPositionModal: [false]
+			showPositionModal: [false],
+			originalPassId: [null]
 		});
 	}
 
@@ -403,7 +407,8 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 				form.patchValue({
 					...data.formValue,
 					position: formPositionValue,
-					startDate: data.formValue.startDate || this.formatDateToYYYYMMDD(new Date())
+					startDate: data.formValue.startDate || this.formatDateToYYYYMMDD(new Date()),
+					originalPassId: data.formValue.originalPassId || null,
 				});
 				this.initAutoEndDateCalc(form);
 				return {

@@ -25,5 +25,6 @@ namespace EmployeeManagementServer.Models
 
         public ICollection<ContractorPhoto> Photos { get; set; } = new List<ContractorPhoto>();
         public ICollection<Pass> Passes { get; set; } = new List<Pass>();
+        public ICollection<ContractorHistory> History { get; set; } = new List<ContractorHistory>();
     }
 }

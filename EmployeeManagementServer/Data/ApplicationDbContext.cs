@@ -16,7 +16,9 @@ namespace EmployeeManagementServer.Data
 
         public DbSet<Contractor> Contractors { get; set; }
         public DbSet<ContractorPhoto> ContractorPhoto { get; set; }
+        public DbSet<ContractorHistory> ContractorHistories { get; set; }
         public DbSet<Store> Stores { get; set; }
+        public DbSet<StoreHistory> StoreHistories { get; set; }
         public DbSet<Building> Buildings { get; set; }
         public DbSet<Floor> Floors { get; set; }
         public DbSet<Line> Lines { get; set; }
@@ -76,6 +78,13 @@ namespace EmployeeManagementServer.Data
                 .HasForeignKey(cp => cp.ContractorId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<ContractorHistory>()
+                .ToTable("ContractorHistories")
+                .HasOne(ch => ch.Contractor)
+                .WithMany(c => c.History)
+                .HasForeignKey(ch => ch.ContractorId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // RefreshToken
             builder.Entity<RefreshToken>(entity =>
             {
@@ -131,6 +140,13 @@ namespace EmployeeManagementServer.Data
                 .WithMany()
                 .HasForeignKey(p => p.StoreId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<StoreHistory>()
+                .ToTable("StoreHistories")
+                .HasOne(sh => sh.Store)
+                .WithMany(s => s.History)
+                .HasForeignKey(sh => sh.StoreId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // PassTransaction (дополнительные связи)
             builder.Entity<PassTransaction>()

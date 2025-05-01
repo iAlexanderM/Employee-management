@@ -12,5 +12,6 @@
         public int PassTransactionId { get; set; }
         public PassTransaction PassTransaction { get; set; } = null!;
         public required string Position { get; set; }
+        public int? OriginalPassId { get; set; }
     }
 }

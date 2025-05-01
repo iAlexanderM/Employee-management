@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
 	providedIn: 'root'
 })
 export class PassService {
-	private baseApiUrl = environment.apiUrl || 'http://localhost:8080/api'; // Используем environment или fallback
+	private baseApiUrl = environment.apiUrl || 'http://localhost:8080/api';
 	private baseUrl = `${this.baseApiUrl}/Pass`;
 	private searchBaseUrl = `${this.baseApiUrl}/PassByStore`;
 	private suggestionsApiUrl = `${this.baseApiUrl}/suggestions`;
@@ -53,6 +53,10 @@ export class PassService {
 
 	closePass(id: number, closeReason: string): Observable<void> {
 		return this.http.post<void>(`${this.baseUrl}/${id}/close`, { closeReason });
+	}
+
+	reopenPass(id: number): Observable<void> {
+		return this.http.post<void>(`${this.baseUrl}/${id}/reopen`, {});
 	}
 
 	getPendingPassesByTransactionId(transactionId: number): Observable<Pass[]> {

@@ -10,5 +10,6 @@
         public bool IsArchived { get; set; } = false;
         public int? SortOrder { get; set; }
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+        public ICollection<StoreHistory> History { get; set; } = new List<StoreHistory>();
     }
 }

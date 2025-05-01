@@ -240,7 +240,7 @@ namespace EmployeeManagementServer.Controllers
                 .Include(p => p.PassType)
                 .Include(p => p.Store)
                 .Include(p => p.Contractor)
-                .Where(p => !p.IsClosed && p.EndDate > DateTime.UtcNow);
+                .Where(p => !p.IsClosed);
 
             if (!string.IsNullOrEmpty(passType)) query = query.Where(p => p.PassType.Name == passType);
             if (!string.IsNullOrEmpty(building)) query = query.Where(p => p.Store.Building == building);

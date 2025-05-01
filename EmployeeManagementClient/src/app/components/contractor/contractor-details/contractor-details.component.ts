@@ -1,39 +1,59 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { CommonModule } from '@angular/common';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { CommonModule, NgClass } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TransactionService } from '../../../services/transaction.service';
 import { Contractor, Photo } from '../../../models/contractor.model';
 import { Pass } from '../../../models/pass.model';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
 	selector: 'app-contractor-details',
 	standalone: true,
-	imports: [CommonModule, RouterModule],
+	imports: [CommonModule, RouterModule, ReactiveFormsModule],
 	templateUrl: './contractor-details.component.html',
-	styleUrls: ['./contractor-details.component.css']
+	styleUrls: ['./contractor-details.component.css'],
+	animations: [
+		trigger('modalFade', [
+			transition(':enter', [
+				style({ opacity: 0, transform: 'scale(0.95)' }),
+				animate('200ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
+			]),
+			transition(':leave', [
+				animate('150ms ease-in', style({ opacity: 0, transform: 'scale(0.95)' })),
+			]),
+		]),
+	],
 })
 export class ContractorDetailsComponent implements OnInit {
 	contractor: Contractor | null = null;
 	documentPhotoUrls: string[] = [];
-	photoSizeClass: string = '';
-	enlargedPhotoUrl: string | null = null;
+	visibleDocumentPhotoUrls: string[] = [];
+	isGalleryOpen: boolean = false;
+	currentGalleryIndex: number = 0;
 	private storesCache: { [key: number]: any } = {};
-	private userMap: { [key: string]: string } = {}; // Кэш UUID -> UserName
+	private userMap: { [key: string]: string } = {};
 	private readonly apiBaseUrl = 'http://localhost:8080';
+	noteForm: FormGroup;
 
 	constructor(
 		private route: ActivatedRoute,
 		private router: Router,
 		private http: HttpClient,
-		private transactionService: TransactionService
-	) { }
+		private transactionService: TransactionService,
+		private fb: FormBuilder
+	) {
+		this.noteForm = this.fb.group({
+			note: ['', [Validators.maxLength(500)]],
+		});
+	}
 
 	ngOnInit(): void {
 		const id = this.route.snapshot.paramMap.get('id');
 		if (id) {
-			this.loadUsersFromTransactions(); // Загружаем пользователей
+			this.loadUsersFromTransactions();
 			this.fetchContractorData(id);
 		}
 	}
@@ -46,26 +66,24 @@ export class ContractorDetailsComponent implements OnInit {
 						this.userMap[t.userId] = t.user.userName || 'Неизвестно';
 					}
 				});
-				console.log('Загруженные пользователи:', this.userMap);
 			},
-			error: (err) => console.error('Ошибка загрузки пользователей:', err)
+			error: (err) => console.error('Ошибка загрузки пользователей:', err),
 		});
 	}
 
 	private fetchContractorData(id: string): void {
 		this.http
 			.get<any>(`${this.apiBaseUrl}/api/contractors/${id}`, {
-				headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+				headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
 			})
 			.subscribe({
 				next: (data) => {
-					console.log('Данные с бэкенда:', data);
 					this.contractor = this.normalizeContractorData(data);
+					this.noteForm.patchValue({ note: this.contractor.note || '' });
 					this.loadDocumentPhotos();
 					this.fetchStoresForPasses();
-					console.log('Пропуска после нормализации:', this.contractor.passes);
 				},
-				error: (err) => console.error('Ошибка загрузки контрагента:', err)
+				error: (err) => console.error('Ошибка загрузки контрагента:', err),
 			});
 	}
 
@@ -90,7 +108,7 @@ export class ContractorDetailsComponent implements OnInit {
 			documentPhotos: Array.isArray(data.documentPhotos) ? data.documentPhotos : [],
 			isArchived: data.isArchived || false,
 			passes: this.normalizePasses(data.passes),
-			note: data.note || ''
+			note: data.note || '',
 		};
 	}
 
@@ -120,30 +138,28 @@ export class ContractorDetailsComponent implements OnInit {
 			passTransaction: p.passTransaction,
 			printStatus: p.printStatus,
 			status: p.status || '',
-			note: p.note || ''
+			note: p.note || '',
 		}));
 	}
 
 	private fetchStoresForPasses(): void {
 		if (!this.contractor?.passes?.length) return;
-
 		const uniqueStoreIds = [...new Set(this.contractor.passes.map((pass) => pass.storeId))];
 		uniqueStoreIds.forEach((storeId) => {
 			if (!this.storesCache[storeId] && !this.contractor?.passes.some((p) => p.storeId === storeId && p.store)) {
 				this.http
 					.get<any>(`${this.apiBaseUrl}/api/store/${storeId}`, {
-						headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+						headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
 					})
 					.subscribe({
 						next: (storeData) => {
 							this.storesCache[storeId] = storeData;
 							this.updatePassesWithStore(storeId, storeData);
-							console.log(`Данные магазина ${storeId}:`, storeData);
 						},
 						error: (err) => {
 							console.error(`Ошибка загрузки магазина ${storeId}:`, err);
 							this.updatePassesWithFallback(storeId);
-						}
+						},
 					});
 			}
 		});
@@ -194,7 +210,8 @@ export class ContractorDetailsComponent implements OnInit {
 			: this.contractor?.photos
 				.filter((photo) => photo.isDocumentPhoto)
 				.map((photo) => this.transformToUrl(photo.filePath)) || [];
-		this.photoSizeClass = this.documentPhotoUrls.length > 2 ? 'small-photos' : '';
+
+		this.visibleDocumentPhotoUrls = this.documentPhotoUrls.slice(-3);
 	}
 
 	private transformToUrl(filePath: string): string {
@@ -216,34 +233,77 @@ export class ContractorDetailsComponent implements OnInit {
 	closePass(passId: number): void {
 		const reason = prompt('Укажите причину закрытия пропуска:');
 		if (reason) {
-			console.log(`Закрытие пропуска ${passId} с причиной: ${reason}`);
 			this.http
 				.post(`${this.apiBaseUrl}/api/pass/${passId}/close`, { closeReason: reason }, {
-					headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+					headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
 				})
 				.subscribe({
 					next: () => {
-						console.log(`Пропуск ${passId} закрыт`);
 						this.fetchContractorData(this.contractor!.id.toString());
 					},
-					error: (err) => console.error('Ошибка закрытия пропуска:', err)
+					error: (err) => console.error('Ошибка закрытия пропуска:', err),
 				});
 		}
 	}
 
-	togglePhotoEnlargement(photoUrl: string, event: Event): void {
-		event.preventDefault();
-		this.enlargedPhotoUrl = this.enlargedPhotoUrl === photoUrl ? null : photoUrl;
+	reopenPass(passId: number): void {
+		const token = localStorage.getItem('token');
+		const headers = new HttpHeaders({
+			'Authorization': `Bearer ${token}`
+		});
+
+		this.http
+			.post(`${this.apiBaseUrl}/api/pass/${passId}/reopen`, {}, { headers: headers })
+			.subscribe({
+				next: () => {
+					console.log('Пропуск успешно открыт');
+					this.fetchContractorData(this.contractor!.id.toString());
+				},
+				error: (err) => {
+					console.error('Ошибка при открытии пропуска:', err);
+				}
+			});
 	}
 
-	shrinkPhoto(event: Event): void {
-		const target = event.target as HTMLElement;
-		if (!target.closest('.img-cont') && !target.closest('.document-photo')) {
-			this.enlargedPhotoUrl = null;
+	openGallery(index: number): void {
+		this.currentGalleryIndex = index;
+		this.isGalleryOpen = true;
+	}
+
+	closeGallery(): void {
+		this.isGalleryOpen = false;
+	}
+
+	navigateGallery(direction: 'prev' | 'next'): void {
+		if (direction === 'prev' && this.currentGalleryIndex > 0) {
+			this.currentGalleryIndex--;
+		} else if (direction === 'next' && this.currentGalleryIndex < this.documentPhotoUrls.length - 1) {
+			this.currentGalleryIndex++;
 		}
 	}
 
 	getPassTypeName(pass: Pass): string {
 		return `[${pass.passTypeId}] ${pass.passTypeName || 'Unknown'}`;
+	}
+
+	saveNote(): void {
+		const note = this.noteForm.get('note')?.value;
+		if (this.contractor) {
+			this.http
+				.put(
+					`${this.apiBaseUrl}/api/contractors/${this.contractor.id}`,
+					{ ...this.contractor, note },
+					{
+						headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+					}
+				)
+				.subscribe({
+					next: () => {
+						this.contractor!.note = note;
+						this.noteForm.markAsPristine();
+					},
+					error: (err) => console.error('Ошибка обновления заметки:', err),
+				});
+		}
 	}
 }

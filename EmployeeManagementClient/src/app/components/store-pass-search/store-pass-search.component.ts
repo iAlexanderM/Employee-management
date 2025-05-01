@@ -485,6 +485,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 						durationInMonths: passType.durationInMonths,
 						cost: passType.cost,
 					},
+					originalPassId: pass.id,
 				};
 				this.isLoading = false;
 				this.router.navigate(['/transactions/create'], { state: extendData });

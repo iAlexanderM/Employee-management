@@ -5,17 +5,17 @@ using Microsoft.AspNetCore.Http;
 
 namespace EmployeeManagementServer.Models.DTOs
 {
-	public class ContractorDto
-	{
-		public int Id { get; set; }
+    public class ContractorDto
+    {
+        public int Id { get; set; }
 
-		[Required(ErrorMessage = "First name is required")]
-		public required string FirstName { get; set; }
+        [Required(ErrorMessage = "First name is required")]
+        public required string FirstName { get; set; }
 
-		[Required(ErrorMessage = "Last name is required")]
-		public required string LastName { get; set; }
+        [Required(ErrorMessage = "Last name is required")]
+        public required string LastName { get; set; }
 
-		public required string MiddleName { get; set; }
+        public required string MiddleName { get; set; }
 
         public DateTime BirthDate { get; set; }
 
@@ -26,23 +26,25 @@ namespace EmployeeManagementServer.Models.DTOs
         public required string Nationality { get; set; }
 
         [Required(ErrorMessage = "Document type is required")]
-		public required string DocumentType { get; set; }
+        public required string DocumentType { get; set; }
 
-		[Required(ErrorMessage = "Passport serial number is required")]
-		public required string PassportSerialNumber { get; set; }
+        [Required(ErrorMessage = "Passport serial number is required")]
+        public required string PassportSerialNumber { get; set; }
 
-		[Required(ErrorMessage = "Passport issued by is required")]
+        [Required(ErrorMessage = "Passport issued by is required")]
         public required string PassportIssuedBy { get; set; }
 
-		public DateTime PassportIssueDate { get; set; }
+        public DateTime PassportIssueDate { get; set; }
 
         [Required(ErrorMessage = "Phone number is required")]
         public required string PhoneNumber { get; set; }
 
         [Required(ErrorMessage = "Product type is required")]
-		public required string ProductType { get; set; }
+        public required string ProductType { get; set; }
 
         public bool IsArchived { get; set; }
+
+        public string? Note { get; set; }
 
         public List<IFormFile> Photos { get; set; } = new List<IFormFile>();
         public List<IFormFile> DocumentPhotos { get; set; } = new List<IFormFile>();
@@ -56,5 +58,7 @@ namespace EmployeeManagementServer.Models.DTOs
 
         public List<PassDetailsDto> ActivePasses { get; set; } = new List<PassDetailsDto>();
         public List<PassDetailsDto> ClosedPasses { get; set; } = new List<PassDetailsDto>();
+
+        public List<ContractorHistoryDto> History { get; set; } = new List<ContractorHistoryDto>();
     }
 }

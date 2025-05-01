@@ -24,6 +24,7 @@ export interface ContractorStorePass {
 	passTypeId: number;
 	passType: PassType;
 	position?: string;
+	originalPassId?: number;
 }
 
 export interface ContractorDto {
@@ -60,6 +61,7 @@ export interface CreateTransactionDto {
 	startDate: Date;
 	endDate: Date;
 	position?: string;
+	originalPassId?: number;
 }
 
 export interface ContractorStorePassCreateDto {
@@ -67,4 +69,5 @@ export interface ContractorStorePassCreateDto {
 	storeId: number;
 	passTypeId: number;
 	position?: string;
+	originalPassId?: number;
 }

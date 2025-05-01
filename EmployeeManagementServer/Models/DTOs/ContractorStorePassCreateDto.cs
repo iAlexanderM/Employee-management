@@ -11,5 +11,6 @@ namespace EmployeeManagementServer.Models.DTOs
         [Required]
         public int PassTypeId { get; set; }
         public string? Position { get; set; }
+        public int? OriginalPassId { get; set; }
     }
 }

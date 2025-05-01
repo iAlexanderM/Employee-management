@@ -65,7 +65,8 @@ namespace EmployeeManagementServer.Controllers
                     ContractorId = cspDto.ContractorId,
                     StoreId = cspDto.StoreId,
                     PassTypeId = cspDto.PassTypeId,
-                    Position = cspDto.Position ?? string.Empty
+                    Position = cspDto.Position ?? string.Empty,
+                    OriginalPassId = cspDto.OriginalPassId // Сохраняем OriginalPassId
                 });
             }
 
@@ -108,6 +109,8 @@ namespace EmployeeManagementServer.Controllers
                     Store = _context.Stores.Find(csp.StoreId)!,
                     PassTypeId = csp.PassTypeId,
                     PassType = _context.PassTypes.Find(csp.PassTypeId)!,
+                    Position = csp.Position,
+                    OriginalPassId = csp.OriginalPassId 
                 }).ToList(),
                 StartDate = transaction.StartDate,
                 EndDate = transaction.EndDate,
@@ -169,14 +172,28 @@ namespace EmployeeManagementServer.Controllers
                     PassTypeId = csp.PassTypeId,
                     StartDate = transaction.StartDate,
                     EndDate = transaction.EndDate,
-                    Position = csp.Position, // Берем должность из ContractorStorePass
+                    Position = csp.Position,
                     TransactionDate = DateTime.UtcNow,
                     IsClosed = false,
-                    PrintStatus = "PendingPrint", // Исправлено
-                    PassStatus = "Active", // Добавлено
+                    PrintStatus = "PendingPrint",
+                    PassStatus = "Active",
                     PassTransactionId = transaction.Id
                 };
                 _context.Passes.Add(pass);
+
+                if (csp.OriginalPassId.HasValue)
+                {
+                    var originalPass = await _context.Passes.FirstOrDefaultAsync(p => p.Id == csp.OriginalPassId.Value);
+                    if (originalPass != null && !originalPass.IsClosed)
+                    {
+                        originalPass.PassStatus = "Closed";
+                        originalPass.IsClosed = true;
+                        originalPass.CloseReason = "Закрыто продлением";
+                        originalPass.CloseDate = DateTime.UtcNow;
+                        originalPass.ClosedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                        _context.Passes.Update(originalPass);
+                    }
+                }
             }
 
             await _context.SaveChangesAsync();
@@ -218,7 +235,8 @@ namespace EmployeeManagementServer.Controllers
                     Store = csp.Store,
                     PassTypeId = csp.PassTypeId,
                     PassType = csp.PassType,
-                    Position = csp.Position
+                    Position = csp.Position,
+                    OriginalPassId = csp.OriginalPassId 
                 }).ToList(),
                 StartDate = transaction.StartDate,
                 EndDate = transaction.EndDate,

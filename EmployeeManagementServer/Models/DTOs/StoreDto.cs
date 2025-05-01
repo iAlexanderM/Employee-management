@@ -10,5 +10,6 @@
         public DateTime CreatedAt { get; set; }
         public int? SortOrder { get; set; }
         public bool IsArchived { get; set; }
+        public List<StoreHistoryDto> History { get; set; } = new List<StoreHistoryDto>();
     }
 }

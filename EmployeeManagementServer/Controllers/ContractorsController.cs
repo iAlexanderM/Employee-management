@@ -4,6 +4,11 @@ using EmployeeManagementServer.Models;
 using EmployeeManagementServer.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using EmployeeManagementServer.Data;
 
 namespace EmployeeManagementServer.Controllers
 {
@@ -15,19 +20,22 @@ namespace EmployeeManagementServer.Controllers
         private readonly ContractorService _contractorService;
         private readonly IMapper _mapper;
         private readonly ILogger<ContractorsController> _logger;
+        private readonly ApplicationDbContext _context;
 
         public ContractorsController(
             ContractorService contractorService,
             IMapper mapper,
-            ILogger<ContractorsController> logger)
+            ILogger<ContractorsController> logger,
+            ApplicationDbContext context)
         {
             _contractorService = contractorService;
             _mapper = mapper;
             _logger = logger;
+            _context = context;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetContractors([FromQuery] int page = 1, [FromQuery] int pageSize = 25)
+        public async Task<IActionResult> GetContractors([FromQuery] int page = 1, [FromQuery] int pageSize = 25, [FromQuery] bool includeArchived = false)
         {
             try
             {
@@ -37,9 +45,8 @@ namespace EmployeeManagementServer.Controllers
                 }
 
                 int skip = (page - 1) * pageSize;
-                int total = await _contractorService.GetTotalContractorsCountAsync();
-
-                var contractors = await _contractorService.GetContractorsAsync(skip, pageSize);
+                int total = await _contractorService.GetTotalContractorsCountAsync(includeArchived);
+                var contractors = await _contractorService.GetContractorsAsync(skip, pageSize, includeArchived);
 
                 var response = new
                 {
@@ -73,7 +80,7 @@ namespace EmployeeManagementServer.Controllers
                             ContractorName = $"{c.LastName} {c.FirstName} {c.MiddleName}",
                             IsClosed = p.IsClosed,
                             CloseReason = p.CloseReason,
-                            PrintStatus = p.PrintStatus 
+                            PrintStatus = p.PrintStatus
                         }).ToList(),
                         ClosedPasses = c.Passes.Where(p => p.PassStatus == "Closed").Select(p => new PassDetailsDto
                         {
@@ -85,7 +92,7 @@ namespace EmployeeManagementServer.Controllers
                             ContractorName = $"{c.LastName} {c.FirstName} {c.MiddleName}",
                             IsClosed = p.IsClosed,
                             CloseReason = p.CloseReason,
-                            PrintStatus = p.PrintStatus 
+                            PrintStatus = p.PrintStatus
                         }).ToList()
                     }).ToList()
                 };
@@ -134,13 +141,13 @@ namespace EmployeeManagementServer.Controllers
                     contractorId = p.ContractorId
                 }).ToList(),
                 Passes = contractor.Passes
-                    .OrderByDescending(p => p.StartDate) 
+                    .OrderByDescending(p => p.StartDate)
                     .Select(p => new
                     {
                         id = p.Id,
                         passTypeId = p.PassTypeId,
                         passTypeName = p.PassType?.Name ?? "Unknown",
-                        cost = p.PassType.Cost,
+                        cost = p.PassType?.Cost,
                         contractorId = p.ContractorId,
                         storeId = p.StoreId,
                         position = p.Position,
@@ -153,7 +160,16 @@ namespace EmployeeManagementServer.Controllers
                         closeReason = p.CloseReason,
                         closeDate = p.CloseDate,
                         closedBy = p.ClosedBy
-                    }).ToList()
+                    }).ToList(),
+                History = contractor.History.Select(h => new
+                {
+                    h.Id,
+                    h.FieldName,
+                    h.OldValue,
+                    h.NewValue,
+                    h.ChangedAt,
+                    h.ChangedBy
+                }).ToList()
             };
 
             return Ok(response);
@@ -204,7 +220,7 @@ namespace EmployeeManagementServer.Controllers
             }
 
             await _contractorService.CreateContractorAsync(contractor);
-            _logger.LogInformation($"Контрагент с {contractorDto.Id} успешно создан.");
+            _logger.LogInformation($"Контрагент с ID {contractor.Id} успешно создан.");
             return Ok(contractor);
         }
 
@@ -240,6 +256,9 @@ namespace EmployeeManagementServer.Controllers
 
             try
             {
+                var changedBy = User.Identity.Name ?? "Unknown";
+                await LogContractorChanges(contractor, contractorDto, changedBy);
+
                 UpdateContractorDetails(contractor, contractorDto);
 
                 var allPhotosToRemove = contractorDto.PhotosToRemove
@@ -263,6 +282,122 @@ namespace EmployeeManagementServer.Controllers
             }
         }
 
+        [HttpPut("archive/{id}")]
+        public async Task<IActionResult> ArchiveContractor(int id)
+        {
+            try
+            {
+                var changedBy = User.Identity.Name ?? "Unknown";
+                var success = await _contractorService.ArchiveContractorAsync(id, changedBy);
+                if (!success)
+                {
+                    return NotFound("Контрагент не найден.");
+                }
+
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Ошибка при архивировании контрагента с ID {Id}", id);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при архивировании контрагента с ID {Id}", id);
+                return StatusCode(500, "Произошла ошибка при архивировании контрагента.");
+            }
+        }
+
+        [HttpPut("unarchive/{id}")]
+        public async Task<IActionResult> UnarchiveContractor(int id)
+        {
+            try
+            {
+                var changedBy = User.Identity.Name ?? "Unknown";
+                var success = await _contractorService.UnarchiveContractorAsync(id, changedBy);
+                if (!success)
+                {
+                    return NotFound("Контрагент не найден или не заархивирован.");
+                }
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при разархивировании контрагента с ID {Id}", id);
+                return StatusCode(500, "Произошла ошибка при разархивировании контрагента.");
+            }
+        }
+
+        [HttpGet("{id}/history")]
+        public async Task<IActionResult> GetContractorHistory(int id)
+        {
+            try
+            {
+                var history = await _contractorService.GetContractorHistoryAsync(id);
+                if (!history.Any())
+                {
+                    return NotFound("История изменений для контрагента не найдена.");
+                }
+
+                var historyDtos = _mapper.Map<List<ContractorHistoryDto>>(history);
+                return Ok(historyDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при получении истории изменений для контрагента с ID {Id}", id);
+                return StatusCode(500, "Ошибка сервера.");
+            }
+        }
+
+        private async Task LogContractorChanges(Contractor contractor, ContractorDto contractorDto, string changedBy)
+        {
+            if (contractor.FirstName != contractorDto.FirstName)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "FirstName", contractor.FirstName, contractorDto.FirstName, changedBy);
+
+            if (contractor.LastName != contractorDto.LastName)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "LastName", contractor.LastName, contractorDto.LastName, changedBy);
+
+            if (contractor.MiddleName != contractorDto.MiddleName)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "MiddleName", contractor.MiddleName, contractorDto.MiddleName, changedBy);
+
+            if (contractor.BirthDate != contractorDto.BirthDate)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "BirthDate", contractor.BirthDate.ToString(), contractorDto.BirthDate.ToString(), changedBy);
+
+            if (contractor.DocumentType != contractorDto.DocumentType)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "DocumentType", contractor.DocumentType, contractorDto.DocumentType, changedBy);
+
+            if (contractor.PassportSerialNumber != contractorDto.PassportSerialNumber)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "PassportSerialNumber", contractor.PassportSerialNumber, contractorDto.PassportSerialNumber, changedBy);
+
+            if (contractor.PassportIssuedBy != contractorDto.PassportIssuedBy)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "PassportIssuedBy", contractor.PassportIssuedBy, contractorDto.PassportIssuedBy, changedBy);
+
+            if (contractor.PassportIssueDate != contractorDto.PassportIssueDate)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "PassportIssueDate", contractor.PassportIssueDate.ToString(), contractorDto.PassportIssueDate.ToString(), changedBy);
+
+            if (contractor.Citizenship != contractorDto.Citizenship)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "Citizenship", contractor.Citizenship, contractorDto.Citizenship, changedBy);
+
+            if (contractor.Nationality != contractorDto.Nationality)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "Nationality", contractor.Nationality, contractorDto.Nationality, changedBy);
+
+            if (contractor.ProductType != contractorDto.ProductType)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "ProductType", contractor.ProductType, contractorDto.ProductType, changedBy);
+
+            if (contractor.PhoneNumber != contractorDto.PhoneNumber)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "PhoneNumber", contractor.PhoneNumber, contractorDto.PhoneNumber, changedBy);
+
+            if (contractor.IsArchived != contractorDto.IsArchived)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "IsArchived", contractor.IsArchived.ToString(), contractorDto.IsArchived.ToString(), changedBy);
+
+            if (contractor.SortOrder != contractorDto.SortOrder)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "SortOrder", contractor.SortOrder?.ToString() ?? "null", contractorDto.SortOrder?.ToString() ?? "null", changedBy);
+
+            if (contractor.Note != contractorDto.Note)
+                await _contractorService.LogContractorChangeAsync(contractor.Id, "Note", contractor.Note ?? "null", contractorDto.Note ?? "null", changedBy);
+        }
+
         private void UpdateContractorDetails(Contractor contractor, ContractorDto contractorDto)
         {
             contractor.FirstName = contractorDto.FirstName;
@@ -279,6 +414,7 @@ namespace EmployeeManagementServer.Controllers
             contractor.PhoneNumber = contractorDto.PhoneNumber;
             contractor.IsArchived = contractorDto.IsArchived;
             contractor.SortOrder = contractorDto.SortOrder;
+            contractor.Note = contractorDto.Note;
         }
     }
 }

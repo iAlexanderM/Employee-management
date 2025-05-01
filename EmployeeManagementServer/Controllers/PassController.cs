@@ -343,6 +343,42 @@ namespace EmployeeManagementServer.Controllers
             return NoContent();
         }
 
+        [HttpPost("{id}/reopen")]
+        public async Task<IActionResult> ReopenPass(int id)
+        {
+            _logger.LogInformation("Получен запрос на открытие пропуска с ID {Id}.", id);
+
+            var pass = await _context.Passes.FindAsync(id);
+            if (pass == null)
+            {
+                _logger.LogWarning("Пропуск с ID {Id} не найден для открытия.", id);
+                return NotFound("Пропуск не найден.");
+            }
+
+            // Проверяем, закрыт ли пропуск, прежде чем пытаться его открыть
+            // Используем условие, обратное условию закрытия в ClosePass
+            bool isCurrentlyClosed = pass.PassStatus == "Closed" || pass.IsClosed;
+
+            if (!isCurrentlyClosed)
+            {
+                _logger.LogWarning("Пропуск с ID {Id} уже открыт или не был закрыт.", id);
+                return BadRequest("Пропуск уже открыт или не был закрыт.");
+            }
+
+            // Открываем пропуск
+            pass.PassStatus = "Active";
+            pass.IsClosed = false;
+            pass.CloseReason = null; 
+            pass.CloseDate = null; 
+            pass.ClosedBy = null; 
+
+            _context.Passes.Update(pass);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Пропуск с ID {Id} успешно открыт.", id);
+            return NoContent(); 
+        }
+
         /// <summary>
         /// Вспомогательный метод для определения типа услуги по TokenType.
         /// </summary>

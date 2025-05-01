@@ -1,126 +1,242 @@
-<div class="container contractor-details mt-4" *ngIf="contractor" (click)="shrinkPhoto($event)">
-	<div class="header-section">
-		<h2>Анкета контрагента № {{ contractor.id }}</h2>
-		<button class="btn btn-primary edit-btn" [routerLink]="['/contractors/edit', contractor.id]">
-			Редактировать
-		</button>
-	</div>
-
-	<!-- Фото и фото документов -->
-	<div class="card mb-3">
-		<div class="card-body">
-			<h3>Фотографии</h3>
-			<div class="photo-section">
-				<div class="photo-block">
-					<p><strong>Фото контрагента:</strong></p>
-					<a *ngIf="getFirstPhoto()" [href]="getFirstPhoto()" target="_blank"
-						(click)="togglePhotoEnlargement(getFirstPhoto()!, $event)">
-						<img [src]="getFirstPhoto()" alt="Фото контрагента" class="img-cont"
-							[ngClass]="{'enlarged': enlargedPhotoUrl === getFirstPhoto()}" />
-					</a>
-					<p *ngIf="!getFirstPhoto()" class="text-muted">Фото отсутствует</p>
-				</div>
-				<div class="photo-block" *ngIf="documentPhotoUrls.length">
-					<p><strong>Фото документов:</strong></p>
-					<div class="photo-gallery" [ngClass]="photoSizeClass">
-						<a *ngFor="let photoUrl of documentPhotoUrls" [href]="photoUrl" target="_blank"
-							(click)="togglePhotoEnlargement(photoUrl, $event)">
-							<img [src]="photoUrl" alt="Фото документа" class="document-photo"
-								[ngClass]="{'enlarged': enlargedPhotoUrl === photoUrl}" />
+<div class="contractor-details container">
+	<!-- Основной контент -->
+	<div class="content-grid" *ngIf="contractor">
+		<!-- Колонка 1: Фотографии -->
+		<div class="column-main">
+			<div class="action-buttons d-flex gap-2 mb-4">
+				<a class="action-btn action-btn-primary flex-grow-1"
+					[routerLink]="['/contractors/edit', contractor.id]">
+					Редактировать
+				</a>
+				<a class="action-btn action-btn-secondary flex-grow-1" [routerLink]="['/passes/search']"
+					[queryParams]="{ contractorId: contractor.id }">
+					Пропуска
+				</a>
+			</div>
+			<div class="section-card">
+				<h2 class="section-title">{{ contractor.id }}</h2>
+				<div class="photo-section d-flex gap-4">
+					<!-- Основное фото (слева) -->
+					<div class="photo-item">
+						<a *ngIf="getFirstPhoto()" [href]="getFirstPhoto()!" target="_blank">
+							<img [src]="getFirstPhoto()!" alt="Фото контрагента" class="img-cont" />
 						</a>
+						<p *ngIf="!getFirstPhoto()" class="text-muted">Фото отсутствует</p>
 					</div>
+					<!-- Фото документов (справа) -->
+					<div class="photo-item" *ngIf="documentPhotoUrls.length">
+						<div class="photo-gallery">
+							<a *ngIf="visibleDocumentPhotoUrls.length"
+								[href]="visibleDocumentPhotoUrls[visibleDocumentPhotoUrls.length - 1]" target="_blank"
+								(click)="openGallery(documentPhotoUrls.length === 1 ? 0 : documentPhotoUrls.length - 3); $event.preventDefault()">
+								<img [src]="visibleDocumentPhotoUrls[visibleDocumentPhotoUrls.length - 1]"
+									alt="Фото документа" class="document-photo-large" />
+							</a>
+							<!-- Второе, третье фото и кнопка "+" -->
+							<div class="photo-gallery-bottom d-flex gap-2 mt-2"
+								*ngIf="visibleDocumentPhotoUrls.length > 0 || documentPhotoUrls.length > 0">
+								<a *ngIf="visibleDocumentPhotoUrls.length > 1" [href]="visibleDocumentPhotoUrls[0]"
+									target="_blank"
+									(click)="openGallery(documentPhotoUrls.length === 1 ? 0 : documentPhotoUrls.length - 2); $event.preventDefault()">
+									<img [src]="visibleDocumentPhotoUrls[0]" alt="Фото документа"
+										class="document-photo" />
+								</a>
+								<a *ngIf="visibleDocumentPhotoUrls.length > 2" [href]="visibleDocumentPhotoUrls[1]"
+									target="_blank"
+									(click)="openGallery(documentPhotoUrls.length - 1); $event.preventDefault()">
+									<img [src]="visibleDocumentPhotoUrls[1]" alt="Фото документа"
+										class="document-photo" />
+								</a>
+								<button class="action-btn action-btn-primary gallery-btn" (click)="openGallery(0)"
+									*ngIf="documentPhotoUrls.length > 0">
+									+
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="column-personal">
+			<div class="section-card mb-4">
+				<h2 class="section-title">Личные данные</h2>
+				<div class="info-list">
+					<div class="info-item">
+						<span class="info-label">Фамилия</span>
+						<span class="info-value">{{ contractor.lastName }}</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Имя</span>
+						<span class="info-value">{{ contractor.firstName }}</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Отчество</span>
+						<span class="info-value">{{ contractor.middleName || 'Не указано' }}</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Телефон</span>
+						<span class="info-value">{{ formatPhoneNumber(contractor.phoneNumber) }}</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Гражданство</span>
+						<span class="info-value">{{ contractor.citizenship }}</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Национальность</span>
+						<span class="info-value">{{ contractor.nationality }}</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Дата рождения</span>
+						<span class="info-value">{{ contractor.birthDate | date:'dd.MM.yyyy' }}</span>
+					</div>
+				</div>
+			</div>
+			<div class="section-card">
+				<h2 class="section-title">Дополнительная информация</h2>
+				<div class="info-list">
+					<div class="info-item">
+						<span class="info-label">Тип продукции</span>
+						<span class="info-value">{{ contractor.productType }}</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Дата создания</span>
+						<span class="info-value">{{ contractor.createdAt | date:'dd.MM.yyyy HH:mm' }}</span>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Колонка 3: Пометка, Паспортные данные -->
+		<div class="column-secondary">
+			<!-- Пометка -->
+			<div class="section-card mb-4">
+				<h2 class="section-title">Пометка</h2>
+				<form [formGroup]="noteForm" (ngSubmit)="saveNote()" class="note-form">
+					<textarea formControlName="note" class="form-control" rows="3" placeholder="Введите пометку"
+						aria-label="Заметка контрагента"></textarea>
+					<div class="d-flex gap-2 mt-2">
+						<button type="submit" class="action-btn action-btn-primary" [disabled]="noteForm.pristine">
+							Сохранить
+						</button>
+						<button type="button" class="action-btn action-btn-secondary"
+							(click)="noteForm.reset({ note: contractor.note })" [disabled]="noteForm.pristine">
+							Отменить
+						</button>
+					</div>
+					<div class="error-message" *ngIf="noteForm.get('note')?.hasError('maxlength')">
+						Заметка не должна превышать 500 символов
+					</div>
+				</form>
+			</div>
+
+			<!-- Паспортные данные -->
+			<div class="section-card">
+				<h2 class="section-title">Паспортные данные</h2>
+				<div class="info-list">
+					<div class="info-item">
+						<span class="info-label">Тип документа</span>
+						<span class="info-value">{{ contractor.documentType }}</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Серия и номер</span>
+						<span class="info-value">{{ contractor.passportSerialNumber }}</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Кем выдан</span>
+						<span class="info-value">{{ contractor.passportIssuedBy }}</span>
+					</div>
+					<div class="info-item">
+						<span class="info-label">Дата выдачи</span>
+						<span class="info-value">{{ contractor.passportIssueDate | date:'dd.MM.yyyy' }}</span>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Колонка 4: Пропуска -->
+		<div class="column-full">
+			<div class="section-card">
+				<h2 class="section-title">Пропуска</h2>
+				<div class="table-wrapper">
+					<table class="data-table">
+						<thead>
+							<tr>
+								<th>Тип пропуска</th>
+								<th>Торговая точка</th>
+								<th>Должность</th>
+								<th>Стоимость</th>
+								<th>Дата оформления</th>
+								<th>Дата начала</th>
+								<th>Дата окончания</th>
+								<th>Статус</th>
+								<th>Действия</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr *ngFor="let pass of contractor.passes">
+								<td>{{ getPassTypeName(pass) }}</td>
+								<td>{{ pass.storeFullName }}</td>
+								<td>{{ pass.position || 'Не указана' }}</td>
+								<td>{{ pass.cost || 'Не указана' }}</td>
+								<td>{{ pass.transactionDate | date: 'dd.MM.yyyy HH:mm' }}</td>
+								<td>{{ pass.startDate | date: 'dd.MM.yyyy' }}</td>
+								<td>{{ pass.endDate | date: 'dd.MM.yyyy' }}</td>
+								<td>
+									<span class="status status-active" *ngIf="!pass.isClosed">Активен</span>
+									<span class="status status-closed" *ngIf="pass.isClosed">Закрыт</span>
+									<div class="status-details" *ngIf="pass.isClosed">
+										{{ pass.closeDate | date: 'dd.MM.yyyy HH:mm' }}<br />
+										Причина: {{ pass.closeReason || 'Не указана' }}<br />
+										Закрыл: {{ getClosedByName(pass.closedBy) }}
+									</div>
+								</td>
+								<td>
+									<button *ngIf="!pass.isClosed" class="action-btn action-btn-danger btn-sm"
+										(click)="closePass(pass.id)" aria-label="Закрыть пропуск">
+										Закрыть
+									</button>
+									<button *ngIf="pass.isClosed && pass.closeReason != 'Закрыто продлением'"
+										class="action-btn action-btn-danger btn-sm" (click)="reopenPass(pass.id)"
+										aria-label="Открыть пропуск">
+										Открыть
+									</button>
+								</td>
+							</tr>
+							<tr *ngIf="!contractor.passes?.length">
+								<td colspan="9" class="text-center text-muted">Пропуска отсутствуют</td>
+							</tr>
+						</tbody>
+					</table>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	<!-- Личные данные -->
-	<div class="card mb-3">
-		<div class="card-body">
-			<h3>Личные данные</h3>
-			<p><strong>Фамилия:</strong><span class="value">{{ contractor.lastName }}</span></p>
-			<p><strong>Имя:</strong><span class="value">{{ contractor.firstName }}</span></p>
-			<p><strong>Отчество:</strong><span class="value">{{ contractor.middleName || 'Не указано' }}</span></p>
-			<p><strong>Телефон:</strong><span class="value">{{ formatPhoneNumber(contractor.phoneNumber) }}</span></p>
-			<p><strong>Гражданство:</strong><span class="value">{{ contractor.citizenship }}</span></p>
-			<p><strong>Национальность:</strong><span class="value">{{ contractor.nationality }}</span></p>
-			<p><strong>Дата рождения:</strong><span class="value">{{ contractor.birthDate | date:'dd.MM.yyyy' }}</span>
-			</p>
-		</div>
-	</div>
-
-	<!-- Паспортные данные -->
-	<div class="card mb-3">
-		<div class="card-body">
-			<h3>Паспортные данные</h3>
-			<p><strong>Тип документа:</strong><span class="value">{{ contractor.documentType }}</span></p>
-			<p><strong>Серия и номер:</strong><span class="value">{{ contractor.passportSerialNumber }}</span></p>
-			<p><strong>Кем выдан:</strong><span class="value">{{ contractor.passportIssuedBy }}</span></p>
-			<p><strong>Дата выдачи:</strong><span class="value">{{ contractor.passportIssueDate | date:'dd.MM.yyyy'
-					}}</span></p>
-		</div>
-	</div>
-
-	<!-- Дополнительная информация -->
-	<div class="card mb-3">
-		<div class="card-body">
-			<h3>Дополнительная информация</h3>
-			<p><strong>Тип продукции:</strong><span class="value">{{ contractor.productType }}</span></p>
-			<p><strong>Дата создания:</strong><span class="value">{{ contractor.createdAt | date:'dd.MM.yyyy HH:mm'
-					}}</span></p>
-			<p><strong>Пометка:</strong><span class="value">{{ contractor.note || 'Отсутствует' }}</span></p>
-		</div>
-	</div>
-
-	<!-- Пропуска -->
-	<div class="card">
-		<div class="card-body">
-			<h3 class="card-title">Пропуска</h3>
-			<table class="table table-striped">
-				<thead>
-					<tr>
-						<th>Тип пропуска</th>
-						<th>Торговая точка</th>
-						<th>Должность</th>
-						<th>Стоимость</th>
-						<th>Дата оформления</th>
-						<th>Дата начала</th>
-						<th>Дата окончания</th>
-						<th>Статус</th>
-						<th>Действия</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr *ngFor="let pass of contractor.passes">
-						<td>{{ getPassTypeName(pass) }}</td>
-						<td>{{ pass.storeFullName || 'Торговая точка ' + pass.storeId }}</td>
-						<td>{{ pass.position || 'Не указана' }}</td>
-						<td>{{ pass.cost || 'Не указана' }}</td>
-						<td>{{ pass.transactionDate | date: 'dd.MM.yyyy HH:mm' }}</td>
-						<td>{{ pass.startDate | date: 'dd.MM.yyyy' }}</td>
-						<td>{{ pass.endDate | date: 'dd.MM.yyyy' }}</td>
-						<td>
-							<ng-container *ngIf="!pass.isClosed">Активен</ng-container>
-							<ng-container *ngIf="pass.isClosed">
-								<span class="text-danger">Закрыт</span>
-								<small class="d-block">
-									{{ pass.closeDate | date: 'dd.MM.yyyy HH:mm' }}<br />
-									Причина: {{ pass.closeReason || 'Не указана' }}<br />
-									Закрыл: {{ getClosedByName(pass.closedBy) }}
-								</small>
-							</ng-container>
-						</td>
-						<td>
-							<button *ngIf="!pass.isClosed" class="btn btn-danger btn-sm" (click)="closePass(pass.id)">
-								Закрыть
-							</button>
-						</td>
-					</tr>
-					<tr *ngIf="!contractor.passes?.length">
-						<td colspan="9" class="text-center">Пропуска отсутствуют</td>
-					</tr>
-				</tbody>
-			</table>
+	<!-- Панорамный просмотр -->
+	<div class="gallery-modal" *ngIf="isGalleryOpen" @modalFade>
+		<div class="gallery-content" (click)="$event.stopPropagation()">
+			<div class="gallery-header d-flex justify-content-between align-items-center mb-2">
+				<span class="gallery-counter">
+					{{ currentGalleryIndex + 1 }} / {{ documentPhotoUrls.length }}
+				</span>
+				<button class="action-btn action-btn-secondary close-btn" (click)="closeGallery()"
+					aria-label="Закрыть галерею">
+					Закрыть
+				</button>
+			</div>
+			<div class="gallery-body">
+				<button class="nav-btn prev-btn" (click)="navigateGallery('prev')"
+					[disabled]="currentGalleryIndex === 0" aria-label="Предыдущее фото">
+					< </button>
+						<img [src]="documentPhotoUrls[currentGalleryIndex]" alt="Фото документа"
+							class="gallery-image" />
+						<button class="nav-btn next-btn" (click)="navigateGallery('next')"
+							[disabled]="currentGalleryIndex === documentPhotoUrls.length - 1"
+							aria-label="Следующее фото">
+							>
+						</button>
+			</div>
 		</div>
 	</div>
 </div>

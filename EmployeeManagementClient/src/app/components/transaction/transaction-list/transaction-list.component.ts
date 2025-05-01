@@ -12,6 +12,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../../services/auth.service';
+import { PassService } from '../../../services/pass.service';
 
 @Component({
 	selector: 'app-transaction-list',
@@ -52,7 +53,8 @@ export class TransactionListComponent implements OnInit {
 		private router: Router,
 		private route: ActivatedRoute,
 		private cdr: ChangeDetectorRef,
-		private authService: AuthService
+		private authService: AuthService,
+		private passService: PassService,
 	) { }
 
 	ngOnInit(): void {
@@ -250,6 +252,7 @@ export class TransactionListComponent implements OnInit {
 
 	confirmPayment(id: number): void {
 		if (!confirm('Подтвердить оплату?')) return;
+
 		this.transactionService.confirmTransaction(id).subscribe({
 			next: (response) => {
 				alert(response.message);
@@ -258,7 +261,7 @@ export class TransactionListComponent implements OnInit {
 			error: (err) => {
 				console.error('Ошибка при подтверждении оплаты:', err);
 				alert('Ошибка при подтверждении оплаты: ' + (err.error?.message || 'Неизвестная ошибка'));
-			}
+			},
 		});
 	}
 

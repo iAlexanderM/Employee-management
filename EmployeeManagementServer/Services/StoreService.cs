@@ -177,5 +177,29 @@ namespace EmployeeManagementServer.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task LogStoreChangeAsync(int storeId, string fieldName, string oldValue, string newValue, string changedBy)
+        {
+            var historyEntry = new StoreHistory
+            {
+                StoreId = storeId,
+                FieldName = fieldName,
+                OldValue = oldValue,
+                NewValue = newValue,
+                ChangedAt = DateTime.UtcNow,
+                ChangedBy = changedBy
+            };
+
+            _context.StoreHistories.Add(historyEntry);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<StoreHistory>> GetStoreHistoryAsync(int storeId)
+        {
+            return await _context.StoreHistories
+                .Where(h => h.StoreId == storeId)
+                .OrderByDescending(h => h.ChangedAt)
+                .ToListAsync();
+        }
     }
 }

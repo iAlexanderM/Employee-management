@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace EmployeeManagementServer.Services
 {
@@ -37,9 +38,34 @@ namespace EmployeeManagementServer.Services
             {
                 _logger.LogInformation("Начинаем обновление фотографий для контрагента с ID {Id}", contractor.Id);
 
+                // Логирование удаления фотографий
+                if (deletedPhotoIds != null && deletedPhotoIds.Any())
+                {
+                    await LogContractorChangeAsync(
+                        contractor.Id,
+                        "Photos",
+                        $"Удалено {deletedPhotoIds.Count} фотографий",
+                    string.Empty,
+                        User.Identity?.Name ?? "Unknown"
+                    );
+                }
+
                 // Удаление старых фотографий
                 await RemovePhotosAsync(contractor, deletedPhotoIds);
                 _logger.LogInformation("Старые фотографии успешно удалены для контрагента с ID {Id}", contractor.Id);
+
+                // Логирование добавления новых фотографий
+                if ((newPhotos != null && newPhotos.Any()) || (newDocumentPhotos != null && newDocumentPhotos.Any()))
+                {
+                    int newPhotoCount = (newPhotos?.Count ?? 0) + (newDocumentPhotos?.Count ?? 0);
+                    await LogContractorChangeAsync(
+                        contractor.Id,
+                        "Photos",
+                        string.Empty,
+                        $"Добавлено {newPhotoCount} новых фотографий",
+                        User.Identity?.Name ?? "Unknown"
+                    );
+                }
 
                 // Добавление новых фотографий
                 await AddPhotosAsync(contractor, newPhotos, false);
@@ -47,7 +73,7 @@ namespace EmployeeManagementServer.Services
                 _logger.LogInformation("Новые фотографии успешно добавлены для контрагента с ID {Id}", contractor.Id);
 
                 // Проверка уникальности SortOrder
-                if (await _context.Contractors.AnyAsync(c => c.SortOrder == contractor.SortOrder && c.Id != contractor.Id))
+                if (contractor.SortOrder.HasValue && await _context.Contractors.AnyAsync(c => c.SortOrder == contractor.SortOrder && c.Id != contractor.Id))
                 {
                     throw new InvalidOperationException("Контрагент с таким значением SortOrder уже существует.");
                 }
@@ -61,7 +87,7 @@ namespace EmployeeManagementServer.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка при обновлении контрагента с ID {Id}.", contractor.Id);
-                throw; // Перебрасываем исключение для обработки на уровне контроллера
+                throw;
             }
         }
 
@@ -73,7 +99,6 @@ namespace EmployeeManagementServer.Services
                 .Where(photo => photoIds.Contains(photo.Id))
                 .ToList();
 
-            // Удаление файлов с диска
             foreach (var photo in photosToDelete)
             {
                 if (File.Exists(photo.FilePath))
@@ -103,11 +128,10 @@ namespace EmployeeManagementServer.Services
 
         public async Task<string> SavePhotoAsync(IFormFile photo, bool isDocumentPhoto)
         {
-            var folder = isDocumentPhoto ? Path.Combine("wwwroot", "uploads", "documents") : Path.Combine("wwwroot", "uploads", "photos");
+            var folder = isDocumentPhoto ? Path.Combine("wwwroot", "Uploads", "documents") : Path.Combine("wwwroot", "Uploads", "photos");
             var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(photo.FileName);
             var filePath = Path.Combine(folder, uniqueFileName);
 
-            // Проверяем, существует ли директория, и создаём её при необходимости
             if (!Directory.Exists(folder))
             {
                 Directory.CreateDirectory(folder);
@@ -121,12 +145,18 @@ namespace EmployeeManagementServer.Services
             return filePath;
         }
 
-        public async Task<List<Contractor>> GetAllContractorsAsync()
+        public async Task<List<Contractor>> GetAllContractorsAsync(bool includeArchived = false)
         {
-            return await _context.Contractors
+            var query = _context.Contractors
                 .Include(c => c.Photos)
-                .OrderBy(c => c.SortOrder)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (!includeArchived)
+            {
+                query = query.Where(c => !c.IsArchived);
+            }
+
+            return await query.OrderBy(c => c.SortOrder).ToListAsync();
         }
 
         public async Task<Contractor> GetContractorByIdAsync(int id)
@@ -135,8 +165,9 @@ namespace EmployeeManagementServer.Services
                 .Include(c => c.Passes)
                 .ThenInclude(p => p.PassType)
                 .Include(c => c.Passes)
-                .ThenInclude(p => p.ClosedByUser) 
+                .ThenInclude(p => p.ClosedByUser)
                 .Include(c => c.Photos)
+                .Include(c => c.History)
                 .SingleOrDefaultAsync(c => c.Id == id);
         }
 
@@ -149,7 +180,6 @@ namespace EmployeeManagementServer.Services
             {
                 contractor.SortOrder = contractor.Id;
 
-                // Проверка уникальности SortOrder
                 if (await _context.Contractors.AnyAsync(c => c.SortOrder == contractor.SortOrder && c.Id != contractor.Id))
                 {
                     throw new InvalidOperationException("Контрагент с таким значением SortOrder уже существует.");
@@ -166,21 +196,35 @@ namespace EmployeeManagementServer.Services
                 .FirstOrDefaultAsync(c => c.PassportSerialNumber == passportSerialNumber);
         }
 
-        public async Task<int> GetTotalContractorsCountAsync()
+        public async Task<int> GetTotalContractorsCountAsync(bool includeArchived = false)
         {
-            return await _context.Contractors.CountAsync();
+            var query = _context.Contractors.AsQueryable();
+            if (!includeArchived)
+            {
+                query = query.Where(c => !c.IsArchived);
+            }
+            return await query.CountAsync();
         }
 
-        public async Task<List<Contractor>> GetContractorsAsync(int skip, int take)
+        public async Task<List<Contractor>> GetContractorsAsync(int skip, int take, bool includeArchived = false)
         {
-            var contractors = await _context.Contractors
+            var query = _context.Contractors
                 .Include(c => c.Photos)
                 .Include(c => c.Passes)
-                    .ThenInclude(p => p.PassType)
+                .ThenInclude(p => p.PassType)
+                .AsQueryable();
+
+            if (!includeArchived)
+            {
+                query = query.Where(c => !c.IsArchived);
+            }
+
+            var contractors = await query
                 .OrderBy(c => c.SortOrder)
                 .Skip(skip)
                 .Take(take)
                 .ToListAsync();
+
             _logger.LogInformation("Contractors Passes: {@Passes}", contractors.Select(c => new { c.Id, Passes = c.Passes }));
             return contractors;
         }
@@ -195,6 +239,7 @@ namespace EmployeeManagementServer.Services
                     firstName = c.FirstName,
                     lastName = c.LastName,
                     middleName = c.MiddleName,
+                    isArchived = c.IsArchived,
                     activePasses = c.Passes
                         .Where(p => !p.IsClosed)
                         .Select(p => new
@@ -208,8 +253,8 @@ namespace EmployeeManagementServer.Services
                             endDate = p.EndDate,
                             transactionDate = p.TransactionDate,
                             isClosed = p.IsClosed,
-                            passStatus = p.PassStatus, 
-                            printStatus = p.PrintStatus 
+                            passStatus = p.PassStatus,
+                            printStatus = p.PrintStatus
                         }).ToList(),
                     closedPasses = c.Passes
                         .Where(p => p.IsClosed)
@@ -224,9 +269,18 @@ namespace EmployeeManagementServer.Services
                             endDate = p.EndDate,
                             transactionDate = p.TransactionDate,
                             isClosed = p.IsClosed,
-                            passStatus = p.PassStatus, 
-                            printStatus = p.PrintStatus 
-                        }).ToList()
+                            passStatus = p.PassStatus,
+                            printStatus = p.PrintStatus
+                        }).ToList(),
+                    history = c.History.Select(h => new
+                    {
+                        h.Id,
+                        h.FieldName,
+                        h.OldValue,
+                        h.NewValue,
+                        h.ChangedAt,
+                        h.ChangedBy
+                    }).ToList()
                 })
                 .SingleOrDefaultAsync();
 
@@ -242,13 +296,76 @@ namespace EmployeeManagementServer.Services
             if (contractor == null || !contractor.Photos.Any())
                 return null;
 
-            // Выбираем последнее фото, которое не является документом
             var photo = contractor.Photos
                 .Where(p => !p.IsDocumentPhoto)
-                .OrderByDescending(p => p.Id) // Сортируем по убыванию ID
+                .OrderByDescending(p => p.Id)
                 .FirstOrDefault();
 
             return photo?.FilePath;
+        }
+
+        public async Task<bool> ArchiveContractorAsync(int id, string archivedBy)
+        {
+            var contractor = await _context.Contractors
+                .Include(c => c.Passes)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (contractor == null)
+            {
+                return false;
+            }
+
+            if (contractor.Passes.Any(p => p.PassStatus == "Active"))
+            {
+                throw new InvalidOperationException("Нельзя архивировать контрагента с активными пропусками.");
+            }
+
+            contractor.IsArchived = true;
+            await LogContractorChangeAsync(id, "IsArchived", "False", "True", archivedBy);
+
+            await SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UnarchiveContractorAsync(int id, string unarchivedBy)
+        {
+            var contractor = await _context.Contractors
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (contractor == null || !contractor.IsArchived)
+            {
+                return false;
+            }
+
+            contractor.IsArchived = false;
+            await LogContractorChangeAsync(id, "IsArchived", "True", "False", unarchivedBy);
+
+            await SaveChangesAsync();
+            return true;
+        }
+
+        public async Task LogContractorChangeAsync(int contractorId, string fieldName, string oldValue, string newValue, string changedBy)
+        {
+            var historyEntry = new ContractorHistory
+            {
+                ContractorId = contractorId,
+                FieldName = fieldName,
+                OldValue = oldValue,
+                NewValue = newValue,
+                ChangedAt = DateTime.UtcNow,
+                ChangedBy = changedBy
+            };
+
+            _context.ContractorHistories.Add(historyEntry);
+            await SaveChangesAsync();
+        }
+
+        public async Task<List<ContractorHistory>> GetContractorHistoryAsync(int contractorId)
+        {
+            return await _context.ContractorHistories
+                .Where(h => h.ContractorId == contractorId)
+                .OrderByDescending(h => h.ChangedAt)
+                .ToListAsync();
         }
     }
 }
