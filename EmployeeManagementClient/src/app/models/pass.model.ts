@@ -25,6 +25,7 @@ export interface Pass {
 	mainPhotoPath?: string;
 	position: string;
 	passTransaction?: PassTransaction;
+	printStatus?: string;
 	status: string;
 	note?: string;
 }

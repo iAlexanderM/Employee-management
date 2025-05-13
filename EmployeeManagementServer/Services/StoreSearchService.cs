@@ -20,18 +20,28 @@ namespace EmployeeManagementServer.Services
             _logger = logger;
         }
 
-        public async Task<List<Store>> SearchStoresAsync(StoreSearchDto searchDto)
+        public async Task<List<Store>> SearchStoresAsync(StoreSearchDto searchDto, int page, int pageSize)
         {
-            _logger.LogInformation("Начало поиска магазинов с заданными параметрами");
+            _logger.LogInformation("Начало поиска магазинов с параметрами: {@SearchDto}, page: {Page}, pageSize: {PageSize}", searchDto, page, pageSize);
 
             var query = _context.Stores.AsQueryable();
-
             query = ApplyFilters(query, searchDto);
 
-            var result = await query.ToListAsync();
-            _logger.LogInformation("Поиск завершён. Найдено магазинов: {count}", result.Count);
+            var result = await query
+                .OrderBy(s => s.SortOrder ?? s.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
+            _logger.LogInformation("Поиск завершен. Найдено магазинов: {Count}", result.Count);
             return result;
+        }
+
+        public async Task<int> GetTotalStoresCountAsync(StoreSearchDto searchDto)
+        {
+            var query = _context.Stores.AsQueryable();
+            query = ApplyFilters(query, searchDto);
+            return await query.CountAsync();
         }
 
         private IQueryable<Store> ApplyFilters(IQueryable<Store> query, StoreSearchDto searchDto)
@@ -65,9 +75,14 @@ namespace EmployeeManagementServer.Services
                 query = query.Where(s => EF.Functions.ILike(s.StoreNumber, storeNumberFilter));
             }
 
+            // Фильтрация по IsArchived (по умолчанию false, если не указано)
             if (searchDto.IsArchived.HasValue)
             {
                 query = query.Where(s => s.IsArchived == searchDto.IsArchived.Value);
+            }
+            else
+            {
+                query = query.Where(s => !s.IsArchived);
             }
 
             return query;

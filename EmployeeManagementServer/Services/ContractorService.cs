@@ -1,25 +1,35 @@
-﻿using EmployeeManagementServer.Models;
-using EmployeeManagementServer.Data;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
+using EmployeeManagementServer.Models;
+using EmployeeManagementServer.Data;
+using Microsoft.Extensions.Logging;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
-using DocumentFormat.OpenXml.Spreadsheet;
+using System;
+using System.IO;
+using System.Text.Json;
+using EmployeeManagementServer.Models.DTOs;
 
 namespace EmployeeManagementServer.Services
 {
-    public class ContractorService
+    public class ContractorService : IContractorService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHistoryService _historyService;
         private readonly ILogger<ContractorService> _logger;
+        private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
 
-        public ContractorService(ApplicationDbContext context, ILogger<ContractorService> logger)
+        public ContractorService(
+            ApplicationDbContext context,
+            IHistoryService historyService,
+            ILogger<ContractorService> logger)
         {
             _context = context;
+            _historyService = historyService;
             _logger = logger;
         }
 
@@ -32,104 +42,208 @@ namespace EmployeeManagementServer.Services
             Contractor contractor,
             List<IFormFile> newPhotos,
             List<IFormFile> newDocumentPhotos,
-            List<int> deletedPhotoIds)
+            List<int> deletedPhotoIds,
+            string updatedBy = "Unknown")
         {
-            try
+            _logger.LogInformation("Начинаем обновление контрагента с ID {Id}", contractor.Id);
+
+            // Загружаем оригинального контрагента для сравнения
+            var originalContractor = await _context.Contractors
+                .AsNoTracking()
+                .Include(c => c.Photos)
+                .FirstOrDefaultAsync(c => c.Id == contractor.Id);
+
+            var contractorToUpdate = await _context.Contractors
+                .Include(c => c.Photos)
+                .FirstOrDefaultAsync(c => c.Id == contractor.Id);
+
+            if (contractorToUpdate == null)
             {
-                _logger.LogInformation("Начинаем обновление фотографий для контрагента с ID {Id}", contractor.Id);
+                _logger.LogWarning("Контрагент с ID {Id} не найден для обновления.", contractor.Id);
+                throw new KeyNotFoundException($"Контрагент с ID {contractor.Id} не найден.");
+            }
 
-                // Логирование удаления фотографий
-                if (deletedPhotoIds != null && deletedPhotoIds.Any())
+            // Проверка уникальности PassportSerialNumber
+            if (originalContractor != null && originalContractor.PassportSerialNumber != contractor.PassportSerialNumber)
+            {
+                if (!string.IsNullOrWhiteSpace(contractor.PassportSerialNumber) &&
+                    await _context.Contractors.AnyAsync(c => c.PassportSerialNumber == contractor.PassportSerialNumber && c.Id != contractor.Id))
                 {
-                    await LogContractorChangeAsync(
-                        contractor.Id,
-                        "Photos",
-                        $"Удалено {deletedPhotoIds.Count} фотографий",
-                    string.Empty,
-                        User.Identity?.Name ?? "Unknown"
-                    );
+                    _logger.LogWarning("Попытка обновить контрагента {Id} с дублирующимся номером паспорта: {PassportSerialNumber}",
+                        contractor.Id, contractor.PassportSerialNumber);
+                    throw new InvalidOperationException($"Контрагент с серийным номером паспорта '{contractor.PassportSerialNumber}' уже существует.");
                 }
+            }
 
-                // Удаление старых фотографий
-                await RemovePhotosAsync(contractor, deletedPhotoIds);
-                _logger.LogInformation("Старые фотографии успешно удалены для контрагента с ID {Id}", contractor.Id);
-
-                // Логирование добавления новых фотографий
-                if ((newPhotos != null && newPhotos.Any()) || (newDocumentPhotos != null && newDocumentPhotos.Any()))
+            // Проверка уникальности SortOrder
+            if (contractor.SortOrder.HasValue && originalContractor?.SortOrder != contractor.SortOrder)
+            {
+                if (await _context.Contractors.AnyAsync(c => c.SortOrder == contractor.SortOrder && c.Id != contractor.Id))
                 {
-                    int newPhotoCount = (newPhotos?.Count ?? 0) + (newDocumentPhotos?.Count ?? 0);
-                    await LogContractorChangeAsync(
-                        contractor.Id,
-                        "Photos",
-                        string.Empty,
-                        $"Добавлено {newPhotoCount} новых фотографий",
-                        User.Identity?.Name ?? "Unknown"
-                    );
-                }
-
-                // Добавление новых фотографий
-                await AddPhotosAsync(contractor, newPhotos, false);
-                await AddPhotosAsync(contractor, newDocumentPhotos, true);
-                _logger.LogInformation("Новые фотографии успешно добавлены для контрагента с ID {Id}", contractor.Id);
-
-                // Проверка уникальности SortOrder
-                if (contractor.SortOrder.HasValue && await _context.Contractors.AnyAsync(c => c.SortOrder == contractor.SortOrder && c.Id != contractor.Id))
-                {
+                    _logger.LogWarning("Попытка обновить контрагента {Id} с дублирующимся SortOrder: {SortOrder}",
+                        contractor.Id, contractor.SortOrder);
                     throw new InvalidOperationException("Контрагент с таким значением SortOrder уже существует.");
                 }
-
-                // Обновление данных контрагента в базе данных
-                _context.Contractors.Update(contractor);
-                await SaveChangesAsync();
-
-                _logger.LogInformation("Изменения для контрагента с ID {Id} успешно сохранены в базе данных.", contractor.Id);
             }
-            catch (Exception ex)
+
+            // Формируем список изменений
+            var changes = CompareContractors(originalContractor, contractor);
+
+            // Обновляем поля контрагента
+            _context.Entry(contractorToUpdate).CurrentValues.SetValues(contractor);
+
+            // Обрабатываем удаление фотографий
+            if (deletedPhotoIds != null && deletedPhotoIds.Any())
             {
-                _logger.LogError(ex, "Ошибка при обновлении контрагента с ID {Id}.", contractor.Id);
-                throw;
+                await RemovePhotosAsync(contractorToUpdate, deletedPhotoIds);
+                _logger.LogInformation("{Count} старых фотографий отмечены к удалению.", deletedPhotoIds.Count);
+                changes.Add("photosRemoved", new ChangeValueDto
+                {
+                    OldValue = deletedPhotoIds,
+                    NewValue = null
+                });
             }
+
+            // Обрабатываем добавление новых фотографий
+            if (newPhotos != null && newPhotos.Any())
+            {
+                await AddPhotosAsync(contractorToUpdate, newPhotos, false);
+                _logger.LogInformation("{Count} новых фотографий отмечены к добавлению.", newPhotos.Count);
+                changes.Add("photosAdded", new ChangeValueDto
+                {
+                    OldValue = null,
+                    NewValue = newPhotos.Select(p => p.FileName).ToList()
+                });
+            }
+
+            // Обрабатываем добавление новых фото документов
+            if (newDocumentPhotos != null && newDocumentPhotos.Any())
+            {
+                await AddPhotosAsync(contractorToUpdate, newDocumentPhotos, true);
+                _logger.LogInformation("{Count} новых фото документов отмечены к добавлению.", newDocumentPhotos.Count);
+                changes.Add("documentPhotosAdded", new ChangeValueDto
+                {
+                    OldValue = null,
+                    NewValue = newDocumentPhotos.Select(p => p.FileName).ToList()
+                });
+            }
+
+            await SaveChangesAsync();
+
+            // Логируем изменения в историю
+            if (changes.Any())
+            {
+                var historyEntry = new History
+                {
+                    EntityType = "contractor",
+                    EntityId = contractor.Id.ToString(),
+                    Action = "update",
+                    Details = $"Обновлены данные контрагента с ID {contractor.Id}.",
+                    ChangesJson = JsonSerializer.Serialize(changes, _jsonOptions),
+                    ChangedBy = updatedBy,
+                    ChangedAt = DateTime.UtcNow
+                };
+                _logger.LogInformation("Создание записи истории: ChangesJson={ChangesJson}", historyEntry.ChangesJson);
+                await _historyService.LogHistoryAsync(historyEntry);
+                _logger.LogInformation("Изменения для контрагента ID {Id} успешно записаны в историю.", contractor.Id);
+            }
+            else
+            {
+                _logger.LogInformation("Изменений для контрагента ID {Id} не обнаружено, история не записана.", contractor.Id);
+            }
+
+            _logger.LogInformation("Обновление контрагента (ID: {Id}) и все связанные изменения успешно сохранены.", contractor.Id);
         }
 
         private async Task RemovePhotosAsync(Contractor contractor, List<int> photoIds)
         {
             if (photoIds == null || !photoIds.Any()) return;
 
+            if (contractor.Photos == null || !contractor.Photos.Any())
+            {
+                await _context.Entry(contractor).Collection(c => c.Photos).LoadAsync();
+                if (contractor.Photos == null) return;
+            }
+
             var photosToDelete = contractor.Photos
                 .Where(photo => photoIds.Contains(photo.Id))
                 .ToList();
+
+            if (!photosToDelete.Any()) return;
 
             foreach (var photo in photosToDelete)
             {
                 if (File.Exists(photo.FilePath))
                 {
-                    File.Delete(photo.FilePath);
+                    try
+                    {
+                        File.Delete(photo.FilePath);
+                        _logger.LogInformation("Файл фотографии удален с диска: {FilePath}", photo.FilePath);
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.LogError(ex, "Ошибка при удалении файла фотографии с диска: {FilePath}", photo.FilePath);
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        _logger.LogError(ex, "Ошибка доступа при удалении файла фотографии с диска: {FilePath}", photo.FilePath);
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Файл фотографии не найден на диске для удаления: {FilePath}", photo.FilePath);
                 }
             }
 
             _context.ContractorPhoto.RemoveRange(photosToDelete);
+            _logger.LogInformation("{Count} записей о фотографиях отмечены к удалению из БД.", photosToDelete.Count);
         }
 
         private async Task AddPhotosAsync(Contractor contractor, List<IFormFile> photos, bool isDocumentPhoto)
         {
             if (photos == null || !photos.Any()) return;
 
+            if (contractor.Photos == null)
+            {
+                await _context.Entry(contractor).Collection(c => c.Photos).LoadAsync();
+                if (contractor.Photos == null)
+                {
+                    contractor.Photos = new List<ContractorPhoto>();
+                }
+            }
+
             foreach (var photo in photos)
             {
-                var photoPath = await SavePhotoAsync(photo, isDocumentPhoto);
-                contractor.Photos.Add(new ContractorPhoto
+                if (photo.Length > 0)
                 {
-                    FilePath = photoPath,
-                    IsDocumentPhoto = isDocumentPhoto,
-                    ContractorId = contractor.Id
-                });
+                    try
+                    {
+                        var photoPath = await SavePhotoAsync(photo, isDocumentPhoto);
+                        contractor.Photos.Add(new ContractorPhoto
+                        {
+                            FilePath = photoPath,
+                            IsDocumentPhoto = isDocumentPhoto,
+                            ContractorId = contractor.Id
+                        });
+                        _logger.LogInformation("Фотография сохранена на диск и добавлена в коллекцию для контрагента ID {Id}: {FilePath}", contractor.Id, photoPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Ошибка при сохранении файла фотографии и добавлении его в контекст.");
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Получен пустой файл для загрузки для контрагента ID {Id}.", contractor.Id);
+                }
             }
         }
 
         public async Task<string> SavePhotoAsync(IFormFile photo, bool isDocumentPhoto)
         {
-            var folder = isDocumentPhoto ? Path.Combine("wwwroot", "Uploads", "documents") : Path.Combine("wwwroot", "Uploads", "photos");
-            var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(photo.FileName);
+            var folderName = isDocumentPhoto ? "documents" : "photos";
+            var folder = Path.Combine("wwwroot", "Uploads", folderName);
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + photo.FileName;
             var filePath = Path.Combine(folder, uniqueFileName);
 
             if (!Directory.Exists(folder))
@@ -137,7 +251,7 @@ namespace EmployeeManagementServer.Services
                 Directory.CreateDirectory(folder);
             }
 
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            await using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
                 await photo.CopyToAsync(fileStream);
             }
@@ -145,78 +259,118 @@ namespace EmployeeManagementServer.Services
             return filePath;
         }
 
-        public async Task<List<Contractor>> GetAllContractorsAsync(bool includeArchived = false)
+        public async Task<List<Contractor>> GetAllContractorsAsync()
         {
-            var query = _context.Contractors
+            return await _context.Contractors
                 .Include(c => c.Photos)
-                .AsQueryable();
-
-            if (!includeArchived)
-            {
-                query = query.Where(c => !c.IsArchived);
-            }
-
-            return await query.OrderBy(c => c.SortOrder).ToListAsync();
+                .OrderBy(c => c.SortOrder)
+                .ToListAsync();
         }
 
         public async Task<Contractor> GetContractorByIdAsync(int id)
         {
-            return await _context.Contractors
+            var contractor = await _context.Contractors
                 .Include(c => c.Passes)
-                .ThenInclude(p => p.PassType)
+                    .ThenInclude(p => p.PassType)
                 .Include(c => c.Passes)
-                .ThenInclude(p => p.ClosedByUser)
+                    .ThenInclude(p => p.ClosedByUser)
                 .Include(c => c.Photos)
-                .Include(c => c.History)
                 .SingleOrDefaultAsync(c => c.Id == id);
+
+            if (contractor == null)
+            {
+                _logger.LogWarning("Контрагент с ID {Id} не найден.", id);
+                throw new KeyNotFoundException($"Контрагент с ID {id} не найден.");
+            }
+
+            return contractor;
         }
 
-        public async Task CreateContractorAsync(Contractor contractor)
+        public async Task CreateContractorAsync(Contractor contractor, string? createdBy = null)
         {
+            if (contractor == null)
+            {
+                _logger.LogWarning("Получен null объект контрагента для создания.");
+                throw new ArgumentNullException(nameof(contractor));
+            }
+
+            if (contractor.SortOrder.HasValue && await _context.Contractors.AnyAsync(c => c.SortOrder == contractor.SortOrder))
+            {
+                _logger.LogWarning("Попытка создать контрагента с дублирующимся SortOrder: {SortOrder}", contractor.SortOrder);
+                throw new InvalidOperationException($"Контрагент с таким значением SortOrder уже существует.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(contractor.PassportSerialNumber) && await _context.Contractors.AnyAsync(c => c.PassportSerialNumber == contractor.PassportSerialNumber))
+            {
+                _logger.LogWarning("Попытка создать контрагента с дублирующимся номером паспорта: {PassportSerialNumber}", contractor.PassportSerialNumber);
+                throw new InvalidOperationException($"Контрагент с серийным номером паспорта '{contractor.PassportSerialNumber}' уже существует.");
+            }
+
+            if (contractor.Note != null && contractor.Note.Length > 500)
+            {
+                _logger.LogWarning("Заметка для нового контрагента превышает 500 символов.");
+                throw new ArgumentException("Заметка не должна превышать 500 символов.");
+            }
+
             _context.Contractors.Add(contractor);
             await SaveChangesAsync();
 
             if (!contractor.SortOrder.HasValue)
             {
                 contractor.SortOrder = contractor.Id;
-
-                if (await _context.Contractors.AnyAsync(c => c.SortOrder == contractor.SortOrder && c.Id != contractor.Id))
-                {
-                    throw new InvalidOperationException("Контрагент с таким значением SortOrder уже существует.");
-                }
-
+                _context.Contractors.Update(contractor);
                 await SaveChangesAsync();
             }
+
+            await _historyService.LogHistoryAsync(new History
+            {
+                EntityType = "contractor",
+                EntityId = contractor.Id.ToString(),
+                Action = "create",
+                Details = $"Контрагент {contractor.Id} успешно создан.",
+                ChangesJson = "{}", // Пустой JSON для избежания детализации
+                ChangedBy = createdBy ?? "Unknown",
+                ChangedAt = DateTime.UtcNow
+            });
+
+            _logger.LogInformation("Контрагент с ID {ContractorId} успешно создан пользователем {CreatedBy} и запись истории сохранена.", contractor.Id, createdBy ?? "Unknown");
         }
 
         public async Task<Contractor?> FindContractorByPassportSerialNumberAsync(string passportSerialNumber)
         {
+            if (string.IsNullOrWhiteSpace(passportSerialNumber))
+            {
+                return null;
+            }
             return await _context.Contractors
                 .Include(c => c.Photos)
                 .FirstOrDefaultAsync(c => c.PassportSerialNumber == passportSerialNumber);
         }
 
-        public async Task<int> GetTotalContractorsCountAsync(bool includeArchived = false)
+        public async Task<int> GetTotalContractorsCountAsync(bool? isArchived = false)
         {
             var query = _context.Contractors.AsQueryable();
-            if (!includeArchived)
+
+            if (isArchived.HasValue)
             {
-                query = query.Where(c => !c.IsArchived);
+                query = query.Where(c => c.IsArchived == isArchived.Value);
             }
+
             return await query.CountAsync();
         }
 
-        public async Task<List<Contractor>> GetContractorsAsync(int skip, int take, bool includeArchived = false)
+        public async Task<List<Contractor>> GetContractorsAsync(int skip, int take, bool? isArchived = false)
         {
             var query = _context.Contractors
                 .Include(c => c.Photos)
                 .Include(c => c.Passes)
-                .ThenInclude(p => p.PassType)
+                    .ThenInclude(p => p.PassType)
+                .AsNoTracking()
                 .AsQueryable();
 
-            if (!includeArchived)
+            if (isArchived.HasValue)
             {
-                query = query.Where(c => !c.IsArchived);
+                query = query.Where(c => c.IsArchived == isArchived.Value);
             }
 
             var contractors = await query
@@ -225,147 +379,304 @@ namespace EmployeeManagementServer.Services
                 .Take(take)
                 .ToListAsync();
 
-            _logger.LogInformation("Contractors Passes: {@Passes}", contractors.Select(c => new { c.Id, Passes = c.Passes }));
             return contractors;
         }
 
         public async Task<object> GetContractorAsync(int id)
         {
-            var contractor = await _context.Contractors
-                .Where(c => c.Id == id)
-                .Select(c => new
-                {
-                    id = c.Id,
-                    firstName = c.FirstName,
-                    lastName = c.LastName,
-                    middleName = c.MiddleName,
-                    isArchived = c.IsArchived,
-                    activePasses = c.Passes
-                        .Where(p => !p.IsClosed)
-                        .Select(p => new
-                        {
-                            id = p.Id,
-                            passTypeId = p.PassTypeId,
-                            contractorId = p.ContractorId,
-                            storeId = p.StoreId,
-                            position = p.Position,
-                            startDate = p.StartDate,
-                            endDate = p.EndDate,
-                            transactionDate = p.TransactionDate,
-                            isClosed = p.IsClosed,
-                            passStatus = p.PassStatus,
-                            printStatus = p.PrintStatus
-                        }).ToList(),
-                    closedPasses = c.Passes
-                        .Where(p => p.IsClosed)
-                        .Select(p => new
-                        {
-                            id = p.Id,
-                            passTypeId = p.PassTypeId,
-                            contractorId = p.ContractorId,
-                            storeId = p.StoreId,
-                            position = p.Position,
-                            startDate = p.StartDate,
-                            endDate = p.EndDate,
-                            transactionDate = p.TransactionDate,
-                            isClosed = p.IsClosed,
-                            passStatus = p.PassStatus,
-                            printStatus = p.PrintStatus
-                        }).ToList(),
-                    history = c.History.Select(h => new
-                    {
-                        h.Id,
-                        h.FieldName,
-                        h.OldValue,
-                        h.NewValue,
-                        h.ChangedAt,
-                        h.ChangedBy
-                    }).ToList()
-                })
-                .SingleOrDefaultAsync();
+            var contractor = await GetContractorByIdAsync(id);
 
-            return contractor ?? throw new Exception("Contractor not found");
+            var photosList = contractor.Photos?.Select(p => (object)new
+            {
+                id = p.Id,
+                filePath = p.FilePath,
+                isDocumentPhoto = p.IsDocumentPhoto,
+                contractorId = p.ContractorId
+            }).ToList() ?? new List<object>();
+
+            var passesList = contractor.Passes?
+                .OrderByDescending(p => p.StartDate)
+                .Select(p => (object)new
+                {
+                    id = p.Id,
+                    uniquePassId = p.UniquePassId,
+                    passTypeId = p.PassTypeId,
+                    passTypeName = p.PassType?.Name ?? "Unknown",
+                    cost = p.PassType?.Cost,
+                    contractorId = p.ContractorId,
+                    storeId = p.StoreId,
+                    position = p.Position,
+                    startDate = p.StartDate,
+                    endDate = p.EndDate,
+                    transactionDate = p.TransactionDate,
+                    isClosed = p.IsClosed,
+                    passStatus = p.PassStatus,
+                    printStatus = p.PrintStatus,
+                    closeReason = p.CloseReason,
+                    closeDate = p.CloseDate,
+                    closedBy = p.ClosedBy,
+                    closedByUserName = p.ClosedByUser?.UserName
+                }).ToList() ?? new List<object>();
+
+            var response = new
+            {
+                contractor.Id,
+                contractor.FirstName,
+                contractor.LastName,
+                contractor.MiddleName,
+                contractor.Citizenship,
+                contractor.Nationality,
+                contractor.BirthDate,
+                contractor.DocumentType,
+                contractor.PassportSerialNumber,
+                contractor.PassportIssuedBy,
+                contractor.PassportIssueDate,
+                contractor.PhoneNumber,
+                contractor.ProductType,
+                contractor.IsArchived,
+                contractor.SortOrder,
+                contractor.CreatedAt,
+                contractor.Note,
+                Photos = photosList,
+                Passes = passesList
+            };
+
+            return response;
         }
 
         public async Task<string?> GetLastNonDocumentPhotoAsync(int contractorId)
         {
-            var contractor = await _context.Contractors
-                .Include(c => c.Photos)
-                .FirstOrDefaultAsync(c => c.Id == contractorId);
-
-            if (contractor == null || !contractor.Photos.Any())
-                return null;
-
-            var photo = contractor.Photos
-                .Where(p => !p.IsDocumentPhoto)
+            var photo = await _context.ContractorPhoto
+                .AsNoTracking()
+                .Where(p => p.ContractorId == contractorId && !p.IsDocumentPhoto)
                 .OrderByDescending(p => p.Id)
-                .FirstOrDefault();
+                .Select(p => p.FilePath)
+                .FirstOrDefaultAsync();
 
-            return photo?.FilePath;
+            return photo;
         }
 
-        public async Task<bool> ArchiveContractorAsync(int id, string archivedBy)
+        public async Task ArchiveContractorAsync(int id, string archivedBy = "Unknown")
         {
             var contractor = await _context.Contractors
                 .Include(c => c.Passes)
                 .FirstOrDefaultAsync(c => c.Id == id);
-
             if (contractor == null)
             {
-                return false;
+                throw new KeyNotFoundException($"Контрагент с ID {id} не найден.");
             }
-
-            if (contractor.Passes.Any(p => p.PassStatus == "Active"))
+            if (contractor.IsArchived)
             {
-                throw new InvalidOperationException("Нельзя архивировать контрагента с активными пропусками.");
+                throw new InvalidOperationException("Контрагент уже заархивирован.");
             }
 
             contractor.IsArchived = true;
-            await LogContractorChangeAsync(id, "IsArchived", "False", "True", archivedBy);
-
             await SaveChangesAsync();
-            return true;
+
+            var changes = new Dictionary<string, ChangeValueDto>
+            {
+                { "isArchived", new ChangeValueDto { OldValue = false, NewValue = true } }
+            };
+
+            var historyEntry = new History
+            {
+                EntityType = "contractor",
+                EntityId = id.ToString(),
+                Action = "archive",
+                Details = $"Контрагент с ID {id} заархивирован.",
+                ChangesJson = JsonSerializer.Serialize(changes, _jsonOptions),
+                ChangedBy = archivedBy,
+                ChangedAt = DateTime.UtcNow
+            };
+            await _historyService.LogHistoryAsync(historyEntry);
         }
 
-        public async Task<bool> UnarchiveContractorAsync(int id, string unarchivedBy)
+        public async Task UnarchiveContractorAsync(int id, string unarchivedBy = "Unknown")
         {
-            var contractor = await _context.Contractors
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (contractor == null || !contractor.IsArchived)
+            var contractor = await _context.Contractors.FirstOrDefaultAsync(c => c.Id == id);
+            if (contractor == null)
             {
-                return false;
+                throw new KeyNotFoundException($"Контрагент с ID {id} не найден.");
+            }
+            if (!contractor.IsArchived)
+            {
+                throw new InvalidOperationException("Контрагент уже разархивирован.");
             }
 
             contractor.IsArchived = false;
-            await LogContractorChangeAsync(id, "IsArchived", "True", "False", unarchivedBy);
-
             await SaveChangesAsync();
-            return true;
-        }
 
-        public async Task LogContractorChangeAsync(int contractorId, string fieldName, string oldValue, string newValue, string changedBy)
-        {
-            var historyEntry = new ContractorHistory
+            var changes = new Dictionary<string, ChangeValueDto>
             {
-                ContractorId = contractorId,
-                FieldName = fieldName,
-                OldValue = oldValue,
-                NewValue = newValue,
-                ChangedAt = DateTime.UtcNow,
-                ChangedBy = changedBy
+                { "isArchived", new ChangeValueDto { OldValue = true, NewValue = false } }
             };
 
-            _context.ContractorHistories.Add(historyEntry);
-            await SaveChangesAsync();
+            var historyEntry = new History
+            {
+                EntityType = "contractor",
+                EntityId = id.ToString(),
+                Action = "unarchive",
+                Details = $"Контрагент с ID {id} разархивирован.",
+                ChangesJson = JsonSerializer.Serialize(changes, _jsonOptions),
+                ChangedBy = unarchivedBy,
+                ChangedAt = DateTime.UtcNow
+            };
+            await _historyService.LogHistoryAsync(historyEntry);
         }
 
-        public async Task<List<ContractorHistory>> GetContractorHistoryAsync(int contractorId)
+        public async Task UpdateNoteAsync(int id, string? note, string? updatedBy = null)
         {
-            return await _context.ContractorHistories
-                .Where(h => h.ContractorId == contractorId)
-                .OrderByDescending(h => h.ChangedAt)
-                .ToListAsync();
+            _logger.LogInformation("Попытка обновления заметки для контрагента с ID {Id}", id);
+            var contractor = await _context.Contractors.FirstOrDefaultAsync(c => c.Id == id);
+            if (contractor == null)
+            {
+                _logger.LogWarning("Контрагент с ID {Id} не найден.", id);
+                throw new KeyNotFoundException($"Контрагент с ID {id} не найден.");
+            }
+
+            if (note != null && note.Length > 500)
+            {
+                _logger.LogWarning("Заметка для контрагента с ID {Id} превышает 500 символов.", id);
+                throw new ArgumentException("Заметка не должна превышать 500 символов.");
+            }
+
+            var oldNote = contractor.Note;
+            contractor.Note = note;
+            await SaveChangesAsync();
+
+            var changes = new Dictionary<string, ChangeValueDto>
+    {
+        { "note", new ChangeValueDto { OldValue = oldNote ?? "не указано", NewValue = note ?? "не указано" } }
+    };
+
+            var historyEntry = new History
+            {
+                EntityType = "contractor",
+                EntityId = id.ToString(),
+                Action = "update_note",
+                Details = $"Заметка для контрагента с ID {id} обновлена.",
+                ChangesJson = JsonSerializer.Serialize(changes, _jsonOptions),
+                ChangedBy = updatedBy ?? "Unknown",
+                ChangedAt = DateTime.UtcNow
+            };
+            await _historyService.LogHistoryAsync(historyEntry);
+
+            _logger.LogInformation("Заметка для контрагента с ID {Id} успешно обновлена, история изменений записана.", id);
+        }
+
+        private Dictionary<string, ChangeValueDto> CompareContractors(Contractor? original, Contractor updated)
+        {
+            var changes = new Dictionary<string, ChangeValueDto>();
+
+            if (original == null)
+                return changes;
+
+            if (original.FirstName != updated.FirstName)
+            {
+                var change = new ChangeValueDto { OldValue = original.FirstName, NewValue = updated.FirstName };
+                changes.Add("firstName", change);
+                _logger.LogInformation("Изменение firstName: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            if (original.LastName != updated.LastName)
+            {
+                var change = new ChangeValueDto { OldValue = original.LastName, NewValue = updated.LastName };
+                changes.Add("lastName", change);
+                _logger.LogInformation("Изменение lastName: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            if (original.MiddleName != updated.MiddleName)
+            {
+                var change = new ChangeValueDto { OldValue = original.MiddleName, NewValue = updated.MiddleName };
+                changes.Add("middleName", change);
+                _logger.LogInformation("Изменение middleName: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            if (original.Citizenship != updated.Citizenship)
+            {
+                var change = new ChangeValueDto { OldValue = original.Citizenship, NewValue = updated.Citizenship };
+                changes.Add("citizenship", change);
+                _logger.LogInformation("Изменение citizenship: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            if (original.Nationality != updated.Nationality)
+            {
+                var change = new ChangeValueDto { OldValue = original.Nationality, NewValue = updated.Nationality };
+                changes.Add("nationality", change);
+                _logger.LogInformation("Изменение nationality: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            if (original.BirthDate != updated.BirthDate)
+            {
+                var change = new ChangeValueDto { OldValue = original.BirthDate, NewValue = updated.BirthDate };
+                changes.Add("birthDate", change);
+                _logger.LogInformation("Изменение birthDate: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            if (original.DocumentType != updated.DocumentType)
+            {
+                var change = new ChangeValueDto { OldValue = original.DocumentType, NewValue = updated.DocumentType };
+                changes.Add("documentType", change);
+                _logger.LogInformation("Изменение documentType: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            if (original.PassportSerialNumber != updated.PassportSerialNumber)
+            {
+                var change = new ChangeValueDto { OldValue = original.PassportSerialNumber, NewValue = updated.PassportSerialNumber };
+                changes.Add("passportSerialNumber", change);
+                _logger.LogInformation("Изменение passportSerialNumber: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            if (original.PassportIssuedBy != updated.PassportIssuedBy)
+            {
+                var change = new ChangeValueDto { OldValue = original.PassportIssuedBy, NewValue = updated.PassportIssuedBy };
+                changes.Add("passportIssuedBy", change);
+                _logger.LogInformation("Изменение passportIssuedBy: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            if (original.PassportIssueDate != updated.PassportIssueDate)
+            {
+                var change = new ChangeValueDto { OldValue = original.PassportIssueDate, NewValue = updated.PassportIssueDate };
+                changes.Add("passportIssueDate", change);
+                _logger.LogInformation("Изменение passportIssueDate: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            if (original.PhoneNumber != updated.PhoneNumber)
+            {
+                var change = new ChangeValueDto { OldValue = original.PhoneNumber, NewValue = updated.PhoneNumber };
+                changes.Add("phoneNumber", change);
+                _logger.LogInformation("Изменение phoneNumber: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            if (original.ProductType != updated.ProductType)
+            {
+                var change = new ChangeValueDto { OldValue = original.ProductType, NewValue = updated.ProductType };
+                changes.Add("productType", change);
+                _logger.LogInformation("Изменение productType: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            if (original.IsArchived != updated.IsArchived)
+            {
+                var change = new ChangeValueDto { OldValue = original.IsArchived, NewValue = updated.IsArchived };
+                changes.Add("isArchived", change);
+                _logger.LogInformation("Изменение isArchived: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            if (original.SortOrder != updated.SortOrder)
+            {
+                var change = new ChangeValueDto { OldValue = original.SortOrder, NewValue = updated.SortOrder };
+                changes.Add("sortOrder", change);
+                _logger.LogInformation("Изменение sortOrder: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            if (original.Note != updated.Note)
+            {
+                var change = new ChangeValueDto { OldValue = original.Note, NewValue = updated.Note };
+                changes.Add("note", change);
+                _logger.LogInformation("Изменение note: oldValue={OldValue}, newValue={NewValue}", change.OldValue, change.NewValue);
+            }
+
+            return changes;
         }
     }
 }

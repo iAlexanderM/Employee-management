@@ -219,6 +219,9 @@ namespace EmployeeManagementServer.Migrations
                     b.Property<int?>("SortOrder")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime>("UpdateddAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PassportSerialNumber")
@@ -340,6 +343,48 @@ namespace EmployeeManagementServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Floors", "public");
+                });
+
+            modelBuilder.Entity("EmployeeManagementServer.Models.History", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ChangedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ChangesJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntityType", "EntityId", "ChangedAt");
+
+                    b.ToTable("History", "public");
                 });
 
             modelBuilder.Entity("EmployeeManagementServer.Models.Line", b =>
@@ -689,12 +734,18 @@ namespace EmployeeManagementServer.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
                     b.Property<int?>("SortOrder")
                         .HasColumnType("integer");
 
                     b.Property<string>("StoreNumber")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 

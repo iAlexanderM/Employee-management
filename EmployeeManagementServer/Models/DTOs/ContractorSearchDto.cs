@@ -12,6 +12,6 @@
         public DateTime? PassportIssueDate { get; set; }
         public string? ProductType { get; set; }
         public string? PhoneNumber { get; set; }
-        public bool IncludeArchived { get; set; } = false;
+        public bool? IsArchived { get; set; }
     }
 }

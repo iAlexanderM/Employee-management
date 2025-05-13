@@ -1,65 +1,51 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using EmployeeManagementServer.Services;
-using System;
 using EmployeeManagementServer.Models.DTOs;
-using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 
 namespace EmployeeManagementServer.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class SearchContractorsController : ControllerBase
     {
-        private readonly IContractorSearchService _searchService;
-        private readonly ILogger<SearchContractorsController> _logger;
+        private readonly IContractorSearchService _contractorSearchService;
         private readonly IMapper _mapper;
+        private readonly ILogger<SearchContractorsController> _logger;
 
         public SearchContractorsController(
+            IContractorSearchService contractorSearchService,
             IMapper mapper,
-            IContractorSearchService searchService,
             ILogger<SearchContractorsController> logger)
         {
-            _searchService = searchService;
-            _logger = logger;
+            _contractorSearchService = contractorSearchService;
             _mapper = mapper;
+            _logger = logger;
         }
 
-        [HttpPost("search")]
-        public async Task<IActionResult> SearchContractors([FromBody] ContractorSearchDto searchDto)
+        [HttpGet]
+        public async Task<IActionResult> SearchContractors(
+            [FromQuery] ContractorSearchDto searchDto,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 25)
         {
-            try
+            if (page < 1 || pageSize < 1)
             {
-                var contractors = await _searchService.SearchContractorsAsync(searchDto);
-                var contractorDtos = _mapper.Map<List<ContractorDto>>(contractors);
-                return Ok(contractorDtos);
+                return BadRequest("Параметры страницы и размера должны быть больше нуля.");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Ошибка при выполнении поиска");
-                return StatusCode(500, $"Ошибка при выполнении поиска: {ex.Message}");
-            }
-        }
 
-        [HttpPost("search/archived")]
-        public async Task<IActionResult> SearchArchivedContractors([FromBody] ContractorSearchDto searchDto)
-        {
-            try
+            _logger.LogInformation("Поиск контрагентов с параметрами: {@SearchDto}, page: {Page}, pageSize: {PageSize}", searchDto, page, pageSize);
+
+            var contractors = await _contractorSearchService.SearchContractorsAsync(searchDto);
+            var contractorDtos = _mapper.Map<List<ContractorDto>>(contractors);
+
+            return Ok(new
             {
-                // Принудительно включаем только архивных контрагентов
-                searchDto.IncludeArchived = true;
-                var contractors = await _searchService.SearchContractorsAsync(searchDto);
-                contractors = contractors.Where(c => c.IsArchived).ToList();
-                var contractorDtos = _mapper.Map<List<ContractorDto>>(contractors);
-                return Ok(contractorDtos);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Ошибка при выполнении поиска архивных контрагентов");
-                return StatusCode(500, $"Ошибка при выполнении поиска архивных контрагентов: {ex.Message}");
-            }
+                total = contractors.Count,
+                contractors = contractorDtos
+            });
         }
     }
 }

@@ -12,13 +12,13 @@ export interface Contractor {
 	firstName: string;
 	lastName: string;
 	middleName?: string;
-	birthDate: Date;
+	birthDate?: Date;
 	documentType: string;
 	passportSerialNumber: string;
 	passportIssuedBy: string;
 	citizenship: string;
 	nationality: string;
-	passportIssueDate: Date;
+	passportIssueDate?: Date;
 	productType: string;
 	phoneNumber: string;
 	createdAt: Date;
@@ -28,6 +28,7 @@ export interface Contractor {
 	isArchived: boolean;
 	passes: Pass[];
 	note?: string;
+	[key: string]: any;
 }
 
 export interface ContractorDto {

@@ -20,10 +20,8 @@
 			<div class="input-container mt-2">
 				<input type="text" class="form-control" formControlName="building" readonly
 					placeholder="Выбранное здание" [ngClass]="{
-            'is-invalid':
-              storeForm.get('building')?.invalid && storeForm.get('building')?.touched
-          }" />
-				<!-- Сообщение об ошибке для поля здание -->
+                    'is-invalid': storeForm.get('building')?.invalid && storeForm.get('building')?.touched
+                }" />
 				<div *ngIf="storeForm.get('building')?.invalid && storeForm.get('building')?.touched"
 					class="invalid-feedback">
 					Здание обязательно.
@@ -44,10 +42,8 @@
 			<div class="input-container mt-2">
 				<input type="text" class="form-control" formControlName="floor" readonly placeholder="Выбранный этаж"
 					[ngClass]="{
-            'is-invalid':
-              storeForm.get('floor')?.invalid && storeForm.get('floor')?.touched
-          }" />
-				<!-- Сообщение об ошибке для поля этаж -->
+                    'is-invalid': storeForm.get('floor')?.invalid && storeForm.get('floor')?.touched
+                }" />
 				<div *ngIf="storeForm.get('floor')?.invalid && storeForm.get('floor')?.touched"
 					class="invalid-feedback">
 					Этаж обязателен.
@@ -68,10 +64,8 @@
 			<div class="input-container mt-2">
 				<input type="text" class="form-control" formControlName="line" readonly placeholder="Выбранная линия"
 					[ngClass]="{
-            'is-invalid':
-              storeForm.get('line')?.invalid && storeForm.get('line')?.touched
-          }" />
-				<!-- Сообщение об ошибке для поля линия -->
+                    'is-invalid': storeForm.get('line')?.invalid && storeForm.get('line')?.touched
+                }" />
 				<div *ngIf="storeForm.get('line')?.invalid && storeForm.get('line')?.touched" class="invalid-feedback">
 					Линия обязательна.
 				</div>
@@ -91,10 +85,8 @@
 			<div class="input-container mt-2">
 				<input type="text" class="form-control" formControlName="storeNumber" readonly
 					placeholder="Выбранная торговая точка" [ngClass]="{
-            'is-invalid':
-              storeForm.get('storeNumber')?.invalid && storeForm.get('storeNumber')?.touched
-          }" />
-				<!-- Сообщение об ошибке для поля торговая точка -->
+                    'is-invalid': storeForm.get('storeNumber')?.invalid && storeForm.get('storeNumber')?.touched
+                }" />
 				<div *ngIf="storeForm.get('storeNumber')?.invalid && storeForm.get('storeNumber')?.touched"
 					class="invalid-feedback">
 					Торговая точка обязательна.
@@ -105,20 +97,69 @@
 		<div class="form-group">
 			<label for="sortOrder">Номер сортировки:</label>
 			<input id="sortOrder" type="number" class="form-control" formControlName="sortOrder" min="0" [ngClass]="{
-          'is-invalid':
-            storeForm.get('sortOrder')?.invalid && storeForm.get('sortOrder')?.touched
-        }" required />
-			<!-- Сообщение об ошибке для поля номер сортировки -->
+                'is-invalid': storeForm.get('sortOrder')?.invalid && storeForm.get('sortOrder')?.touched
+            }" required />
 			<div *ngIf="storeForm.get('sortOrder')?.invalid && storeForm.get('sortOrder')?.touched"
 				class="invalid-feedback">
 				Номер сортировки должен быть неотрицательным.
 			</div>
 		</div>
 
-		<div class="form-group mt-4">
-			<button type="submit" class="btn btn-primary" [disabled]="storeForm.invalid">Создать</button>
+		<div class="form-group">
+			<label for="note">Заметка:</label>
+			<textarea id="note" formControlName="note" class="form-control" rows="4" placeholder="Введите заметку"
+				[ngClass]="{
+                'is-invalid': storeForm.get('note')?.invalid && storeForm.get('note')?.touched
+            }"></textarea>
+			<div *ngIf="storeForm.get('note')?.hasError('maxlength') && storeForm.get('note')?.touched"
+				class="invalid-feedback">
+				Заметка не должна превышать 500 символов.
+			</div>
+		</div>
+
+		<div class="form-group mt-4 d-flex justify-content-between">
+			<div>
+				<button type="submit" class="btn btn-primary me-2" [disabled]="storeForm.invalid">Создать</button>
+				<button type="button" class="btn btn-secondary" (click)="navigateBack()">Отмена</button>
+			</div>
+			<button type="button" class="btn btn-primary" (click)="toggleHistory()">
+				{{ showHistory ? 'Скрыть историю' : 'Показать историю' }}
+			</button>
 		</div>
 	</form>
+
+	<!-- История изменений -->
+	<div *ngIf="showHistory" class="mt-4">
+		<h3>История изменений</h3>
+		<div *ngIf="isLoadingHistory" class="text-center">
+			<div class="spinner-border" role="status">
+				<span class="visually-hidden">Загрузка...</span>
+			</div>
+		</div>
+		<table *ngIf="!isLoadingHistory && historyEntries.length > 0" class="table table-bordered">
+			<thead>
+				<tr>
+					<th>Дата и время</th>
+					<th>Действие</th>
+					<th>Пользователь</th>
+					<th>Подробности</th>
+					<th>Изменения</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr *ngFor="let entry of historyEntries">
+					<td>{{ entry.timestamp ? (entry.timestamp | date: 'dd.MM.yyyy HH:mm:ss') : 'Неизвестно' }}</td>
+					<td>{{ formatHistoryAction(entry.action) }}</td>
+					<td>{{ entry.user || 'Неизвестно' }}</td>
+					<td>{{ entry.details || 'Нет подробностей' }}</td>
+					<td>{{ formatHistoryChanges(entry.changes) }}</td>
+				</tr>
+			</tbody>
+		</table>
+		<div *ngIf="!isLoadingHistory && historyEntries.length === 0" class="alert alert-info">
+			История изменений не найдена.
+		</div>
+	</div>
 
 	<!-- Модальное окно -->
 	<app-store-select-or-add-modal *ngIf="isModalOpen" [fieldName]="modalField" [mode]="modalMode"

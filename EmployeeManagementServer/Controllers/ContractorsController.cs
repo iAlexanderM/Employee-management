@@ -4,11 +4,12 @@ using EmployeeManagementServer.Models;
 using EmployeeManagementServer.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using System;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using EmployeeManagementServer.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeManagementServer.Controllers
 {
@@ -35,7 +36,7 @@ namespace EmployeeManagementServer.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetContractors([FromQuery] int page = 1, [FromQuery] int pageSize = 25, [FromQuery] bool includeArchived = false)
+        public async Task<IActionResult> GetContractors([FromQuery] int page = 1, [FromQuery] int pageSize = 25, [FromQuery] bool? isArchived = false)
         {
             try
             {
@@ -45,8 +46,9 @@ namespace EmployeeManagementServer.Controllers
                 }
 
                 int skip = (page - 1) * pageSize;
-                int total = await _contractorService.GetTotalContractorsCountAsync(includeArchived);
-                var contractors = await _contractorService.GetContractorsAsync(skip, pageSize, includeArchived);
+                int total = await _contractorService.GetTotalContractorsCountAsync(isArchived);
+
+                var contractors = await _contractorService.GetContractorsAsync(skip, pageSize, isArchived);
 
                 var response = new
                 {
@@ -147,7 +149,7 @@ namespace EmployeeManagementServer.Controllers
                         id = p.Id,
                         passTypeId = p.PassTypeId,
                         passTypeName = p.PassType?.Name ?? "Unknown",
-                        cost = p.PassType?.Cost,
+                        cost = p.PassType.Cost,
                         contractorId = p.ContractorId,
                         storeId = p.StoreId,
                         position = p.Position,
@@ -160,16 +162,7 @@ namespace EmployeeManagementServer.Controllers
                         closeReason = p.CloseReason,
                         closeDate = p.CloseDate,
                         closedBy = p.ClosedBy
-                    }).ToList(),
-                History = contractor.History.Select(h => new
-                {
-                    h.Id,
-                    h.FieldName,
-                    h.OldValue,
-                    h.NewValue,
-                    h.ChangedAt,
-                    h.ChangedBy
-                }).ToList()
+                    }).ToList()
             };
 
             return Ok(response);
@@ -219,202 +212,87 @@ namespace EmployeeManagementServer.Controllers
                 }
             }
 
-            await _contractorService.CreateContractorAsync(contractor);
+            await _contractorService.CreateContractorAsync(contractor, User.Identity?.Name ?? "Unknown");
             _logger.LogInformation($"Контрагент с ID {contractor.Id} успешно создан.");
             return Ok(contractor);
         }
 
+        // Замененный метод
         [HttpPut("edit/{id}")]
         public async Task<IActionResult> UpdateContractor(int id, [FromForm] ContractorDto contractorDto)
         {
-            _logger.LogInformation("Начало обновления контрагента с ID {Id}", id);
-
-            if (!ModelState.IsValid)
-            {
-                _logger.LogWarning("Некорректные данные для обновления контрагента с ID {Id}: {@ModelState}", id, ModelState);
-                return BadRequest(ModelState);
-            }
-
-            var contractor = await _contractorService.GetContractorByIdAsync(id);
-            if (contractor == null)
-            {
-                _logger.LogWarning("Контрагент с ID {Id} не найден.", id);
-                return NotFound($"Контрагент с ID {id} не найден.");
-            }
-
-            if (contractor.PassportSerialNumber != contractorDto.PassportSerialNumber)
-            {
-                var existingContractor = await _contractorService.FindContractorByPassportSerialNumberAsync(contractorDto.PassportSerialNumber);
-                if (existingContractor != null && existingContractor.Id != id)
-                {
-                    _logger.LogWarning("Контрагент с таким номером паспорта уже существует: {PassportSerialNumber}", contractorDto.PassportSerialNumber);
-                    return BadRequest("Контрагент с таким номером паспорта уже существует.");
-                }
-            }
-
-            _logger.LogInformation("Контрагент с ID {Id} найден, обновление данных началось.", id);
-
             try
             {
-                var changedBy = User.Identity.Name ?? "Unknown";
-                await LogContractorChanges(contractor, contractorDto, changedBy);
-
-                UpdateContractorDetails(contractor, contractorDto);
-
-                var allPhotosToRemove = contractorDto.PhotosToRemove
-                    .Concat(contractorDto.DocumentPhotosToRemove ?? new List<int>())
-                    .ToList();
-
+                var contractor = _mapper.Map<Contractor>(contractorDto);
+                contractor.Id = id;
                 await _contractorService.UpdateContractorAsync(
                     contractor,
                     contractorDto.Photos,
                     contractorDto.DocumentPhotos,
-                    allPhotosToRemove
-                );
-
-                _logger.LogInformation("Изменения контрагента с ID {Id} успешно сохранены в базе данных.", id);
-                return Ok(contractor);
+                    contractorDto.PhotosToRemove.Concat(contractorDto.DocumentPhotosToRemove ?? new List<int>()).ToList(),
+                    User.Identity?.Name ?? "Unknown");
+                return Ok();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при обновлении контрагента с ID {Id}.", id);
-                return StatusCode(500, "Произошла ошибка при обновлении контрагента.");
+                return BadRequest(ex.Message);
             }
         }
 
-        [HttpPut("archive/{id}")]
+        // Замененный метод
+        [HttpPut("{id}/archive")]
         public async Task<IActionResult> ArchiveContractor(int id)
         {
             try
             {
-                var changedBy = User.Identity.Name ?? "Unknown";
-                var success = await _contractorService.ArchiveContractorAsync(id, changedBy);
-                if (!success)
-                {
-                    return NotFound("Контрагент не найден.");
-                }
-
-                return NoContent();
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "Ошибка при архивировании контрагента с ID {Id}", id);
-                return BadRequest(ex.Message);
+                await _contractorService.ArchiveContractorAsync(id, User.Identity?.Name ?? "Unknown");
+                return Ok();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при архивировании контрагента с ID {Id}", id);
-                return StatusCode(500, "Произошла ошибка при архивировании контрагента.");
+                return BadRequest(ex.Message);
             }
         }
 
-        [HttpPut("unarchive/{id}")]
+        // Замененный метод
+        [HttpPut("{id}/unarchive")]
         public async Task<IActionResult> UnarchiveContractor(int id)
         {
             try
             {
-                var changedBy = User.Identity.Name ?? "Unknown";
-                var success = await _contractorService.UnarchiveContractorAsync(id, changedBy);
-                if (!success)
-                {
-                    return NotFound("Контрагент не найден или не заархивирован.");
-                }
-
-                return NoContent();
+                await _contractorService.UnarchiveContractorAsync(id, User.Identity?.Name ?? "Unknown");
+                return Ok();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при разархивировании контрагента с ID {Id}", id);
-                return StatusCode(500, "Произошла ошибка при разархивировании контрагента.");
+                return BadRequest(ex.Message);
             }
         }
 
-        [HttpGet("{id}/history")]
-        public async Task<IActionResult> GetContractorHistory(int id)
+        [HttpPut("{id}/note")]
+        [Authorize]
+        public async Task<IActionResult> UpdateNote(int id, [FromBody] UpdateNoteDto noteDto)
         {
             try
             {
-                var history = await _contractorService.GetContractorHistoryAsync(id);
-                if (!history.Any())
-                {
-                    return NotFound("История изменений для контрагента не найдена.");
-                }
-
-                var historyDtos = _mapper.Map<List<ContractorHistoryDto>>(history);
-                return Ok(historyDtos);
+                await _contractorService.UpdateNoteAsync(id, noteDto.Note, User.Identity?.Name);
+                return Ok();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Контрагент с ID {Id} не найден для обновления заметки.", id);
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Ошибка валидации заметки для контрагента с ID {Id}.", id);
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при получении истории изменений для контрагента с ID {Id}", id);
+                _logger.LogError(ex, "Ошибка при обновлении заметки для контрагента с ID {Id}", id);
                 return StatusCode(500, "Ошибка сервера.");
             }
-        }
-
-        private async Task LogContractorChanges(Contractor contractor, ContractorDto contractorDto, string changedBy)
-        {
-            if (contractor.FirstName != contractorDto.FirstName)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "FirstName", contractor.FirstName, contractorDto.FirstName, changedBy);
-
-            if (contractor.LastName != contractorDto.LastName)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "LastName", contractor.LastName, contractorDto.LastName, changedBy);
-
-            if (contractor.MiddleName != contractorDto.MiddleName)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "MiddleName", contractor.MiddleName, contractorDto.MiddleName, changedBy);
-
-            if (contractor.BirthDate != contractorDto.BirthDate)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "BirthDate", contractor.BirthDate.ToString(), contractorDto.BirthDate.ToString(), changedBy);
-
-            if (contractor.DocumentType != contractorDto.DocumentType)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "DocumentType", contractor.DocumentType, contractorDto.DocumentType, changedBy);
-
-            if (contractor.PassportSerialNumber != contractorDto.PassportSerialNumber)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "PassportSerialNumber", contractor.PassportSerialNumber, contractorDto.PassportSerialNumber, changedBy);
-
-            if (contractor.PassportIssuedBy != contractorDto.PassportIssuedBy)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "PassportIssuedBy", contractor.PassportIssuedBy, contractorDto.PassportIssuedBy, changedBy);
-
-            if (contractor.PassportIssueDate != contractorDto.PassportIssueDate)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "PassportIssueDate", contractor.PassportIssueDate.ToString(), contractorDto.PassportIssueDate.ToString(), changedBy);
-
-            if (contractor.Citizenship != contractorDto.Citizenship)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "Citizenship", contractor.Citizenship, contractorDto.Citizenship, changedBy);
-
-            if (contractor.Nationality != contractorDto.Nationality)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "Nationality", contractor.Nationality, contractorDto.Nationality, changedBy);
-
-            if (contractor.ProductType != contractorDto.ProductType)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "ProductType", contractor.ProductType, contractorDto.ProductType, changedBy);
-
-            if (contractor.PhoneNumber != contractorDto.PhoneNumber)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "PhoneNumber", contractor.PhoneNumber, contractorDto.PhoneNumber, changedBy);
-
-            if (contractor.IsArchived != contractorDto.IsArchived)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "IsArchived", contractor.IsArchived.ToString(), contractorDto.IsArchived.ToString(), changedBy);
-
-            if (contractor.SortOrder != contractorDto.SortOrder)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "SortOrder", contractor.SortOrder?.ToString() ?? "null", contractorDto.SortOrder?.ToString() ?? "null", changedBy);
-
-            if (contractor.Note != contractorDto.Note)
-                await _contractorService.LogContractorChangeAsync(contractor.Id, "Note", contractor.Note ?? "null", contractorDto.Note ?? "null", changedBy);
-        }
-
-        private void UpdateContractorDetails(Contractor contractor, ContractorDto contractorDto)
-        {
-            contractor.FirstName = contractorDto.FirstName;
-            contractor.LastName = contractorDto.LastName;
-            contractor.MiddleName = contractorDto.MiddleName;
-            contractor.BirthDate = contractorDto.BirthDate;
-            contractor.DocumentType = contractorDto.DocumentType;
-            contractor.PassportSerialNumber = contractorDto.PassportSerialNumber;
-            contractor.PassportIssuedBy = contractorDto.PassportIssuedBy;
-            contractor.PassportIssueDate = contractorDto.PassportIssueDate;
-            contractor.Citizenship = contractorDto.Citizenship;
-            contractor.Nationality = contractorDto.Nationality;
-            contractor.ProductType = contractorDto.ProductType;
-            contractor.PhoneNumber = contractorDto.PhoneNumber;
-            contractor.IsArchived = contractorDto.IsArchived;
-            contractor.SortOrder = contractorDto.SortOrder;
-            contractor.Note = contractorDto.Note;
         }
     }
 }

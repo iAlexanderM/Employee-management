@@ -9,10 +9,16 @@ import { CitizenshipAndNationalityModalComponent } from '../../modals/citizenshi
 @Component({
 	selector: 'app-contractor-form',
 	standalone: true,
-	imports: [ReactiveFormsModule, CommonModule, RouterModule, NgxMaskDirective, CitizenshipAndNationalityModalComponent],
+	imports: [
+		ReactiveFormsModule,
+		CommonModule,
+		RouterModule,
+		NgxMaskDirective,
+		CitizenshipAndNationalityModalComponent,
+	],
 	providers: [provideNgxMask()],
 	templateUrl: './contractor-create.component.html',
-	styleUrls: ['./contractor-create.component.css']
+	styleUrls: ['./contractor-create.component.css'],
 })
 export class ContractorCreateComponent implements OnInit {
 	contractorForm: FormGroup;
@@ -24,6 +30,7 @@ export class ContractorCreateComponent implements OnInit {
 	isModalOpen = false;
 	modalField: 'Citizenship' | 'Nationality' = 'Citizenship';
 	modalMode: 'select' | 'add' = 'select';
+	errorMessage: string | null = null;
 
 	constructor(
 		private fb: FormBuilder,
@@ -46,7 +53,7 @@ export class ContractorCreateComponent implements OnInit {
 			PhoneNumber: ['', [Validators.required]],
 			IsArchived: [false],
 			Photos: [''],
-			DocumentPhotos: ['']
+			DocumentPhotos: [''],
 		});
 	}
 
@@ -110,20 +117,24 @@ export class ContractorCreateComponent implements OnInit {
 		if (this.contractorForm.valid) {
 			const contractorData = this.contractorForm.value;
 
-			// Добавляем файлы в объект данных контрагента
 			contractorData.photos = this.Photos;
 			contractorData.documentPhotos = this.DocumentPhotos;
 
-			// Преобразуем даты в формат UTC
 			contractorData.BirthDate = new Date(contractorData.BirthDate).toISOString();
 			contractorData.PassportIssueDate = new Date(contractorData.PassportIssueDate).toISOString();
-
 			contractorData.PhoneNumber = contractorData.PhoneNumber.replace(/\D/g, '');
 
 			this.contractorService.addContractor(contractorData).subscribe({
-				next: () => this.router.navigate(['/contractors']),
-				error: (err) => console.error('Ошибка при добавлении контрагента', err)
+				next: (response: any) => {
+					this.router.navigate(['/contractors']);
+				},
+				error: (err) => {
+					console.error('Ошибка при добавлении контрагента', err);
+					this.errorMessage = 'Не удалось создать контрагента. Попробуйте снова.';
+				},
 			});
+		} else {
+			this.errorMessage = 'Пожалуйста, заполните все обязательные поля.';
 		}
 	}
 }

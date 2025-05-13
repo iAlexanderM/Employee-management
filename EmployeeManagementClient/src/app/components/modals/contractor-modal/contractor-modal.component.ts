@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 	standalone: true,
 	imports: [CommonModule, ReactiveFormsModule],
 	templateUrl: './contractor-modal.component.html',
-	styleUrls: ['./contractor-modal.component.css']
+	styleUrls: ['./contractor-modal.component.css'],
 })
 export class ContractorModalComponent implements OnInit, OnDestroy {
 	@Input() mode: 'select' | 'add' = 'select';
@@ -48,7 +48,7 @@ export class ContractorModalComponent implements OnInit, OnDestroy {
 			FirstName: [''],
 			MiddleName: [''],
 			BirthDate: [''],
-			PassportSerialNumber: ['']
+			PassportSerialNumber: [''],
 		});
 	}
 
@@ -59,7 +59,7 @@ export class ContractorModalComponent implements OnInit, OnDestroy {
 	}
 
 	ngOnDestroy(): void {
-		this.subscriptions.forEach(sub => sub.unsubscribe());
+		this.subscriptions.forEach((sub) => sub.unsubscribe());
 	}
 
 	closeModal(): void {
@@ -94,10 +94,12 @@ export class ContractorModalComponent implements OnInit, OnDestroy {
 		if (this.isSearchMode) {
 			this.isLoading = true;
 			this.contractorService.searchContractors(this.activeFilters).subscribe({
-				next: (response: { contractors: Contractor[]; total: number }) => {
+				next: (response: { Contractors: Contractor[]; Total: number }) => {
 					this.isLoading = false;
-					this.allContractors = response.contractors.map(contractor => this.normalizePhotos(contractor));
-					this.totalItems = response.total;
+					this.allContractors = response.Contractors.map((contractor) =>
+						this.normalizePhotos(contractor)
+					);
+					this.totalItems = response.Total;
 					this.totalPages = Math.ceil(this.totalItems / this.pageSize);
 					this.updateVisiblePages();
 					this.setDisplayedContractors();
@@ -109,24 +111,28 @@ export class ContractorModalComponent implements OnInit, OnDestroy {
 					this.totalItems = 0;
 					this.totalPages = 0;
 					this.visiblePages = [];
+					this.errorMessage = 'Ошибка при загрузке контрагентов.';
 				},
 			});
 		} else {
 			const params = {
-				page: this.currentPage,
-				pageSize: this.pageSize,
-				...this.activeFilters
+				Page: this.currentPage,
+				PageSize: this.pageSize,
+				IsArchived: false, // Фильтр только неархивированных контрагентов
+				...this.activeFilters,
 			};
 
 			this.isLoading = true;
 
 			this.contractorService.getContractors(params).subscribe({
-				next: (response: { total: number, contractors: Contractor[] }) => {
+				next: (response: { Contractors: Contractor[]; Total: number }) => {
 					this.isLoading = false;
 
-					if (response && Array.isArray(response.contractors)) {
-						this.displayedContractors = response.contractors.map(contractor => this.normalizePhotos(contractor));
-						this.totalItems = response.total || this.displayedContractors.length;
+					if (response && Array.isArray(response.Contractors)) {
+						this.displayedContractors = response.Contractors.map((contractor) =>
+							this.normalizePhotos(contractor)
+						);
+						this.totalItems = response.Total || this.displayedContractors.length;
 						this.totalPages = Math.ceil(this.totalItems / this.pageSize);
 						this.updateVisiblePages();
 					} else {
@@ -136,13 +142,14 @@ export class ContractorModalComponent implements OnInit, OnDestroy {
 				error: (err) => {
 					this.isLoading = false;
 					this.resetPagination();
-				}
+					this.errorMessage = 'Ошибка при загрузке контрагентов.';
+				},
 			});
 		}
 	}
 
 	prepareSearchCriteria(): { [key: string]: any } {
-		const criteria: { [key: string]: any } = {};
+		const criteria: { [key: string]: any } = { IsArchived: false }; // Фильтр только неархивированных в поиске
 		const formValue = this.searchForm.value;
 
 		if (formValue['Id']) {

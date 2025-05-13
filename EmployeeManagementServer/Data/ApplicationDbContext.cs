@@ -1,9 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using EmployeeManagementServer.Models;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using EmployeeManagementServer.Models;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using EmployeeManagementServer.Models.EmployeeManagementServer.Models;
+using System.Linq;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EmployeeManagementServer.Data
 {
@@ -16,9 +20,7 @@ namespace EmployeeManagementServer.Data
 
         public DbSet<Contractor> Contractors { get; set; }
         public DbSet<ContractorPhoto> ContractorPhoto { get; set; }
-        public DbSet<ContractorHistory> ContractorHistories { get; set; }
         public DbSet<Store> Stores { get; set; }
-        public DbSet<StoreHistory> StoreHistories { get; set; }
         public DbSet<Building> Buildings { get; set; }
         public DbSet<Floor> Floors { get; set; }
         public DbSet<Line> Lines { get; set; }
@@ -35,17 +37,54 @@ namespace EmployeeManagementServer.Data
         public DbSet<PassTransaction> PassTransactions { get; set; }
         public DbSet<ContractorStorePass> ContractorStorePasses { get; set; }
         public DbSet<QueueToken> QueueTokens { get; set; }
+        public DbSet<History> History { get; set; }
 
         public override int SaveChanges()
         {
+            SetTimestamps();
             LogDeletions();
             return base.SaveChanges();
         }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
+            SetTimestamps();
             LogDeletions();
             return base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void SetTimestamps()
+        {
+            var entries = ChangeTracker
+                .Entries()
+                .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
+
+            foreach (var entry in entries)
+            {
+                var createdAtEntry = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "CreatedAt");
+                if (createdAtEntry != null)
+                {
+                    if (entry.State == EntityState.Added)
+                    {
+                        // Устанавливаем CreatedAt для новых записей
+                        createdAtEntry.CurrentValue = DateTime.UtcNow;
+                        createdAtEntry.IsModified = true;
+                    }
+                    else if (entry.State == EntityState.Modified)
+                    {
+                        // Предотвращаем изменение CreatedAt при модификации
+                        createdAtEntry.IsModified = false;
+                    }
+                }
+
+                var updatedAtEntry = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "UpdatedAt");
+                if (updatedAtEntry != null)
+                {
+                    // Устанавливаем UpdatedAt для добавления или модификации
+                    updatedAtEntry.CurrentValue = DateTime.UtcNow;
+                    updatedAtEntry.IsModified = true;
+                }
+            }
         }
 
         private void LogDeletions()
@@ -64,13 +103,11 @@ namespace EmployeeManagementServer.Data
 
             builder.HasDefaultSchema("public");
 
-            // Contractor
             builder.Entity<Contractor>()
                 .ToTable("Contractors")
                 .HasIndex(c => c.PassportSerialNumber)
                 .IsUnique();
 
-            // ContractorPhoto
             builder.Entity<ContractorPhoto>()
                 .ToTable("ContractorPhotos")
                 .HasOne(cp => cp.Contractor)
@@ -78,14 +115,13 @@ namespace EmployeeManagementServer.Data
                 .HasForeignKey(cp => cp.ContractorId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<ContractorHistory>()
-                .ToTable("ContractorHistories")
-                .HasOne(ch => ch.Contractor)
-                .WithMany(c => c.History)
-                .HasForeignKey(ch => ch.ContractorId)
-                .OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<Store>()
+                .ToTable("Stores");
 
-            // RefreshToken
+            builder.Entity<History>()
+                .ToTable("History")
+                .HasIndex(h => new { h.EntityType, h.EntityId, h.ChangedAt });
+
             builder.Entity<RefreshToken>(entity =>
             {
                 entity.ToTable("RefreshTokens");
@@ -98,7 +134,6 @@ namespace EmployeeManagementServer.Data
                 entity.HasIndex(rt => rt.Token).IsUnique();
             });
 
-            // PassTransaction и Pass
             builder.Entity<PassTransaction>()
                 .ToTable("PassTransactions")
                 .HasMany(pt => pt.Passes)
@@ -106,21 +141,24 @@ namespace EmployeeManagementServer.Data
                 .HasForeignKey(p => p.PassTransactionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Pass
             builder.Entity<Pass>()
                 .ToTable("Passes")
                 .HasIndex(p => p.UniquePassId)
                 .IsUnique();
 
-            // Исправленная связь Pass -> Contractor
             builder.Entity<Pass>()
                 .HasOne(p => p.Contractor)
-                .WithMany(c => c.Passes) // Явно указываем коллекцию Passes
+                .WithMany(c => c.Passes)
                 .HasForeignKey(p => p.ContractorId)
                 .OnDelete(DeleteBehavior.Restrict)
-                .IsRequired(); // Указываем, что ContractorId обязателен
+                .IsRequired();
 
-            // PassType
+            builder.Entity<Pass>()
+                .HasOne(p => p.Store)
+                .WithMany()
+                .HasForeignKey(p => p.StoreId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<PassType>()
                 .ToTable("PassTypes")
                 .HasOne(pt => pt.PassGroup)
@@ -134,28 +172,12 @@ namespace EmployeeManagementServer.Data
                 .HasForeignKey(p => p.PassTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Store
-            builder.Entity<Pass>()
-                .HasOne(p => p.Store)
-                .WithMany()
-                .HasForeignKey(p => p.StoreId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.Entity<StoreHistory>()
-                .ToTable("StoreHistories")
-                .HasOne(sh => sh.Store)
-                .WithMany(s => s.History)
-                .HasForeignKey(sh => sh.StoreId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // PassTransaction (дополнительные связи)
             builder.Entity<PassTransaction>()
                 .HasOne(t => t.User)
                 .WithMany(u => u.PassTransactions)
                 .HasForeignKey(t => t.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ContractorStorePass
             builder.Entity<ContractorStorePass>()
                 .ToTable("ContractorStorePasses")
                 .HasOne(csp => csp.PassTransaction)
@@ -181,7 +203,6 @@ namespace EmployeeManagementServer.Data
                 .HasForeignKey(csp => csp.PassTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // QueueToken
             builder.Entity<QueueToken>()
                 .ToTable("QueueTokens")
                 .HasOne(qt => qt.User)
@@ -189,8 +210,6 @@ namespace EmployeeManagementServer.Data
                 .HasForeignKey(qt => qt.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Остальные сущности
-            builder.Entity<Store>().ToTable("Stores");
             builder.Entity<Building>().ToTable("Buildings");
             builder.Entity<Floor>().ToTable("Floors");
             builder.Entity<Line>().ToTable("Lines");

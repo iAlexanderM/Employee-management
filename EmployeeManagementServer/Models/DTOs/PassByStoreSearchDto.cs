@@ -9,6 +9,8 @@
         public string? StoreNumber { get; set; }
         public bool? ShowActive { get; set; }
         public bool? ShowClosed { get; set; }
+        public string? Note { get; set; }
+        public bool? IsArchived { get; set; } 
 
         public void Normalize()
         {

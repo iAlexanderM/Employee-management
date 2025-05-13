@@ -24,12 +24,19 @@ namespace EmployeeManagementServer.Services
         {
             _logger.LogInformation("Начало поиска с критериями: {@SearchDto}", searchDto);
 
-            // Шаг 1: Проверяем существование магазина в таблице Stores (точное совпадение)
-            var store = await _context.Stores
+            var storeQuery = _context.Stores
                 .Where(s => s.Building == searchDto.Building &&
                             s.Floor == searchDto.Floor &&
                             s.Line == searchDto.Line &&
-                            s.StoreNumber == searchDto.StoreNumber)
+                            s.StoreNumber == searchDto.StoreNumber);
+
+            if (searchDto.IsArchived.HasValue)
+            {
+                storeQuery = storeQuery.Where(s => s.IsArchived == searchDto.IsArchived.Value);
+                _logger.LogDebug("Применён фильтр IsArchived: {IsArchived}", searchDto.IsArchived.Value);
+            }
+
+            var store = await storeQuery
                 .Select(s => new
                 {
                     StoreId = s.Id,
@@ -42,13 +49,13 @@ namespace EmployeeManagementServer.Services
 
             if (store == null)
             {
-                _logger.LogInformation("Магазин с указанными параметрами не найден: Building={Building}, Floor={Floor}, Line={Line}, StoreNumber={StoreNumber}",
-                    searchDto.Building, searchDto.Floor, searchDto.Line, searchDto.StoreNumber);
-                throw new Exception($"Магазин с параметрами Building: {searchDto.Building}, Floor: {searchDto.Floor}, Line: {searchDto.Line}, StoreNumber: {searchDto.StoreNumber} не найден.");
+                _logger.LogInformation("Магазин с указанными параметрами не найден: Building={Building}, Floor={Floor}, Line={Line}, StoreNumber={StoreNumber}, IsArchived={IsArchived}",
+                    searchDto.Building, searchDto.Floor, searchDto.Line, searchDto.StoreNumber, searchDto.IsArchived);
+                throw new Exception($"М ascended stores not found with parameters Building: {searchDto.Building}, Floor: {searchDto.Floor}, Line: {searchDto.Line}, StoreNumber: {searchDto.StoreNumber}{(searchDto.IsArchived.HasValue ? $", IsArchived: {searchDto.IsArchived}" : "")}.");
             }
 
-            // Шаг 2: Ищем пропуска для найденного магазина
-            var storeQuery = _context.Passes
+            // Остальная часть метода остаётся без изменений
+            var storeQueryPasses = _context.Passes
                 .Include(p => p.Store)
                 .Include(p => p.PassType)
                 .Include(p => p.Contractor)
@@ -63,25 +70,25 @@ namespace EmployeeManagementServer.Services
             {
                 _logger.LogWarning("Фильтры ShowActive и ShowClosed оба false, возвращаем пустой результат.");
                 return new List<PassByStoreResponseDto>
-        {
-            new PassByStoreResponseDto
-            {
-                StoreId = store.StoreId,
-                Building = store.Building,
-                Floor = store.Floor,
-                Line = store.Line,
-                StoreNumber = store.StoreNumber,
-                Contractors = new List<ContractorPassesDto>()
-            }
-        };
+                {
+                    new PassByStoreResponseDto
+                    {
+                        StoreId = store.StoreId,
+                        Building = store.Building,
+                        Floor = store.Floor,
+                        Line = store.Line,
+                        StoreNumber = store.StoreNumber,
+                        Contractors = new List<ContractorPassesDto>()
+                    }
+                };
             }
 
             if (!showActive)
-                storeQuery = storeQuery.Where(p => p.PassStatus == "Closed");
+                storeQueryPasses = storeQueryPasses.Where(p => p.PassStatus == "Closed");
             if (!showClosed)
-                storeQuery = storeQuery.Where(p => p.PassStatus == "Active" || p.PassStatus == null && !p.IsClosed);
+                storeQueryPasses = storeQueryPasses.Where(p => p.PassStatus == "Active" || p.PassStatus == null && !p.IsClosed);
 
-            var storePasses = await storeQuery
+            var storePasses = await storeQueryPasses
                 .GroupBy(p => p.StoreId)
                 .Select(g => new
                 {
@@ -94,25 +101,23 @@ namespace EmployeeManagementServer.Services
                 })
                 .ToListAsync();
 
-            // Шаг 3: Если пропусков нет, возвращаем информацию о магазине с пустым списком Contractors
             if (!storePasses.Any())
             {
                 _logger.LogInformation("Пропусков для магазина с ID {StoreId} не найдено.", store.StoreId);
                 return new List<PassByStoreResponseDto>
-        {
-            new PassByStoreResponseDto
-            {
-                StoreId = store.StoreId,
-                Building = store.Building,
-                Floor = store.Floor,
-                Line = store.Line,
-                StoreNumber = store.StoreNumber,
-                Contractors = new List<ContractorPassesDto>()
-            }
-        };
+                {
+                    new PassByStoreResponseDto
+                    {
+                        StoreId = store.StoreId,
+                        Building = store.Building,
+                        Floor = store.Floor,
+                        Line = store.Line,
+                        StoreNumber = store.StoreNumber,
+                        Contractors = new List<ContractorPassesDto>()
+                    }
+                };
             }
 
-            // Шаг 4: Обрабатываем пропуска, если они есть
             var allContractorIds = storePasses.SelectMany(sp => sp.ContractorIds).Distinct().ToList();
             _logger.LogInformation("Найдено контрагентов на точке: {Count}", allContractorIds.Count);
 
@@ -125,15 +130,10 @@ namespace EmployeeManagementServer.Services
                 .Where(p => allContractorIds.Contains(p.ContractorId))
                 .ToListAsync();
 
-            _logger.LogInformation("Всего пропусков для ContractorId=2: {Count}", allPasses.Count(p => p.ContractorId == 2));
-            _logger.LogInformation("Активных пропусков для ContractorId=2: {Count}", allPasses.Count(p => p.ContractorId == 2 && (p.PassStatus == "Active" || (p.PassStatus == null && !p.IsClosed))));
-
             var allContractors = await _context.Contractors
                 .Include(c => c.Photos)
                 .Where(c => allContractorIds.Contains(c.Id))
                 .ToListAsync();
-
-            _logger.LogInformation("Всего пропусков для найденных контрагентов: {Count}", allPasses.Count);
 
             var result = storePasses.Select(sp => new PassByStoreResponseDto
             {

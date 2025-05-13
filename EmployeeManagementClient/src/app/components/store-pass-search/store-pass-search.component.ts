@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { BehaviorSubject, Subscription, Observable, of, forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -15,6 +15,7 @@ import { NgZone } from '@angular/core';
 
 import { PassService } from '../../services/pass.service';
 import { TransactionService } from '../../services/transaction.service';
+import { StoreService } from '../../services/store.service';
 import { SearchFilterResetService } from '../../services/search-filter-reset.service';
 import { PassByStoreResponseDto, ContractorPassesDto, PassDetailsDto } from '../../models/store-pass-search.model';
 import { Store } from '../../models/transaction.model';
@@ -45,6 +46,9 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 	showAddTransactionButton = false;
 	private readonly apiBaseUrl = 'http://localhost:8080';
 
+	// Storage for note FormControls
+	noteControls: { [resultIndex: number]: FormControl } = {};
+
 	buildingSuggestions$ = new BehaviorSubject<string[]>([]);
 	floorSuggestions$ = new BehaviorSubject<string[]>([]);
 	lineSuggestions$ = new BehaviorSubject<string[]>([]);
@@ -71,6 +75,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		private fb: FormBuilder,
 		private passService: PassService,
 		private transactionService: TransactionService,
+		private storeService: StoreService,
 		private router: Router,
 		private searchFilterResetService: SearchFilterResetService,
 		private cdr: ChangeDetectorRef,
@@ -133,7 +138,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 					});
 				});
 			},
-			{ root: null, threshold: 0.1, rootMargin: '200px' } // Use page scroll (null root)
+			{ root: null, threshold: 0.1, rootMargin: '200px' }
 		);
 
 		this.updateObservers();
@@ -177,14 +182,12 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 			}));
 			this.allContractors.push(...activeContractors, ...closedContractors);
 			this.windows[resultIndex] = { start: 0, end: this.windowSize };
-		});
-		if (environment.debug) {
-			console.log(`[PrepareContractors] Total contractors: ${this.allContractors.length}`);
-			this.results.forEach((_, resultIndex) => {
+			if (environment.debug) {
+				console.log(`[PrepareContractors] Total contractors: ${this.allContractors.length}`);
 				const count = this.allContractors.filter((c) => c.resultIndex === resultIndex).length;
 				console.log(`[PrepareContractors][${resultIndex}] Contractors: ${count}`);
-			});
-		}
+			}
+		});
 	}
 
 	public getContractorsWindowedFor(resultIndex: number): { contractor: ContractorPassesDto; isActive: boolean }[] {
@@ -232,6 +235,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		this.errorMessage = null;
 		this.showAddTransactionButton = false;
 		this.results = [];
+		this.noteControls = {};
 		this.resetVirtualScrollState();
 
 		const allFieldsConfirmed = Object.values(this.confirmedFields).every((value) => value !== null && value.trim() !== '');
@@ -256,22 +260,82 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				})
 			)
 			.subscribe((response: PassByStoreResponseDto[]) => {
-				this.results = response.map((result) => ({
-					...result,
-					contractors: (result.contractors || []).map((contractor) => ({
-						...contractor,
-						activePasses: this.getSortedPasses(contractor.activePasses, result),
-						closedPasses: this.getSortedPasses(contractor.closedPasses, result),
-					})),
-				}));
+				const nonArchivedResults = response.filter(result => !result.isArchived);
+				if (nonArchivedResults.length === 0 && response.length > 0) {
+					this.errorMessage = 'Торговая точка не существует';
+					this.results = [];
+				} else {
+					this.results = nonArchivedResults.map((result) => ({
+						...result,
+						contractors: (result.contractors || []).map((contractor) => ({
+							...contractor,
+							activePasses: this.getSortedPasses(contractor.activePasses, result),
+							closedPasses: this.getSortedPasses(contractor.closedPasses, result),
+						})),
+					}));
+					this.results.forEach((result, index) => {
+						this.noteControls[index] = this.fb.control(result.note || '');
+					});
+				}
 				this.isLoading = false;
 				this.saveSearchCriteria();
 				this.panelStates = {};
-				this.showAddTransactionButton = true;
+				this.showAddTransactionButton = this.results.length > 0;
 				this.prepareContractorsForVirtualScroll();
 				setTimeout(() => this.updateObservers(), 100);
 				this.cdr.markForCheck();
 			});
+	}
+
+	saveNote(resultIndex: number): void {
+		const result = this.results[resultIndex];
+		if (!result.storeId) {
+			this.errorMessage = 'ID торговой точки не определён';
+			return;
+		}
+		const note = this.noteControls[resultIndex].value?.trim() || null;
+		this.isLoading = true;
+		this.errorMessage = null;
+
+		this.storeService.updateStore(result.storeId.toString(), { note }).subscribe({
+			next: (updatedStore) => {
+				// Convert undefined to null to match PassByStoreResponseDto.note type
+				this.results[resultIndex].note = updatedStore.note ?? null;
+				this.noteControls[resultIndex].setValue(updatedStore.note ?? '');
+				this.isLoading = false;
+				this.cdr.markForCheck();
+			},
+			error: (err) => {
+				this.errorMessage = 'Ошибка при сохранении заметки: ' + (err.message || 'Неизвестная ошибка');
+				this.isLoading = false;
+				this.cdr.markForCheck();
+			}
+		});
+	}
+
+	deleteNote(resultIndex: number): void {
+		const result = this.results[resultIndex];
+		if (!result.storeId) {
+			this.errorMessage = 'ID торговой точки не определён';
+			return;
+		}
+		this.isLoading = true;
+		this.errorMessage = null;
+
+		this.storeService.updateStore(result.storeId.toString(), { note: null }).subscribe({
+			next: (updatedStore) => {
+				// Convert undefined to null to match PassByStoreResponseDto.note type
+				this.results[resultIndex].note = updatedStore.note ?? null;
+				this.noteControls[resultIndex].setValue(updatedStore.note ?? '');
+				this.isLoading = false;
+				this.cdr.markForCheck();
+			},
+			error: (err) => {
+				this.errorMessage = 'Ошибка при удалении заметки: ' + (err.message || 'Неизвестная ошибка');
+				this.isLoading = false;
+				this.cdr.markForCheck();
+			}
+		});
 	}
 
 	resetFilters(): void {
@@ -280,6 +344,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		localStorage.removeItem('storeSearchCriteria');
 		this.results = [];
 		this.errorMessage = null;
+		this.noteControls = {};
 		this.buildingSuggestions$.next([]);
 		this.floorSuggestions$.next([]);
 		this.lineSuggestions$.next([]);
@@ -494,7 +559,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				const message = err?.error?.message || err?.message || 'Неизвестная ошибка сервера';
 				this.errorMessage = `Ошибка при загрузке данных для продления: ${message}`;
 				this.isLoading = false;
-			},
+			}
 		});
 	}
 
@@ -512,7 +577,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				} else {
 					this.errorMessage = 'Ошибка закрытия пропуска';
 				}
-			},
+			}
 		});
 	}
 
@@ -573,7 +638,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 					}
 					this.router.navigate(['/transactions/create'], { state: { store } });
 					this.cdr.markForCheck();
-				},
+				}
 			});
 	}
 

@@ -7,6 +7,7 @@ namespace EmployeeManagementServer.Services
 {
     public interface IStoreSearchService
     {
-        Task<List<Store>> SearchStoresAsync(StoreSearchDto searchDto);
+        Task<List<Store>> SearchStoresAsync(StoreSearchDto searchDto, int page, int pageSize);
+        Task<int> GetTotalStoresCountAsync(StoreSearchDto searchDto);
     }
 }

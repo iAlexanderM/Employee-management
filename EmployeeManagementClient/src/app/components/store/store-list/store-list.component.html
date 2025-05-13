@@ -92,10 +92,21 @@
 					</div>
 				</div>
 			</div>
+
+			<div class="col-md-2">
+				<label for="Status" class="form-label">Статус:</label>
+				<select id="Status" formControlName="Status" class="form-control">
+					<option value="active">Активные</option>
+					<option value="archived">Архивные</option>
+				</select>
+			</div>
 		</div>
 
 		<div class="row mt-3">
-			<div class="col-md-12 text-end">
+			<div class="col-md-6">
+				<!-- Удалён чекбокс showArchivedOnly -->
+			</div>
+			<div class="col-md-6 text-end">
 				<button type="submit" class="btn btn-primary btn-equal">Найти</button>
 				<button type="button" class="btn btn-secondary btn-equal" (click)="resetFilters()">
 					Сбросить
@@ -138,6 +149,8 @@
 				<th>Этаж</th>
 				<th>Линия</th>
 				<th>Торговая точка</th>
+				<th>Заметка</th>
+				<th>Статус</th>
 				<th>Действия</th>
 			</tr>
 		</thead>
@@ -149,12 +162,22 @@
 				<td>{{ store.floor }}</td>
 				<td>{{ store.line }}</td>
 				<td>{{ store.storeNumber }}</td>
+				<td>{{ store.note || 'Нет заметки' }}</td>
+				<td>{{ store.isArchived ? 'Архивировано' : 'Активно' }}</td>
 				<td>
 					<button class="btn btn-info btn-sm btn-equal" (click)="viewStoreDetails(store.id)">
 						Просмотреть
 					</button>
 					<button class="btn btn-secondary btn-sm btn-equal" (click)="editStore(store.id)">
 						Редактировать
+					</button>
+					<button *ngIf="!store.isArchived" class="btn btn-danger btn-sm btn-equal"
+						(click)="archiveStore(store.id)">
+						Архивировать
+					</button>
+					<button *ngIf="store.isArchived" class="btn btn-success btn-sm btn-equal"
+						(click)="unarchiveStore(store.id)">
+						Разархивировать
 					</button>
 				</td>
 			</tr>

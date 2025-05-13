@@ -110,6 +110,25 @@
 					<div class="table-container">
 						<div *ngFor="let result of results; let resultIndex = index" class="mb-4"
 							[attr.data-result-index]="resultIndex">
+							<!-- Added: Note section -->
+							<div class="mb-3">
+								<mat-form-field appearance="outline" class="w-100">
+									<mat-label>Заметка для {{ formatStore(result) }}</mat-label>
+									<input matInput [formControl]="noteControls[resultIndex]"
+										placeholder="Введите заметку" />
+								</mat-form-field>
+								<div class="d-flex gap-2 mt-2">
+									<button mat-raised-button color="primary" (click)="saveNote(resultIndex)"
+										[disabled]="isLoading">
+										Сохранить заметку
+									</button>
+									<button mat-stroked-button color="warn" (click)="deleteNote(resultIndex)"
+										[disabled]="isLoading || !result.note">
+										Удалить заметку
+									</button>
+								</div>
+							</div>
+
 							<ng-container
 								*ngFor="let item of getContractorsWindowedFor(resultIndex); let i = index; trackBy: trackByFn">
 								<table class="table table-bordered contractor-table"
@@ -244,8 +263,8 @@
 																	<td>{{ pass.passTypeDurationInMonths + ' мес.' }}
 																	</td>
 																	<td>{{ pass.cost | number: '1.0-0' }}</td>
-																	<td>{{ pass.transactionDate | date: 'dd.MM_e.g.,
-																		yyyy' }}</td>
+																	<td>{{ pass.transactionDate | date: 'dd.MM.yyyy' }}
+																	</td>
 																	<td>{{ pass.startDate | date: 'dd.MM.yyyy' }}</td>
 																	<td>{{ pass.endDate | date: 'dd.MM.yyyy' }}</td>
 																	<td>{{ pass.building }} {{ pass.floor }} {{

@@ -1,17 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using EmployeeManagementServer.Models;
+using EmployeeManagementServer.Models.DTOs;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using EmployeeManagementServer.Models;
 
 namespace EmployeeManagementServer.Services
 {
     public interface IStoreService
     {
-        Task<int> GetTotalStoresCountAsync(string building, string floor, string line, string storeNumber);
-        Task<List<Store>> GetAllStoresAsync(int skip, int pageSize, string building, string floor, string line, string storeNumber);
-        Task<Store> GetStoreByIdAsync(int id);
-        Task<Store> AddStoreAsync(Store store);
-        Task<bool?> UpdateStoreAsync(int id, string newBuilding, string newFloor, string newLine, string newStoreNumber, int? sortOrder);
-        Task<bool> ArchiveStoreAsync(int id);
-        Task<bool> UnarchiveStoreAsync(int id);
+        Task SaveChangesAsync();
+        Task<int> GetTotalStoresCountAsync(string? building, string? floor, string? line, string? storeNumber);
+        Task<List<Store>> GetAllStoresAsync(int skip, int pageSize, string? building, string? floor, string? line, string? storeNumber);
+        Task<Store?> GetStoreByIdAsync(int id);
+        Task<Store?> AddStoreAsync(Store store, string? createdBy = null);
+        Task<bool?> UpdateStoreAsync(int id, string? newBuilding, string? newFloor, string? newLine, string? newStoreNumber, int? sortOrder, string? note, string? updatedBy = null);
+        Task ArchiveStoreAsync(int id, string? archivedBy = null);
+        Task UnarchiveStoreAsync(int id, string? unarchivedBy = null);
+        Task UpdateStoreNoteAsync(int id, string? note, string? updatedBy = null);
     }
 }

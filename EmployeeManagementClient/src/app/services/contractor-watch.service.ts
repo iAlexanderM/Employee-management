@@ -1,58 +1,121 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
-import { Contractor } from '../models/contractor.model';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { Contractor, ContractorDto } from '../models/contractor.model';
 
 @Injectable({
-	providedIn: 'root'
+	providedIn: 'root',
 })
 export class ContractorWatchService {
-	private apiUrl = 'http://localhost:8080/api';
+	private apiUrl = 'http://localhost:8080/api/contractors'; // Ensure this matches your backend
 
 	constructor(private http: HttpClient) { }
 
-	getContractors(params: { page: number; pageSize: number }): Observable<any> {
+	getContractors(params: { Page: number; PageSize: number; IsArchived?: boolean }): Observable<{ Contractors: Contractor[]; Total: number }> {
 		let httpParams = new HttpParams()
-			.set('page', params.page)
-			.set('pageSize', params.pageSize);
+			.set('page', params.Page.toString())
+			.set('pageSize', params.PageSize.toString());
 
-		return this.http.get('/api/contractors', { params: httpParams }).pipe(
-			catchError(error => {
+		if (params.IsArchived !== undefined) {
+			httpParams = httpParams.set('isArchived', params.IsArchived.toString());
+		}
+
+		return this.http.get<{ contractors: Contractor[]; total: number }>(this.apiUrl, { params: httpParams }).pipe(
+			map((response) => ({
+				Contractors: response.contractors,
+				Total: response.total,
+			})),
+			catchError((error) => {
 				console.error('Ошибка при получении контрагентов:', error);
-				return of({ contractors: [], total: 0 }); // Возвращаем пустые данные в случае ошибки
+				return of({ Contractors: [], Total: 0 });
 			})
 		);
 	}
 
-	searchContractors(params: any): Observable<{ contractors: Contractor[]; total: number }> {
-		const httpParams = new HttpParams({ fromObject: params });
-		return this.http.get<any>(`${this.apiUrl}/searchcontractors/search`, { params: httpParams }).pipe(
-			map(response => {
-				if (Array.isArray(response)) {
-					// Сервер возвращает просто массив контрагентов
-					return { contractors: response, total: response.length };
-				} else if (response && Array.isArray(response.contractors)) {
-					// Сервер возвращает объект с полями contractors и total
-					return { contractors: response.contractors, total: response.total || response.contractors.length };
-				} else {
-					// Неизвестный формат ответа
-					console.error('Неизвестный формат ответа при поиске:', response);
-					return { contractors: [], total: 0 };
-				}
-			}),
-			catchError(error => {
-				console.error('Ошибка поиска:', error);
-				return of({ contractors: [], total: 0 });
+	searchContractors(filters: { [key: string]: any }): Observable<{ Contractors: Contractor[]; Total: number }> {
+		let params = new HttpParams();
+		Object.keys(filters).forEach((key) => {
+			if (filters[key] !== undefined && filters[key] !== null) {
+				params = params.set(key, filters[key].toString());
+			}
+		});
+
+		return this.http.get<{ contractors: Contractor[]; total: number }>(`${this.apiUrl}/search`, { params }).pipe(
+			map((response) => ({
+				Contractors: response.contractors,
+				Total: response.total,
+			})),
+			catchError((error) => {
+				console.error('Ошибка при поиске контрагентов:', error);
+				return of({ Contractors: [], Total: 0 });
 			})
 		);
 	}
 
-	getContractorById(id: string): Observable<Contractor> {
-		return this.http.get<Contractor>(`/api/contractors/${id}`);
+	getContractor(id: string): Observable<Contractor> {
+		return this.http.get<Contractor>(`${this.apiUrl}/${id}`).pipe(
+			catchError((error) => {
+				console.error('Ошибка при получении контрагента:', error);
+				throw error;
+			})
+		);
 	}
 
-	archiveContractor(id: string): Observable<void> {
-		return this.http.post<void>(`/contractors/${id}/archive`, {});
+	archiveContractor(id: number): Observable<ContractorDto> {
+		const headers = new HttpHeaders({
+			Authorization: `Bearer ${localStorage.getItem('token')}`,
+			'Content-Type': 'application/json',
+		});
+		const body = { isArchived: true };
+		return this.http.put<ContractorDto>(`${this.apiUrl}/${id}/archive`, body, { headers }).pipe(
+			catchError((err) => {
+				console.error('Ошибка при архивировании контрагента:', err);
+				const errorMessage = err.error?.message || err.message || 'Неизвестная ошибка при архивировании';
+				return throwError(() => new Error(errorMessage));
+			})
+		);
+	}
+
+	unarchiveContractor(id: number): Observable<void> {
+		const headers = new HttpHeaders({
+			Authorization: `Bearer ${localStorage.getItem('token')}`,
+			'Content-Type': 'application/json',
+		});
+		return this.http.put<void>(`${this.apiUrl}/${id}/unarchive`, {}, { headers }).pipe(
+			catchError((error) => {
+				console.error('Ошибка при разархивировании контрагента:', error);
+				const errorMessage = error.error?.message || error.message || 'Неизвестная ошибка при разархивировании';
+				return throwError(() => new Error(errorMessage));
+			})
+		);
+	}
+
+	updateContractor(id: string, contractor: Partial<Contractor>): Observable<Contractor> {
+		const headers = new HttpHeaders({
+			Authorization: `Bearer ${localStorage.getItem('token')}`,
+			'Content-Type': 'application/json',
+		});
+		return this.http.put<Contractor>(`${this.apiUrl}/${id}`, contractor, { headers }).pipe(
+			catchError((error) => {
+				console.error('Ошибка при обновлении контрагента:', error);
+				const errorMessage = error.error?.message || error.message || 'Неизвестная ошибка при обновлении';
+				return throwError(() => new Error(errorMessage));
+			})
+		);
+	}
+
+	updateNote(id: string, note: string): Observable<void> {
+		const headers = new HttpHeaders({
+			Authorization: `Bearer ${localStorage.getItem('token')}`,
+			'Content-Type': 'application/json',
+		});
+		return this.http.put<void>(`${this.apiUrl}/${id}/note`, { note }, { headers }).pipe(
+			catchError((error) => {
+				console.error('Ошибка при обновлении заметки:', error);
+				const errorMessage = error.error?.message || error.message || 'Неизвестная ошибка при обновлении заметки';
+				return throwError(() => new Error(errorMessage));
+			})
+		);
 	}
 }

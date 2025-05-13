@@ -1,14 +1,27 @@
 <div class="container mt-4">
 	<form [formGroup]="contractorForm" (ngSubmit)="saveChanges()">
-		<!-- Поля формы для редактирования контрагента -->
+		<div *ngIf="errorMessage" class="alert alert-danger">
+			<p>{{ errorMessage }}</p>
+		</div>
+
 		<div class="form-group">
 			<label for="firstName">Имя:</label>
-			<input id="firstName" formControlName="FirstName" class="form-control" type="text" />
+			<input id="firstName" formControlName="FirstName" class="form-control" type="text"
+				[ngClass]="{'is-invalid': contractorForm.get('FirstName')?.invalid && contractorForm.get('FirstName')?.touched}" />
+			<div *ngIf="contractorForm.get('FirstName')?.invalid && contractorForm.get('FirstName')?.touched"
+				class="invalid-feedback">
+				Имя обязательно.
+			</div>
 		</div>
 
 		<div class="form-group">
 			<label for="lastName">Фамилия:</label>
-			<input id="lastName" formControlName="LastName" class="form-control" type="text" />
+			<input id="lastName" formControlName="LastName" class="form-control" type="text"
+				[ngClass]="{'is-invalid': contractorForm.get('LastName')?.invalid && contractorForm.get('LastName')?.touched}" />
+			<div *ngIf="contractorForm.get('LastName')?.invalid && contractorForm.get('LastName')?.touched"
+				class="invalid-feedback">
+				Фамилия обязательна.
+			</div>
 		</div>
 
 		<div class="form-group">
@@ -18,33 +31,58 @@
 
 		<div class="form-group">
 			<label for="birthDate">Дата рождения:</label>
-			<input id="birthDate" formControlName="BirthDate" class="form-control" type="date" />
+			<input id="birthDate" formControlName="BirthDate" class="form-control" type="date"
+				[ngClass]="{'is-invalid': contractorForm.get('BirthDate')?.invalid && contractorForm.get('BirthDate')?.touched}" />
+			<div *ngIf="contractorForm.get('BirthDate')?.invalid && contractorForm.get('BirthDate')?.touched"
+				class="invalid-feedback">
+				Дата рождения обязательна.
+			</div>
 		</div>
 
 		<div class="form-group">
 			<label for="documentType">Тип документа:</label>
-			<select id="documentType" formControlName="DocumentType" class="form-control">
+			<select id="documentType" formControlName="DocumentType" class="form-control"
+				[ngClass]="{'is-invalid': contractorForm.get('DocumentType')?.invalid && contractorForm.get('DocumentType')?.touched}">
 				<option value="" disabled selected>Выберите тип документа</option>
 				<option value="Паспорт">Паспорт</option>
 				<option value="Водительское удостоверение">Водительское удостоверение</option>
 				<option value="Идентификационная карта">Идентификационная карта</option>
 				<option value="Вид на жительство">Вид на жительство</option>
 			</select>
+			<div *ngIf="contractorForm.get('DocumentType')?.invalid && contractorForm.get('DocumentType')?.touched"
+				class="invalid-feedback">
+				Тип документа обязателен.
+			</div>
 		</div>
 
 		<div class="form-group">
 			<label for="passportSerialNumber">Серия и номер паспорта:</label>
-			<input id="passportSerialNumber" formControlName="PassportSerialNumber" class="form-control" type="text" />
+			<input id="passportSerialNumber" formControlName="PassportSerialNumber" class="form-control" type="text"
+				[ngClass]="{'is-invalid': contractorForm.get('PassportSerialNumber')?.invalid && contractorForm.get('PassportSerialNumber')?.touched}" />
+			<div *ngIf="contractorForm.get('PassportSerialNumber')?.invalid && contractorForm.get('PassportSerialNumber')?.touched"
+				class="invalid-feedback">
+				Серия и номер паспорта обязательны.
+			</div>
 		</div>
 
 		<div class="form-group">
 			<label for="passportIssuedBy">Кем выдан:</label>
-			<input id="passportIssuedBy" formControlName="PassportIssuedBy" class="form-control" type="text" />
+			<input id="passportIssuedBy" formControlName="PassportIssuedBy" class="form-control" type="text"
+				[ngClass]="{'is-invalid': contractorForm.get('PassportIssuedBy')?.invalid && contractorForm.get('PassportIssuedBy')?.touched}" />
+			<div *ngIf="contractorForm.get('PassportIssuedBy')?.invalid && contractorForm.get('PassportIssuedBy')?.touched"
+				class="invalid-feedback">
+				Поле "Кем выдан" обязательно.
+			</div>
 		</div>
 
 		<div class="form-group">
 			<label for="passportIssueDate">Дата выдачи:</label>
-			<input id="passportIssueDate" formControlName="PassportIssueDate" class="form-control" type="date" />
+			<input id="passportIssueDate" formControlName="PassportIssueDate" class="form-control" type="date"
+				[ngClass]="{'is-invalid': contractorForm.get('PassportIssueDate')?.invalid && contractorForm.get('PassportIssueDate')?.touched}" />
+			<div *ngIf="contractorForm.get('PassportIssueDate')?.invalid && contractorForm.get('PassportIssueDate')?.touched"
+				class="invalid-feedback">
+				Дата выдачи обязательна.
+			</div>
 		</div>
 
 		<div class="form-group">
@@ -55,7 +93,12 @@
 				<button type="button" class="btn btn-secondary"
 					(click)="openModal('Citizenship', 'add')">Добавить</button>
 			</div>
-			<input id="citizenship" formControlName="Citizenship" class="form-control" type="text" readonly />
+			<input id="citizenship" formControlName="Citizenship" class="form-control" type="text" readonly
+				[ngClass]="{'is-invalid': contractorForm.get('Citizenship')?.invalid && contractorForm.get('Citizenship')?.touched}" />
+			<div *ngIf="contractorForm.get('Citizenship')?.invalid && contractorForm.get('Citizenship')?.touched"
+				class="invalid-feedback">
+				Гражданство обязательно.
+			</div>
 		</div>
 
 		<div class="form-group">
@@ -66,28 +109,37 @@
 				<button type="button" class="btn btn-secondary"
 					(click)="openModal('Nationality', 'add')">Добавить</button>
 			</div>
-			<input id="nationality" formControlName="Nationality" class="form-control" type="text" readonly />
+			<input id="nationality" formControlName="Nationality" class="form-control" type="text" readonly
+				[ngClass]="{'is-invalid': contractorForm.get('Nationality')?.invalid && contractorForm.get('Nationality')?.touched}" />
+			<div *ngIf="contractorForm.get('Nationality')?.invalid && contractorForm.get('Nationality')?.touched"
+				class="invalid-feedback">
+				Национальность обязательна.
+			</div>
 		</div>
 
+		<!-- Модальный компонент -->
 		<app-citizenship-and-nationality-modal *ngIf="isModalOpen" [fieldName]="modalField" [mode]="modalMode"
 			[type]="modalField === 'Citizenship' ? 'citizenship' : 'nationality'" (modalClose)="closeModal()"
 			(itemSelected)="selectItem($event)" (itemAdded)="addItem($event)"></app-citizenship-and-nationality-modal>
 
 		<div class="form-group">
 			<label for="productType">Тип продукции:</label>
-			<input id="productType" formControlName="ProductType" class="form-control" type="text" />
+			<input id="productType" formControlName="ProductType" class="form-control" type="text"
+				[ngClass]="{'is-invalid': contractorForm.get('ProductType')?.invalid && contractorForm.get('ProductType')?.touched}" />
+			<div *ngIf="contractorForm.get('ProductType')?.invalid && contractorForm.get('ProductType')?.touched"
+				class="invalid-feedback">
+				Тип продукции обязателен.
+			</div>
 		</div>
 
 		<div class="form-group">
 			<label for="phoneNumber">Номер телефона:</label>
 			<input id="phoneNumber" formControlName="PhoneNumber" class="form-control" type="text"
-				mask="0 (000) 000-00-00" placeholder="8 (___) ___-__-__" />
-		</div>
-
-		<div class="form-group">
-			<label for="isArchived">Архивировать:</label>
-			<div class="form-check">
-				<input id="isArchived" type="checkbox" class="form-check-input" />
+				mask="0 (000) 000-00-00" placeholder="8 (___) ___-__-__"
+				[ngClass]="{'is-invalid': contractorForm.get('PhoneNumber')?.invalid && contractorForm.get('PhoneNumber')?.touched}" />
+			<div *ngIf="contractorForm.get('PhoneNumber')?.invalid && contractorForm.get('PhoneNumber')?.touched"
+				class="invalid-feedback">
+				Номер телефона обязателен.
 			</div>
 		</div>
 
@@ -96,7 +148,6 @@
 			<input id="sortOrder" formControlName="SortOrder" class="form-control" type="number" />
 		</div>
 
-		<!-- Обычные фотографии -->
 		<div class="form-group">
 			<label for="Photos">Фотографии:</label>
 			<input id="Photos" type="file" (change)="onPhotoChange($event, false)" multiple class="form-control" />
@@ -128,7 +179,6 @@
 			</div>
 		</div>
 
-		<!-- Кнопки сохранения и отмены -->
 		<div class="form-group mt-4">
 			<button type="submit" class="btn btn-primary" [disabled]="contractorForm.invalid">Сохранить</button>
 			<button type="button" class="btn btn-secondary" (click)="router.navigate(['/contractors'])">Отмена</button>

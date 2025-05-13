@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EmployeeManagementServer.Models;
 using EmployeeManagementServer.Models.DTOs;
+using System.Text.Json;
 
 namespace EmployeeManagementServer.Mappings
 {
@@ -18,16 +19,11 @@ namespace EmployeeManagementServer.Mappings
                 .ForMember(dest => dest.DocumentPhotos, opt => opt.Ignore())
                 .ForMember(dest => dest.PhotosToRemove, opt => opt.Ignore())
                 .ForMember(dest => dest.DocumentPhotosToRemove, opt => opt.Ignore())
-                .ForMember(dest => dest.ActivePasses, opt => opt.Ignore())
-                .ForMember(dest => dest.ClosedPasses, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.SortOrder, opt => opt.MapFrom(src => src.SortOrder))
-                .ForMember(dest => dest.History, opt => opt.Ignore());
-
-            CreateMap<ContractorDto, Contractor>()
+                .ReverseMap()
                 .ForMember(dest => dest.Photos, opt => opt.Ignore())
                 .ForMember(dest => dest.Passes, opt => opt.Ignore())
-                .ForMember(dest => dest.History, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
 
             CreateMap<Floor, FloorDto>()
@@ -53,11 +49,14 @@ namespace EmployeeManagementServer.Mappings
             CreateMap<Nationality, NationalityDto>().ReverseMap();
             CreateMap<Citizenship, CitizenshipDto>().ReverseMap();
             CreateMap<Position, PositionDto>().ReverseMap();
-            CreateMap<ContractorHistory, ContractorHistoryDto>().ReverseMap();
 
-            CreateMap<Pass, PassDetailsDto>()
-                .ForMember(dest => dest.PassTypeName, opt => opt.MapFrom(src => src.PassType != null ? src.PassType.Name : "Unknown"))
-                .ForMember(dest => dest.ContractorName, opt => opt.Ignore());
+            CreateMap<History, HistoryDto>()
+                .ForMember(dest => dest.Changes, opt => opt.MapFrom(src => HistoryMappingHelper.DeserializeChanges(src.ChangesJson)))
+                .ForMember(dest => dest.ChangedBy, opt => opt.NullSubstitute("Unknown"));
+
+            CreateMap<HistoryDto, History>()
+                .ForMember(dest => dest.ChangesJson, opt => opt.MapFrom(src => HistoryMappingHelper.SerializeChanges(src.Changes)))
+                .ForMember(dest => dest.ChangedBy, opt => opt.NullSubstitute("Unknown"));
         }
     }
 }

@@ -42,5 +42,7 @@ export interface PassByStoreResponseDto {
 	floor: string;
 	line: string;
 	storeNumber: string;
+	isArchived: boolean;
+	note: string | null;
 	contractors: ContractorPassesDto[];
 }

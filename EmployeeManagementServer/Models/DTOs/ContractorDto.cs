@@ -53,12 +53,11 @@ namespace EmployeeManagementServer.Models.DTOs
         public List<int> DocumentPhotosToRemove { get; set; } = new List<int>();
 
         public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
 
         public int? SortOrder { get; set; }
 
         public List<PassDetailsDto> ActivePasses { get; set; } = new List<PassDetailsDto>();
         public List<PassDetailsDto> ClosedPasses { get; set; } = new List<PassDetailsDto>();
-
-        public List<ContractorHistoryDto> History { get; set; } = new List<ContractorHistoryDto>();
     }
 }

@@ -22,9 +22,8 @@ namespace EmployeeManagementServer.Models
         public string? Note { get; set; }
         public int? SortOrder { get; set; }
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
-
+        public DateTime UpdateddAt { get; private set; } = DateTime.UtcNow;
         public ICollection<ContractorPhoto> Photos { get; set; } = new List<ContractorPhoto>();
         public ICollection<Pass> Passes { get; set; } = new List<Pass>();
-        public ICollection<ContractorHistory> History { get; set; } = new List<ContractorHistory>();
     }
 }

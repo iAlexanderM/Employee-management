@@ -1,38 +1,50 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using EmployeeManagementServer.Services;
-using System;
 using EmployeeManagementServer.Models.DTOs;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
+using Microsoft.Extensions.Logging;
 
 namespace EmployeeManagementServer.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class SearchStoresController : ControllerBase
     {
-        private readonly IStoreSearchService _searchService;
+        private readonly IStoreSearchService _storeSearchService;
+        private readonly IMapper _mapper;
+        private readonly ILogger<SearchStoresController> _logger;
 
-        public SearchStoresController(IStoreSearchService searchService)
+        public SearchStoresController(
+            IStoreSearchService storeSearchService,
+            IMapper mapper,
+            ILogger<SearchStoresController> logger)
         {
-            _searchService = searchService;
+            _storeSearchService = storeSearchService;
+            _mapper = mapper;
+            _logger = logger;
         }
 
-        [HttpGet("search")]
-        public async Task<IActionResult> SearchStores([FromQuery] StoreSearchDto searchDto)
+        [HttpGet]
+        public async Task<IActionResult> SearchStores(
+            [FromQuery] StoreSearchDto searchDto,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 25)
         {
-            try
+            if (page < 1 || pageSize < 1)
             {
-                searchDto.Normalize();
+                return BadRequest("Параметры страницы и размера должны быть больше нуля.");
+            }
 
-                var stores = await _searchService.SearchStoresAsync(searchDto);
-                return Ok(stores);
-            }
-            catch (Exception ex)
+            var stores = await _storeSearchService.SearchStoresAsync(searchDto, page, pageSize);
+            var total = await _storeSearchService.GetTotalStoresCountAsync(searchDto);
+            var storeDtos = _mapper.Map<List<StoreDto>>(stores);
+
+            return Ok(new
             {
-                return StatusCode(500, $"Ошибка при выполнении поиска: {ex.Message}");
-            }
+                total,
+                stores = storeDtos
+            });
         }
     }
 }

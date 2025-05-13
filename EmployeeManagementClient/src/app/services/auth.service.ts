@@ -14,7 +14,7 @@ export class AuthService {
 	private tokenExpiryCheckTimer: Subscription | null = null;
 	private readonly maxInactivityDuration = 30 * 60 * 1000; // 30 минут
 	private readonly refreshThreshold = 10 * 60 * 1000; // 10 минут
-	private isLoggingOut = false; // Флаг для предотвращения повторных вызовов
+	private isLoggingOut = false;
 
 	public activeTokenCheck$ = new Subject<void>();
 
@@ -86,7 +86,6 @@ export class AuthService {
 			},
 			error: (err) => {
 				console.error('Ошибка при выходе из системы:', err);
-				// Очищаем токены и перенаправляем даже при ошибке
 				this.cleanupAfterLogout();
 			}
 		});
@@ -218,5 +217,17 @@ export class AuthService {
 	hasRole(role: string): boolean {
 		const userRoles = this.getUserRoles();
 		return userRoles.includes(role);
+	}
+
+	getCurrentUser(): string | null {
+		const token = this.tokenService.getToken();
+		if (!token) return null;
+		try {
+			const payload = JSON.parse(atob(token.split('.')[1]));
+			return payload.sub || payload.name || null;
+		} catch (e) {
+			console.error('Ошибка при получении имени пользователя из токена:', e);
+			return null;
+		}
 	}
 }

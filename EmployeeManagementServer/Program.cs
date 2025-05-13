@@ -21,6 +21,7 @@ using System.Reflection;
 using EmployeeManagementServer.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,11 +41,11 @@ builder.Services.AddDataProtection()
 // Настройка Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    options.Password.RequireDigit = false; 
-    options.Password.RequiredLength = 2; 
-    options.Password.RequireNonAlphanumeric = false; 
-    options.Password.RequireUppercase = false; 
-    options.Password.RequireLowercase = false; 
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 2;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
@@ -149,6 +150,7 @@ builder.Services.AddScoped<CitizenshipService>();
 builder.Services.AddScoped<PositionService>();
 builder.Services.AddScoped<SuggestionsService>();
 builder.Services.AddScoped<JwtPassTokenService>();
+builder.Services.AddScoped<IHistoryService, HistoryService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -202,6 +204,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });

@@ -56,12 +56,14 @@ export class PrintPassComponent implements OnInit {
 		try {
 			const contractors = await Promise.all(
 				contractorIds.map(id =>
-					firstValueFrom(this.contractorService.getContractorById(id.toString()))
+					firstValueFrom(this.contractorService.getContractor(id.toString())) // Changed from getContractorById to getContractor
 				)
 			);
 			const contractorMap = new Map<number, Contractor>();
 			contractors.forEach(c => {
-				if (c) contractorMap.set(c.id, c);
+				if (c && 'id' in c) { // Check if c is a valid Contractor with an id
+					contractorMap.set(c.id, c as Contractor);
+				}
 			});
 			console.log('Загруженные контрагенты:', contractorMap); // Отладка
 			this.preparePrintContents(contractorMap);
