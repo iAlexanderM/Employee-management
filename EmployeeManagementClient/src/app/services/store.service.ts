@@ -1,21 +1,34 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
-import { Store, StoreDto } from '../models/store.model';
 import { map, catchError } from 'rxjs/operators';
+import { Store, StoreDto } from '../models/store.model';
 
 @Injectable({
 	providedIn: 'root',
 })
 export class StoreService {
 	private baseApiUrl = 'http://localhost:8080/api';
-	private storesApiUrl = `${this.baseApiUrl}/store`;
+	private storesApiUrl = `${this.baseApiUrl}/Store`;
 	private searchApiUrl = `${this.baseApiUrl}/SearchStores`;
 	private suggestionsApiUrl = `${this.baseApiUrl}/suggestions`;
+	private suggestionCache: { [key: string]: string[] } = {};
 
 	constructor(private http: HttpClient) { }
 
-	getStores(page: number = 1, pageSize: number = 25, filters: { [key: string]: any } = {}): Observable<any> {
+	private getAuthHeaders(): HttpHeaders {
+		const token = localStorage.getItem('token');
+		return new HttpHeaders({
+			Authorization: token ? `Bearer ${token}` : '',
+			'Content-Type': 'application/json',
+		});
+	}
+
+	clearSuggestionCache(): void {
+		this.suggestionCache = {};
+	}
+
+	getStores(page: number = 1, pageSize: number = 25, filters: { [key: string]: any } = {}): Observable<{ total: number; stores: Store[] }> {
 		let params = new HttpParams()
 			.set('page', page.toString())
 			.set('pageSize', pageSize.toString());
@@ -26,16 +39,13 @@ export class StoreService {
 			}
 		});
 
-		return this.http.get<any>(`${this.storesApiUrl}`, { params }).pipe(
-			map((response) => {
-				const stores = response.stores || [];
-				return {
-					total: response.total || 0,
-					stores: stores.map(this.mapStoreDtoToStore),
-				};
-			}),
+		return this.http.get<any>(this.storesApiUrl, { params, headers: this.getAuthHeaders() }).pipe(
+			map((response) => ({
+				total: response.total || 0,
+				stores: (response.stores || []).map((dto: any) => this.mapStoreDtoToStore(dto)),
+			})),
 			catchError((error) => {
-				console.error('Error fetching stores:', error);
+				console.error('Ошибка при получении магазинов:', error);
 				return of({ total: 0, stores: [] });
 			})
 		);
@@ -50,119 +60,137 @@ export class StoreService {
 			}
 		});
 
-		return this.http.get<StoreDto[]>(`${this.searchApiUrl}/search`, { params }).pipe(
-			map((stores) => stores.map(this.mapStoreDtoToStore)),
+		return this.http.get<StoreDto[]>(`${this.searchApiUrl}/search`, { params, headers: this.getAuthHeaders() }).pipe(
+			map((stores) => stores.map((dto) => this.mapStoreDtoToStore(dto))),
 			catchError((error) => {
-				console.error('Error searching stores:', error);
+				console.error('Ошибка при поиске магазинов:', error);
 				return of([]);
 			})
 		);
 	}
 
 	getStoreById(id: number): Observable<Store> {
-		return this.http.get<StoreDto>(`${this.storesApiUrl}/${id}`).pipe(
-			map(this.mapStoreDtoToStore),
+		return this.http.get<StoreDto>(`${this.storesApiUrl}/${id}`, { headers: this.getAuthHeaders() }).pipe(
+			map((dto) => this.mapStoreDtoToStore(dto)),
 			catchError((error) => {
-				console.error('Error fetching store:', error);
-				throw error;
+				console.error('Ошибка при получении магазина:', error);
+				return throwError(() => new Error(error.message || 'Не удалось получить магазин'));
 			})
 		);
 	}
 
 	createStore(store: Store): Observable<Store> {
-		return this.http.post<StoreDto>(`${this.storesApiUrl}`, store).pipe(
-			map(this.mapStoreDtoToStore),
+		return this.http.post<StoreDto>(this.storesApiUrl, store, { headers: this.getAuthHeaders() }).pipe(
+			map((dto) => this.mapStoreDtoToStore(dto)),
 			catchError((error) => {
-				console.error('Error creating store:', error);
-				throw error;
+				console.error('Ошибка при создании магазина:', error);
+				return throwError(() => new Error(error.message || 'Не удалось создать магазин'));
+			})
+		);
+	}
+
+	updateStore(id: number, store: Partial<Store>): Observable<void> {
+		return this.http.put<void>(`${this.storesApiUrl}/${id}`, store, { headers: this.getAuthHeaders() }).pipe(
+			catchError((error) => {
+				console.error('Ошибка при обновлении магазина:', error);
+				const errorMessage = error.error?.message || error.message || 'Не удалось обновить магазин';
+				return throwError(() => new Error(errorMessage));
 			})
 		);
 	}
 
 	archiveStore(id: number): Observable<void> {
-		const headers = new HttpHeaders({
-			Authorization: `Bearer ${localStorage.getItem('token')}`,
-			'Content-Type': 'application/json',
-		});
-		return this.http.put<void>(`${this.storesApiUrl}/archive/${id}`, {}, { headers }).pipe(
-			catchError((err) => {
-				console.error('Ошибка при архивировании магазина:', err);
-				const errorMessage = err.error?.message || err.message || 'Неизвестная ошибка при архивировании';
+		return this.http.put<void>(`${this.storesApiUrl}/archive/${id}`, {}, { headers: this.getAuthHeaders() }).pipe(
+			catchError((error) => {
+				console.error('Ошибка при архивировании магазина:', error);
+				const errorMessage = error.error?.message || error.message || 'Не удалось архивировать магазин';
 				return throwError(() => new Error(errorMessage));
 			})
 		);
 	}
 
 	unarchiveStore(id: number): Observable<void> {
-		const headers = new HttpHeaders({
-			Authorization: `Bearer ${localStorage.getItem('token')}`,
-			'Content-Type': 'application/json',
-		});
-		return this.http.put<void>(`${this.storesApiUrl}/unarchive/${id}`, {}, { headers }).pipe(
+		return this.http.put<void>(`${this.storesApiUrl}/unarchive/${id}`, {}, { headers: this.getAuthHeaders() }).pipe(
 			catchError((error) => {
 				console.error('Ошибка при разархивировании магазина:', error);
-				const errorMessage = error.error?.message || error.message || 'Неизвестная ошибка при разархивировании';
+				const errorMessage = error.error?.message || error.message || 'Не удалось разархивировать магазин';
 				return throwError(() => new Error(errorMessage));
 			})
 		);
 	}
 
-	updateStore(id: string, store: Partial<Store>): Observable<Store> {
-		const headers = new HttpHeaders({
-			Authorization: `Bearer ${localStorage.getItem('token')}`,
-			'Content-Type': 'application/json',
-		});
-		return this.http.put<StoreDto>(`${this.storesApiUrl}/${id}`, store, { headers }).pipe(
-			map(this.mapStoreDtoToStore),
-			catchError((error) => {
-				console.error('Ошибка при обновлении магазина:', error);
-				const errorMessage = error.error?.message || error.message || 'Неизвестная ошибка при обновлении';
-				return throwError(() => new Error(errorMessage));
-			})
-		);
-	}
-
-	getBuildingSuggestions(query: string): Observable<string[]> {
+	getBuildingSuggestions(query: string, isArchived: boolean = false): Observable<string[]> {
+		const cacheKey = `buildings_${query}_${isArchived}`;
+		if (this.suggestionCache[cacheKey]) {
+			return of(this.suggestionCache[cacheKey]);
+		}
 		const params = new HttpParams()
 			.set('query', query)
-			.set('IsArchived', 'false'); // Фильтр только неархивные
-		return this.http.get<string[]>(`${this.suggestionsApiUrl}/buildings`, { params }).pipe(
-			map((response) => response || []),
+			.set('isArchived', isArchived.toString());
+		return this.http.get<string[]>(`${this.suggestionsApiUrl}/buildings`, { params, headers: this.getAuthHeaders() }).pipe(
+			map((response) => {
+				this.suggestionCache[cacheKey] = response || [];
+				return response || [];
+			}),
 			catchError(() => of([]))
 		);
 	}
 
-	getFloorSuggestions(query: string): Observable<string[]> {
+	getFloorSuggestions(query: string, isArchived: boolean = false): Observable<string[]> {
+		const cacheKey = `floors_${query}_${isArchived}`;
+		if (this.suggestionCache[cacheKey]) {
+			return of(this.suggestionCache[cacheKey]);
+		}
 		const params = new HttpParams()
 			.set('query', query)
-			.set('IsArchived', 'false'); // Фильтр только неархивные
-		return this.http.get<string[]>(`${this.suggestionsApiUrl}/floors`, { params }).pipe(
-			map((response) => response || []),
+			.set('isArchived', isArchived.toString());
+		return this.http.get<string[]>(`${this.suggestionsApiUrl}/floors`, { params, headers: this.getAuthHeaders() }).pipe(
+			map((response) => {
+				this.suggestionCache[cacheKey] = response || [];
+				return response || [];
+			}),
 			catchError(() => of([]))
 		);
 	}
 
-	getLineSuggestions(query: string): Observable<string[]> {
+	getLineSuggestions(query: string, isArchived: boolean = false): Observable<string[]> {
+		const cacheKey = `lines_${query}_${isArchived}`;
+		if (this.suggestionCache[cacheKey]) {
+			return of(this.suggestionCache[cacheKey]);
+		}
 		const params = new HttpParams()
 			.set('query', query)
-			.set('IsArchived', 'false'); // Фильтр только неархивные
-		return this.http.get<string[]>(`${this.suggestionsApiUrl}/lines`, { params }).pipe(
-			map((response) => response || []),
+			.set('isArchived', isArchived.toString());
+		return this.http.get<string[]>(`${this.suggestionsApiUrl}/lines`, { params, headers: this.getAuthHeaders() }).pipe(
+			map((response) => {
+				this.suggestionCache[cacheKey] = response || [];
+				return response || [];
+			}),
 			catchError(() => of([]))
 		);
 	}
 
-	getStoreNumberSuggestions(query: string): Observable<string[]> {
+	getStoreNumberSuggestions(query: string, isArchived: boolean = false): Observable<string[]> {
+		const cacheKey = `storeNumbers_${query}_${isArchived}`;
+		if (this.suggestionCache[cacheKey]) {
+			return of(this.suggestionCache[cacheKey]);
+		}
 		const params = new HttpParams()
 			.set('query', query)
-			.set('IsArchived', 'false'); // Фильтр только неархивные
-		return this.http.get<string[]>(`${this.suggestionsApiUrl}/storeNumbers`, { params }).pipe(
-			map((response) => response || []),
+			.set('isArchived', isArchived.toString());
+		return this.http.get<string[]>(`${this.suggestionsApiUrl}/storeNumbers`, { params, headers: this.getAuthHeaders() }).pipe(
+			map((response) => {
+				this.suggestionCache[cacheKey] = response || [];
+				return response || [];
+			}),
 			catchError(() => of([]))
 		);
 	}
 
-	private mapStoreDtoToStore(dto: StoreDto): Store {
+	private mapStoreDtoToStore(dto: any): Store {
+		if (!dto) {
+			throw new Error('Response is null');
+		}
 		return {
 			id: dto.id,
 			building: dto.building,
@@ -170,9 +198,10 @@ export class StoreService {
 			line: dto.line,
 			storeNumber: dto.storeNumber,
 			sortOrder: dto.sortOrder,
-			isArchived: dto.isArchived,
-			createdAt: new Date(dto.createdAt),
 			note: dto.note,
+			isArchived: dto.isArchived,
+			createdAt: dto.createdAt,
+			updatedAt: dto.updatedAt,
 		};
 	}
 }

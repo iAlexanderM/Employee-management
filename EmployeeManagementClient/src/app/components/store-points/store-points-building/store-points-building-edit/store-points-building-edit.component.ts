@@ -15,7 +15,7 @@ import { Building } from '../../../../models/store-points.model';
 export class StorePointsBuildingEditComponent implements OnInit {
 	buildingForm: FormGroup;
 	building: Building | null = null;
-	errorMessage: string = '';
+	errorMessage = '';
 
 	constructor(
 		private fb: FormBuilder,
@@ -23,17 +23,15 @@ export class StorePointsBuildingEditComponent implements OnInit {
 		private router: Router,
 		private storePointsService: StorePointsService
 	) {
-		// Инициализация формы с контролями и валидаторами
 		this.buildingForm = this.fb.group({
 			buildingName: ['', Validators.required],
-			sortOrder: [0, [Validators.required, Validators.min(0)]],
+			sortOrder: [0, [Validators.required, Validators.min(0)]]
 		});
 	}
 
 	ngOnInit(): void {
 		const id = Number(this.route.snapshot.paramMap.get('id'));
 		if (isNaN(id) || id <= 0) {
-			console.error('Некорректный ID');
 			this.errorMessage = 'Некорректный ID записи.';
 			return;
 		}
@@ -43,19 +41,17 @@ export class StorePointsBuildingEditComponent implements OnInit {
 				this.building = data;
 				this.buildingForm.patchValue({
 					buildingName: data.name,
-					sortOrder: data.sortOrder ?? 0,
+					sortOrder: data.sortOrder ?? 0
 				});
 			},
 			error: (error) => {
-				console.error('Ошибка при загрузке здания:', error);
-				this.errorMessage = 'Не удалось загрузить данные здания.';
+				this.errorMessage = error.message || 'Не удалось загрузить данные здания.';
 			}
 		});
 	}
 
 	updateBuilding(): void {
-		this.errorMessage = ''; // Сброс ошибки
-
+		this.errorMessage = '';
 		if (this.buildingForm.valid && this.building) {
 			const updatedBuildingName = this.buildingForm.get('buildingName')?.value.trim();
 			const updatedSortOrder = this.buildingForm.get('sortOrder')?.value;
@@ -65,14 +61,7 @@ export class StorePointsBuildingEditComponent implements OnInit {
 					this.router.navigate(['/building']);
 				},
 				error: (error) => {
-					console.log('Full error object:', error);
-					console.log('Error status:', error?.status);
-
-					if (error?.status === 409) {
-						this.errorMessage = 'Здание с таким именем или сортировкой уже существует. Пожалуйста, выберите другие значения.';
-					} else {
-						this.errorMessage = 'Произошла ошибка при обновлении здания. Попробуйте снова.';
-					}
+					this.errorMessage = error.message || 'Произошла ошибка при обновлении здания.';
 				}
 			});
 		} else {

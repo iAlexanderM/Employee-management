@@ -6,8 +6,8 @@ namespace EmployeeManagementServer.Services
 {
     public interface IBuildingService
     {
-        Task<int> GetTotalBuildingsCountAsync();
-        Task<List<Building>> GetBuildingsAsync(int skip, int pageSize);
+        Task<int> GetTotalBuildingsCountAsync(bool? isArchived = null);
+        Task<List<Building>> GetBuildingsAsync(int skip, int pageSize, bool? isArchived = null);
         Task<Building> GetBuildingByIdAsync(int id);
         Task<Building> AddBuildingAsync(Building building);
         Task<bool?> UpdateBuildingAsync(int id, string newName, int? sortOrder);

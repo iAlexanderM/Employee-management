@@ -82,7 +82,15 @@ export class StoreEditComponent implements OnInit {
 	isModified(): boolean {
 		if (!this.originalStore) return false;
 		const currentValue = this.storeForm.getRawValue();
-		return JSON.stringify(currentValue) !== JSON.stringify(this.originalStore);
+		return (
+			currentValue.building !== this.originalStore.building ||
+			currentValue.floor !== this.originalStore.floor ||
+			currentValue.line !== this.originalStore.line ||
+			currentValue.storeNumber !== this.originalStore.storeNumber ||
+			currentValue.sortOrder !== this.originalStore.sortOrder ||
+			currentValue.note !== this.originalStore.note ||
+			currentValue.isArchived !== this.originalStore.isArchived
+		);
 	}
 
 	updateStore(): void {
@@ -101,7 +109,7 @@ export class StoreEditComponent implements OnInit {
 				note: this.storeForm.get('note')?.value,
 				isArchived: this.storeForm.get('isArchived')?.value,
 			};
-			this.storeService.updateStore(this.storeId.toString(), updatedStore).subscribe({
+			this.storeService.updateStore(this.storeId, updatedStore).subscribe({
 				next: () => {
 					this.historyService
 						.logHistory({
@@ -209,7 +217,7 @@ export class StoreEditComponent implements OnInit {
 		if (this.originalStore) {
 			const currentValue = this.storeForm.getRawValue();
 			Object.keys(currentValue).forEach((key) => {
-				if (JSON.stringify(currentValue[key]) !== JSON.stringify(this.originalStore![key])) {
+				if (currentValue[key] !== this.originalStore![key]) {
 					changes[key] = {
 						oldValue: this.originalStore![key],
 						newValue: currentValue[key],

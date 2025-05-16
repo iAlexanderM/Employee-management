@@ -1,15 +1,8 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
-import { BehaviorSubject, Subscription, Observable, of, forkJoin } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
-import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { BehaviorSubject, Subscription, Observable, of, forkJoin, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, catchError, takeUntil } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { NgZone } from '@angular/core';
 
@@ -18,35 +11,28 @@ import { TransactionService } from '../../services/transaction.service';
 import { StoreService } from '../../services/store.service';
 import { SearchFilterResetService } from '../../services/search-filter-reset.service';
 import { PassByStoreResponseDto, ContractorPassesDto, PassDetailsDto } from '../../models/store-pass-search.model';
-import { Store } from '../../models/transaction.model';
 import { environment } from '../../../environments/environment';
+import { ContractorDto, PassType, Store as TransactionStore } from '../../models/transaction.model';
+import { Store as StoreModel } from '../../models/store.model';
 
 @Component({
 	selector: 'app-store-pass-search',
 	standalone: true,
-	imports: [
-		CommonModule,
-		ReactiveFormsModule,
-		MatAutocompleteModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatButtonModule,
-		MatExpansionModule,
-		MatIconModule,
-		MatTooltipModule
-	],
+	imports: [CommonModule, ReactiveFormsModule],
 	templateUrl: './store-pass-search.component.html',
 	styleUrls: ['./store-pass-search.component.css'],
+	providers: [DatePipe],
 })
 export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewInit {
 	searchForm: FormGroup;
 	results: PassByStoreResponseDto[] = [];
 	isLoading = false;
 	errorMessage: string | null = null;
+	successMessage: string | null = null;
 	showAddTransactionButton = false;
 	private readonly apiBaseUrl = 'http://localhost:8080';
+	private destroy$ = new Subject<void>();
 
-	// Storage for note FormControls
 	noteControls: { [resultIndex: number]: FormControl } = {};
 
 	buildingSuggestions$ = new BehaviorSubject<string[]>([]);
@@ -64,12 +50,13 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 	};
 	private panelStates: { [key: string]: boolean } = {};
 
-	// Virtual scrolling properties
 	private allContractors: { resultIndex: number; contractor: ContractorPassesDto; isActive: boolean }[] = [];
 	public windows: { [resultIndex: number]: { start: number; end: number } } = {};
 	private windowSize = 100;
 	private windowStep = 50;
 	private observer: IntersectionObserver | null = null;
+
+	activeDropdown: string | null = null;
 
 	constructor(
 		private fb: FormBuilder,
@@ -79,7 +66,8 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		private router: Router,
 		private searchFilterResetService: SearchFilterResetService,
 		private cdr: ChangeDetectorRef,
-		private zone: NgZone
+		private zone: NgZone,
+		private datePipe: DatePipe
 	) {
 		this.searchForm = this.fb.group({
 			Building: [''],
@@ -90,12 +78,14 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 	}
 
 	ngOnInit(): void {
-		this.resetSubscription = this.searchFilterResetService.resetTrigger$.subscribe((needsReset) => {
-			if (needsReset) {
-				this.resetFilters();
-				this.searchFilterResetService.consumeReset();
-			}
-		});
+		this.resetSubscription = this.searchFilterResetService.resetTrigger$
+			.pipe(takeUntil(this.destroy$))
+			.subscribe((needsReset) => {
+				if (needsReset) {
+					this.resetFilters();
+					this.searchFilterResetService.consumeReset();
+				}
+			});
 		this.loadStoredSearchCriteria();
 		this.initializeAutocompleteHandlers();
 	}
@@ -108,6 +98,8 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		this.subscriptions.forEach((sub) => sub.unsubscribe());
 		this.resetSubscription?.unsubscribe();
 		this.observer?.disconnect();
+		this.destroy$.next();
+		this.destroy$.complete();
 	}
 
 	private setupIntersectionObserver(): void {
@@ -175,12 +167,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				contractor,
 				isActive: true,
 			}));
-			const closedContractors = this.getClosedContractors(result).map((contractor) => ({
-				resultIndex,
-				contractor,
-				isActive: false,
-			}));
-			this.allContractors.push(...activeContractors, ...closedContractors);
+			this.allContractors.push(...activeContractors);
 			this.windows[resultIndex] = { start: 0, end: this.windowSize };
 			if (environment.debug) {
 				console.log(`[PrepareContractors] Total contractors: ${this.allContractors.length}`);
@@ -233,6 +220,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 
 	searchPasses(): void {
 		this.errorMessage = null;
+		this.successMessage = null;
 		this.showAddTransactionButton = false;
 		this.results = [];
 		this.noteControls = {};
@@ -240,7 +228,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 
 		const allFieldsConfirmed = Object.values(this.confirmedFields).every((value) => value !== null && value.trim() !== '');
 		if (!allFieldsConfirmed) {
-			this.errorMessage = 'Выберите значения для всех полей из списка автодополнения';
+			this.errorMessage = 'Выберите значения для всех полей из списка';
 			return;
 		}
 
@@ -250,6 +238,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		this.passService
 			.searchPassesByStore(criteria)
 			.pipe(
+				takeUntil(this.destroy$),
 				catchError((error) => {
 					this.errorMessage = error?.status === 404 ? 'Торговая точка не найдена или не существует.' : error?.message || 'Ошибка при выполнении поиска.';
 					this.results = [];
@@ -260,17 +249,18 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				})
 			)
 			.subscribe((response: PassByStoreResponseDto[]) => {
-				const nonArchivedResults = response.filter(result => !result.isArchived);
-				if (nonArchivedResults.length === 0 && response.length > 0) {
-					this.errorMessage = 'Торговая точка не существует';
+				// Filter out archived results and ensure only active passes are shown
+				const filteredResults = response.filter(result => !result.isArchived);
+				if (filteredResults.length === 0) {
+					this.errorMessage = 'Активные торговые точки не найдены';
 					this.results = [];
 				} else {
-					this.results = nonArchivedResults.map((result) => ({
+					this.results = filteredResults.map((result) => ({
 						...result,
-						contractors: (result.contractors || []).map((contractor) => ({
+						contractors: (result.contractors || []).filter(c => c.activePasses && c.activePasses.length > 0).map((contractor) => ({
 							...contractor,
 							activePasses: this.getSortedPasses(contractor.activePasses, result),
-							closedPasses: this.getSortedPasses(contractor.closedPasses, result),
+							closedPasses: [], // No closed passes
 						})),
 					}));
 					this.results.forEach((result, index) => {
@@ -294,47 +284,26 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 			return;
 		}
 		const note = this.noteControls[resultIndex].value?.trim() || null;
+		if (note === result.note) {
+			return;
+		}
 		this.isLoading = true;
 		this.errorMessage = null;
+		this.successMessage = null;
 
-		this.storeService.updateStore(result.storeId.toString(), { note }).subscribe({
-			next: (updatedStore) => {
-				// Convert undefined to null to match PassByStoreResponseDto.note type
-				this.results[resultIndex].note = updatedStore.note ?? null;
-				this.noteControls[resultIndex].setValue(updatedStore.note ?? '');
+		this.storeService.updateStore(result.storeId, { note }).subscribe({
+			next: () => {
+				this.results[resultIndex].note = note;
+				this.noteControls[resultIndex].setValue(note || '');
 				this.isLoading = false;
+				this.successMessage = 'Заметка успешно сохранена';
 				this.cdr.markForCheck();
 			},
 			error: (err) => {
 				this.errorMessage = 'Ошибка при сохранении заметки: ' + (err.message || 'Неизвестная ошибка');
 				this.isLoading = false;
 				this.cdr.markForCheck();
-			}
-		});
-	}
-
-	deleteNote(resultIndex: number): void {
-		const result = this.results[resultIndex];
-		if (!result.storeId) {
-			this.errorMessage = 'ID торговой точки не определён';
-			return;
-		}
-		this.isLoading = true;
-		this.errorMessage = null;
-
-		this.storeService.updateStore(result.storeId.toString(), { note: null }).subscribe({
-			next: (updatedStore) => {
-				// Convert undefined to null to match PassByStoreResponseDto.note type
-				this.results[resultIndex].note = updatedStore.note ?? null;
-				this.noteControls[resultIndex].setValue(updatedStore.note ?? '');
-				this.isLoading = false;
-				this.cdr.markForCheck();
 			},
-			error: (err) => {
-				this.errorMessage = 'Ошибка при удалении заметки: ' + (err.message || 'Неизвестная ошибка');
-				this.isLoading = false;
-				this.cdr.markForCheck();
-			}
 		});
 	}
 
@@ -344,6 +313,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		localStorage.removeItem('storeSearchCriteria');
 		this.results = [];
 		this.errorMessage = null;
+		this.successMessage = null;
 		this.noteControls = {};
 		this.buildingSuggestions$.next([]);
 		this.floorSuggestions$.next([]);
@@ -351,6 +321,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		this.storeNumberSuggestions$.next([]);
 		this.panelStates = {};
 		this.resetVirtualScrollState();
+		this.activeDropdown = null;
 		this.cdr.detectChanges();
 	}
 
@@ -361,15 +332,15 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 			line: this.confirmedFields['Line'] || '',
 			storeNumber: this.confirmedFields['StoreNumber'] || '',
 			showActive: true,
-			showClosed: true,
+			showClosed: false, // Only active passes
 		};
 	}
 
 	initializeAutocompleteHandlers(): void {
-		this.setupAutocomplete('Building', this.passService.getBuildingSuggestions.bind(this.passService));
-		this.setupAutocomplete('Floor', this.passService.getFloorSuggestions.bind(this.passService));
-		this.setupAutocomplete('Line', this.passService.getLineSuggestions.bind(this.passService));
-		this.setupAutocomplete('StoreNumber', this.passService.getStoreNumberSuggestions.bind(this.passService));
+		this.setupAutocomplete('Building', (query: string) => this.storeService.getBuildingSuggestions(query, false));
+		this.setupAutocomplete('Floor', (query: string) => this.storeService.getFloorSuggestions(query, false));
+		this.setupAutocomplete('Line', (query: string) => this.storeService.getLineSuggestions(query, false));
+		this.setupAutocomplete('StoreNumber', (query: string) => this.storeService.getStoreNumberSuggestions(query, false));
 	}
 
 	setupAutocomplete(controlName: string, suggestionServiceMethod: (query: string) => Observable<string[]>): void {
@@ -378,6 +349,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 			this.subscriptions.push(
 				control.valueChanges
 					.pipe(
+						takeUntil(this.destroy$),
 						debounceTime(300),
 						distinctUntilChanged(),
 						switchMap((query) => {
@@ -390,9 +362,25 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 							return suggestionServiceMethod(trimmedQuery).pipe(catchError(() => of([])));
 						})
 					)
-					.subscribe((suggestions) => this.getSuggestionSubject(controlName).next(suggestions))
+					.subscribe((suggestions) => {
+						this.getSuggestionSubject(controlName).next(suggestions);
+						if (suggestions.length > 0) {
+							this.activeDropdown = controlName;
+						} else {
+							this.activeDropdown = null;
+						}
+						this.cdr.detectChanges();
+					})
 			);
 		}
+	}
+
+	selectSuggestion(controlName: string, value: string): void {
+		this.searchForm.get(controlName)?.setValue(value, { emitEvent: false });
+		this.confirmedFields[controlName] = value;
+		this.getSuggestionSubject(controlName).next([]);
+		this.activeDropdown = null;
+		this.cdr.detectChanges();
 	}
 
 	onInput(controlName: string, event: Event): void {
@@ -402,11 +390,26 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		}
 	}
 
-	selectSuggestion(controlName: string, event: MatAutocompleteSelectedEvent): void {
-		const value = event.option.value;
-		this.searchForm.get(controlName)?.setValue(value, { emitEvent: false });
-		this.confirmedFields[controlName] = value;
-		this.getSuggestionSubject(controlName).next([]);
+	toggleDropdown(controlName: string): void {
+		if (this.activeDropdown === controlName) {
+			this.activeDropdown = null;
+		} else {
+			this.activeDropdown = controlName;
+			const query = this.searchForm.get(controlName)?.value?.trim() || '';
+			if (query) {
+				this.getSuggestionSubject(controlName).next([]);
+				const suggestionMethod = {
+					Building: () => this.storeService.getBuildingSuggestions(query, false),
+					Floor: () => this.storeService.getFloorSuggestions(query, false),
+					Line: () => this.storeService.getLineSuggestions(query, false),
+					StoreNumber: () => this.storeService.getStoreNumberSuggestions(query, false),
+				}[controlName as 'Building' | 'Floor' | 'Line' | 'StoreNumber'];
+				suggestionMethod().subscribe((suggestions) => {
+					this.getSuggestionSubject(controlName).next(suggestions);
+					this.cdr.detectChanges();
+				});
+			}
+		}
 	}
 
 	isFieldConfirmed(controlName: string): boolean {
@@ -480,12 +483,6 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		return result.contractors.filter((contractor) => contractor.activePasses && contractor.activePasses.length > 0);
 	}
 
-	getClosedContractors(result: PassByStoreResponseDto): ContractorPassesDto[] {
-		return result.contractors.filter(
-			(contractor) => (!contractor.activePasses || contractor.activePasses.length === 0) && contractor.closedPasses && contractor.closedPasses.length > 0
-		);
-	}
-
 	viewContractor(contractorId: number): void {
 		const url = this.router.serializeUrl(this.router.createUrlTree(['/contractors/details', contractorId]));
 		window.open(url, '_blank');
@@ -500,67 +497,76 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		let newStartDate: Date;
 		try {
 			const previousEndDate = new Date(pass.endDate);
-			if (isNaN(previousEndDate.getTime())) {
-				throw new Error(`Invalid pass end date format: ${pass.endDate}`);
-			}
+			if (isNaN(previousEndDate.getTime())) throw new Error(`Invalid date: ${pass.endDate}`);
 			newStartDate = new Date(previousEndDate);
 			newStartDate.setDate(newStartDate.getDate() + 1);
-		} catch (error) {
-			this.errorMessage = 'Неверный формат даты окончания предыдущего пропуска.';
+		} catch (error: any) {
+			console.error('Date parse error:', error);
+			this.errorMessage = `Ошибка даты: ${error.message}`;
+			this.cdr.markForCheck();
 			return;
 		}
-
 		this.isLoading = true;
 		this.errorMessage = null;
-
+		this.cdr.markForCheck();
 		forkJoin({
 			contractor: this.transactionService.getContractorById(pass.contractorId),
 			store: this.transactionService.getStoreByDetails(pass.building, pass.floor, pass.line, pass.storeNumber),
 			passType: this.transactionService.getPassTypeById(pass.passTypeId),
-		}).subscribe({
-			next: (response: { contractor: any; store: Store; passType: any }) => {
-				const { contractor, store, passType } = response;
-				if (!contractor || !store || !passType) {
-					this.errorMessage = 'Не удалось получить все данные (контрагент, магазин или тип пропуска) для продления.';
+		})
+			.pipe(
+				takeUntil(this.destroy$),
+				catchError((err) => {
+					console.error('Extend forkJoin error:', err);
+					this.errorMessage = `Ошибка продления: ${err?.error?.message || err?.message || 'Ошибка сервера'}`;
 					this.isLoading = false;
-					return;
-				}
-				const extendData = {
-					contractorId: contractor.id,
-					passTypeId: passType.id,
-					store: {
-						id: store.id,
-						building: store.building,
-						floor: store.floor,
-						line: store.line,
-						storeNumber: store.storeNumber,
-					},
-					startDate: newStartDate.toISOString(),
-					position: pass.position || 'Наёмный работник',
-					contractorDetails: {
-						id: contractor.id,
-						lastName: contractor.lastName || '',
-						firstName: contractor.firstName || '',
-						middleName: contractor.middleName || '',
-						passportSerialNumber: contractor.passportSerialNumber || '',
-					},
-					passType: {
-						id: passType.id,
-						name: passType.name,
-						durationInMonths: passType.durationInMonths,
-						cost: passType.cost,
-					},
-					originalPassId: pass.id,
-				};
-				this.isLoading = false;
-				this.router.navigate(['/transactions/create'], { state: extendData });
-			},
-			error: (err: any) => {
-				const message = err?.error?.message || err?.message || 'Неизвестная ошибка сервера';
-				this.errorMessage = `Ошибка при загрузке данных для продления: ${message}`;
-				this.isLoading = false;
-			}
-		});
+					this.cdr.markForCheck();
+					return of(null);
+				})
+			)
+			.subscribe({
+				next: (data) => {
+					if (!data || !data.contractor || !data.store || !data.passType) {
+						this.isLoading = false;
+						if (!this.errorMessage) this.errorMessage = 'Неполные данные для продления.';
+						console.error('Incomplete extend data:', data);
+						this.cdr.markForCheck();
+						return;
+					}
+					const { contractor, store, passType } = data;
+					const formattedStartDate = this.datePipe.transform(newStartDate, 'yyyy-MM-dd')!;
+					const extendData = {
+						contractorId: contractor.id,
+						passTypeId: passType.id,
+						store: {
+							id: store.id,
+							building: store.building || '',
+							floor: store.floor || '',
+							line: store.line || '',
+							storeNumber: store.storeNumber || '',
+						} as TransactionStore,
+						startDate: formattedStartDate,
+						position: pass.position || 'Employee',
+						contractorDetails: {
+							id: contractor.id,
+							lastName: contractor.lastName || '',
+							firstName: contractor.firstName || '',
+							middleName: contractor.middleName || '',
+							passportSerialNumber: contractor.passportSerialNumber || '',
+						} as ContractorDto,
+						passType: {
+							id: passType.id,
+							name: passType.name || '',
+							durationInMonths: passType.durationInMonths || 0,
+							cost: passType.cost || 0,
+						} as PassType,
+						originalPassId: pass.id,
+					};
+					this.isLoading = false;
+					this.cdr.markForCheck();
+					this.router.navigate(['/transactions/create'], { state: extendData });
+				},
+			});
 	}
 
 	closePass(passId: number): void {
@@ -577,7 +583,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				} else {
 					this.errorMessage = 'Ошибка закрытия пропуска';
 				}
-			}
+			},
 		});
 	}
 
@@ -618,7 +624,9 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		this.transactionService
 			.getStoreByDetails(building, floor, line, storeNumber)
 			.pipe(
+				takeUntil(this.destroy$),
 				catchError((err) => {
+					console.error('getStoreByDetails error:', err);
 					this.errorMessage =
 						err.status === 404
 							? `Торговая точка ${building}-${floor}-${line}-${storeNumber} не найдена.`
@@ -629,26 +637,29 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				})
 			)
 			.subscribe({
-				next: (store: Store | null) => {
+				next: (store: TransactionStore | null) => {
 					this.isLoading = false;
 					if (!store) {
 						if (!this.errorMessage) this.errorMessage = 'Торговая точка не найдена.';
 						this.cdr.markForCheck();
 						return;
 					}
-					this.router.navigate(['/transactions/create'], { state: { store } });
+					const storeData: TransactionStore = {
+						id: store.id,
+						building: store.building || '',
+						floor: store.floor || '',
+						line: store.line || '',
+						storeNumber: store.storeNumber || '',
+					};
+					this.router.navigate(['/transactions/create'], { state: { store: storeData } });
 					this.cdr.markForCheck();
-				}
+				},
 			});
 	}
 
 	getNameParts(fullName: string): string[] {
 		if (!fullName) return ['', '', ''];
 		const parts = fullName.trim().split(' ');
-		return [
-			parts[0] || '',
-			parts[1] || '',
-			parts.slice(2).join(' ') || ''
-		];
+		return [parts[0] || '', parts[1] || '', parts.slice(2).join(' ') || ''];
 	}
 }

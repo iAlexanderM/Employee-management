@@ -28,7 +28,7 @@ namespace EmployeeManagementServer.Services
 
             query = ApplyFilters(query, searchDto);
 
-            var result = await query.ToListAsync();
+            var result = await query.OrderBy(sn => sn.SortOrder ?? sn.Id).ToListAsync();
             _logger.LogInformation("Поиск завершён. Найдено торговых точек: {count}", result.Count);
 
             return result;
@@ -38,12 +38,17 @@ namespace EmployeeManagementServer.Services
         {
             if (searchDto.Id.HasValue)
             {
-                query = query.Where(s => s.Id == searchDto.Id.Value);
+                query = query.Where(sn => sn.Id == searchDto.Id.Value);
             }
 
             if (!string.IsNullOrEmpty(searchDto.Name))
             {
-                query = query.Where(s => EF.Functions.ILike(s.Name.Trim(), $"%{searchDto.Name.Trim()}%"));
+                query = query.Where(sn => EF.Functions.ILike(sn.Name.Trim(), $"%{searchDto.Name.Trim()}%"));
+            }
+
+            if (searchDto.IsArchived.HasValue)
+            {
+                query = query.Where(sn => sn.IsArchived == searchDto.IsArchived.Value);
             }
 
             return query;

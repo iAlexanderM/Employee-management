@@ -1,5 +1,8 @@
 ﻿using EmployeeManagementServer.Data;
+using EmployeeManagementServer.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 
 public class SuggestionsService : ISuggestionsService
 {
@@ -10,45 +13,73 @@ public class SuggestionsService : ISuggestionsService
         _context = context;
     }
 
-    public IEnumerable<string> GetBuildingSuggestions(string query)
+    public IEnumerable<string> GetBuildingSuggestions(string query, bool? isArchived = null)
     {
-        string pattern = $"{query.Trim()}%";
-        return _context.Stores
-            .Where(s => string.IsNullOrEmpty(query) || EF.Functions.ILike(s.Building, pattern))
-            .Select(s => s.Building)
+        string pattern = string.IsNullOrEmpty(query) ? "%" : $"{query.Trim()}%";
+        var queryable = _context.Buildings.AsQueryable();
+
+        if (isArchived.HasValue)
+        {
+            queryable = queryable.Where(b => b.IsArchived == isArchived.Value);
+        }
+
+        return queryable
+            .Where(b => EF.Functions.ILike(b.Name, pattern))
+            .Select(b => b.Name)
             .Distinct()
             .OrderBy(s => s)
             .ToList();
     }
 
-    public IEnumerable<string> GetFloorSuggestions(string query)
+    public IEnumerable<string> GetFloorSuggestions(string query, bool? isArchived = null)
     {
-        string pattern = $"{query.Trim()}%";
-        return _context.Stores
-            .Where(s => string.IsNullOrEmpty(query) || EF.Functions.ILike(s.Floor, pattern))
-            .Select(s => s.Floor)
+        string pattern = string.IsNullOrEmpty(query) ? "%" : $"{query.Trim()}%";
+        var queryable = _context.Floors.AsQueryable();
+
+        if (isArchived.HasValue)
+        {
+            queryable = queryable.Where(f => f.IsArchived == isArchived.Value);
+        }
+
+        return queryable
+            .Where(f => EF.Functions.ILike(f.Name, pattern))
+            .Select(f => f.Name)
             .Distinct()
             .OrderBy(s => s)
             .ToList();
     }
 
-    public IEnumerable<string> GetLineSuggestions(string query)
+    public IEnumerable<string> GetLineSuggestions(string query, bool? isArchived = null)
     {
-        string pattern = $"{query.Trim()}%";
-        return _context.Stores
-            .Where(s => string.IsNullOrEmpty(query) || EF.Functions.ILike(s.Line, pattern))
-            .Select(s => s.Line)
+        string pattern = string.IsNullOrEmpty(query) ? "%" : $"{query.Trim()}%";
+        var queryable = _context.Lines.AsQueryable();
+
+        if (isArchived.HasValue)
+        {
+            queryable = queryable.Where(l => l.IsArchived == isArchived.Value);
+        }
+
+        return queryable
+            .Where(l => EF.Functions.ILike(l.Name, pattern))
+            .Select(l => l.Name)
             .Distinct()
             .OrderBy(s => s)
             .ToList();
     }
 
-    public IEnumerable<string> GetStoreNumberSuggestions(string query)
+    public IEnumerable<string> GetStoreNumberSuggestions(string query, bool? isArchived = null)
     {
-        string pattern = $"{query.Trim()}%";
-        return _context.Stores
-            .Where(s => string.IsNullOrEmpty(query) || EF.Functions.ILike(s.StoreNumber, pattern))
-            .Select(s => s.StoreNumber)
+        string pattern = string.IsNullOrEmpty(query) ? "%" : $"{query.Trim()}%";
+        var queryable = _context.StoreNumbers.AsQueryable();
+
+        if (isArchived.HasValue)
+        {
+            queryable = queryable.Where(sn => sn.IsArchived == isArchived.Value);
+        }
+
+        return queryable
+            .Where(sn => EF.Functions.ILike(sn.Name, pattern))
+            .Select(sn => sn.Name)
             .Distinct()
             .OrderBy(s => s)
             .ToList();

@@ -34,7 +34,7 @@ namespace EmployeeManagementServer.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<int> GetTotalStoresCountAsync(string? building, string? floor, string? line, string? storeNumber)
+        public async Task<int> GetTotalStoresCountAsync(string? building, string? floor, string? line, string? storeNumber, bool? isArchived = null)
         {
             var query = _context.Stores.AsQueryable();
 
@@ -46,11 +46,16 @@ namespace EmployeeManagementServer.Services
                 query = query.Where(s => s.Line.Trim() == line!.Trim());
             if (!string.IsNullOrEmpty(storeNumber))
                 query = query.Where(s => s.StoreNumber.Trim() == storeNumber!.Trim());
+
+            if (isArchived.HasValue)
+            {
+                query = query.Where(s => s.IsArchived == isArchived.Value);
+            }
 
             return await query.CountAsync();
         }
 
-        public async Task<List<Store>> GetAllStoresAsync(int skip, int pageSize, string? building, string? floor, string? line, string? storeNumber)
+        public async Task<List<Store>> GetAllStoresAsync(int skip, int pageSize, string? building, string? floor, string? line, string? storeNumber, bool? isArchived = null)
         {
             var query = _context.Stores.AsQueryable();
 
@@ -63,8 +68,15 @@ namespace EmployeeManagementServer.Services
             if (!string.IsNullOrEmpty(storeNumber))
                 query = query.Where(s => s.StoreNumber.Trim() == storeNumber!.Trim());
 
+            if (isArchived.HasValue)
+            {
+                query = query.Where(s => s.IsArchived == isArchived.Value);
+            }
+
             return await query
-                .OrderBy(s => s.Id)
+                .OrderBy(s => s.SortOrder == null ? 1 : 0)
+                .ThenBy(s => s.SortOrder ?? int.MaxValue)
+                .ThenBy(s => s.Id)
                 .Skip(skip)
                 .Take(pageSize)
                 .ToListAsync();
@@ -72,10 +84,7 @@ namespace EmployeeManagementServer.Services
 
         public async Task<Store?> GetStoreByIdAsync(int id)
         {
-            var store = await _context.Stores
-                .FirstOrDefaultAsync(s => s.Id == id && !s.IsArchived);
-
-            return store;
+            return await _context.Stores.FirstOrDefaultAsync(s => s.Id == id);
         }
 
         public async Task<Store?> AddStoreAsync(Store store, string? createdBy = null)
@@ -120,15 +129,15 @@ namespace EmployeeManagementServer.Services
             }
 
             var changesDict = new Dictionary<string, ChangeValueDto>
-    {
-        { "building", new ChangeValueDto { OldValue = "не указано", NewValue = store.Building } },
-        { "floor", new ChangeValueDto { OldValue = "не указано", NewValue = store.Floor } },
-        { "line", new ChangeValueDto { OldValue = "не указано", NewValue = store.Line } },
-        { "storeNumber", new ChangeValueDto { OldValue = "не указано", NewValue = store.StoreNumber } },
-        { "sortOrder", new ChangeValueDto { OldValue = "не указано", NewValue = store.SortOrder?.ToString() ?? "null" } },
-        { "note", new ChangeValueDto { OldValue = "не указано", NewValue = store.Note ?? "не указано" } },
-        { "isArchived", new ChangeValueDto { OldValue = "false", NewValue = store.IsArchived.ToString() } }
-    };
+            {
+                { "building", new ChangeValueDto { OldValue = "не указано", NewValue = store.Building } },
+                { "floor", new ChangeValueDto { OldValue = "не указано", NewValue = store.Floor } },
+                { "line", new ChangeValueDto { OldValue = "не указано", NewValue = store.Line } },
+                { "storeNumber", new ChangeValueDto { OldValue = "не указано", NewValue = store.StoreNumber } },
+                { "sortOrder", new ChangeValueDto { OldValue = "не указано", NewValue = store.SortOrder?.ToString() ?? "null" } },
+                { "note", new ChangeValueDto { OldValue = "не указано", NewValue = store.Note ?? "не указано" } },
+                { "isArchived", new ChangeValueDto { OldValue = "false", NewValue = store.IsArchived.ToString() } }
+            };
 
             await _historyService.LogHistoryAsync(new History
             {
@@ -149,9 +158,9 @@ namespace EmployeeManagementServer.Services
         {
             _logger.LogInformation("Попытка обновления магазина с ID {Id}", id);
             var store = await _context.Stores.FindAsync(id);
-            if (store == null || store.IsArchived)
+            if (store == null)
             {
-                _logger.LogWarning("Магазин с ID {Id} не найден или архивирован.", id);
+                _logger.LogWarning("Магазин с ID {Id} не найден.", id);
                 return null;
             }
 
@@ -197,7 +206,6 @@ namespace EmployeeManagementServer.Services
                 throw new ArgumentException("Заметка не должна превышать 500 символов.");
             }
 
-            // Формируем StoreDto для обновленных данных
             var updatedStoreDto = new StoreDto
             {
                 Id = store.Id,
@@ -209,18 +217,15 @@ namespace EmployeeManagementServer.Services
                 Note = note ?? store.Note,
                 IsArchived = store.IsArchived,
                 CreatedAt = store.CreatedAt,
-                UpdatedAt = DateTime.UtcNow // Обрабатывается SetTimestamps
+                UpdatedAt = DateTime.UtcNow
             };
 
-            // Сравниваем изменения через DTO
             var originalStoreDto = _mapper.Map<StoreDto>(originalStore);
             var changes = CompareStoreDtos(originalStoreDto, updatedStoreDto);
 
-            // Обновляем магазин через маппинг DTO -> Entity
             _mapper.Map(updatedStoreDto, store);
             await SaveChangesAsync();
 
-            // Логируем изменения в историю, если они есть
             if (changes.Any())
             {
                 var historyEntry = new History
@@ -341,7 +346,7 @@ namespace EmployeeManagementServer.Services
                 throw new ArgumentException("Заметка не должна превышать 500 символов.");
             }
 
-            if (store.Note == note) // Проверка на отсутствие изменений
+            if (store.Note == note)
             {
                 _logger.LogInformation("Заметка для магазина с ID {Id} не изменилась, история не записана.", id);
                 return;
@@ -352,9 +357,9 @@ namespace EmployeeManagementServer.Services
             await SaveChangesAsync();
 
             var changesDict = new Dictionary<string, ChangeValueDto>
-    {
-        { "note", new ChangeValueDto { OldValue = oldNote ?? "не указано", NewValue = note ?? "не указано" } }
-    };
+            {
+                { "note", new ChangeValueDto { OldValue = oldNote ?? "не указано", NewValue = note ?? "не указано" } }
+            };
 
             var historyEntry = new History
             {

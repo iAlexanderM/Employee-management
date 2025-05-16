@@ -7,6 +7,6 @@ namespace EmployeeManagementServer.Services
 {
     public interface IBuildingSearchService
     {
-        Task<List<Building>> SearchBuildingsAsync(BuildingSearchDto searchDto);
+        Task<(List<Building> buildings, int total)> SearchBuildingsAsync(BuildingSearchDto searchDto, int skip, int pageSize);
     }
 }

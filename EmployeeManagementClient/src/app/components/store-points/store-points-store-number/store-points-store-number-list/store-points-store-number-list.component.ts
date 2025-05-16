@@ -9,33 +9,23 @@ import { Subscription } from 'rxjs';
 @Component({
 	selector: 'app-store-points-store-number-list',
 	standalone: true,
-	imports: [
-		CommonModule,
-		ReactiveFormsModule,
-		RouterModule
-	],
+	imports: [CommonModule, ReactiveFormsModule, RouterModule],
 	templateUrl: './store-points-store-number-list.component.html',
 	styleUrls: ['./store-points-store-number-list.component.css']
 })
 export class StorePointsStoreNumberListComponent implements OnInit, OnDestroy {
 	storeNumbers: StoreNumber[] = [];
 	displayedStoreNumbers: StoreNumber[] = [];
-
 	searchForm: FormGroup;
-
 	isSearchMode = false;
 	isExpanded = false;
-
-	currentPage: number = 1;
-	pageSizeOptions: number[] = [25, 50, 100];
-	pageSize: number = 25;
-
-	totalItems: number = 0;
-	totalPages: number = 0;
+	currentPage = 1;
+	totalItems = 0;
+	totalPages = 0;
 	visiblePages: (number | string)[] = [];
-
+	pageSizeOptions = [25, 50, 100];
+	pageSize = 25;
 	pageSizeControl = new FormControl(this.pageSize);
-
 	private subscriptions: Subscription[] = [];
 
 	constructor(
@@ -50,18 +40,14 @@ export class StorePointsStoreNumberListComponent implements OnInit, OnDestroy {
 	}
 
 	ngOnInit(): void {
-		console.log('[ngOnInit] StorePointsStoreNumberListComponent init.');
-
 		this.subscriptions.push(
-			this.pageSizeControl.valueChanges.subscribe((value) => {
-				console.log('[pageSizeControl.valueChanges] value:', value);
+			this.pageSizeControl.valueChanges.subscribe(value => {
 				const newSize = Number(value);
 				if (!isNaN(newSize) && newSize > 0) {
 					this.pageSize = newSize;
 					this.currentPage = 1;
 					this.calculateTotalPages();
 					this.updateVisiblePages();
-
 					if (this.isSearchMode) {
 						this.updateDisplayedStoreNumbers();
 					} else {
@@ -70,70 +56,45 @@ export class StorePointsStoreNumberListComponent implements OnInit, OnDestroy {
 				}
 			})
 		);
-
 		this.loadStoreNumbers();
 	}
 
 	ngOnDestroy(): void {
-		this.subscriptions.forEach((s) => s.unsubscribe());
+		this.subscriptions.forEach(sub => sub.unsubscribe());
 	}
 
-	// Серверная пагинация
 	loadStoreNumbers(): void {
 		this.isSearchMode = false;
-		const criteria = {};
-		console.log('[loadStoreNumbers] server pagination, page=', this.currentPage, 'pageSize=', this.pageSize);
-
-		this.storePointsService.getStoreNumbers(this.currentPage, this.pageSize, criteria).subscribe({
+		this.storePointsService.getStoreNumbers(this.currentPage, this.pageSize).subscribe({
 			next: (response) => {
-				console.log('[loadStoreNumbers] response:', response);
-
 				this.storeNumbers = response.storeNumbers || [];
 				this.totalItems = response.total || 0;
-
-				console.log('[loadStoreNumbers] after parse:', {
-					storeNumbersCount: this.storeNumbers.length,
-					totalItems: this.totalItems
-				});
-
 				this.calculateTotalPages();
 				this.updateVisiblePages();
 				this.displayedStoreNumbers = this.storeNumbers;
 			},
 			error: (err) => {
-				console.error('[loadStoreNumbers] error:', err);
+				console.error('[loadStoreNumbers] Error:', err);
 				this.storeNumbers = [];
 				this.displayedStoreNumbers = [];
 			}
 		});
 	}
 
-	// Поиск (клиентская пагинация)
 	searchStoreNumbers(): void {
 		this.isSearchMode = true;
 		this.currentPage = 1;
 		const criteria = this.prepareSearchCriteria();
-
-		console.log('[searchStoreNumbers] client pagination, criteria:', criteria);
-
 		this.storePointsService.searchStoreNumbers(criteria).subscribe({
 			next: (response) => {
-				console.log('[searchStoreNumbers] response:', response);
-
 				this.storeNumbers = response.storeNumbers || [];
-				this.totalItems = this.storeNumbers.length;
-
-				console.log('[searchStoreNumbers] after parse:', {
-					storeNumbersCount: this.storeNumbers.length,
-					totalItems: this.totalItems
-				});
-
+				this.totalItems = response.total || this.storeNumbers.length;
 				this.calculateTotalPages();
 				this.updateVisiblePages();
 				this.updateDisplayedStoreNumbers();
 			},
 			error: (err) => {
-				console.error('[searchStoreNumbers] error:', err);
+				console.error('[searchStoreNumbers] Error:', err);
 				this.storeNumbers = [];
 				this.displayedStoreNumbers = [];
 			}
@@ -141,30 +102,24 @@ export class StorePointsStoreNumberListComponent implements OnInit, OnDestroy {
 	}
 
 	prepareSearchCriteria(): { [key: string]: any } {
-		const raw = this.searchForm.value;
-		console.log('[prepareSearchCriteria] raw:', raw);
-
-		const criteria = Object.entries(raw)
+		const rawValues = this.searchForm.value;
+		const criteria = Object.entries(rawValues)
 			.filter(([_, val]) => val !== null && val !== '')
 			.reduce<{ [key: string]: any }>((acc, [key, val]) => {
 				if (key === 'Id') {
 					const parsed = parseInt(val as string, 10);
-					if (!isNaN(parsed)) {
-						acc[key] = parsed;
-					}
+					if (!isNaN(parsed)) acc[key] = parsed;
 				} else {
 					acc[key] = (val as string).trim();
 				}
 				return acc;
 			}, {});
-
-		console.log('[prepareSearchCriteria] result:', criteria);
 		return criteria;
 	}
 
 	resetFilters(): void {
-		console.log('[resetFilters]');
 		this.searchForm.reset();
+		this.isSearchMode = false;
 		this.currentPage = 1;
 		this.loadStoreNumbers();
 	}
@@ -176,10 +131,8 @@ export class StorePointsStoreNumberListComponent implements OnInit, OnDestroy {
 	}
 
 	goToPage(page: number | string): void {
-		console.log('[goToPage] page=', page);
 		if (typeof page !== 'number') return;
 		if (page < 1 || page > this.totalPages) return;
-
 		this.currentPage = page;
 		if (this.isSearchMode) {
 			this.updateDisplayedStoreNumbers();
@@ -190,7 +143,6 @@ export class StorePointsStoreNumberListComponent implements OnInit, OnDestroy {
 	}
 
 	onPageClick(page: number | string): void {
-		console.log('[onPageClick] page=', page);
 		if (page !== '...') {
 			this.goToPage(page as number);
 		}
@@ -198,14 +150,12 @@ export class StorePointsStoreNumberListComponent implements OnInit, OnDestroy {
 
 	calculateTotalPages(): void {
 		this.totalPages = Math.ceil(this.totalItems / this.pageSize);
-		console.log('[calculateTotalPages]', { totalItems: this.totalItems, pageSize: this.pageSize, totalPages: this.totalPages });
 	}
 
 	updateVisiblePages(): void {
 		const pages: (number | string)[] = [];
-		const totalVisible = 7;
-
-		if (this.totalPages <= totalVisible) {
+		const totalVisiblePages = 7;
+		if (this.totalPages <= totalVisiblePages) {
 			for (let i = 1; i <= this.totalPages; i++) {
 				pages.push(i);
 			}
@@ -232,32 +182,26 @@ export class StorePointsStoreNumberListComponent implements OnInit, OnDestroy {
 				pages.push(this.totalPages);
 			}
 		}
-
 		this.visiblePages = pages;
-		console.log('[updateVisiblePages]', pages);
 	}
 
 	editStoreNumber(id: number | undefined): void {
-		console.log('[editStoreNumber] id=', id);
 		if (id !== undefined) {
-			this.router.navigate([`/storeNumber/edit`, id]);
+			this.router.navigate([`/store-number/edit`, id]);
 		}
 	}
 
 	addStoreNumber(): void {
-		console.log('[addStoreNumber]');
-		this.router.navigate(['/storeNumber/new']);
+		this.router.navigate(['/store-number/new']);
 	}
 
 	toggleSearchForm(): void {
 		this.isExpanded = !this.isExpanded;
-		console.log('[toggleSearchForm] isExpanded=', this.isExpanded);
 	}
 
 	viewStoreNumberDetailsInNewTab(id: number | undefined): void {
-		console.log('[viewStoreNumberDetailsInNewTab] id=', id);
 		if (id !== undefined) {
-			const url = `/storeNumber/details/${id}`;
+			const url = `/store-number/details/${id}`;
 			window.open(url, '_blank');
 		}
 	}

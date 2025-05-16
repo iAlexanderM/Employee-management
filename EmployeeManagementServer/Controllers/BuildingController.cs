@@ -29,92 +29,137 @@ namespace EmployeeManagementServer.Controllers
         [HttpGet]
         public async Task<IActionResult> GetBuildings(
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 25)
+            [FromQuery] int pageSize = 25,
+            [FromQuery] bool? isArchived = null)
         {
-            if (page < 1 || pageSize < 1)
+            try
             {
-                return BadRequest("Page and pageSize must be greater than 0.");
+                if (page < 1 || pageSize < 1)
+                {
+                    return BadRequest("Page and pageSize must be greater than 0.");
+                }
+
+                int skip = (page - 1) * pageSize;
+                int totalBuildings = await _buildingService.GetTotalBuildingsCountAsync(isArchived);
+                var buildings = await _buildingService.GetBuildingsAsync(skip, pageSize, isArchived);
+
+                var buildingDtos = _mapper.Map<List<BuildingDto>>(buildings);
+
+                return Ok(new
+                {
+                    total = totalBuildings,
+                    buildings = buildingDtos
+                });
             }
-
-            int skip = (page - 1) * pageSize;
-            int totalBuildings = await _buildingService.GetTotalBuildingsCountAsync();
-            var buildings = await _buildingService.GetBuildingsAsync(skip, pageSize);
-
-            var buildingDtos = _mapper.Map<List<BuildingDto>>(buildings);
-
-            return Ok(new
+            catch (Exception ex)
             {
-                total = totalBuildings,
-                buildings = buildingDtos
-            });
+                _logger.LogError(ex, "Ошибка при получении зданий");
+                return StatusCode(500, "Ошибка сервера.");
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBuildingById(int id)
         {
-            var building = await _buildingService.GetBuildingByIdAsync(id);
-            if (building == null)
+            try
             {
-                return NotFound("Building not found.");
-            }
+                var building = await _buildingService.GetBuildingByIdAsync(id);
+                if (building == null)
+                {
+                    return NotFound("Building not found.");
+                }
 
-            var buildingDto = _mapper.Map<BuildingDto>(building);
-            return Ok(buildingDto);
+                var buildingDto = _mapper.Map<BuildingDto>(building);
+                return Ok(buildingDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при получении здания с ID {Id}", id);
+                return StatusCode(500, "Ошибка сервера.");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateBuilding([FromBody] BuildingDto buildingDto)
         {
-            if (buildingDto == null || string.IsNullOrWhiteSpace(buildingDto.Name))
+            try
             {
-                return BadRequest("Invalid data.");
+                if (buildingDto == null || string.IsNullOrWhiteSpace(buildingDto.Name))
+                {
+                    return BadRequest("Invalid data.");
+                }
+
+                var building = _mapper.Map<Building>(buildingDto);
+                var createdBuilding = await _buildingService.AddBuildingAsync(building);
+
+                if (createdBuilding == null)
+                {
+                    return Conflict("Building with the same name already exists.");
+                }
+
+                var createdBuildingDto = _mapper.Map<BuildingDto>(createdBuilding);
+                return CreatedAtAction(nameof(GetBuildingById), new { id = createdBuildingDto.Id }, createdBuildingDto);
             }
-
-            var building = _mapper.Map<Building>(buildingDto);
-            var createdBuilding = await _buildingService.AddBuildingAsync(building);
-
-            if (createdBuilding == null)
+            catch (Exception ex)
             {
-                return Conflict("Building with the same name already exists.");
+                _logger.LogError(ex, "Ошибка при создании здания");
+                return StatusCode(500, "Ошибка сервера.");
             }
-
-            var createdBuildingDto = _mapper.Map<BuildingDto>(createdBuilding);
-            return CreatedAtAction(nameof(GetBuildingById), new { id = createdBuildingDto.Id }, createdBuildingDto);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBuilding(int id, [FromBody] BuildingDto buildingDto)
         {
-            if (buildingDto == null || string.IsNullOrWhiteSpace(buildingDto.Name))
+            try
             {
-                return BadRequest("Invalid data.");
+                if (buildingDto == null || string.IsNullOrWhiteSpace(buildingDto.Name))
+                {
+                    return BadRequest("Invalid data.");
+                }
+
+                var result = await _buildingService.UpdateBuildingAsync(id, buildingDto.Name, buildingDto.SortOrder);
+
+                if (result == null)
+                {
+                    return NotFound("Building not found.");
+                }
+
+                if (result == false)
+                {
+                    return Conflict("Building with the same name already exists.");
+                }
+
+                return NoContent();
             }
-
-            var result = await _buildingService.UpdateBuildingAsync(id, buildingDto.Name, buildingDto.SortOrder);
-
-            if (result == null)
+            catch (InvalidOperationException ex)
             {
-                return NotFound("Building not found.");
+                return BadRequest(ex.Message);
             }
-
-            if (result == false)
+            catch (Exception ex)
             {
-                return Conflict("Building with the same name already exists.");
+                _logger.LogError(ex, "Ошибка при обновлении здания с ID {Id}", id);
+                return StatusCode(500, "Ошибка сервера.");
             }
-
-            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> ArchiveBuilding(int id)
         {
-            var success = await _buildingService.ArchiveBuildingAsync(id);
-            if (!success)
+            try
             {
-                return NotFound("Building not found.");
-            }
+                var success = await _buildingService.ArchiveBuildingAsync(id);
+                if (!success)
+                {
+                    return NotFound("Building not found.");
+                }
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при архивировании здания с ID {Id}", id);
+                return StatusCode(500, "Ошибка сервера.");
+            }
         }
     }
 }

@@ -20,12 +20,25 @@ namespace EmployeeManagementServer.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> SearchBuildings([FromQuery] BuildingSearchDto searchDto)
+        public async Task<IActionResult> SearchBuildings(
+            [FromQuery] BuildingSearchDto searchDto,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 25)
         {
             try
             {
-                var buildings = await _searchService.SearchBuildingsAsync(searchDto);
-                return Ok(buildings);
+                if (page < 1 || pageSize < 1)
+                {
+                    return BadRequest("Page and pageSize must be greater than 0.");
+                }
+
+                int skip = (page - 1) * pageSize;
+                var (buildings, total) = await _searchService.SearchBuildingsAsync(searchDto, skip, pageSize);
+                return Ok(new
+                {
+                    total,
+                    buildings
+                });
             }
             catch (Exception ex)
             {

@@ -16,7 +16,6 @@
             'is-invalid':
               buildingForm.get('buildingName')?.invalid && buildingForm.get('buildingName')?.touched
           }" required />
-				<!-- Сообщение об ошибке для поля название здания -->
 				<div *ngIf="buildingForm.get('buildingName')?.invalid && buildingForm.get('buildingName')?.touched"
 					class="invalid-feedback">
 					Название здания обязательно.

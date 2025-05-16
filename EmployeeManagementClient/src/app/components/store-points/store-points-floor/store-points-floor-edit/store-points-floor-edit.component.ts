@@ -15,7 +15,7 @@ import { Floor } from '../../../../models/store-points.model';
 export class StorePointsFloorEditComponent implements OnInit {
 	floorForm: FormGroup;
 	floor: Floor | null = null;
-	errorMessage: string = '';
+	errorMessage = '';
 
 	constructor(
 		private fb: FormBuilder,
@@ -23,17 +23,15 @@ export class StorePointsFloorEditComponent implements OnInit {
 		private router: Router,
 		private storePointsService: StorePointsService
 	) {
-		// Инициализация формы с контролями и валидаторами
 		this.floorForm = this.fb.group({
 			floorName: ['', Validators.required],
-			sortOrder: [0, [Validators.required, Validators.min(0)]],
+			sortOrder: [0, [Validators.required, Validators.min(0)]]
 		});
 	}
 
 	ngOnInit(): void {
 		const id = Number(this.route.snapshot.paramMap.get('id'));
 		if (isNaN(id) || id <= 0) {
-			console.error('Некорректный ID');
 			this.errorMessage = 'Некорректный ID записи.';
 			return;
 		}
@@ -43,19 +41,17 @@ export class StorePointsFloorEditComponent implements OnInit {
 				this.floor = data;
 				this.floorForm.patchValue({
 					floorName: data.name,
-					sortOrder: data.sortOrder ?? 0,
+					sortOrder: data.sortOrder ?? 0
 				});
 			},
 			error: (error) => {
-				console.error('Ошибка при загрузке этажа:', error);
-				this.errorMessage = 'Не удалось загрузить данные этажа.';
+				this.errorMessage = error.message || 'Не удалось загрузить данные этажа.';
 			}
 		});
 	}
 
 	updateFloor(): void {
-		this.errorMessage = ''; // Сброс ошибки
-
+		this.errorMessage = '';
 		if (this.floorForm.valid && this.floor) {
 			const updatedFloorName = this.floorForm.get('floorName')?.value.trim();
 			const updatedSortOrder = this.floorForm.get('sortOrder')?.value;
@@ -65,14 +61,7 @@ export class StorePointsFloorEditComponent implements OnInit {
 					this.router.navigate(['/floor']);
 				},
 				error: (error) => {
-					console.error('Full error object:', error);
-					console.error('Error status:', error?.status);
-
-					if (error?.status === 409) {
-						this.errorMessage = 'Этаж с таким именем или сортировкой уже существует. Пожалуйста, выберите другие значения.';
-					} else {
-						this.errorMessage = 'Произошла ошибка при обновлении этажа. Попробуйте снова.';
-					}
+					this.errorMessage = error.message || 'Произошла ошибка при обновлении этажа.';
 				}
 			});
 		} else {

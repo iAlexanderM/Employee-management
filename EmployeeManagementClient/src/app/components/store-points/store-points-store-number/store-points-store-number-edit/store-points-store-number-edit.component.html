@@ -2,27 +2,44 @@
 	<h2>Редактирование записи №{{ storeNumber.id }}</h2>
 
 	<!-- Блок отображения ошибки -->
-	<div *ngIf="errorMessage" class="error-message">
+	<div *ngIf="errorMessage" class="alert alert-danger">
 		<p>{{ errorMessage }}</p>
 	</div>
 
+	<!-- Форма редактирования -->
 	<form [formGroup]="storeNumberForm" (ngSubmit)="updateStoreNumber()">
 		<div class="form-group">
 			<label for="storeNumberName">Название:</label>
 			<div class="input-container">
-				<input id="storeNumberName" type="text" placeholder="Введите название точки" formControlName="name"
-					required />
+				<input id="storeNumberName" type="text" class="form-control" placeholder="Введите название store-number"
+					formControlName="storeNumberName" [ngClass]="{
+            'is-invalid':
+              storeNumberForm.get('storeNumberName')?.invalid && storeNumberForm.get('storeNumberName')?.touched
+          }" required />
+				<!-- Сообщение об ошибке для поля название -->
+				<div *ngIf="storeNumberForm.get('storeNumberName')?.invalid && storeNumberForm.get('storeNumberName')?.touched"
+					class="invalid-feedback">
+					Название store-number обязательно.
+				</div>
 			</div>
 		</div>
 
 		<div class="form-group">
 			<label for="sortOrder">Сортировка:</label>
 			<div class="input-container">
-				<input id="sortOrder" type="number" placeholder="Введите порядок сортировки" formControlName="sortOrder"
-					required />
+				<input id="sortOrder" type="number" class="form-control" placeholder="Введите порядок сортировки"
+					formControlName="sortOrder" [ngClass]="{
+            'is-invalid':
+              storeNumberForm.get('sortOrder')?.invalid && storeNumberForm.get('sortOrder')?.touched
+          }" required />
+				<!-- Сообщение об ошибке для поля сортировка -->
+				<div *ngIf="storeNumberForm.get('sortOrder')?.invalid && storeNumberForm.get('sortOrder')?.touched"
+					class="invalid-feedback">
+					Номер сортировки должен быть неотрицательным.
+				</div>
 			</div>
 		</div>
 
-		<button type="submit" class="btn btn-primary">Сохранить</button>
+		<button type="submit" class="btn btn-primary" [disabled]="storeNumberForm.invalid">Сохранить</button>
 	</form>
 </div>

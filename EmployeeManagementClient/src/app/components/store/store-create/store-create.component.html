@@ -122,44 +122,8 @@
 				<button type="submit" class="btn btn-primary me-2" [disabled]="storeForm.invalid">Создать</button>
 				<button type="button" class="btn btn-secondary" (click)="navigateBack()">Отмена</button>
 			</div>
-			<button type="button" class="btn btn-primary" (click)="toggleHistory()">
-				{{ showHistory ? 'Скрыть историю' : 'Показать историю' }}
-			</button>
 		</div>
 	</form>
-
-	<!-- История изменений -->
-	<div *ngIf="showHistory" class="mt-4">
-		<h3>История изменений</h3>
-		<div *ngIf="isLoadingHistory" class="text-center">
-			<div class="spinner-border" role="status">
-				<span class="visually-hidden">Загрузка...</span>
-			</div>
-		</div>
-		<table *ngIf="!isLoadingHistory && historyEntries.length > 0" class="table table-bordered">
-			<thead>
-				<tr>
-					<th>Дата и время</th>
-					<th>Действие</th>
-					<th>Пользователь</th>
-					<th>Подробности</th>
-					<th>Изменения</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr *ngFor="let entry of historyEntries">
-					<td>{{ entry.timestamp ? (entry.timestamp | date: 'dd.MM.yyyy HH:mm:ss') : 'Неизвестно' }}</td>
-					<td>{{ formatHistoryAction(entry.action) }}</td>
-					<td>{{ entry.user || 'Неизвестно' }}</td>
-					<td>{{ entry.details || 'Нет подробностей' }}</td>
-					<td>{{ formatHistoryChanges(entry.changes) }}</td>
-				</tr>
-			</tbody>
-		</table>
-		<div *ngIf="!isLoadingHistory && historyEntries.length === 0" class="alert alert-info">
-			История изменений не найдена.
-		</div>
-	</div>
 
 	<!-- Модальное окно -->
 	<app-store-select-or-add-modal *ngIf="isModalOpen" [fieldName]="modalField" [mode]="modalMode"

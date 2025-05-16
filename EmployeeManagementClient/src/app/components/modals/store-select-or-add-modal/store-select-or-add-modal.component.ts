@@ -1,12 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-	FormsModule,
-	ReactiveFormsModule,
-	FormBuilder,
-	FormGroup,
-	Validators
-} from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { StorePointsService } from '../../../services/store-points.service';
 import { Observable, Subscription } from 'rxjs';
 
@@ -26,20 +20,18 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 
 	currentPage = 1;
 	pageSize = 25;
-	totalItems: number = 0;
-	totalPages: number = 0;
+	totalItems = 0;
+	totalPages = 0;
 	items: any[] = [];
 	filteredItems: any[] = [];
 	searchForm: FormGroup;
 	addForm: FormGroup;
-	newItemName: string = '';
-	errorMessage: string = '';
-	isExpanded: boolean = true;
+	errorMessage = '';
+	isExpanded = true;
 	visiblePages: (number | string)[] = [];
-	isSearchMode: boolean = false;
-	pageSizeOptions: number[] = [25, 50, 100];
-
-	pageSizeControl = new FormBuilder().control(this.pageSize);
+	isSearchMode = false;
+	pageSizeOptions = [25, 50, 100];
+	pageSizeControl!: FormControl;
 
 	private subscriptions: Subscription[] = [];
 
@@ -55,20 +47,17 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 		this.addForm = this.fb.group({
 			newItemName: ['', Validators.required]
 		});
+
+		this.pageSizeControl = this.fb.control(this.pageSize);
 	}
 
 	get fieldNameTranslated(): string {
 		switch (this.fieldName) {
-			case 'building':
-				return 'Здание';
-			case 'floor':
-				return 'Этаж';
-			case 'line':
-				return 'Линия';
-			case 'storeNumber':
-				return 'Торговая точка';
-			default:
-				return this.fieldName;
+			case 'building': return 'Здание';
+			case 'floor': return 'Этаж';
+			case 'line': return 'Линия';
+			case 'storeNumber': return 'Торговая точка';
+			default: return this.fieldName;
 		}
 	}
 
@@ -115,78 +104,59 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 	loadItems() {
 		const loadMethod = this.getLoadMethod();
 		const fieldKey = this.getFieldKey();
-		loadMethod(this.currentPage, this.pageSize).subscribe(
-			(data: any) => {
+		// Pass isArchived=false to fetch only non-archived items
+		loadMethod(this.currentPage, this.pageSize, {}, false).subscribe({
+			next: (data: any) => {
 				this.items = data[fieldKey] || [];
 				this.filteredItems = this.items;
 				this.totalItems = data.total || this.items.length;
 				this.calculateTotalPages();
 				this.updateVisiblePages();
 			},
-			(error: any) => {
+			error: (error: any) => {
 				this.errorMessage = 'Ошибка загрузки данных';
 				console.error(error);
 			}
-		);
+		});
 	}
 
-	getLoadMethod(): (page: number, pageSize: number) => Observable<any> {
+	getLoadMethod(): (page: number, pageSize: number, filters: { [key: string]: any }, isArchived: boolean) => Observable<any> {
 		switch (this.fieldName) {
-			case 'building':
-				return this.storePointsService.getBuildings.bind(this.storePointsService);
-			case 'floor':
-				return this.storePointsService.getFloors.bind(this.storePointsService);
-			case 'line':
-				return this.storePointsService.getLines.bind(this.storePointsService);
-			case 'storeNumber':
-				return this.storePointsService.getStoreNumbers.bind(this.storePointsService);
-			default:
-				throw new Error('Неизвестный тип записи');
+			case 'building': return this.storePointsService.getBuildings.bind(this.storePointsService);
+			case 'floor': return this.storePointsService.getFloors.bind(this.storePointsService);
+			case 'line': return this.storePointsService.getLines.bind(this.storePointsService);
+			case 'storeNumber': return this.storePointsService.getStoreNumbers.bind(this.storePointsService);
+			default: throw new Error('Неизвестный тип записи');
 		}
 	}
 
-	getSearchMethod(): (criteria: { [key: string]: any }) => Observable<any> {
+	getSearchMethod(): (criteria: { [key: string]: any }, isArchived: boolean) => Observable<any> {
 		switch (this.fieldName) {
-			case 'building':
-				return this.storePointsService.searchBuildings.bind(this.storePointsService);
-			case 'floor':
-				return this.storePointsService.searchFloors.bind(this.storePointsService);
-			case 'line':
-				return this.storePointsService.searchLines.bind(this.storePointsService);
-			case 'storeNumber':
-				return this.storePointsService.searchStoreNumbers.bind(this.storePointsService);
-			default:
-				throw new Error('Неизвестный тип записи');
+			case 'building': return this.storePointsService.searchBuildings.bind(this.storePointsService);
+			case 'floor': return this.storePointsService.searchFloors.bind(this.storePointsService);
+			case 'line': return this.storePointsService.searchLines.bind(this.storePointsService);
+			case 'storeNumber': return this.storePointsService.searchStoreNumbers.bind(this.storePointsService);
+			default: throw new Error('Неизвестный тип записи');
 		}
 	}
 
 	getAddMethod(): (name: string) => Observable<any> {
 		switch (this.fieldName) {
-			case 'building':
-				return this.storePointsService.addBuilding.bind(this.storePointsService);
-			case 'floor':
-				return this.storePointsService.addFloor.bind(this.storePointsService);
-			case 'line':
-				return this.storePointsService.addLine.bind(this.storePointsService);
-			case 'storeNumber':
-				return this.storePointsService.addStoreNumber.bind(this.storePointsService);
-			default:
-				throw new Error('Неизвестный тип записи');
+			case 'building': return this.storePointsService.addBuilding.bind(this.storePointsService);
+			case 'floor': return this.storePointsService.addFloor.bind(this.storePointsService);
+			case 'line': return this.storePointsService.addLine.bind(this.storePointsService);
+			case 'storeNumber': return this.storePointsService.addStoreNumber.bind(this.storePointsService);
+			default: throw new Error('Неизвестный тип записи');
 		}
 	}
 
 	getFieldKey(): string {
 		switch (this.fieldName) {
-			case 'building':
-				return 'buildings';
-			case 'floor':
-				return 'floors';
-			case 'line':
-				return 'lines';
-			case 'storeNumber':
-				return 'storeNumbers';
-			default:
-				throw new Error('Неизвестный тип записи');
+			case 'building': return 'buildings';
+			case 'floor': return 'floors';
+			case 'line': return 'lines';
+			case 'storeNumber': return 'storeNumbers';
+			default: throw new Error('Неизвестный тип записи');
 		}
 	}
 
@@ -196,7 +166,6 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 
 	updateVisiblePages() {
 		const pages: (number | string)[] = [];
-
 		if (this.totalPages <= 7) {
 			for (let i = 1; i <= this.totalPages; i++) {
 				pages.push(i);
@@ -224,7 +193,6 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 				pages.push(this.totalPages);
 			}
 		}
-
 		this.visiblePages = pages;
 	}
 
@@ -243,12 +211,8 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 	prepareSearchCriteria(): { [key: string]: any } {
 		const criteria: { [key: string]: any } = {};
 		const { Id, Name } = this.searchForm.value;
-		if (Id) {
-			criteria['Id'] = Id;
-		}
-		if (Name) {
-			criteria['Name'] = Name.trim();
-		}
+		if (Id) criteria['Id'] = Id;
+		if (Name) criteria['Name'] = Name.trim();
 		return criteria;
 	}
 
@@ -259,19 +223,20 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 		const criteria = this.prepareSearchCriteria();
 		const fieldKey = this.getFieldKey();
 
-		searchMethod(criteria).subscribe(
-			(data: any) => {
+		// Pass isArchived=false for search
+		searchMethod(criteria, false).subscribe({
+			next: (data: any) => {
 				this.items = data[fieldKey] || [];
-				this.totalItems = this.items.length;
+				this.totalItems = data.total || this.items.length;
 				this.calculateTotalPages();
 				this.updateVisiblePages();
 				this.updateDisplayedItems();
 			},
-			(error: any) => {
+			error: (error: any) => {
 				this.errorMessage = 'Ошибка выполнения поиска';
 				console.error(error);
 			}
-		);
+		});
 	}
 
 	resetFilters(): void {
@@ -287,35 +252,28 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 	}
 
 	addItem(): void {
-		console.log('Form value:', this.addForm.value);
 		if (this.addForm.invalid) {
 			this.errorMessage = 'Название не может быть пустым';
 			return;
 		}
 
 		const newItemName = this.addForm.get('newItemName')?.value.trim();
-		console.log('newItemName after trim:', newItemName);
 		const addMethod = this.getAddMethod();
-		addMethod(newItemName).subscribe(
-			(response: any) => {
+		addMethod(newItemName).subscribe({
+			next: (response: any) => {
 				this.itemAdded.emit(response.name);
 				this.closeModal();
 			},
-			(error: any) => {
-				if (error.status === 409) {
-					this.errorMessage = 'Запись с таким именем уже существует. Пожалуйста, выберите другое имя.';
-				} else {
-					this.errorMessage = 'Произошла ошибка. Пожалуйста, попробуйте еще раз.';
-				}
+			error: (error: any) => {
+				this.errorMessage = error.message || 'Произошла ошибка. Пожалуйста, попробуйте еще раз.';
 			}
-		);
+		});
 	}
 
 	onPageSizeChange(): void {
 		this.currentPage = 1;
 		this.calculateTotalPages();
 		this.updateVisiblePages();
-
 		if (this.isSearchMode) {
 			this.updateDisplayedItems();
 		} else {

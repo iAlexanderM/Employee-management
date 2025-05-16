@@ -1,20 +1,27 @@
-<div class="container">
-	<h2>Добавить запись в справочник "Точки"</h2>
+<div class="container mt-4">
+	<h2>Добавить запись в справочник "Точка"</h2>
 
 	<!-- Блок отображения ошибки -->
-	<div *ngIf="errorMessage" class="error-message">
+	<div *ngIf="errorMessage" class="alert alert-danger">
 		<p>{{ errorMessage }}</p>
 	</div>
 
+	<!-- Форма добавления -->
 	<form [formGroup]="storeNumberForm" (ngSubmit)="addStoreNumber()">
 		<div class="form-group">
 			<label for="storeNumberName">Название точки:</label>
 			<div class="input-container">
-				<input id="storeNumberName" type="text" placeholder="Введите название точки" formControlName="name"
-					required />
+				<input id="storeNumberName" type="text" class="form-control" placeholder="Введите название здания"
+					formControlName="storeNumberName" [ngClass]="{
+            'is-invalid':
+			storeNumberForm.get('storeNumberName')?.invalid && storeNumberForm.get('storeNumberName')?.touched
+          }" required />
+				<div *ngIf="storeNumberForm.get('storeNumberName')?.invalid && storeNumberForm.get('storeNumberName')?.touched"
+					class="invalid-feedback">
+					Название точки обязательно.
+				</div>
 			</div>
 		</div>
-
-		<button type="submit" class="btn btn-primary">Добавить</button>
+		<button type="submit" class="btn btn-primary" [disabled]="storeNumberForm.invalid">Добавить</button>
 	</form>
 </div>

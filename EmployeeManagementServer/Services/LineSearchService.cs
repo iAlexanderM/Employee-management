@@ -28,7 +28,7 @@ namespace EmployeeManagementServer.Services
 
             query = ApplyFilters(query, searchDto);
 
-            var result = await query.ToListAsync();
+            var result = await query.OrderBy(l => l.SortOrder ?? l.Id).ToListAsync();
             _logger.LogInformation("Поиск завершён. Найдено линий: {count}", result.Count);
 
             return result;
@@ -44,6 +44,11 @@ namespace EmployeeManagementServer.Services
             if (!string.IsNullOrEmpty(searchDto.Name))
             {
                 query = query.Where(l => EF.Functions.ILike(l.Name.Trim(), $"%{searchDto.Name.Trim()}%"));
+            }
+
+            if (searchDto.IsArchived.HasValue)
+            {
+                query = query.Where(l => l.IsArchived == searchDto.IsArchived.Value);
             }
 
             return query;

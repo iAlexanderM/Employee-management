@@ -37,6 +37,10 @@ export class StorePointsLineEditComponent implements OnInit {
 
 	ngOnInit(): void {
 		const id = Number(this.route.snapshot.paramMap.get('id'));
+		if (isNaN(id) || id <= 0) {
+			this.errorMessage = 'Некорректный ID записи.';
+			return;
+		}
 		this.storePointsService.getLineById(id).subscribe(data => {
 			this.line = data;
 
@@ -50,6 +54,7 @@ export class StorePointsLineEditComponent implements OnInit {
 
 	updateLine(): void {
 		if (!this.line) return;  // если по какой-то причине line ещё не загрузился
+		this.errorMessage = '';
 
 		if (this.lineForm.invalid) {
 			this.errorMessage = 'Пожалуйста, заполните все обязательные поля.';

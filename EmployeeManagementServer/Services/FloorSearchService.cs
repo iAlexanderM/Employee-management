@@ -28,7 +28,7 @@ namespace EmployeeManagementServer.Services
 
             query = ApplyFilters(query, searchDto);
 
-            var result = await query.ToListAsync();
+            var result = await query.OrderBy(f => f.SortOrder ?? f.Id).ToListAsync();
             _logger.LogInformation("Поиск завершён. Найдено этажей: {count}", result.Count);
 
             return result;
@@ -44,6 +44,11 @@ namespace EmployeeManagementServer.Services
             if (!string.IsNullOrEmpty(searchDto.Name))
             {
                 query = query.Where(f => EF.Functions.ILike(f.Name.Trim(), $"%{searchDto.Name.Trim()}%"));
+            }
+
+            if (searchDto.IsArchived.HasValue)
+            {
+                query = query.Where(f => f.IsArchived == searchDto.IsArchived.Value);
             }
 
             return query;

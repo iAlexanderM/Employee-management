@@ -35,7 +35,8 @@ namespace EmployeeManagementServer.Controllers
             [FromQuery] string? building = null,
             [FromQuery] string? floor = null,
             [FromQuery] string? line = null,
-            [FromQuery] string? storeNumber = null)
+            [FromQuery] string? storeNumber = null,
+            [FromQuery] bool? isArchived = null)
         {
             try
             {
@@ -45,8 +46,8 @@ namespace EmployeeManagementServer.Controllers
                 }
 
                 int skip = (page - 1) * pageSize;
-                int totalStores = await _storeService.GetTotalStoresCountAsync(building, floor, line, storeNumber);
-                var stores = await _storeService.GetAllStoresAsync(skip, pageSize, building, floor, line, storeNumber);
+                int totalStores = await _storeService.GetTotalStoresCountAsync(building, floor, line, storeNumber, isArchived);
+                var stores = await _storeService.GetAllStoresAsync(skip, pageSize, building, floor, line, storeNumber, isArchived);
                 var storeDtos = _mapper.Map<List<StoreDto>>(stores);
 
                 var response = new
@@ -85,7 +86,7 @@ namespace EmployeeManagementServer.Controllers
                 if (store == null)
                 {
                     _logger.LogWarning("Магазин с ID {Id} не найден.", id);
-                    return NotFound();
+                    return NotFound("Магазин не найден.");
                 }
 
                 var storeDto = _mapper.Map<StoreDto>(store);
@@ -169,7 +170,7 @@ namespace EmployeeManagementServer.Controllers
 
                 if (result == null)
                 {
-                    return NotFound("Магазин не найден или архивирован.");
+                    return NotFound("Магазин не найден.");
                 }
 
                 return NoContent();

@@ -1,9 +1,9 @@
-﻿using EmployeeManagementServer.Models;
-using EmployeeManagementServer.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using EmployeeManagementServer.Models;
+using EmployeeManagementServer.Data;
 
 namespace EmployeeManagementServer.Services
 {
@@ -16,16 +16,31 @@ namespace EmployeeManagementServer.Services
             _context = context;
         }
 
-        public async Task<int> GetTotalBuildingsCountAsync()
+        public async Task<int> GetTotalBuildingsCountAsync(bool? isArchived = null)
         {
-            return await _context.Buildings.CountAsync(b => !b.IsArchived);
+            var query = _context.Buildings.AsQueryable();
+
+            if (isArchived.HasValue)
+            {
+                query = query.Where(b => b.IsArchived == isArchived.Value);
+            }
+
+            return await query.CountAsync();
         }
 
-        public async Task<List<Building>> GetBuildingsAsync(int skip, int pageSize)
+        public async Task<List<Building>> GetBuildingsAsync(int skip, int pageSize, bool? isArchived = null)
         {
-            return await _context.Buildings
-                .Where(b => !b.IsArchived)
-                .OrderBy(b => b.SortOrder ?? b.Id) // Сортировка по SortOrder или Id
+            var query = _context.Buildings.AsQueryable();
+
+            if (isArchived.HasValue)
+            {
+                query = query.Where(b => b.IsArchived == isArchived.Value);
+            }
+
+            return await query
+                .OrderBy(b => b.SortOrder == null ? 1 : 0)
+                .ThenBy(b => b.SortOrder ?? int.MaxValue)
+                .ThenBy(b => b.Id)
                 .Skip(skip)
                 .Take(pageSize)
                 .ToListAsync();
@@ -33,14 +48,13 @@ namespace EmployeeManagementServer.Services
 
         public async Task<Building> GetBuildingByIdAsync(int id)
         {
-            return await _context.Buildings.FirstOrDefaultAsync(b => b.Id == id && !b.IsArchived);
+            return await _context.Buildings.FirstOrDefaultAsync(b => b.Id == id);
         }
 
         public async Task<Building> AddBuildingAsync(Building building)
         {
             building.Name = NormalizeName(building.Name);
 
-            // Проверка на дублирование имени
             if (await _context.Buildings.AnyAsync(b => b.Name == building.Name && !b.IsArchived))
             {
                 return null;
@@ -49,7 +63,6 @@ namespace EmployeeManagementServer.Services
             _context.Buildings.Add(building);
             await _context.SaveChangesAsync();
 
-            // Если SortOrder не указан, назначаем его равным Id
             if (!building.SortOrder.HasValue)
             {
                 building.SortOrder = building.Id;
@@ -65,18 +78,16 @@ namespace EmployeeManagementServer.Services
             newName = NormalizeName(newName);
 
             var building = await _context.Buildings.FindAsync(id);
-            if (building == null || building.IsArchived)
+            if (building == null)
             {
                 return null;
             }
 
-            // Проверка на уникальность имени
-            if (await _context.Buildings.AnyAsync(b => b.Name == newName && b.Id != id))
+            if (await _context.Buildings.AnyAsync(b => b.Name == newName && b.Id != id && !b.IsArchived))
             {
                 return false;
             }
 
-            // Проверка на дублирование SortOrder
             if (sortOrder.HasValue && await _context.Buildings.AnyAsync(b => b.SortOrder == sortOrder && b.Id != id))
             {
                 throw new InvalidOperationException("Здание с таким значением SortOrder уже существует.");
@@ -85,7 +96,7 @@ namespace EmployeeManagementServer.Services
             building.Name = newName;
             building.SortOrder = sortOrder ?? building.SortOrder;
 
-            _context.Entry(building).Property(b => b.CreatedAt).IsModified = false; // Сохраняем дату создания
+            _context.Entry(building).Property(b => b.CreatedAt).IsModified = false;
             await _context.SaveChangesAsync();
             return true;
         }

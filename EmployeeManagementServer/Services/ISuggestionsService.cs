@@ -1,7 +1,7 @@
 ﻿public interface ISuggestionsService
 {
-    IEnumerable<string> GetBuildingSuggestions(string query);
-    IEnumerable<string> GetFloorSuggestions(string query);
-    IEnumerable<string> GetLineSuggestions(string query);
-    IEnumerable<string> GetStoreNumberSuggestions(string query);
+    IEnumerable<string> GetBuildingSuggestions(string query, bool? isArchived = null);
+    IEnumerable<string> GetFloorSuggestions(string query, bool? isArchived = null);
+    IEnumerable<string> GetLineSuggestions(string query, bool? isArchived = null);
+    IEnumerable<string> GetStoreNumberSuggestions(string query, bool? isArchived = null);
 }

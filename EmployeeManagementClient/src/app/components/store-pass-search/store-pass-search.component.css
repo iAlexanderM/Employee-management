@@ -1,326 +1,177 @@
-/* Панель заголовка */
 .panel-header-sm {
-	height: 24px;
-	background: linear-gradient(90deg, #2196f3 0%, #00bcd4 100%);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	height: 60px;
+	background: linear-gradient(60deg, #26c6da, #00acc1);
+	box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(0, 188, 212, 0.4);
 }
 
-/* Основной контейнер */
 .main-content {
-	padding: 8px;
-	min-height: calc(100vh - 24px);
-	background: #f5f7fa;
-	position: relative;
-	box-sizing: border-box;
+	padding: 20px;
+	overflow-y: auto;
+	height: calc(100vh - 60px);
 }
 
-/* Карточка */
 .card {
 	border-radius: 8px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	margin-bottom: 20px;
-	background: #fff;
 }
 
 .card-header {
-	padding: 6px 10px;
-	border-bottom: 1px solid #e0e0e0;
+	padding: 16px;
+	border-bottom: 1px solid #ddd;
 }
 
 .card-title {
 	margin: 0;
-	font-size: 1.05rem;
-	font-weight: 500;
-	color: #1976d2;
+	font-size: 1.5rem;
+	font-weight: 400;
 }
 
 .card-body {
-	padding: 8px;
+	padding: 16px;
 }
 
-/* Table container */
-.table-container {
+.table-responsive {
 	width: 100%;
-	max-width: 100vw;
-	box-sizing: border-box;
-	overflow-x: auto;
-	/* Added for responsiveness */
-}
-
-/* Расстояние между полями формы (контейнер формы) */
-.row.mb-2 {
-	display: flex;
-	flex-direction: column;
-	gap: 0px !important;
-	width: 400px !important;
-	margin: 0 !important;
-	padding: 0px !important;
-}
-
-/* Стили для колонок формы */
-.col-md-3 {
-	width: 100% !important;
-	padding: 0 !important;
-	margin: 0 !important;
-	margin-bottom: -20px !important;
-}
-
-/* Фиксированная структура таблицы - Outer Table */
-.contractor-table {
-	table-layout: fixed;
-	width: 100%;
-	max-width: 100%;
-	animation: fadeIn 0.3s ease-in;
-}
-
-.contractor-table th,
-.contractor-table td {
-	padding: 8px;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	border: 1px solid #e0e0e0;
-}
-
-.contractor-table td {
-	white-space: normal;
-	vertical-align: middle;
-	height: auto;
-	padding: 12px 8px;
-}
-
-/* Name cell specific styling */
-.name-cell {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	padding: 8px 4px;
-}
-
-.name-cell span {
-	display: block;
-	line-height: 1.4;
-	white-space: normal;
 	overflow: visible;
-	font-size: 0.9em;
 }
 
-/* Actions cell */
-.actions-cell {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
-
-.actions-cell button {
+.table {
 	width: 100%;
-	margin: 0;
+	border-collapse: collapse;
+	background: transparent;
 }
 
-/* Image cells styling */
-.img-cell {
-	text-align: center;
-	width: 100px !important;
-	padding: 4px !important;
+.table th,
+.table td {
+	padding: 12px 15px;
+	border-bottom: 1px solid #ddd;
+	white-space: nowrap;
+	font-size: 16px;
 	vertical-align: middle;
 }
 
-.contractor-img,
-.document-img {
-	width: 92px;
-	height: 92px;
-	object-fit: cover;
-	border-radius: 4px;
-	display: block;
-	margin: 0 auto;
-	max-width: 150px;
-	max-height: 150px;
+.table th {
+	font-weight: 500;
+	color: #3f51b5;
+	height: 50px;
+	/* Reduced from 220px for practicality */
 }
 
-/* Распределение ширины столбцов - Outer Table */
-.contractor-table th:nth-child(1),
-.contractor-table td:nth-child(1) {
-	width: 5%;
-}
-
-.contractor-table th:nth-child(2),
-.contractor-table td:nth-child(2),
-.contractor-table th:nth-child(3),
-.contractor-table td:nth-child(3) {
-	width: 100px;
-}
-
-.contractor-table th:nth-child(4),
-.contractor-table td:nth-child(4) {
-	width: 200px;
-}
-
-.contractor-table th:nth-child(5),
-.contractor-table td:nth-child(5),
-.contractor-table th:nth-child(6),
-.contractor-table td:nth-child(6),
-.contractor-table th:nth-child(7),
-.contractor-table td:nth-child(7),
-.contractor-table th:nth-child(8),
-.contractor-table td:nth-child(8) {
-	width: 10%;
-}
-
-.contractor-table th:nth-child(9),
-.contractor-table td:nth-child(9),
-.contractor-table th:nth-child(10),
-.contractor-table td:nth-child(10) {
-	width: 8%;
-}
-
-.contractor-table th:nth-child(11),
-.contractor-table td:nth-child(11) {
-	width: 150px;
-}
-
-/* Внутренняя таблица в expansion panel */
-.inner-table {
-	table-layout: fixed;
-	width: 100%;
+.table tr {
+	height: 60px;
+	/* Reduced from 400px for better UX */
 }
 
 .inner-table th,
 .inner-table td {
-	padding: 6px 8px;
-	border: 1px solid #e0e0e0;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	padding: 10px 15px;
+	font-size: 14px;
 	vertical-align: middle;
-	text-align: center;
-	font-size: 12px;
-	/* Further reduced from 13px */
 }
 
-.inner-table td {
-	white-space: normal;
+.inner-table th {
+	height: 40px;
+	/* Reduced from 220px */
 }
 
-/* Left-align Место data cells */
-.inner-table td:nth-child(8) {
-	text-align: left;
+.inner-table tr {
+	height: 50px;
+	/* Reduced from 400px */
 }
 
-/* Column widths for inner-table */
-.inner-table th:nth-child(1),
-.inner-table td:nth-child(1) {
-	width: 35px;
+.contractor-img,
+.document-img {
+	width: 100px;
+	/* Reduced from 200px for better fit */
+	height: 60px;
+	object-fit: cover;
+	cursor: pointer;
+	border-radius: 4px;
+	margin-right: 10px;
+	vertical-align: middle;
 }
 
-/* Цвет */
-.inner-table th:nth-child(2),
-.inner-table td:nth-child(2) {
-	width: 85px;
+.action-buttons {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+	align-items: center;
 }
 
-/* Тип */
-.inner-table th:nth-child(3),
-.inner-table td:nth-child(3) {
-	width: 50px;
+.action-buttons-inline {
+	display: flex;
+	gap: 10px;
 }
 
-/* Срок */
-.inner-table th:nth-child(4),
-.inner-table td:nth-child(4) {
-	width: 80px;
+.pass-list-container {
+	padding: 15px;
+	background: #f9f9f9;
 }
 
-/* Стоимость */
-.inner-table th:nth-child(5),
-.inner-table td:nth-child(5) {
-	width: 75px;
+.inner-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 8px;
 }
 
-/* Дата выдачи */
-.inner-table th:nth-child(6),
-.inner-table td:nth-child(6) {
-	width: 75px;
-}
-
-/* Дата начала */
-.inner-table th:nth-child(7),
-.inner-table td:nth-child(7) {
-	width: 75px;
-}
-
-/* Дата окончания */
-/* Место (8) takes remaining space, no width set */
-.inner-table th:nth-child(9),
-.inner-table td:nth-child(9) {
-	width: 85px;
-}
-
-/* Должность */
-.inner-table th:nth-child(10),
-.inner-table td:nth-child(10) {
-	width: 140px;
-}
-
-/* Действия/Причина закрытия */
-
-/* Стили для кнопок во внутренней таблице */
-.inner-table button {
-	margin: 2px;
-	width: auto;
-	min-width: 70px;
-	/* Slightly reduced to match smaller font */
-	font-size: 12px;
-	/* Match table font size */
-}
-
-/* Color circle for pass type */
 .color-circle {
 	display: inline-block;
 	width: 16px;
 	height: 16px;
 	border-radius: 50%;
-	border: 1px solid #ccc;
 	vertical-align: middle;
 }
 
-/* Анимация появления таблицы */
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-	}
-
-	to {
-		opacity: 1;
-	}
+.text-center {
+	text-align: center;
 }
 
-/* Для отладки (можно убрать) */
-.contractor-table.first-table,
-.contractor-table.last-table {
-	border: 1px solid #ddd;
+.text-muted {
+	color: #6c757d;
 }
 
-/* Reduced margins */
-.mb-2 {
-	margin-bottom: 4px;
+.error-message {
+	font-size: 14px;
 }
 
-.mt-3 {
-	margin-top: 8px;
+.w-100 {
+	width: 100%;
 }
 
-.mb-4 {
-	margin-bottom: 12px;
-}
-
-/* Стили для кнопок */
-button[mat-raised-button],
-button[mat-stroked-button],
-button[mat-flat-button] {
-	padding: 4px 8px;
-	min-height: 30px;
-	line-height: 24px;
+.d-flex {
+	display: flex;
 }
 
 .gap-2 {
-	gap: 4px;
+	gap: 8px;
+}
+
+.justify-content-between {
+	justify-content: space-between;
+}
+
+.align-items-center {
+	align-items: center;
+}
+
+.mb-4 {
+	margin-bottom: 16px;
+}
+
+.mt-3 {
+	margin-top: 12px;
+}
+
+.ms-3 {
+	margin-left: 12px;
+}
+
+.text-danger {
+	color: #dc3545;
+}
+
+tr.detail-row {
+	height: auto !important;
+	background: #f9f9f9;
 }

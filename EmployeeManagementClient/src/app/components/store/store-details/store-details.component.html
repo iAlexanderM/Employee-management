@@ -1,126 +1,108 @@
-<div class="container mt-4">
-	<h2 class="mb-4">Детали торговой точки</h2>
-
-	<!-- Сообщение об ошибке -->
-	<div *ngIf="errorMessage" class="alert alert-danger" role="alert">
-		{{ errorMessage }}
-	</div>
-
-	<!-- Основной контент -->
-	<div class="content-grid" *ngIf="store" @fadeIn>
-		<!-- Информация о магазине -->
-		<div class="section-card mb-4">
-			<h3 class="section-title">Информация</h3>
-			<div class="info-list">
-				<div class="info-item">
-					<span class="info-label">ID</span>
-					<span class="info-value">{{ store.id }}</span>
+<div class="container mt-4" *ngIf="store" @fadeIn>
+	<h2>Детали торговой точки</h2>
+	<div class="card">
+		<div class="card-body">
+			<div class="row">
+				<div class="col-md-6">
+					<p><strong>ID:</strong> {{ store.id }}</p>
+					<p><strong>Здание:</strong> {{ store.building }}</p>
+					<p><strong>Этаж:</strong> {{ store.floor }}</p>
+					<p><strong>Линия:</strong> {{ store.line }}</p>
 				</div>
-				<div class="info-item">
-					<span class="info-label">Здание</span>
-					<span class="info-value">{{ store.building }}</span>
-				</div>
-				<div class="info-item">
-					<span class="info-label">Этаж</span>
-					<span class="info-value">{{ store.floor }}</span>
-				</div>
-				<div class="info-item">
-					<span class="info-label">Линия</span>
-					<span class="info-value">{{ store.line }}</span>
-				</div>
-				<div class="info-item">
-					<span class="info-label">Торговая точка</span>
-					<span class="info-value">{{ store.storeNumber }}</span>
-				</div>
-				<div class="info-item">
-					<span class="info-label">Порядок сортировки</span>
-					<span class="info-value">{{ store.sortOrder || 'Не указан' }}</span>
-				</div>
-				<div class="info-item">
-					<span class="info-label">Дата создания</span>
-					<span class="info-value">{{ store.createdAt | date:'dd.MM.yyyy HH:mm' }}</span>
-				</div>
-				<div class="info-item">
-					<span class="info-label">Статус</span>
-					<span class="info-value">{{ store.isArchived ? 'Архивировано' : 'Активно' }}</span>
+				<div class="col-md-6">
+					<p><strong>Торговая точка:</strong> {{ store.storeNumber }}</p>
+					<p><strong>Статус:</strong> {{ store.isArchived ? 'Архивировано' : 'Активно' }}</p>
+					<p><strong>Создано:</strong> {{ store.createdAt | date: 'dd.MM.yyyy' }}</p>
+					<p><strong>Порядок сортировки:</strong> {{ store.sortOrder }}</p>
 				</div>
 			</div>
-		</div>
 
-		<!-- Заметка -->
-		<div class="section-card mb-4">
-			<h3 class="section-title">Заметка</h3>
-			<form [formGroup]="noteForm" (ngSubmit)="saveNote()" class="note-form">
-				<textarea formControlName="note" class="form-control" rows="3" placeholder="Введите заметку"
-					[attr.aria-label]="'Заметка магазина'"></textarea>
-				<div class="d-flex gap-2 mt-2">
-					<button type="submit" class="btn btn-primary btn-equal" [disabled]="noteForm.pristine">
-						Сохранить
-					</button>
-					<button type="button" class="btn btn-secondary btn-equal"
-						(click)="noteForm.reset({ note: store.note })" [disabled]="noteForm.pristine">
-						Отмена
-					</button>
-				</div>
-				<div class="error-message" *ngIf="noteForm.get('note')?.hasError('maxlength')">
-					Заметка не должна превышать 500 символов
-				</div>
-			</form>
-		</div>
-
-		<!-- Действия -->
-		<div class="action-buttons d-flex gap-2 mb-4">
-			<a class="btn btn-primary btn-equal" [routerLink]="['/stores/edit', store.id]">
-				Редактировать
-			</a>
-			<button *ngIf="!store.isArchived" class="btn btn-danger btn-equal" (click)="archiveStore()">
-				Архивировать
-			</button>
-			<button *ngIf="store.isArchived" class="btn btn-success btn-equal" (click)="unarchiveStore()">
-				Разархивировать
-			</button>
-			<button class="btn btn-secondary btn-equal" (click)="navigateBack()">
-				Назад
-			</button>
-		</div>
-
-		<!-- История изменений -->
-		<div class="section-card mt-4">
-			<button class="btn btn-primary btn-equal mb-3" (click)="toggleHistory()">
-				{{ showHistory ? 'Скрыть историю' : 'Показать историю' }}
-			</button>
-			<div *ngIf="showHistory">
-				<h3 class="section-title">История изменений</h3>
-				<div *ngIf="isLoadingHistory" class="text-center">
-					<div class="spinner-border" role="status">
-						<span class="visually-hidden">Загрузка...</span>
+			<div class="mt-3">
+				<form [formGroup]="noteForm">
+					<div class="form-group">
+						<label for="note">Заметка:</label>
+						<textarea id="note" formControlName="note" class="form-control" rows="4"
+							placeholder="Введите заметку"></textarea>
+						<div *ngIf="noteForm.get('note')?.hasError('maxlength')" class="text-danger">
+							Заметка не должна превышать 500 символов.
+						</div>
 					</div>
-				</div>
-				<table *ngIf="!isLoadingHistory && historyEntries.length > 0" class="table table-bordered">
-					<thead>
-						<tr>
-							<th>Дата и время</th>
-							<th>Действие</th>
-							<th>Пользователь</th>
-							<th>Подробности</th>
-							<th>Изменения</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr *ngFor="let entry of historyEntries">
-							<td>{{ entry.timestamp ? (entry.timestamp | date: 'dd.MM.yyyy HH:mm:ss') : 'Неизвестно' }}
-							</td>
-							<td>{{ formatHistoryAction(entry.action) }}</td>
-							<td>{{ entry.user || 'Неизвестно' }}</td>
-							<td>{{ entry.details || 'Нет подробностей' }}</td>
-							<td>{{ formatHistoryChanges(entry.changes) }}</td>
-						</tr>
-					</tbody>
-				</table>
-				<div *ngIf="!isLoadingHistory && historyEntries.length === 0" class="alert alert-info">
-					История изменений не найдена.
-				</div>
+					<div class="mt-2">
+						<button class="btn btn-primary btn-equal" (click)="saveNote()"
+							[disabled]="!noteForm.valid || noteForm.pristine">
+							Сохранить заметку
+						</button>
+					</div>
+				</form>
+			</div>
+
+			<div *ngIf="errorMessage" class="alert alert-danger mt-3">
+				{{ errorMessage }}
 			</div>
 		</div>
 	</div>
+
+	<div class="mt-4">
+		<button class="btn btn-info btn-equal" (click)="toggleHistory()">
+			{{ showHistory ? 'Скрыть историю' : 'Показать историю' }}
+		</button>
+		<div *ngIf="showHistory" class="mt-3">
+			<h4>История изменений</h4>
+			<div *ngIf="isLoadingHistory" class="text-center">
+				<div class="spinner-border" role="status">
+					<span class="visually-hidden">Загрузка...</span>
+				</div>
+			</div>
+			<table class="table table-bordered" *ngIf="historyEntries.length > 0 && !isLoadingHistory">
+				<thead>
+					<tr>
+						<th>Дата</th>
+						<th>Действие</th>
+						<th>Детали</th>
+						<th>Пользователь</th>
+						<th>Изменения</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let entry of historyEntries">
+						<td>{{ entry.timestamp | date: 'dd.MM.yyyy HH:mm' }}</td>
+						<td>{{ entry.action }}</td>
+						<td>{{ entry.details }}</td>
+						<td>{{ entry.user }}</td>
+						<td>
+							<ul>
+								<li *ngFor="let key of entry.changes | keyvalue">
+									{{ key.key }}: {{ key.value.oldValue }} → {{ key.value.newValue }}
+								</li>
+							</ul>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p *ngIf="historyEntries.length === 0 && !isLoadingHistory" class="text-muted">
+				Нет записей в истории.
+			</p>
+		</div>
+	</div>
+
+	<div class="mt-4">
+		<button class="btn btn-secondary btn-equal" (click)="navigateBack()">Назад</button>
+		<button class="btn btn-primary btn-equal" (click)="editStore()">Редактировать</button>
+		<button *ngIf="!store.isArchived" class="btn btn-danger btn-equal" (click)="archiveStore()">
+			Архивировать
+		</button>
+		<button *ngIf="store.isArchived" class="btn btn-success btn-equal" (click)="unarchiveStore()">
+			Разархивировать
+		</button>
+	</div>
+</div>
+
+<div *ngIf="!store && !errorMessage" class="text-center mt-4">
+	<div class="spinner-border" role="status">
+		<span class="visually-hidden">Загрузка...</span>
+	</div>
+</div>
+
+<div *ngIf="errorMessage && !store" class="alert alert-danger mt-4">
+	{{ errorMessage }}
 </div>
