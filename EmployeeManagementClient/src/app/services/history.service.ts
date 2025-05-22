@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+import { UserService } from './user.service';
 import { HistoryEntry, ChangeValue } from '../models/history.model';
+import { ApplicationUser } from '../models/application-user.model';
 
 @Injectable({
 	providedIn: 'root',
@@ -11,7 +13,11 @@ import { HistoryEntry, ChangeValue } from '../models/history.model';
 export class HistoryService {
 	private apiUrl = 'http://localhost:8080/api/history';
 
-	constructor(private http: HttpClient, private authService: AuthService) { }
+	constructor(
+		private http: HttpClient,
+		private authService: AuthService,
+		private userService: UserService
+	) { }
 
 	getHistory(entityType: string, entityId: string): Observable<HistoryEntry[]> {
 		const token = this.authService.getToken();
@@ -33,45 +39,25 @@ export class HistoryService {
 		return this.http.get<{ generalHistory: any[] }>(this.apiUrl, { headers, params }).pipe(
 			map((response) => {
 				console.debug('Ответ API истории:', response);
-				const historyEntries = Array.isArray(response.generalHistory) ? response.generalHistory : [];
+				const historyEntries = Array.isArray(response?.generalHistory) ? response.generalHistory : [];
 
 				if (!Array.isArray(historyEntries)) {
-					console.warn('generalHistory не является массивом:', historyEntries);
+					console.warn('generalHistory не является массивом:', response);
 					return [];
 				}
 
 				return historyEntries
-					.map((entry: any): HistoryEntry => {
-						if (!entry.changedAt) {
-							console.warn(`Missing changedAt in history entry: ${JSON.stringify(entry)}`);
-							return {
-								id: entry.id || 0,
-								entityType: entry.entityType || entityType,
-								entityId: entry.entityId || entityId,
-								action: entry.action || '',
-								details: entry.details || 'Нет подробностей',
-								changes: {},
-								user: entry.changedBy || 'Неизвестно',
-								timestamp: new Date(),
-							};
+					.map((entry: any, index: number): HistoryEntry => {
+						if (!entry) {
+							console.warn(`Пустая запись истории на индексе ${index}`);
+							return this.createDefaultHistoryEntry(entry, entityType, entityId);
 						}
 
-						const timestamp = new Date(entry.changedAt);
+						const timestamp = entry.changedAt ? new Date(entry.changedAt) : new Date();
 						if (isNaN(timestamp.getTime())) {
-							console.warn(`Invalid changedAt in history entry: ${JSON.stringify(entry)}`);
-							return {
-								id: entry.id || 0,
-								entityType: entry.entityType || entityType,
-								entityId: entry.entityId || entityId,
-								action: entry.action || '',
-								details: entry.details || 'Нет подробностей',
-								changes: {},
-								user: entry.changedBy || 'Неизвестно',
-								timestamp: new Date(),
-							};
+							console.warn(`Некорректный changedAt в записи истории: ${JSON.stringify(entry)}`);
+							return this.createDefaultHistoryEntry(entry, entityType, entityId);
 						}
-
-						const changes: { [key: string]: ChangeValue } = entry.changes || {};
 
 						return {
 							id: entry.id || 0,
@@ -79,7 +65,7 @@ export class HistoryService {
 							entityId: entry.entityId || entityId,
 							action: entry.action || '',
 							details: entry.details || 'Нет подробностей',
-							changes,
+							changes: entry.changes || {},
 							user: entry.changedBy || 'Неизвестно',
 							timestamp,
 						};
@@ -87,13 +73,32 @@ export class HistoryService {
 					.sort((a: HistoryEntry, b: HistoryEntry) => b.timestamp.getTime() - a.timestamp.getTime());
 			}),
 			catchError((error) => {
-				console.error(`Ошибка при загрузке истории для ${entityType} ${entityId}:`, error);
+				console.error(`Ошибка при загрузке истории для ${entityType} ${entityId}:`, {
+					status: error.status,
+					statusText: error.statusText,
+					message: error.message,
+					error: error.error,
+				});
 				return throwError(() => ({
 					message: 'Не удалось загрузить историю изменений',
 					error: error.message || 'Unknown error',
+					status: error.status,
 				}));
 			})
 		);
+	}
+
+	private createDefaultHistoryEntry(entry: any, entityType: string, entityId: string): HistoryEntry {
+		return {
+			id: entry?.id || 0,
+			entityType: entityType,
+			entityId: entityId,
+			action: entry?.action || '',
+			details: entry?.details || 'Нет подробностей',
+			changes: {},
+			user: entry?.changedBy || 'Неизвестно',
+			timestamp: new Date(),
+		};
 	}
 
 	logHistory(entry: {
@@ -102,7 +107,7 @@ export class HistoryService {
 		action: string;
 		details: string;
 		changes: { [key: string]: ChangeValue };
-		user: string;
+		user?: string;
 	}): Observable<any> {
 		const token = this.authService.getToken();
 		if (!token) {
@@ -117,13 +122,16 @@ export class HistoryService {
 			'Content-Type': 'application/json',
 		});
 
+		const user = this.userService.getCurrentUser();
+		const changedBy = entry.user || (user && user.userName ? user.userName : 'Неизвестно');
+		console.debug('Устанавливаем changedBy:', changedBy);
 		const payload = {
 			entityType: entry.entityType,
 			entityId: entry.entityId,
 			action: entry.action,
 			details: entry.details,
 			changes: entry.changes,
-			changedBy: entry.user || this.authService.getCurrentUser() || 'Неизвестно',
+			changedBy: changedBy,
 			changedAt: new Date().toISOString(),
 		};
 

@@ -128,24 +128,13 @@ namespace EmployeeManagementServer.Services
                 await SaveChangesAsync();
             }
 
-            var changesDict = new Dictionary<string, ChangeValueDto>
-            {
-                { "building", new ChangeValueDto { OldValue = "не указано", NewValue = store.Building } },
-                { "floor", new ChangeValueDto { OldValue = "не указано", NewValue = store.Floor } },
-                { "line", new ChangeValueDto { OldValue = "не указано", NewValue = store.Line } },
-                { "storeNumber", new ChangeValueDto { OldValue = "не указано", NewValue = store.StoreNumber } },
-                { "sortOrder", new ChangeValueDto { OldValue = "не указано", NewValue = store.SortOrder?.ToString() ?? "null" } },
-                { "note", new ChangeValueDto { OldValue = "не указано", NewValue = store.Note ?? "не указано" } },
-                { "isArchived", new ChangeValueDto { OldValue = "false", NewValue = store.IsArchived.ToString() } }
-            };
-
             await _historyService.LogHistoryAsync(new History
             {
                 EntityType = "store",
                 EntityId = store.Id.ToString(),
                 Action = "create",
                 Details = $"Магазин {store.Id} успешно создан.",
-                ChangesJson = JsonSerializer.Serialize(changesDict, _jsonOptions),
+                ChangesJson = "{}", // Пустой JSON, как в ContractorService
                 ChangedBy = createdBy ?? "Unknown",
                 ChangedAt = DateTime.UtcNow
             });
@@ -216,8 +205,7 @@ namespace EmployeeManagementServer.Services
                 SortOrder = sortOrder ?? store.SortOrder,
                 Note = note ?? store.Note,
                 IsArchived = store.IsArchived,
-                CreatedAt = store.CreatedAt,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = store.CreatedAt
             };
 
             var originalStoreDto = _mapper.Map<StoreDto>(originalStore);
@@ -238,6 +226,7 @@ namespace EmployeeManagementServer.Services
                     ChangedBy = updatedBy ?? "Unknown",
                     ChangedAt = DateTime.UtcNow
                 };
+                _logger.LogInformation("Создание записи истории: ChangesJson={ChangesJson}", historyEntry.ChangesJson);
                 await _historyService.LogHistoryAsync(historyEntry);
                 _logger.LogInformation("Изменения для магазина ID {Id} успешно записаны в историю.", store.Id);
             }
@@ -269,9 +258,9 @@ namespace EmployeeManagementServer.Services
             store.IsArchived = true;
             await SaveChangesAsync();
 
-            var changesDict = new Dictionary<string, ChangeValueDto>
+            var changes = new Dictionary<string, ChangeValueDto>
             {
-                { "isArchived", new ChangeValueDto { OldValue = false.ToString(), NewValue = true.ToString() } }
+                { "isArchived", new ChangeValueDto { OldValue = false, NewValue = true } }
             };
 
             var historyEntry = new History
@@ -280,10 +269,11 @@ namespace EmployeeManagementServer.Services
                 EntityId = store.Id.ToString(),
                 Action = "archive",
                 Details = $"Магазин с ID {id} архивирован.",
-                ChangesJson = JsonSerializer.Serialize(changesDict, _jsonOptions),
+                ChangesJson = JsonSerializer.Serialize(changes, _jsonOptions),
                 ChangedBy = archivedBy ?? "Unknown",
                 ChangedAt = DateTime.UtcNow
             };
+            _logger.LogInformation("Создание записи истории: ChangesJson={ChangesJson}", historyEntry.ChangesJson);
             await _historyService.LogHistoryAsync(historyEntry);
             _logger.LogInformation("Запись истории 'archive' с деталями изменения IsArchived добавлена для магазина ID {Id}.", id);
 
@@ -309,9 +299,9 @@ namespace EmployeeManagementServer.Services
             store.IsArchived = false;
             await SaveChangesAsync();
 
-            var changesDict = new Dictionary<string, ChangeValueDto>
+            var changes = new Dictionary<string, ChangeValueDto>
             {
-                { "isArchived", new ChangeValueDto { OldValue = true.ToString(), NewValue = false.ToString() } }
+                { "isArchived", new ChangeValueDto { OldValue = true, NewValue = false } }
             };
 
             var historyEntry = new History
@@ -320,10 +310,11 @@ namespace EmployeeManagementServer.Services
                 EntityId = store.Id.ToString(),
                 Action = "unarchive",
                 Details = $"Магазин с ID {id} разархивирован.",
-                ChangesJson = JsonSerializer.Serialize(changesDict, _jsonOptions),
+                ChangesJson = JsonSerializer.Serialize(changes, _jsonOptions),
                 ChangedBy = unarchivedBy ?? "Unknown",
                 ChangedAt = DateTime.UtcNow
             };
+            _logger.LogInformation("Создание записи истории: ChangesJson={ChangesJson}", historyEntry.ChangesJson);
             await _historyService.LogHistoryAsync(historyEntry);
             _logger.LogInformation("Запись истории 'unarchive' с деталями изменения IsArchived добавлена для магазина ID {Id}.", id);
 
@@ -356,7 +347,7 @@ namespace EmployeeManagementServer.Services
             store.Note = note;
             await SaveChangesAsync();
 
-            var changesDict = new Dictionary<string, ChangeValueDto>
+            var changes = new Dictionary<string, ChangeValueDto>
             {
                 { "note", new ChangeValueDto { OldValue = oldNote ?? "не указано", NewValue = note ?? "не указано" } }
             };
@@ -367,12 +358,12 @@ namespace EmployeeManagementServer.Services
                 EntityId = id.ToString(),
                 Action = "update_note",
                 Details = $"Заметка для магазина с ID {id} обновлена.",
-                ChangesJson = JsonSerializer.Serialize(changesDict, _jsonOptions),
+                ChangesJson = JsonSerializer.Serialize(changes, _jsonOptions),
                 ChangedBy = updatedBy ?? "Unknown",
                 ChangedAt = DateTime.UtcNow
             };
+            _logger.LogInformation("Создание записи истории: ChangesJson={ChangesJson}", historyEntry.ChangesJson);
             await _historyService.LogHistoryAsync(historyEntry);
-
             _logger.LogInformation("Заметка для магазина с ID {Id} успешно обновлена, история изменений записана.", id);
         }
 

@@ -6,7 +6,6 @@ import { Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BehaviorSubject, Subscription, Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
-import { HistoryService } from '../../../services/history.service';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -54,8 +53,7 @@ export class StoreListComponent implements OnInit, OnDestroy {
 	constructor(
 		private storeService: StoreService,
 		private router: Router,
-		private fb: FormBuilder,
-		private historyService: HistoryService
+		private fb: FormBuilder
 	) {
 		this.searchForm = this.fb.group({
 			Id: ['', Validators.pattern(/^\d+$/)],
@@ -89,7 +87,7 @@ export class StoreListComponent implements OnInit, OnDestroy {
 		const params = {
 			page: this.currentPage,
 			pageSize: this.pageSize,
-			isArchived: this.showArchived, // Изменено на isArchived
+			isArchived: this.showArchived,
 			...this.activeFilters,
 		};
 
@@ -162,7 +160,7 @@ export class StoreListComponent implements OnInit, OnDestroy {
 				criteria[key] = key === 'Id' ? parseInt(value, 10) : value.trim();
 			}
 		});
-		criteria['isArchived'] = this.showArchived; // Изменено на isArchived
+		criteria['isArchived'] = this.showArchived;
 		return criteria;
 	}
 
@@ -308,28 +306,7 @@ export class StoreListComponent implements OnInit, OnDestroy {
 		if (id !== undefined) {
 			const subscription = this.storeService.archiveStore(id).subscribe({
 				next: () => {
-					const historySubscription = this.historyService.logHistory({
-						entityType: 'store',
-						entityId: id.toString(),
-						action: 'archive',
-						details: `Магазин ${id} архивирован`,
-						changes: {
-							isArchived: {
-								oldValue: 'Активен',
-								newValue: 'Заархивирован',
-							},
-						},
-						user: 'current_user',
-					}).subscribe({
-						next: () => {
-							this.loadStores();
-						},
-						error: (err) => {
-							console.error('Ошибка при фиксации истории:', err);
-							this.errorMessage = 'Не удалось зафиксировать историю.';
-						},
-					});
-					this.subscriptions.push(historySubscription);
+					this.loadStores(); // Обновляем список после архивирования
 				},
 				error: (err) => {
 					console.error('Ошибка при архивировании:', err);
@@ -344,28 +321,7 @@ export class StoreListComponent implements OnInit, OnDestroy {
 		if (id !== undefined) {
 			const subscription = this.storeService.unarchiveStore(id).subscribe({
 				next: () => {
-					const historySubscription = this.historyService.logHistory({
-						entityType: 'store',
-						entityId: id.toString(),
-						action: 'unarchive',
-						details: `Магазин ${id} разархивирован`,
-						changes: {
-							isArchived: {
-								oldValue: 'Заархивирован',
-								newValue: 'Активен',
-							},
-						},
-						user: 'current_user',
-					}).subscribe({
-						next: () => {
-							this.loadStores();
-						},
-						error: (err) => {
-							console.error('Ошибка при фиксации истории:', err);
-							this.errorMessage = 'Не удалось зафиксировать историю.';
-						},
-					});
-					this.subscriptions.push(historySubscription);
+					this.loadStores(); // Обновляем список после разархивирования
 				},
 				error: (err) => {
 					console.error('Ошибка при разархивировании:', err);

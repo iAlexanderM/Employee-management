@@ -6,8 +6,8 @@ namespace EmployeeManagementServer.Services
 {
     public interface IFloorService
     {
-        Task<int> GetTotalFloorsCountAsync();
-        Task<List<Floor>> GetFloorsAsync(int skip, int pageSize);
+        Task<int> GetTotalFloorsCountAsync(bool? isArchived = null);
+        Task<List<Floor>> GetFloorsAsync(int skip, int pageSize, bool? isArchived = null);
         Task<Floor> GetFloorByIdAsync(int id);
         Task<Floor> AddFloorAsync(Floor floor);
         Task<bool?> UpdateFloorAsync(int id, string newName, int? sortOrder);

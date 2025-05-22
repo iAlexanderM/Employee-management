@@ -13,6 +13,7 @@ import { PassService } from '../../../services/pass.service';
 import { Contractor, Photo, ContractorDto } from '../../../models/contractor.model';
 import { Pass } from '../../../models/pass.model';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { UserService } from '../../../services/user.service';
 
 @Component({
 	selector: 'app-contractor-details',
@@ -54,6 +55,7 @@ export class ContractorDetailsComponent implements OnInit {
 		private contractorService: ContractorWatchService,
 		private transactionService: TransactionService,
 		private historyService: HistoryService,
+		private userService: UserService,
 		private authService: AuthService,
 		private passService: PassService,
 		private fb: FormBuilder,
@@ -264,14 +266,26 @@ export class ContractorDetailsComponent implements OnInit {
 		}
 		const reason = prompt('Укажите причину закрытия пропуска:');
 		if (reason && this.contractor) {
-			this.passService.closePass(passId, reason).subscribe({
+			const user = this.userService.getCurrentUser();
+			console.debug('Получен пользователь в closePass:', user);
+			const closedBy = user?.userName || 'Неизвестно';
+			console.debug('Устанавливаем closedBy:', closedBy);
+			if (closedBy === 'Неизвестно') {
+				console.warn('closedBy установлен как Неизвестно, пользователь:', user);
+				this.errorMessage = 'Не удалось определить пользователя. Пожалуйста, войдите снова.';
+				this.cdr.markForCheck();
+				return;
+			}
+			this.passService.closePass(passId, reason, closedBy).subscribe({
 				next: () => {
+					console.debug('Пропуск успешно закрыт, closedBy:', closedBy);
 					pass.isClosed = true;
 					pass.closeDate = new Date();
 					pass.closeReason = reason;
-					pass.closedBy = this.authService.getCurrentUser() || 'Неизвестно';
+					pass.closedBy = closedBy;
 					if (this.contractor) {
 						this.loadHistory(this.contractor.id.toString());
+						this.loadUsers();
 					}
 					this.cdr.markForCheck();
 				},
@@ -279,8 +293,20 @@ export class ContractorDetailsComponent implements OnInit {
 					console.error('Ошибка при закрытии пропуска:', err);
 					this.errorMessage = 'Не удалось закрыть пропуск: ' + (err.error?.message || 'Неизвестная ошибка');
 					this.cdr.markForCheck();
-				},
+				}
 			});
+		}
+	}
+
+	private loadUsers(): void {
+		const user = this.userService.getCurrentUser();
+		if (user && user.id && user.userName) {
+			this.userMap[user.id] = user.userName;
+			console.debug('userMap:', this.userMap);
+			console.debug('Есть ли пользователь 60808ee9-e697-42bd-9bf1-2218c0c2a382:', this.userMap['60808ee9-e697-42bd-9bf1-2218c0c2a382']);
+			this.cdr.markForCheck();
+		} else {
+			console.warn('Не удалось получить данные текущего пользователя из UserService:', user);
 		}
 	}
 

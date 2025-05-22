@@ -5,10 +5,12 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { StoreService } from '../../../services/store.service';
 import { HistoryService } from '../../../services/history.service';
 import { AuthService } from '../../../services/auth.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Store } from '../../../models/store.model';
-import { HistoryEntry } from '../../../models/history.model';
+import { HistoryEntry, ChangeValue } from '../../../models/history.model';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Subscription } from 'rxjs';
+import { UserService } from '../../../services/user.service';
 
 @Component({
 	selector: 'app-store-details',
@@ -33,6 +35,7 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
 	errorMessage: string | null = null;
 	successMessage: string | null = null;
 	showHistory = false;
+	userMap: { [key: string]: string } = {};
 	private subscriptions: Subscription[] = [];
 
 	constructor(
@@ -41,7 +44,9 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
 		private storeService: StoreService,
 		private historyService: HistoryService,
 		private authService: AuthService,
+		private userService: UserService,
 		private fb: FormBuilder,
+		private http: HttpClient,
 		private cdr: ChangeDetectorRef
 	) {
 		this.noteForm = this.fb.group({
@@ -53,11 +58,32 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
 		const id = this.route.snapshot.paramMap.get('id');
 		if (id) {
 			this.loadStore(Number(id));
+			this.loadUsers();
 		}
 	}
 
 	ngOnDestroy(): void {
 		this.subscriptions.forEach(sub => sub.unsubscribe());
+	}
+
+	private getAuthHeaders(): HttpHeaders {
+		const token = localStorage.getItem('token');
+		return new HttpHeaders({
+			Authorization: token ? `Bearer ${token}` : '',
+			'Content-Type': 'application/json',
+		});
+	}
+
+	private loadUsers(): void {
+		const user = this.userService.getCurrentUser();
+		if (user && user.id && user.userName) {
+			this.userMap[user.id] = user.userName;
+			console.debug('userMap:', this.userMap);
+			console.debug('Есть ли пользователь 60808ee9-e697-42bd-9bf1-2218c0c2a382:', this.userMap['60808ee9-e697-42bd-9bf1-2218c0c2a382']);
+			this.cdr.markForCheck();
+		} else {
+			console.warn('Не удалось получить данные текущего пользователя из UserService:', user);
+		}
 	}
 
 	navigateBack(): void {
@@ -88,8 +114,6 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
 		const note = this.noteForm.get('note')?.value?.trim() || null;
 		if (note === this.store.note) return;
 
-		const oldNote = this.store.note;
-		// Send full store data to satisfy server validation
 		const storeUpdate: Partial<Store> = {
 			building: this.store.building,
 			floor: this.store.floor,
@@ -97,7 +121,7 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
 			storeNumber: this.store.storeNumber,
 			note: note,
 			sortOrder: this.store.sortOrder,
-			isArchived: this.store.isArchived
+			isArchived: this.store.isArchived,
 		};
 		const subscription = this.storeService.updateStore(this.store.id, storeUpdate).subscribe({
 			next: () => {
@@ -105,32 +129,9 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
 				this.noteForm.patchValue({ note: note || '' });
 				this.noteForm.markAsPristine();
 				this.successMessage = 'Заметка успешно сохранена';
-				const historySubscription = this.historyService
-					.logHistory({
-						entityType: 'store',
-						entityId: this.store!.id.toString(),
-						action: 'update_note',
-						details: `Изменена заметка для магазина ${this.store!.id}`,
-						changes: {
-							note: {
-								oldValue: oldNote || 'Нет',
-								newValue: note || 'Нет',
-							},
-						},
-						user: this.authService.getCurrentUser() || 'Unknown',
-					})
-					.subscribe({
-						next: () => {
-							if (this.showHistory) {
-								this.loadHistory(this.store!.id.toString());
-							}
-						},
-						error: (err) => {
-							this.errorMessage = 'Не удалось зафиксировать историю изменений.';
-							this.cdr.detectChanges();
-						},
-					});
-				this.subscriptions.push(historySubscription);
+				if (this.showHistory) {
+					this.loadHistory(this.store!.id.toString());
+				}
 				this.cdr.detectChanges();
 			},
 			error: (err) => {
@@ -154,9 +155,9 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
 	loadHistory(storeId: string): void {
 		this.isLoadingHistory = true;
 		this.errorMessage = null;
-		this.historyService.getHistory('store', storeId).subscribe({
+		const subscription = this.historyService.getHistory('store', storeId).subscribe({
 			next: (historyEntries: HistoryEntry[]) => {
-				console.debug('Загружено записей истории:', historyEntries.length);
+				console.debug('Загружены записи истории:', historyEntries);
 				this.historyEntries = historyEntries;
 				this.isLoadingHistory = false;
 				if (historyEntries.length === 0) {
@@ -172,40 +173,18 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
 				this.cdr.markForCheck();
 			},
 		});
+		this.subscriptions.push(subscription);
 	}
 
 	archiveStore(): void {
 		if (!this.store) return;
 		const subscription = this.storeService.archiveStore(this.store.id).subscribe({
 			next: () => {
-				const historySubscription = this.historyService
-					.logHistory({
-						entityType: 'store',
-						entityId: this.store!.id.toString(),
-						action: 'archive',
-						details: `Магазин ${this.store!.id} архивирован`,
-						changes: {
-							isArchived: {
-								oldValue: 'Активен',
-								newValue: 'Заархивирован',
-							},
-						},
-						user: this.authService.getCurrentUser() || 'Unknown',
-					})
-					.subscribe({
-						next: () => {
-							this.store = { ...this.store!, isArchived: true };
-							if (this.showHistory) {
-								this.loadHistory(this.store!.id.toString());
-							}
-							this.successMessage = 'Магазин успешно архивирован';
-						},
-						error: (err) => {
-							this.errorMessage = 'Не удалось зафиксировать историю изменений.';
-							this.cdr.detectChanges();
-						},
-					});
-				this.subscriptions.push(historySubscription);
+				this.store = { ...this.store!, isArchived: true };
+				if (this.showHistory) {
+					this.loadHistory(this.store!.id.toString());
+				}
+				this.successMessage = 'Магазин успешно архивирован';
 				this.cdr.detectChanges();
 			},
 			error: (err) => {
@@ -220,34 +199,11 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
 		if (!this.store) return;
 		const subscription = this.storeService.unarchiveStore(this.store.id).subscribe({
 			next: () => {
-				const historySubscription = this.historyService
-					.logHistory({
-						entityType: 'store',
-						entityId: this.store!.id.toString(),
-						action: 'unarchive',
-						details: `Магазин ${this.store!.id} разархивирован`,
-						changes: {
-							isArchived: {
-								oldValue: 'Заархивирован',
-								newValue: 'Активен',
-							},
-						},
-						user: this.authService.getCurrentUser() || 'Unknown',
-					})
-					.subscribe({
-						next: () => {
-							this.store = { ...this.store!, isArchived: false };
-							if (this.showHistory) {
-								this.loadHistory(this.store!.id.toString());
-							}
-							this.successMessage = 'Магазин успешно разархивирован';
-						},
-						error: (err) => {
-							this.errorMessage = 'Не удалось зафиксировать историю изменений.';
-							this.cdr.detectChanges();
-						},
-					});
-				this.subscriptions.push(historySubscription);
+				this.store = { ...this.store!, isArchived: false };
+				if (this.showHistory) {
+					this.loadHistory(this.store!.id.toString());
+				}
+				this.successMessage = 'Магазин успешно разархивирован';
 				this.cdr.detectChanges();
 			},
 			error: (err) => {
@@ -262,5 +218,44 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
 		if (this.store) {
 			this.router.navigate([`/stores/edit/${this.store.id}`]);
 		}
+	}
+
+	formatHistoryAction(action: string): string {
+		const actionMap: { [key: string]: string } = {
+			create: 'Создание',
+			update: 'Обновление',
+			archive: 'Архивирование',
+			unarchive: 'Разархивирование',
+			update_note: 'Изменение заметки',
+		};
+		return actionMap[action.toLowerCase()] || action;
+	}
+
+	formatHistoryChanges(changes: { [key: string]: ChangeValue } | undefined): string {
+		if (!changes || !Object.keys(changes).length) {
+			return 'Изменения отсутствуют';
+		}
+
+		return Object.entries(changes)
+			.map(([key, value]) => {
+				const fieldName = this.translateFieldName(key);
+				const oldValue = value.oldValue ?? 'не указано';
+				const newValue = value.newValue ?? 'не указано';
+				return `${fieldName}: с "${oldValue}" на "${newValue}"`;
+			})
+			.join('; ');
+	}
+
+	private translateFieldName(field: string): string {
+		const fieldTranslations: { [key: string]: string } = {
+			building: 'Здание',
+			floor: 'Этаж',
+			line: 'Линия',
+			storeNumber: 'Номер магазина',
+			sortOrder: 'Порядок сортировки',
+			note: 'Заметка',
+			isArchived: 'Статус архивации',
+		};
+		return fieldTranslations[field] || field;
 	}
 }

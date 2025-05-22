@@ -29,92 +29,137 @@ namespace EmployeeManagementServer.Controllers
         [HttpGet]
         public async Task<IActionResult> GetLines(
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 25)
+            [FromQuery] int pageSize = 25,
+            [FromQuery] bool? isArchived = null)
         {
-            if (page < 1 || pageSize < 1)
+            try
             {
-                return BadRequest("Page and pageSize must be greater than 0.");
+                if (page < 1 || pageSize < 1)
+                {
+                    return BadRequest("Page and pageSize must be greater than 0.");
+                }
+
+                int skip = (page - 1) * pageSize;
+                int totalLines = await _lineService.GetTotalLinesCountAsync(isArchived);
+                var lines = await _lineService.GetLinesAsync(skip, pageSize, isArchived);
+
+                var lineDtos = _mapper.Map<List<LineDto>>(lines);
+
+                return Ok(new
+                {
+                    total = totalLines,
+                    lines = lineDtos
+                });
             }
-
-            int skip = (page - 1) * pageSize;
-            int totalLines = await _lineService.GetTotalLinesCountAsync();
-            var lines = await _lineService.GetLinesAsync(skip, pageSize);
-
-            var lineDtos = _mapper.Map<List<LineDto>>(lines);
-
-            return Ok(new
+            catch (Exception ex)
             {
-                total = totalLines,
-                lines = lineDtos
-            });
+                _logger.LogError(ex, "Ошибка при получении зданий");
+                return StatusCode(500, "Ошибка сервера.");
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetLineById(int id)
         {
-            var line = await _lineService.GetLineByIdAsync(id);
-            if (line == null)
+            try
             {
-                return NotFound("Line not found.");
-            }
+                var line = await _lineService.GetLineByIdAsync(id);
+                if (line == null)
+                {
+                    return NotFound("Line not found.");
+                }
 
-            var lineDto = _mapper.Map<LineDto>(line);
-            return Ok(lineDto);
+                var lineDto = _mapper.Map<LineDto>(line);
+                return Ok(lineDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при получении линии с ID {Id}", id);
+                return StatusCode(500, "Ошибка сервера.");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateLine([FromBody] LineDto lineDto)
         {
-            if (lineDto == null || string.IsNullOrWhiteSpace(lineDto.Name))
+            try
             {
-                return BadRequest("Invalid data.");
+                if (lineDto == null || string.IsNullOrWhiteSpace(lineDto.Name))
+                {
+                    return BadRequest("Invalid data.");
+                }
+
+                var line = _mapper.Map<Line>(lineDto);
+                var createdLine = await _lineService.AddLineAsync(line);
+
+                if (createdLine == null)
+                {
+                    return Conflict("Lime with the same name already exists.");
+                }
+
+                var createdLineDto = _mapper.Map<LineDto>(createdLine);
+                return CreatedAtAction(nameof(GetLineById), new { id = createdLineDto.Id }, createdLineDto);
             }
-
-            var line = _mapper.Map<Line>(lineDto);
-            var createdLine = await _lineService.AddLineAsync(line);
-
-            if (createdLine == null)
+            catch (Exception ex)
             {
-                return Conflict("Line with the same name already exists.");
+                _logger.LogError(ex, "Ошибка при создании линии");
+                return StatusCode(500, "Ошибка сервера.");
             }
-
-            var createdLineDto = _mapper.Map<LineDto>(createdLine);
-            return CreatedAtAction(nameof(GetLineById), new { id = createdLineDto.Id }, createdLineDto);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateLine(int id, [FromBody] LineDto lineDto)
         {
-            if (lineDto == null || string.IsNullOrWhiteSpace(lineDto.Name))
+            try
             {
-                return BadRequest("Invalid data.");
+                if (lineDto == null || string.IsNullOrWhiteSpace(lineDto.Name))
+                {
+                    return BadRequest("Invalid data.");
+                }
+
+                var result = await _lineService.UpdateLineAsync(id, lineDto.Name, lineDto.SortOrder);
+
+                if (result == null)
+                {
+                    return NotFound("Line not found.");
+                }
+
+                if (result == false)
+                {
+                    return Conflict("Line with the same name already exists.");
+                }
+
+                return NoContent();
             }
-
-            var result = await _lineService.UpdateLineAsync(id, lineDto.Name, lineDto.SortOrder);
-
-            if (result == null)
+            catch (InvalidOperationException ex)
             {
-                return NotFound("Line not found.");
+                return BadRequest(ex.Message);
             }
-
-            if (result == false)
+            catch (Exception ex)
             {
-                return Conflict("Line with the same name already exists.");
+                _logger.LogError(ex, "Ошибка при обновлении здания с ID {Id}", id);
+                return StatusCode(500, "Ошибка сервера.");
             }
-
-            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> ArchiveLine(int id)
         {
-            var success = await _lineService.ArchiveLineAsync(id);
-            if (!success)
+            try
             {
-                return NotFound("Line not found.");
-            }
+                var success = await _lineService.ArchiveLineAsync(id);
+                if (!success)
+                {
+                    return NotFound("Line not found.");
+                }
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при архивировании линии с ID {Id}", id);
+                return StatusCode(500, "Ошибка сервера.");
+            }
         }
     }
 }

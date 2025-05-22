@@ -57,6 +57,8 @@ namespace EmployeeManagementServer.Mappings
             CreateMap<HistoryDto, History>()
                 .ForMember(dest => dest.ChangesJson, opt => opt.MapFrom(src => HistoryMappingHelper.SerializeChanges(src.Changes)))
                 .ForMember(dest => dest.ChangedBy, opt => opt.NullSubstitute("Unknown"));
+
+            CreateMap<ApplicationUser, UserDto>();
         }
     }
 }

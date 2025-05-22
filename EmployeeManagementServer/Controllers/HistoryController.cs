@@ -1,5 +1,4 @@
-﻿// File: EmployeeManagementServer/Controllers/HistoryController.cs
-using AutoMapper;
+﻿using AutoMapper;
 using EmployeeManagementServer.Models;
 using EmployeeManagementServer.Models.DTOs;
 using EmployeeManagementServer.Services;
@@ -10,8 +9,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using EmployeeManagementServer.Data; // Добавлено для доступа к DbContext
-using Microsoft.EntityFrameworkCore; // Добавлено для SaveChangesAsync
+using EmployeeManagementServer.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace EmployeeManagementServer.Controllers
 {
@@ -23,14 +23,14 @@ namespace EmployeeManagementServer.Controllers
         private readonly IHistoryService _historyService;
         private readonly IMapper _mapper;
         private readonly ILogger<HistoryController> _logger;
-        private readonly ApplicationDbContext _context; // Добавлено поле для DbContext
+        private readonly ApplicationDbContext _context;
 
-        public HistoryController(IHistoryService historyService, IMapper mapper, ILogger<HistoryController> logger, ApplicationDbContext context) // Добавлено внедрение DbContext
+        public HistoryController(IHistoryService historyService, IMapper mapper, ILogger<HistoryController> logger, ApplicationDbContext context)
         {
             _historyService = historyService;
             _mapper = mapper;
             _logger = logger;
-            _context = context; // Присвоение DbContext
+            _context = context;
         }
 
         [HttpGet]
@@ -81,7 +81,7 @@ namespace EmployeeManagementServer.Controllers
                 }
 
                 var history = _mapper.Map<History>(historyDto);
-                history.ChangedBy = User.Identity?.Name ?? "Unknown";
+                history.ChangedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "Unknown"; // Используем UUID
                 history.ChangedAt = DateTime.UtcNow;
 
                 await _historyService.LogHistoryAsync(history);

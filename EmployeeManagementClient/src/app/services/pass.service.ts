@@ -1,9 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { Pass } from '../models/pass.model';
 import { PassPrintQueueItem } from '../models/pass-print-queue.model';
 import { environment } from '../../environments/environment';
+import { catchError } from 'rxjs/operators';
+import { HttpHeaders } from '@angular/common/http';
+import { UserService } from './user.service';
 
 @Injectable({
 	providedIn: 'root'
@@ -14,7 +17,7 @@ export class PassService {
 	private searchBaseUrl = `${this.baseApiUrl}/PassByStore`;
 	private suggestionsApiUrl = `${this.baseApiUrl}/suggestions`;
 
-	constructor(private http: HttpClient) { }
+	constructor(private http: HttpClient, private userService: UserService) { }
 
 	getAllPasses(): Observable<Pass[]> {
 		return this.http.get<Pass[]>(this.baseUrl);
@@ -51,8 +54,25 @@ export class PassService {
 		return this.http.post<void>(`${this.baseUrl}/${id}/issue`, {});
 	}
 
-	closePass(id: number, closeReason: string): Observable<void> {
-		return this.http.post<void>(`${this.baseUrl}/${id}/close`, { closeReason });
+	closePass(passId: number, reason: string, closedBy: string): Observable<any> {
+		const token = this.userService.getToken();
+		if (!token) {
+			console.warn('Токен отсутствует в PassService');
+			return throwError(() => new Error('Токен отсутствует'));
+		}
+		console.debug('Токен найден в PassService:', token.substring(0, 50) + '...');
+		const headers = new HttpHeaders({
+			Authorization: `Bearer ${token}`,
+			'Content-Type': 'application/json'
+		});
+		console.debug('Отправка closedBy в PassService:', closedBy);
+		const body = { closeReason: reason, closedBy };
+		return this.http.post(`${this.baseUrl}/${passId}/close`, body, { headers }).pipe(
+			catchError(err => {
+				console.error('Ошибка при закрытии пропуска в PassService:', err);
+				return throwError(() => err);
+			})
+		);
 	}
 
 	reopenPass(id: number): Observable<void> {

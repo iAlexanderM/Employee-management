@@ -1,35 +1,49 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using EmployeeManagementServer.Services;
-using System;
 using EmployeeManagementServer.Models.DTOs;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace EmployeeManagementServer.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class SearchFloorsController : ControllerBase
     {
         private readonly IFloorSearchService _searchService;
+        private readonly ILogger<SearchFloorsController> _logger;
 
-        public SearchFloorsController(IFloorSearchService searchService)
+        public SearchFloorsController(IFloorSearchService searchService, ILogger<SearchFloorsController> logger)
         {
             _searchService = searchService;
+            _logger = logger;
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> SearchFloors([FromQuery] FloorSearchDto searchDto)
+        public async Task<IActionResult> SearchFloors(
+            [FromQuery] FloorSearchDto searchDto,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 25)
         {
             try
             {
-                var floors = await _searchService.SearchFloorsAsync(searchDto);
-                return Ok(floors);
+                if (page < 1 || pageSize < 1)
+                {
+                    return BadRequest("Page and pageSize must be greater than 0.");
+                }
+
+                int skip = (page - 1) * pageSize;
+                var (floors, total) = await _searchService.SearchFloorsAsync(searchDto, skip, pageSize);
+                return Ok(new
+                {
+                    total,
+                    floors
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Ошибка при выполнении поиска: {ex.Message}");
+                _logger.LogError(ex, "Error during floor search.");
+                return StatusCode(500, "An unexpected error occurred.");
             }
         }
     }

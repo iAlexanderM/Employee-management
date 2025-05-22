@@ -3,10 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { StoreService } from '../../../services/store.service';
 import { HistoryService } from '../../../services/history.service';
+import { UserService } from '../../../services/user.service';
 import { Store } from '../../../models/store.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StoreSelectOrAddModalComponent } from '../../modals/store-select-or-add-modal/store-select-or-add-modal.component';
-import { AuthService } from '../../../services/auth.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HistoryEntry, ChangeValue } from '../../../models/history.model';
+import { ApplicationUser } from '../../../models/application-user.model';
 
 @Component({
 	selector: 'app-store-edit',
@@ -23,12 +26,17 @@ export class StoreEditComponent implements OnInit {
 	modalMode: 'select' | 'add' = 'select';
 	modalField: 'building' | 'floor' | 'line' | 'storeNumber' = 'building';
 	errorMessage: string | null = null;
+	historyEntries: HistoryEntry[] = [];
+	isLoadingHistory = false;
+	showHistory = false;
+	userMap: { [key: string]: string } = {};
 
 	constructor(
 		private fb: FormBuilder,
 		private storeService: StoreService,
 		private historyService: HistoryService,
-		private authService: AuthService,
+		private userService: UserService,
+		private http: HttpClient,
 		private route: ActivatedRoute,
 		private router: Router
 	) {
@@ -49,8 +57,27 @@ export class StoreEditComponent implements OnInit {
 			if (params['id']) {
 				this.storeId = Number(params['id']);
 				this.loadStore(this.storeId);
+				this.loadUsers();
 			}
 		});
+	}
+
+	private getAuthHeaders(): HttpHeaders {
+		const token = localStorage.getItem('token');
+		return new HttpHeaders({
+			Authorization: token ? `Bearer ${token}` : '',
+			'Content-Type': 'application/json',
+		});
+	}
+
+	private loadUsers(): void {
+		const user = this.userService.getCurrentUser();
+		if (user && user.id && user.userName) {
+			console.debug('Загружен текущий пользователь для userMap:', { id: user.id, userName: user.userName });
+			this.userMap[user.id] = user.userName;
+		} else {
+			console.warn('Не удалось получить данные текущего пользователя:', user);
+		}
 	}
 
 	navigateBack(): void {
@@ -111,24 +138,7 @@ export class StoreEditComponent implements OnInit {
 			};
 			this.storeService.updateStore(this.storeId, updatedStore).subscribe({
 				next: () => {
-					this.historyService
-						.logHistory({
-							entityType: 'store',
-							entityId: this.storeId!.toString(),
-							action: 'update',
-							details: `Обновлены данные магазина ${this.storeId}`,
-							changes: this.getChanges(),
-							user: this.authService.getCurrentUser() || 'Unknown',
-						})
-						.subscribe({
-							next: () => {
-								this.router.navigate(['/stores']);
-							},
-							error: (err) => {
-								console.error('Ошибка при фиксации истории:', err);
-								this.errorMessage = 'Не удалось зафиксировать историю изменений.';
-							},
-						});
+					this.router.navigate(['/stores']);
 				},
 				error: (error) => {
 					console.error('Ошибка при обновлении:', error);
@@ -143,29 +153,10 @@ export class StoreEditComponent implements OnInit {
 			this.storeService.archiveStore(this.storeId).subscribe({
 				next: () => {
 					this.storeForm.patchValue({ isArchived: true });
-					this.historyService
-						.logHistory({
-							entityType: 'store',
-							entityId: this.storeId!.toString(),
-							action: 'archive',
-							details: `Магазин ${this.storeId} архивирован`,
-							changes: {
-								isArchived: {
-									oldValue: false,
-									newValue: true,
-								},
-							},
-							user: this.authService.getCurrentUser() || 'Unknown',
-						})
-						.subscribe({
-							next: () => {
-								this.loadStore(this.storeId!);
-							},
-							error: (err) => {
-								console.error('Ошибка при фиксации истории:', err);
-								this.errorMessage = 'Не удалось зафиксировать историю изменений.';
-							},
-						});
+					this.loadStore(this.storeId!);
+					if (this.showHistory) {
+						this.loadHistory(this.storeId!.toString());
+					}
 				},
 				error: (error) => {
 					console.error('Ошибка при архивировании:', error);
@@ -180,29 +171,10 @@ export class StoreEditComponent implements OnInit {
 			this.storeService.unarchiveStore(this.storeId).subscribe({
 				next: () => {
 					this.storeForm.patchValue({ isArchived: false });
-					this.historyService
-						.logHistory({
-							entityType: 'store',
-							entityId: this.storeId!.toString(),
-							action: 'unarchive',
-							details: `Магазин ${this.storeId} разархивирован`,
-							changes: {
-								isArchived: {
-									oldValue: true,
-									newValue: false,
-								},
-							},
-							user: this.authService.getCurrentUser() || 'Unknown',
-						})
-						.subscribe({
-							next: () => {
-								this.loadStore(this.storeId!);
-							},
-							error: (err) => {
-								console.error('Ошибка при фиксации истории:', err);
-								this.errorMessage = 'Не удалось зафиксировать историю изменений.';
-							},
-						});
+					this.loadStore(this.storeId!);
+					if (this.showHistory) {
+						this.loadHistory(this.storeId!.toString());
+					}
 				},
 				error: (error) => {
 					console.error('Ошибка при разархивировании:', error);
@@ -212,20 +184,72 @@ export class StoreEditComponent implements OnInit {
 		}
 	}
 
-	private getChanges(): { [key: string]: { oldValue: any; newValue: any } } {
-		const changes: { [key: string]: { oldValue: any; newValue: any } } = {};
-		if (this.originalStore) {
-			const currentValue = this.storeForm.getRawValue();
-			Object.keys(currentValue).forEach((key) => {
-				if (currentValue[key] !== this.originalStore![key]) {
-					changes[key] = {
-						oldValue: this.originalStore![key],
-						newValue: currentValue[key],
-					};
+	loadHistory(storeId: string): void {
+		this.isLoadingHistory = true;
+		this.errorMessage = null;
+		this.historyService.getHistory('store', storeId).subscribe({
+			next: (historyEntries: HistoryEntry[]) => {
+				console.debug('Загружено записей истории:', historyEntries.length);
+				this.historyEntries = historyEntries;
+				this.isLoadingHistory = false;
+				if (historyEntries.length === 0) {
+					console.debug(`История для магазина ${storeId} пуста`);
 				}
-			});
+			},
+			error: (err) => {
+				this.isLoadingHistory = false;
+				console.error('Ошибка при загрузке истории:', err);
+				this.errorMessage = err.message || 'Не удалось загрузить историю изменений.';
+				this.historyEntries = [];
+			},
+		});
+	}
+
+	toggleHistory(): void {
+		this.showHistory = !this.showHistory;
+		if (this.showHistory && this.storeId && !this.historyEntries.length) {
+			console.debug('Запрашиваем историю при переключении');
+			this.loadHistory(this.storeId.toString());
 		}
-		return changes;
+	}
+
+	formatHistoryAction(action: string): string {
+		const actionMap: { [key: string]: string } = {
+			create: 'Создание',
+			update: 'Обновление',
+			archive: 'Архивирование',
+			unarchive: 'Разархивирование',
+			update_note: 'Изменение заметки',
+		};
+		return actionMap[action.toLowerCase()] || action;
+	}
+
+	formatHistoryChanges(changes: { [key: string]: ChangeValue } | undefined): string {
+		if (!changes || !Object.keys(changes).length) {
+			return 'Изменения отсутствуют';
+		}
+
+		return Object.entries(changes)
+			.map(([key, value]) => {
+				const fieldName = this.translateFieldName(key);
+				const oldValue = value.oldValue ?? 'не указано';
+				const newValue = value.newValue ?? 'не указано';
+				return `${fieldName}: с "${oldValue}" на "${newValue}"`;
+			})
+			.join('; ');
+	}
+
+	private translateFieldName(field: string): string {
+		const fieldTranslations: { [key: string]: string } = {
+			building: 'Здание',
+			floor: 'Этаж',
+			line: 'Линия',
+			storeNumber: 'Номер магазина',
+			sortOrder: 'Порядок сортировки',
+			note: 'Заметка',
+			isArchived: 'Статус архивации',
+		};
+		return fieldTranslations[field] || field;
 	}
 
 	openModal(field: 'building' | 'floor' | 'line' | 'storeNumber', mode: 'select' | 'add') {

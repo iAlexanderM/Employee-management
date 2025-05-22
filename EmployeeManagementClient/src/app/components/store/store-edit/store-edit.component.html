@@ -1,107 +1,112 @@
-<div class="container mt-4">
-	<h2 class="mb-4">{{ storeId ? 'Редактирование торговой точки' : 'Создание торговой точки' }}</h2>
-
-	<!-- Сообщение об ошибке -->
-	<div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+<div class="store-edit container">
+	<!-- Error Message -->
+	<div *ngIf="errorMessage" class="alert alert-danger mt-4" role="alert">
 		{{ errorMessage }}
 	</div>
 
-	<!-- Форма редактирования -->
-	<form [formGroup]="storeForm" (ngSubmit)="updateStore()" class="border p-4 bg-light rounded">
-		<div class="row g-3">
-			<div class="col-md-3">
-				<label for="building" class="form-label">Здание:</label>
-				<div class="input-group">
-					<input id="building" formControlName="building" type="text" class="form-control" readonly />
-					<button type="button" class="btn btn-outline-secondary" (click)="openModal('building', 'select')">
-						Выбрать
-					</button>
-					<button type="button" class="btn btn-outline-primary" (click)="openModal('building', 'add')">
-						Добавить
-					</button>
+	<!-- Store Form -->
+	<div class="section-card mt-4" *ngIf="originalStore">
+		<h2 class="section-title">Редактирование магазина ID: {{ storeId }}</h2>
+		<form [formGroup]="storeForm" (ngSubmit)="updateStore()" class="store-form">
+			<div class="form-grid">
+				<div class="form-group">
+					<label for="building">Здание</label>
+					<input id="building" formControlName="building" class="form-control" readonly
+						(click)="openModal('building', 'select')" aria-label="Здание" />
+				</div>
+				<div class="form-group">
+					<label for="floor">Этаж</label>
+					<input id="floor" formControlName="floor" class="form-control" readonly
+						(click)="openModal('floor', 'select')" aria-label="Этаж" />
+				</div>
+				<div class="form-group">
+					<label for="line">Линия</label>
+					<input id="line" formControlName="line" class="form-control" readonly
+						(click)="openModal('line', 'select')" aria-label="Линия" />
+				</div>
+				<div class="form-group">
+					<label for="storeNumber">Номер магазина</label>
+					<input id="storeNumber" formControlName="storeNumber" class="form-control" readonly
+						(click)="openModal('storeNumber', 'select')" aria-label="Номер магазина" />
+				</div>
+				<div class="form-group">
+					<label for="sortOrder">Порядок сортировки</label>
+					<input id="sortOrder" type="number" formControlName="sortOrder" class="form-control"
+						aria-label="Порядок сортировки" />
+					<div class="error-message" *ngIf="storeForm.get('sortOrder')?.hasError('min')">
+						Порядок сортировки должен быть не меньше 0
+					</div>
+				</div>
+				<div class="form-group full-width">
+					<label for="note">Заметка</label>
+					<textarea id="note" formControlName="note" class="form-control" rows="4"
+						placeholder="Введите заметку" aria-label="Заметка"></textarea>
+					<div class="error-message" *ngIf="storeForm.get('note')?.hasError('maxlength')">
+						Заметка не должна превышать 500 символов
+					</div>
 				</div>
 			</div>
-
-			<div class="col-md-3">
-				<label for="floor" class="form-label">Этаж:</label>
-				<div class="input-group">
-					<input id="floor" formControlName="floor" type="text" class="form-control" readonly />
-					<button type="button" class="btn btn-outline-secondary" (click)="openModal('floor', 'select')">
-						Выбрать
-					</button>
-					<button type="button" class="btn btn-outline-primary" (click)="openModal('floor', 'add')">
-						Добавить
-					</button>
-				</div>
-			</div>
-
-			<div class="col-md-3">
-				<label for="line" class="form-label">Линия:</label>
-				<div class="input-group">
-					<input id="line" formControlName="line" type="text" class="form-control" readonly />
-					<button type="button" class="btn btn-outline-secondary" (click)="openModal('line', 'select')">
-						Выбрать
-					</button>
-					<button type="button" class="btn btn-outline-primary" (click)="openModal('line', 'add')">
-						Добавить
-					</button>
-				</div>
-			</div>
-
-			<div class="col-md-3">
-				<label for="storeNumber" class="form-label">Торговая точка:</label>
-				<div class="input-group">
-					<input id="storeNumber" formControlName="storeNumber" type="text" class="form-control" readonly />
-					<button type="button" class="btn btn-outline-secondary"
-						(click)="openModal('storeNumber', 'select')">
-						Выбрать
-					</button>
-					<button type="button" class="btn btn-outline-primary" (click)="openModal('storeNumber', 'add')">
-						Добавить
-					</button>
-				</div>
-			</div>
-		</div>
-
-		<div class="row g-3 mt-3">
-			<div class="col-md-6">
-				<label for="sortOrder" class="form-label">Порядок сортировки:</label>
-				<input id="sortOrder" formControlName="sortOrder" type="number" class="form-control"
-					[class.is-invalid]="storeForm.get('sortOrder')?.invalid && storeForm.get('sortOrder')?.touched" />
-				<div *ngIf="storeForm.get('sortOrder')?.hasError('min')" class="invalid-feedback">
-					Порядок сортировки должен быть больше или равен 0.
-				</div>
-			</div>
-
-			<div class="col-md-6">
-				<label for="note" class="form-label">Заметка:</label>
-				<textarea id="note" formControlName="note" class="form-control" rows="4"
-					[class.is-invalid]="storeForm.get('note')?.invalid && storeForm.get('note')?.touched"></textarea>
-				<div *ngIf="storeForm.get('note')?.hasError('maxlength')" class="invalid-feedback">
-					Заметка не должна превышать 500 символов.
-				</div>
-			</div>
-		</div>
-
-		<div class="row mt-4">
-			<div class="col-md-12 text-end">
-				<button type="submit" class="btn btn-primary btn-equal" [disabled]="storeForm.invalid || !isModified()">
+			<div class="action-buttons d-flex gap-2 mt-4">
+				<button type="submit" class="action-btn action-btn-primary" [disabled]="!isModified()"
+					aria-label="Сохранить изменения">
 					Сохранить
 				</button>
-				<button type="button" class="btn btn-secondary btn-equal" (click)="navigateBack()">
-					Отмена
+				<button type="button" class="action-btn action-btn-secondary" (click)="navigateBack()"
+					aria-label="Вернуться назад">
+					Назад
 				</button>
-				<button *ngIf="!storeForm.get('isArchived')?.value" type="button" class="btn btn-danger btn-equal"
-					(click)="archiveStore()">
+				<button *ngIf="!storeForm.get('isArchived')?.value" type="button" class="action-btn action-btn-danger"
+					(click)="archiveStore()" aria-label="Архивировать магазин">
 					Архивировать
 				</button>
-				<button *ngIf="storeForm.get('isArchived')?.value" type="button" class="btn btn-success btn-equal"
-					(click)="unarchiveStore()">
+				<button *ngIf="storeForm.get('isArchived')?.value" type="button" class="action-btn action-btn-success"
+					(click)="unarchiveStore()" aria-label="Разархивировать магазин">
 					Разархивировать
 				</button>
 			</div>
+		</form>
+	</div>
+
+	<!-- History Section -->
+	<div class="section-card mt-4" *ngIf="originalStore">
+		<button class="action-btn action-btn-primary mb-3" (click)="toggleHistory()" [attr.aria-label]="
+		  showHistory ? 'Скрыть историю изменений' : 'Показать историю изменений'
+		">
+			{{ showHistory ? 'Скрыть историю' : 'Показать историю' }}
+		</button>
+		<div *ngIf="showHistory">
+			<h2 class="section-title">История изменений</h2>
+			<div *ngIf="isLoadingHistory" class="text-center">
+				<div class="spinner-border" role="status">
+					<span class="visually-hidden">Загрузка...</span>
+				</div>
+			</div>
+			<table *ngIf="!isLoadingHistory && historyEntries.length > 0" class="data-table" role="grid"
+				aria-label="Таблица истории изменений магазина">
+				<thead>
+					<tr>
+						<th scope="col">Дата и время</th>
+						<th scope="col">Действие</th>
+						<th scope="col">Пользователь</th>
+						<th scope="col">Подробности</th>
+						<th scope="col">Изменения</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let entry of historyEntries">
+						<td>{{ entry.timestamp | date: 'dd.MM.yyyy HH:mm:ss' }}</td>
+						<td>{{ formatHistoryAction(entry.action) }}</td>
+						<td>{{ userMap[entry.user] || 'Неизвестно' }}</td>
+						<td>{{ entry.details || 'Нет подробностей' }}</td>
+						<td>{{ formatHistoryChanges(entry.changes) }}</td>
+					</tr>
+				</tbody>
+			</table>
+			<div *ngIf="!isLoadingHistory && historyEntries.length === 0" class="alert alert-info">
+				История изменений не найдена.
+			</div>
 		</div>
-	</form>
+	</div>
 
 	<app-store-select-or-add-modal *ngIf="isModalOpen" [fieldName]="modalField" [mode]="modalMode"
 		(modalClose)="closeModal()" (itemSelected)="selectItem($event)"

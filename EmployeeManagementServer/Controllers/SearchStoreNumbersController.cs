@@ -1,35 +1,50 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using EmployeeManagementServer.Services;
-using System;
 using EmployeeManagementServer.Models.DTOs;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
+using EmployeeManagementServer.Models;
 
 namespace EmployeeManagementServer.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class SearchStoreNumbersController : ControllerBase
     {
         private readonly IStoreNumberSearchService _searchService;
+        private readonly ILogger<SearchStoreNumbersController> _logger;
 
-        public SearchStoreNumbersController(IStoreNumberSearchService searchService)
+        public SearchStoreNumbersController(IStoreNumberSearchService searchService, ILogger<SearchStoreNumbersController> logger)
         {
             _searchService = searchService;
+            _logger = logger;
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> SearchStoreNumbers([FromQuery] StoreNumberSearchDto searchDto)
+        public async Task<IActionResult> SearchStoreNumbers(
+            [FromQuery] StoreNumberSearchDto searchDto,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 25)
         {
             try
             {
-                var storeNumbers = await _searchService.SearchStoreNumbersAsync(searchDto);
-                return Ok(storeNumbers);
+                if (page < 1 || pageSize < 1)
+                {
+                    return BadRequest("Page and pageSize must be greater than 0.");
+                }
+
+                int skip = (page - 1) * pageSize;
+                var (storeNumbers, total) = await _searchService.SearchStoreNumbersAsync(searchDto, skip, pageSize);
+                return Ok(new
+                {
+                    total,
+                    storeNumbers
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Ошибка при выполнении поиска: {ex.Message}");
+                _logger.LogError(ex, "Error during storeNumber search.");
+                return StatusCode(500, "An unexpected error occurred.");
             }
         }
     }

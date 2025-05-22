@@ -301,7 +301,7 @@ namespace EmployeeManagementServer.Controllers
         [HttpPost("{id}/close")]
         public async Task<IActionResult> ClosePass(int id, [FromBody] ClosePassDto dto)
         {
-            _logger.LogInformation("Получен запрос на закрытие пропуска с ID {Id}.", id);
+            _logger.LogInformation("Получен запрос на закрытие пропуска с ID {Id}, ClosedBy: {ClosedBy}", id, dto.ClosedBy);
 
             if (!ModelState.IsValid)
             {
@@ -334,12 +334,12 @@ namespace EmployeeManagementServer.Controllers
             pass.IsClosed = true;
             pass.CloseReason = dto.CloseReason;
             pass.CloseDate = DateTime.UtcNow;
-            pass.ClosedBy = userId;
+            pass.ClosedBy = dto.ClosedBy; 
 
             _context.Passes.Update(pass);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Пропуск с ID {Id} успешно закрыт.", id);
+            _logger.LogInformation("Пропуск с ID {Id} успешно закрыт, ClosedBy: {ClosedBy}", id, dto.ClosedBy);
             return NoContent();
         }
 
@@ -392,14 +392,5 @@ namespace EmployeeManagementServer.Controllers
                 _ => "Неизвестный тип"
             };
         }
-    }
-
-    /// <summary>
-    /// DTO для закрытия пропуска.
-    /// </summary>
-    public class ClosePassDto
-    {
-        [Required(ErrorMessage = "Причина закрытия обязательна.")]
-        public string CloseReason { get; set; } = string.Empty;
     }
 }

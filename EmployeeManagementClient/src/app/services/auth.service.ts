@@ -230,4 +230,17 @@ export class AuthService {
 			return null;
 		}
 	}
+
+	getCurrentUserId(): string | null {
+		const token = this.tokenService.getToken();
+		if (!token) return null;
+		try {
+			const payload = JSON.parse(atob(token.split('.')[1]));
+			console.log('JWT payload:', payload);
+			return payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || payload.sub || null;
+		} catch (e) {
+			console.error('Ошибка при получении UUID пользователя из токена:', e);
+			return null;
+		}
+	}
 }

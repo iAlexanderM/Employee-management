@@ -1,35 +1,49 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using EmployeeManagementServer.Services;
-using System;
 using EmployeeManagementServer.Models.DTOs;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace EmployeeManagementServer.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class SearchLinesController : ControllerBase
     {
         private readonly ILineSearchService _searchService;
+        private readonly ILogger<SearchLinesController> _logger;
 
-        public SearchLinesController(ILineSearchService searchService)
+        public SearchLinesController(ILineSearchService searchService, ILogger<SearchLinesController> logger)
         {
             _searchService = searchService;
+            _logger = logger;
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> SearchLines([FromQuery] LineSearchDto searchDto)
+        public async Task<IActionResult> SearchLines(
+            [FromQuery] LineSearchDto searchDto,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 25)
         {
             try
             {
-                var lines = await _searchService.SearchLinesAsync(searchDto);
-                return Ok(lines);
+                if (page < 1 || pageSize < 1)
+                {
+                    return BadRequest("Page and pageSize must be greater than 0.");
+                }
+
+                int skip = (page - 1) * pageSize;
+                var (lines, total) = await _searchService.SearchLinesAsync(searchDto, skip, pageSize);
+                return Ok(new
+                {
+                    total,
+                    lines
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Ошибка при выполнении поиска: {ex.Message}");
+                _logger.LogError(ex, "Error during line search.");
+                return StatusCode(500, "An unexpected error occurred.");
             }
         }
     }

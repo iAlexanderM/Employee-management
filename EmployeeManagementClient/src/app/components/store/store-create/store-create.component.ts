@@ -67,31 +67,7 @@ export class StoreCreateComponent implements OnInit, OnDestroy {
 
 		const subscription = this.storeService.createStore(store).subscribe({
 			next: (createdStore) => {
-				const historySubscription = this.historyService
-					.logHistory({
-						entityType: 'store',
-						entityId: createdStore.id.toString(),
-						action: 'create',
-						details: `Создана новая торговая точка ${createdStore.id}`,
-						changes: {
-							building: { oldValue: null, newValue: createdStore.building },
-							floor: { oldValue: null, newValue: createdStore.floor },
-							line: { oldValue: null, newValue: createdStore.line },
-							storeNumber: { oldValue: null, newValue: createdStore.storeNumber },
-							sortOrder: { oldValue: null, newValue: createdStore.sortOrder },
-							note: { oldValue: null, newValue: createdStore.note || 'Нет' }
-						},
-						user: this.authService.getCurrentUser() || 'Unknown'
-					})
-					.subscribe({
-						next: () => {
-							this.router.navigate(['/stores']);
-						},
-						error: (err) => {
-							this.errorMessage = 'Не удалось зафиксировать историю создания: ' + (err.message || 'Неизвестная ошибка');
-						}
-					});
-				this.subscriptions.push(historySubscription);
+				this.router.navigate(['/stores']);
 			},
 			error: (err) => {
 				this.errorMessage = err.message || 'Не удалось создать торговую точку.';

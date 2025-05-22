@@ -54,6 +54,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddHostedService<ExpiredTokenCleanupService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // Настройка аутентификации JWT
 builder.Services.AddAuthentication(options =>

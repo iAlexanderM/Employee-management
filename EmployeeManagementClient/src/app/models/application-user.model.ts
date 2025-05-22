@@ -5,4 +5,5 @@ export interface ApplicationUser {
 	userName: string;
 	email: string;
 	passTransactions?: PassTransaction[];
+	roles?: string[];
 }

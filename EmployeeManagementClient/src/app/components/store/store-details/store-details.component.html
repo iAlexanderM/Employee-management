@@ -66,15 +66,11 @@
 				<tbody>
 					<tr *ngFor="let entry of historyEntries">
 						<td>{{ entry.timestamp | date: 'dd.MM.yyyy HH:mm' }}</td>
-						<td>{{ entry.action }}</td>
+						<td>{{ formatHistoryAction(entry.action) }}</td>
 						<td>{{ entry.details }}</td>
-						<td>{{ entry.user }}</td>
+						<td>{{ userMap[entry.user] || 'Неизвестно' }}</td>
+						<td>{{ formatHistoryChanges(entry.changes) }}</td>
 						<td>
-							<ul>
-								<li *ngFor="let key of entry.changes | keyvalue">
-									{{ key.key }}: {{ key.value.oldValue }} → {{ key.value.newValue }}
-								</li>
-							</ul>
 						</td>
 					</tr>
 				</tbody>

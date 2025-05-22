@@ -66,7 +66,7 @@ namespace EmployeeManagementServer.Controllers
                     StoreId = cspDto.StoreId,
                     PassTypeId = cspDto.PassTypeId,
                     Position = cspDto.Position ?? string.Empty,
-                    OriginalPassId = cspDto.OriginalPassId // Сохраняем OriginalPassId
+                    OriginalPassId = cspDto.OriginalPassId
                 });
             }
 
@@ -100,7 +100,11 @@ namespace EmployeeManagementServer.Controllers
                 Token = transaction.Token,
                 TokenType = transaction.TokenType,
                 UserId = transaction.UserId,
-                User = transaction.User,
+                User = transaction.User != null ? new ApplicationUser
+                {
+                    Id = transaction.User.Id,
+                    UserName = transaction.User.UserName
+                } : null,
                 ContractorStorePasses = transaction.ContractorStorePasses.Select(csp => new ContractorStorePassDto
                 {
                     ContractorId = csp.ContractorId,
@@ -110,7 +114,7 @@ namespace EmployeeManagementServer.Controllers
                     PassTypeId = csp.PassTypeId,
                     PassType = _context.PassTypes.Find(csp.PassTypeId)!,
                     Position = csp.Position,
-                    OriginalPassId = csp.OriginalPassId 
+                    OriginalPassId = csp.OriginalPassId
                 }).ToList(),
                 StartDate = transaction.StartDate,
                 EndDate = transaction.EndDate,
@@ -133,9 +137,9 @@ namespace EmployeeManagementServer.Controllers
 
         [HttpGet("search")]
         public async Task<IActionResult> SearchPassTransactions(
-    [FromQuery] PassTransactionSearchDto searchDto,
-    [FromQuery] int page = 1,
-    [FromQuery] int pageSize = 25)
+            [FromQuery] PassTransactionSearchDto searchDto,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 25)
         {
             if (page < 1 || pageSize < 1)
                 return BadRequest("Неверные параметры страницы или размера.");
@@ -236,7 +240,7 @@ namespace EmployeeManagementServer.Controllers
                     PassTypeId = csp.PassTypeId,
                     PassType = csp.PassType,
                     Position = csp.Position,
-                    OriginalPassId = csp.OriginalPassId 
+                    OriginalPassId = csp.OriginalPassId
                 }).ToList(),
                 StartDate = transaction.StartDate,
                 EndDate = transaction.EndDate,
@@ -249,16 +253,6 @@ namespace EmployeeManagementServer.Controllers
             };
 
             return Ok(responseDto);
-        }
-
-        [HttpGet("unique-usernames")]
-        public async Task<IActionResult> GetUniqueUserNames()
-        {
-            var userNames = await _context.Users
-                .Select(u => u.UserName)
-                .Distinct()
-                .ToListAsync();
-            return Ok(userNames);
         }
     }
 }

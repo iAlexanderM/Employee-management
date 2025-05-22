@@ -27,6 +27,7 @@ export class StorePointsService {
 		return params;
 	}
 
+	// Building Methods (Unchanged)
 	getBuildings(page: number = 1, pageSize: number = 25, filters: { [key: string]: any } = {}, isArchived = false): Observable<{ total: number; buildings: Building[] }> {
 		const params = this.getParams(page, pageSize, filters, isArchived);
 		return this.http.get<any>(`${this.baseApiUrl}/Building`, { params }).pipe(
@@ -68,129 +69,6 @@ export class StorePointsService {
 		);
 	}
 
-	getFloors(page: number = 1, pageSize: number = 25, filters: { [key: string]: any } = {}, isArchived = false): Observable<{ total: number; floors: Floor[] }> {
-		const params = this.getParams(page, pageSize, filters, isArchived);
-		return this.http.get<any>(`${this.baseApiUrl}/floors`, { params }).pipe(
-			map(response => ({
-				total: response.total || response.data?.length || 0,
-				floors: response.data || []
-			})),
-			catchError(error => {
-				console.error('[getFloors] Error:', error);
-				return of({ total: 0, floors: [] });
-			})
-		);
-	}
-
-	getFloorById(id: number): Observable<Floor> {
-		return this.http.get<Floor>(`${this.baseApiUrl}/floors/${id}`).pipe(
-			catchError(error => {
-				console.error('[getFloorById] Error:', error);
-				return throwError(() => new Error('Failed to fetch floor'));
-			})
-		);
-	}
-
-	addFloor(name: string): Observable<Floor> {
-		return this.http.post<Floor>(`${this.baseApiUrl}/floors`, { name }).pipe(
-			catchError(error => {
-				console.error('[addFloor] Error:', error);
-				return throwError(() => new Error(error.error?.message || 'Failed to add floor'));
-			})
-		);
-	}
-
-	updateFloor(id: number, name: string, sortOrder: number): Observable<void> {
-		return this.http.put<void>(`${this.baseApiUrl}/floors/${id}`, { name, sortOrder }).pipe(
-			catchError(error => {
-				console.error('[updateFloor] Error:', error);
-				return throwError(() => new Error(error.error?.message || 'Failed to update floor'));
-			})
-		);
-	}
-
-	getLines(page: number = 1, pageSize: number = 25, filters: { [key: string]: any } = {}, isArchived = false): Observable<{ total: number; lines: Line[] }> {
-		const params = this.getParams(page, pageSize, filters, isArchived);
-		return this.http.get<any>(`${this.baseApiUrl}/lines`, { params }).pipe(
-			map(response => ({
-				total: response.total || response.data?.length || 0,
-				lines: response.data || []
-			})),
-			catchError(error => {
-				console.error('[getLines] Error:', error);
-				return of({ total: 0, lines: [] });
-			})
-		);
-	}
-
-	getLineById(id: number): Observable<Line> {
-		return this.http.get<Line>(`${this.baseApiUrl}/lines/${id}`).pipe(
-			catchError(error => {
-				console.error('[getLineById] Error:', error);
-				return throwError(() => new Error('Failed to fetch line'));
-			})
-		);
-	}
-
-	addLine(name: string): Observable<Line> {
-		return this.http.post<Line>(`${this.baseApiUrl}/lines`, { name }).pipe(
-			catchError(error => {
-				console.error('[addLine] Error:', error);
-				return throwError(() => new Error(error.error?.message || 'Failed to add line'));
-			})
-		);
-	}
-
-	updateLine(id: number, name: string, sortOrder: number): Observable<void> {
-		return this.http.put<void>(`${this.baseApiUrl}/lines/${id}`, { name, sortOrder }).pipe(
-			catchError(error => {
-				console.error('[updateLine] Error:', error);
-				return throwError(() => new Error(error.error?.message || 'Failed to update line'));
-			})
-		);
-	}
-
-	getStoreNumbers(page: number = 1, pageSize: number = 25, filters: { [key: string]: any } = {}, isArchived = false): Observable<{ total: number; storeNumbers: StoreNumber[] }> {
-		const params = this.getParams(page, pageSize, filters, isArchived);
-		return this.http.get<any>(`${this.baseApiUrl}/store-numbers`, { params }).pipe(
-			map(response => ({
-				total: response.total || response.data?.length || 0,
-				storeNumbers: response.data || []
-			})),
-			catchError(error => {
-				console.error('[getStoreNumbers] Error:', error);
-				return of({ total: 0, storeNumbers: [] });
-			})
-		);
-	}
-
-	getStoreNumberById(id: number): Observable<StoreNumber> {
-		return this.http.get<StoreNumber>(`${this.baseApiUrl}/store-numbers/${id}`).pipe(
-			catchError(error => {
-				console.error('[getStoreNumberById] Error:', error);
-				return throwError(() => new Error('Failed to fetch store number'));
-			})
-		);
-	}
-
-	addStoreNumber(name: string): Observable<StoreNumber> {
-		return this.http.post<StoreNumber>(`${this.baseApiUrl}/store-numbers`, { name }).pipe(
-			catchError(error => {
-				console.error('[addStoreNumber] Error:', error);
-				return throwError(() => new Error(error.error?.message || 'Failed to add store number'));
-			})
-		);
-	}
-
-	updateStoreNumber(id: number, name: string, sortOrder: number): Observable<void> {
-		return this.http.put<void>(`${this.baseApiUrl}/store-numbers/${id}`, { name, sortOrder }).pipe(
-			catchError(error => {
-				console.error('[updateStoreNumber] Error:', error);
-				return throwError(() => new Error(error.error?.message || 'Failed to update store number'));
-			})
-		);
-	}
-
 	searchBuildings(criteria: { [key: string]: string | number } = {}, isArchived = false): Observable<{ total: number; buildings: Building[] }> {
 		let params = new HttpParams().set('isArchived', isArchived.toString());
 		Object.keys(criteria).forEach(key => {
@@ -208,12 +86,53 @@ export class StorePointsService {
 		);
 	}
 
+	getFloors(page: number = 1, pageSize: number = 25, filters: { [key: string]: any } = {}, isArchived = false): Observable<{ total: number; floors: Floor[] }> {
+		const params = this.getParams(page, pageSize, filters, isArchived);
+		return this.http.get<any>(`${this.baseApiUrl}/Floor`, { params }).pipe(
+			map(response => ({
+				total: response.total || 0,
+				floors: response.floors || []
+			})),
+			catchError(error => {
+				console.error('[getFloors] Error:', error);
+				return of({ total: 0, floors: [] });
+			})
+		);
+	}
+
+	getFloorById(id: number): Observable<Floor> {
+		return this.http.get<Floor>(`${this.baseApiUrl}/Floor/${id}`).pipe(
+			catchError(error => {
+				console.error('[getFloorById] Error:', error);
+				return throwError(() => new Error('Failed to fetch floor'));
+			})
+		);
+	}
+
+	addFloor(name: string): Observable<Floor> {
+		return this.http.post<Floor>(`${this.baseApiUrl}/Floor`, { name }).pipe(
+			catchError(error => {
+				console.error('[addFloor] Error:', error);
+				return throwError(() => new Error(error.error?.message || 'Failed to add floor'));
+			})
+		);
+	}
+
+	updateFloor(id: number, name: string, sortOrder: number): Observable<void> {
+		return this.http.put<void>(`${this.baseApiUrl}/Floor/${id}`, { name, sortOrder }).pipe(
+			catchError(error => {
+				console.error('[updateFloor] Error:', error);
+				return throwError(() => new Error(error.error?.message || 'Failed to update floor'));
+			})
+		);
+	}
+
 	searchFloors(criteria: { [key: string]: string | number } = {}, isArchived = false): Observable<{ total: number; floors: Floor[] }> {
 		let params = new HttpParams().set('isArchived', isArchived.toString());
 		Object.keys(criteria).forEach(key => {
 			params = params.set(key, criteria[key].toString());
 		});
-		return this.http.get<any>(`${this.baseApiUrl}/floors/search`, { params }).pipe(
+		return this.http.get<any>(`${this.baseApiUrl}/Floor/search`, { params }).pipe(
 			map(response => ({
 				total: response.total || response.data?.length || 0,
 				floors: response.data || []
@@ -225,12 +144,53 @@ export class StorePointsService {
 		);
 	}
 
+	getLines(page: number = 1, pageSize: number = 25, filters: { [key: string]: any } = {}, isArchived = false): Observable<{ total: number; lines: Line[] }> {
+		const params = this.getParams(page, pageSize, filters, isArchived);
+		return this.http.get<any>(`${this.baseApiUrl}/Line`, { params }).pipe(
+			map(response => ({
+				total: response.total || 0,
+				lines: response.lines || []
+			})),
+			catchError(error => {
+				console.error('[getLines] Error:', error);
+				return of({ total: 0, lines: [] });
+			})
+		);
+	}
+
+	getLineById(id: number): Observable<Line> {
+		return this.http.get<Line>(`${this.baseApiUrl}/Line/${id}`).pipe(
+			catchError(error => {
+				console.error('[getLineById] Error:', error);
+				return throwError(() => new Error('Failed to fetch line'));
+			})
+		);
+	}
+
+	addLine(name: string): Observable<Line> {
+		return this.http.post<Line>(`${this.baseApiUrl}/Line`, { name }).pipe(
+			catchError(error => {
+				console.error('[addLine] Error:', error);
+				return throwError(() => new Error(error.error?.message || 'Failed to add line'));
+			})
+		);
+	}
+
+	updateLine(id: number, name: string, sortOrder: number): Observable<void> {
+		return this.http.put<void>(`${this.baseApiUrl}/Line/${id}`, { name, sortOrder }).pipe(
+			catchError(error => {
+				console.error('[updateLine] Error:', error);
+				return throwError(() => new Error(error.error?.message || 'Failed to update line'));
+			})
+		);
+	}
+
 	searchLines(criteria: { [key: string]: string | number } = {}, isArchived = false): Observable<{ total: number; lines: Line[] }> {
 		let params = new HttpParams().set('isArchived', isArchived.toString());
 		Object.keys(criteria).forEach(key => {
 			params = params.set(key, criteria[key].toString());
 		});
-		return this.http.get<any>(`${this.baseApiUrl}/lines/search`, { params }).pipe(
+		return this.http.get<any>(`${this.baseApiUrl}/Line/search`, { params }).pipe(
 			map(response => ({
 				total: response.total || response.data?.length || 0,
 				lines: response.data || []
@@ -242,12 +202,53 @@ export class StorePointsService {
 		);
 	}
 
+	getStoreNumbers(page: number = 1, pageSize: number = 25, filters: { [key: string]: any } = {}, isArchived = false): Observable<{ total: number; storeNumbers: StoreNumber[] }> {
+		const params = this.getParams(page, pageSize, filters, isArchived);
+		return this.http.get<any>(`${this.baseApiUrl}/StoreNumber`, { params }).pipe(
+			map(response => ({
+				total: response.total || 0,
+				storeNumbers: response.storeNumbers || []
+			})),
+			catchError(error => {
+				console.error('[getStoreNumbers] Error:', error);
+				return of({ total: 0, storeNumbers: [] });
+			})
+		);
+	}
+
+	getStoreNumberById(id: number): Observable<StoreNumber> {
+		return this.http.get<StoreNumber>(`${this.baseApiUrl}/StoreNumber/${id}`).pipe(
+			catchError(error => {
+				console.error('[getStoreNumberById] Error:', error);
+				return throwError(() => new Error('Failed to fetch store number'));
+			})
+		);
+	}
+
+	addStoreNumber(name: string): Observable<StoreNumber> {
+		return this.http.post<StoreNumber>(`${this.baseApiUrl}/StoreNumber`, { name }).pipe(
+			catchError(error => {
+				console.error('[addStoreNumber] Error:', error);
+				return throwError(() => new Error(error.error?.message || 'Failed to add store number'));
+			})
+		);
+	}
+
+	updateStoreNumber(id: number, name: string, sortOrder: number): Observable<void> {
+		return this.http.put<void>(`${this.baseApiUrl}/StoreNumber/${id}`, { name, sortOrder }).pipe(
+			catchError(error => {
+				console.error('[updateStoreNumber] Error:', error);
+				return throwError(() => new Error(error.error?.message || 'Failed to update store number'));
+			})
+		);
+	}
+
 	searchStoreNumbers(criteria: { [key: string]: string | number } = {}, isArchived = false): Observable<{ total: number; storeNumbers: StoreNumber[] }> {
 		let params = new HttpParams().set('isArchived', isArchived.toString());
 		Object.keys(criteria).forEach(key => {
 			params = params.set(key, criteria[key].toString());
 		});
-		return this.http.get<any>(`${this.baseApiUrl}/store-numbers/search`, { params }).pipe(
+		return this.http.get<any>(`${this.baseApiUrl}/StoreNumber/search`, { params }).pipe(
 			map(response => ({
 				total: response.total || response.data?.length || 0,
 				storeNumbers: response.data || []

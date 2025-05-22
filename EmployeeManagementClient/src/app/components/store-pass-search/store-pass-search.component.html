@@ -98,6 +98,9 @@
 							<div *ngIf="errorMessage" class="text-danger error-message ms-3">
 								{{ errorMessage }}
 							</div>
+							<div *ngIf="successMessage" class="text-success success-message ms-3">
+								{{ successMessage }}
+							</div>
 						</div>
 					</form>
 
@@ -105,8 +108,65 @@
 					<div class="table-responsive" *ngIf="results.length > 0">
 						<div *ngFor="let result of results; let resultIndex = index">
 							<h5>{{ formatStore(result) }}</h5>
-							<textarea [formControl]="noteControls[resultIndex]" class="form-control mb-3"
-								placeholder="Введите заметку" (blur)="saveNote(resultIndex)"></textarea>
+							<div class="mt-3" *ngIf="noteForms[resultIndex]">
+								<form [formGroup]="noteForms[resultIndex]">
+									<div class="form-group">
+										<label for="note-{{resultIndex}}">Заметка:</label>
+										<textarea id="note-{{resultIndex}}" formControlName="note" class="form-control"
+											rows="4" placeholder="Введите заметку"></textarea>
+										<div *ngIf="noteForms[resultIndex].get('note')?.hasError('maxlength')"
+											class="text-danger">
+											Заметка не должна превышать 500 символов.
+										</div>
+									</div>
+									<div class="mt-2">
+										<button class="btn btn-primary btn-equal" (click)="saveNote(resultIndex)"
+											[disabled]="!noteForms[resultIndex].valid || noteForms[resultIndex].pristine || isLoading">
+											Сохранить заметку
+										</button>
+									</div>
+								</form>
+							</div>
+
+							<div class="mt-2">
+								<button class="btn btn-info btn-equal" (click)="toggleHistory(resultIndex)">
+									{{ showHistory[resultIndex] ? 'Скрыть историю' : 'Показать историю' }}
+								</button>
+								<div *ngIf="showHistory[resultIndex]" class="mt-3">
+									<h6>История изменений</h6>
+									<div *ngIf="isLoadingHistory[resultIndex]" class="text-center">
+										<div class="spinner-border" role="status">
+											<span class="visually-hidden">Загрузка...</span>
+										</div>
+									</div>
+									<table class="table table-bordered"
+										*ngIf="historyEntries[resultIndex].length > 0 && !isLoadingHistory[resultIndex]">
+										<thead>
+											<tr>
+												<th>Дата</th>
+												<th>Действие</th>
+												<th>Детали</th>
+												<th>Пользователь</th>
+												<th>Изменения</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr *ngFor="let entry of historyEntries[resultIndex]">
+												<td>{{ entry.timestamp | date: 'dd.MM.yyyy HH:mm' }}</td>
+												<td>{{ formatHistoryAction(entry.action) }}</td>
+												<td>{{ entry.details || '-' }}</td>
+												<td>{{ userMap[entry.user] || 'Неизвестно' }}</td>
+												<td>{{ formatHistoryChanges(entry.changes) }}</td>
+											</tr>
+										</tbody>
+									</table>
+									<p *ngIf="historyEntries[resultIndex]?.length === 0 && !isLoadingHistory[resultIndex]"
+										class="text-muted">
+										Нет записей в истории.
+									</p>
+								</div>
+							</div>
+
 							<table class="table">
 								<thead>
 									<tr>
@@ -187,6 +247,11 @@
 																<td>
 																	<span class="color-circle"
 																		[style.backgroundColor]="pass.passTypeColor || '#000'"></span>
+																	{{ pass.passTypeName || '-' }}
+																	<span
+																		*ngIf="pass.building === result.building && pass.floor === result.floor && pass.line === result.line && pass.storeNumber === result.storeNumber"
+																		class="badge badge-primary ms-1">Текущая
+																		точка</span>
 																</td>
 																<td>{{ pass.passTypeName || '-' }}</td>
 																<td>{{ (pass.passTypeDurationInMonths || 0) + ' мес.' }}

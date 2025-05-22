@@ -29,92 +29,137 @@ namespace EmployeeManagementServer.Controllers
         [HttpGet]
         public async Task<IActionResult> GetFloors(
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 25)
+            [FromQuery] int pageSize = 25,
+            [FromQuery] bool? isArchived = null)
         {
-            if (page < 1 || pageSize < 1)
+            try
             {
-                return BadRequest("Page and pageSize must be greater than 0.");
+                if (page < 1 || pageSize < 1)
+                {
+                    return BadRequest("Page and pageSize must be greater than 0.");
+                }
+
+                int skip = (page - 1) * pageSize;
+                int totalFloors = await _floorService.GetTotalFloorsCountAsync(isArchived);
+                var floors = await _floorService.GetFloorsAsync(skip, pageSize, isArchived);
+
+                var floorDtos = _mapper.Map<List<FloorDto>>(floors);
+
+                return Ok(new
+                {
+                    total = totalFloors,
+                    floors = floorDtos
+                });
             }
-
-            int skip = (page - 1) * pageSize;
-            int totalFloors = await _floorService.GetTotalFloorsCountAsync();
-            var floors = await _floorService.GetFloorsAsync(skip, pageSize);
-
-            var floorDtos = _mapper.Map<List<FloorDto>>(floors);
-
-            return Ok(new
+            catch (Exception ex)
             {
-                total = totalFloors,
-                floors = floorDtos
-            });
+                _logger.LogError(ex, "Ошибка при получении зданий");
+                return StatusCode(500, "Ошибка сервера.");
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetFloorById(int id)
         {
-            var floor = await _floorService.GetFloorByIdAsync(id);
-            if (floor == null)
+            try
             {
-                return NotFound("Floor not found.");
-            }
+                var floor = await _floorService.GetFloorByIdAsync(id);
+                if (floor == null)
+                {
+                    return NotFound("Floor not found.");
+                }
 
-            var floorDto = _mapper.Map<FloorDto>(floor);
-            return Ok(floorDto);
+                var floorDto = _mapper.Map<FloorDto>(floor);
+                return Ok(floorDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при получении этажа с ID {Id}", id);
+                return StatusCode(500, "Ошибка сервера.");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateFloor([FromBody] FloorDto floorDto)
         {
-            if (floorDto == null || string.IsNullOrWhiteSpace(floorDto.Name))
+            try
             {
-                return BadRequest("Invalid data.");
+                if (floorDto == null || string.IsNullOrWhiteSpace(floorDto.Name))
+                {
+                    return BadRequest("Invalid data.");
+                }
+
+                var floor = _mapper.Map<Floor>(floorDto);
+                var createdFloor = await _floorService.AddFloorAsync(floor);
+
+                if (createdFloor == null)
+                {
+                    return Conflict("Floor with the same name already exists.");
+                }
+
+                var createdFloorDto = _mapper.Map<FloorDto>(createdFloor);
+                return CreatedAtAction(nameof(GetFloorById), new { id = createdFloorDto.Id }, createdFloorDto);
             }
-
-            var floor = _mapper.Map<Floor>(floorDto);
-            var createdFloor = await _floorService.AddFloorAsync(floor);
-
-            if (createdFloor == null)
+            catch (Exception ex)
             {
-                return Conflict("Floor with the same name already exists.");
+                _logger.LogError(ex, "Ошибка при создании здания");
+                return StatusCode(500, "Ошибка сервера.");
             }
-
-            var createdFloorDto = _mapper.Map<FloorDto>(createdFloor);
-            return CreatedAtAction(nameof(GetFloorById), new { id = createdFloorDto.Id }, createdFloorDto);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateFloor(int id, [FromBody] FloorDto floorDto)
         {
-            if (floorDto == null || string.IsNullOrWhiteSpace(floorDto.Name))
+            try
             {
-                return BadRequest("Invalid data.");
+                if (floorDto == null || string.IsNullOrWhiteSpace(floorDto.Name))
+                {
+                    return BadRequest("Invalid data.");
+                }
+
+                var result = await _floorService.UpdateFloorAsync(id, floorDto.Name, floorDto.SortOrder);
+
+                if (result == null)
+                {
+                    return NotFound("Floor not found.");
+                }
+
+                if (result == false)
+                {
+                    return Conflict("Floor with the same name already exists.");
+                }
+
+                return NoContent();
             }
-
-            var result = await _floorService.UpdateFloorAsync(id, floorDto.Name, floorDto.SortOrder);
-
-            if (result == null)
+            catch (InvalidOperationException ex)
             {
-                return NotFound("Floor not found.");
+                return BadRequest(ex.Message);
             }
-
-            if (result == false)
+            catch (Exception ex)
             {
-                return Conflict("Floor with the same name already exists.");
+                _logger.LogError(ex, "Ошибка при обновлении этажа с ID {Id}", id);
+                return StatusCode(500, "Ошибка сервера.");
             }
-
-            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> ArchiveFloor(int id)
         {
-            var success = await _floorService.ArchiveFloorAsync(id);
-            if (!success)
+            try
             {
-                return NotFound("Floor not found.");
-            }
+                var success = await _floorService.ArchiveFloorAsync(id);
+                if (!success)
+                {
+                    return NotFound("Floor not found.");
+                }
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при архивировании этажа с ID {Id}", id);
+                return StatusCode(500, "Ошибка сервера.");
+            }
         }
     }
 }

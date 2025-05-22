@@ -1,19 +1,22 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { BehaviorSubject, Subscription, Observable, of, forkJoin, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError, takeUntil } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { NgZone } from '@angular/core';
-
 import { PassService } from '../../services/pass.service';
 import { TransactionService } from '../../services/transaction.service';
 import { StoreService } from '../../services/store.service';
+import { UserService } from '../../services/user.service';
+import { HistoryService } from '../../services/history.service';
 import { SearchFilterResetService } from '../../services/search-filter-reset.service';
 import { PassByStoreResponseDto, ContractorPassesDto, PassDetailsDto } from '../../models/store-pass-search.model';
+import { HistoryEntry, ChangeValue } from '../../models/history.model';
+import { ApplicationUser } from '../../models/application-user.model';
 import { environment } from '../../../environments/environment';
 import { ContractorDto, PassType, Store as TransactionStore } from '../../models/transaction.model';
-import { Store as StoreModel } from '../../models/store.model';
+import { Store } from '../../models/store.model';
 
 @Component({
 	selector: 'app-store-pass-search',
@@ -33,7 +36,11 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 	private readonly apiBaseUrl = 'http://localhost:8080';
 	private destroy$ = new Subject<void>();
 
-	noteControls: { [resultIndex: number]: FormControl } = {};
+	noteForms: { [resultIndex: number]: FormGroup } = {};
+	historyEntries: { [resultIndex: number]: HistoryEntry[] } = {};
+	showHistory: { [resultIndex: number]: boolean } = {};
+	isLoadingHistory: { [resultIndex: number]: boolean } = {};
+	userMap: { [key: string]: string } = {};
 
 	buildingSuggestions$ = new BehaviorSubject<string[]>([]);
 	floorSuggestions$ = new BehaviorSubject<string[]>([]);
@@ -67,7 +74,9 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		private searchFilterResetService: SearchFilterResetService,
 		private cdr: ChangeDetectorRef,
 		private zone: NgZone,
-		private datePipe: DatePipe
+		private datePipe: DatePipe,
+		private userService: UserService,
+		private historyService: HistoryService
 	) {
 		this.searchForm = this.fb.group({
 			Building: [''],
@@ -223,12 +232,16 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		this.successMessage = null;
 		this.showAddTransactionButton = false;
 		this.results = [];
-		this.noteControls = {};
-		this.resetVirtualScrollState();
+		this.noteForms = {};
+		this.historyEntries = {};
+		this.showHistory = {};
+		this.isLoadingHistory = {};
+		this.userMap = {};
 
 		const allFieldsConfirmed = Object.values(this.confirmedFields).every((value) => value !== null && value.trim() !== '');
 		if (!allFieldsConfirmed) {
 			this.errorMessage = 'Выберите значения для всех полей из списка';
+			this.cdr.markForCheck();
 			return;
 		}
 
@@ -241,7 +254,6 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				takeUntil(this.destroy$),
 				catchError((error) => {
 					this.errorMessage = error?.status === 404 ? 'Торговая точка не найдена или не существует.' : error?.message || 'Ошибка при выполнении поиска.';
-					this.results = [];
 					this.isLoading = false;
 					this.resetVirtualScrollState();
 					this.cdr.markForCheck();
@@ -249,62 +261,230 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				})
 			)
 			.subscribe((response: PassByStoreResponseDto[]) => {
-				// Filter out archived results and ensure only active passes are shown
 				const filteredResults = response.filter(result => !result.isArchived);
 				if (filteredResults.length === 0) {
 					this.errorMessage = 'Активные торговые точки не найдены';
-					this.results = [];
-				} else {
-					this.results = filteredResults.map((result) => ({
-						...result,
-						contractors: (result.contractors || []).filter(c => c.activePasses && c.activePasses.length > 0).map((contractor) => ({
-							...contractor,
-							activePasses: this.getSortedPasses(contractor.activePasses, result),
-							closedPasses: [], // No closed passes
-						})),
-					}));
-					this.results.forEach((result, index) => {
-						this.noteControls[index] = this.fb.control(result.note || '');
-					});
+					this.isLoading = false;
+					this.cdr.markForCheck();
+					return;
 				}
-				this.isLoading = false;
-				this.saveSearchCriteria();
-				this.panelStates = {};
-				this.showAddTransactionButton = this.results.length > 0;
-				this.prepareContractorsForVirtualScroll();
-				setTimeout(() => this.updateObservers(), 100);
-				this.cdr.markForCheck();
+
+				// Подготавливаем результаты
+				const tempResults = filteredResults.map((result) => ({
+					...result,
+					contractors: (result.contractors || []).filter(c => c.activePasses && c.activePasses.length > 0).map((contractor) => ({
+						...contractor,
+						activePasses: this.getSortedPasses(contractor.allActivePasses, result),
+						closedPasses: [],
+					})),
+				}));
+
+				// Загружаем заметки для каждого магазина
+				const storeObservables = tempResults.map((result, index) =>
+					this.storeService.getStoreById(result.storeId).pipe(
+						catchError((err) => {
+							console.error(`[searchPasses][${index}] Error fetching store:`, err);
+							return of({ note: null } as Store); // Fallback
+						})
+					)
+				);
+
+				forkJoin(storeObservables).subscribe((stores: Store[]) => {
+					// Присваиваем results и создаём формы только после загрузки всех данных
+					this.results = tempResults.map((result, index) => ({
+						...result,
+						note: stores[index].note ?? null, // Преобразуем undefined в null
+					}));
+
+					this.results.forEach((result, index) => {
+						console.debug(`[searchPasses][${index}] Loading note from store:`, stores[index].note);
+						this.noteForms[index] = this.fb.group({
+							note: [stores[index].note || '', [Validators.maxLength(500)]], // Как в StoreDetailsComponent
+						});
+						console.debug(`[searchPasses][${index}] noteForm value:`, this.noteForms[index].value);
+						this.showHistory[index] = false;
+						this.isLoadingHistory[index] = false;
+						this.historyEntries[index] = [];
+					});
+
+					this.isLoading = false;
+					this.saveSearchCriteria();
+					this.panelStates = {};
+					this.showAddTransactionButton = this.results.length > 0;
+					this.prepareContractorsForVirtualScroll();
+					setTimeout(() => this.updateObservers(), 100);
+					this.cdr.detectChanges();
+					this.loadUsersForHistory();
+				});
 			});
 	}
 
 	saveNote(resultIndex: number): void {
 		const result = this.results[resultIndex];
-		if (!result.storeId) {
-			this.errorMessage = 'ID торговой точки не определён';
+		if (!result.storeId || !this.noteForms[resultIndex].valid) {
+			console.debug(`[saveNote][${resultIndex}] Invalid: storeId=${result.storeId}, formValid=${this.noteForms[resultIndex].valid}`);
+			this.setMessage('ID торговой точки не определён или заметка недействительна', 'error');
 			return;
 		}
-		const note = this.noteControls[resultIndex].value?.trim() || null;
-		if (note === result.note) {
-			return;
-		}
-		this.isLoading = true;
-		this.errorMessage = null;
-		this.successMessage = null;
 
-		this.storeService.updateStore(result.storeId, { note }).subscribe({
-			next: () => {
-				this.results[resultIndex].note = note;
-				this.noteControls[resultIndex].setValue(note || '');
-				this.isLoading = false;
-				this.successMessage = 'Заметка успешно сохранена';
-				this.cdr.markForCheck();
+		const note = this.noteForms[resultIndex].get('note')?.value?.trim() || null;
+		console.debug(`[saveNote][${resultIndex}] Saving note:`, note, `Current note:`, result.note);
+		if (note === result.note) {
+			console.debug(`[saveNote][${resultIndex}] Note unchanged`);
+			return;
+		}
+
+		this.isLoading = true;
+		// Запрашиваем текущий Store, чтобы получить sortOrder
+		this.storeService.getStoreById(result.storeId).subscribe({
+			next: (store: Store) => {
+				const storeUpdate: Partial<Store> = {
+					building: result.building,
+					floor: result.floor,
+					line: result.line,
+					storeNumber: result.storeNumber,
+					note: note,
+					isArchived: result.isArchived,
+					sortOrder: store.sortOrder || 0, // Берём sortOrder из Store или 0
+				};
+				console.debug(`[saveNote][${resultIndex}] Sending update:`, storeUpdate);
+				this.storeService.updateStore(result.storeId, storeUpdate).subscribe({
+					next: () => {
+						console.debug(`[saveNote][${resultIndex}] Note saved successfully`);
+						this.results[resultIndex].note = note;
+						this.noteForms[resultIndex].patchValue({ note: note || '' });
+						this.noteForms[resultIndex].markAsPristine();
+						this.setMessage('Заметка успешно сохранена', 'success');
+						if (this.showHistory[resultIndex]) {
+							this.loadHistory(resultIndex);
+						}
+						this.isLoading = false;
+						this.cdr.markForCheck();
+					},
+					error: (err) => {
+						console.error(`[saveNote][${resultIndex}] Error:`, err);
+						this.setMessage('Ошибка при сохранении заметки: ' + (err.message || 'Неизвестная ошибка'), 'error');
+						this.isLoading = false;
+						this.cdr.markForCheck();
+					},
+				});
 			},
 			error: (err) => {
-				this.errorMessage = 'Ошибка при сохранении заметки: ' + (err.message || 'Неизвестная ошибка');
+				console.error(`[saveNote][${resultIndex}] Error fetching store:`, err);
+				this.setMessage('Ошибка при получении данных магазина', 'error');
 				this.isLoading = false;
 				this.cdr.markForCheck();
 			},
 		});
+	}
+
+	private setMessage(message: string, type: 'success' | 'error', timeout: number = 5000): void {
+		if (type === 'success') {
+			this.successMessage = message;
+			this.errorMessage = null;
+		} else {
+			this.errorMessage = message;
+			this.successMessage = null;
+		}
+		setTimeout(() => {
+			if (type === 'success') this.successMessage = null;
+			else this.errorMessage = null;
+			this.cdr.markForCheck();
+		}, timeout);
+	}
+
+	toggleHistory(resultIndex: number): void {
+		this.showHistory[resultIndex] = !this.showHistory[resultIndex];
+		if (this.showHistory[resultIndex] && this.results[resultIndex]) {
+			this.loadHistory(resultIndex);
+		} else {
+			this.historyEntries[resultIndex] = [];
+		}
+		this.cdr.markForCheck();
+	}
+
+	loadHistory(resultIndex: number): void {
+		const result = this.results[resultIndex];
+		if (!result.storeId) {
+			this.setMessage('ID торговой точки не определён', 'error');
+			return;
+		}
+		this.isLoadingHistory[resultIndex] = true;
+		this.historyService.getHistory('store', result.storeId.toString()).subscribe({
+			next: (historyEntries: HistoryEntry[]) => {
+				console.debug(`[LoadHistory][${resultIndex}] Загружено записей: ${historyEntries.length}`, historyEntries);
+				this.historyEntries[resultIndex] = historyEntries;
+				this.isLoadingHistory[resultIndex] = false;
+				if (historyEntries.length === 0) {
+					console.debug(`История для торговой точки ${result.storeId} пуста`);
+				}
+				this.loadUsersForHistory();
+				this.cdr.markForCheck();
+			},
+			error: (err) => {
+				console.error(`[LoadHistory][${resultIndex}] Ошибка:`, err);
+				this.setMessage(err.message || 'Не удалось загрузить историю изменений.', 'error');
+				this.isLoadingHistory[resultIndex] = false;
+				this.historyEntries[resultIndex] = [];
+				this.cdr.markForCheck();
+			},
+		});
+	}
+
+	private loadUsersForHistory(): void {
+		this.userService.getAllUsers().subscribe({
+			next: (users: ApplicationUser[]) => {
+				this.userMap = users.reduce((map, user) => {
+					map[user.id] = user.userName;
+					return map;
+				}, {} as { [key: string]: string });
+				console.debug('Обновлён userMap:', this.userMap);
+				this.cdr.markForCheck();
+			},
+			error: (err) => {
+				console.error('Ошибка при загрузке пользователей:', err);
+				this.setMessage('Не удалось загрузить данные пользователей для истории.', 'error');
+				this.cdr.markForCheck();
+			},
+		});
+	}
+
+	formatHistoryAction(action: string): string {
+		const actionMap: { [key: string]: string } = {
+			create: 'Создание',
+			update: 'Обновление',
+			archive: 'Архивирование',
+			unarchive: 'Разархивирование',
+			update_note: 'Изменение заметки',
+		};
+		return actionMap[action.toLowerCase()] || action;
+	}
+
+	formatHistoryChanges(changes: { [key: string]: ChangeValue } | undefined): string {
+		if (!changes || !Object.keys(changes).length) {
+			return 'Изменения отсутствуют';
+		}
+		return Object.entries(changes)
+			.map(([key, value]) => {
+				const fieldName = this.translateFieldName(key);
+				const oldValue = value.oldValue ?? 'не указано';
+				const newValue = value.newValue ?? 'не указано';
+				return `${fieldName}: с "${oldValue}" на "${newValue}"`;
+			})
+			.join('; ');
+	}
+
+	private translateFieldName(field: string): string {
+		const fieldTranslations: { [key: string]: string } = {
+			building: 'Здание',
+			floor: 'Этаж',
+			line: 'Линия',
+			storeNumber: 'Номер магазина',
+			sortOrder: 'Порядок сортировки',
+			note: 'Заметка',
+			isArchived: 'Статус архивации',
+		};
+		return fieldTranslations[field] || field;
 	}
 
 	resetFilters(): void {
@@ -314,7 +494,11 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		this.results = [];
 		this.errorMessage = null;
 		this.successMessage = null;
-		this.noteControls = {};
+		this.noteForms = {};
+		this.historyEntries = {};
+		this.showHistory = {};
+		this.isLoadingHistory = {};
+		this.userMap = {};
 		this.buildingSuggestions$.next([]);
 		this.floorSuggestions$.next([]);
 		this.lineSuggestions$.next([]);
@@ -332,7 +516,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 			line: this.confirmedFields['Line'] || '',
 			storeNumber: this.confirmedFields['StoreNumber'] || '',
 			showActive: true,
-			showClosed: false, // Only active passes
+			showClosed: false,
 		};
 	}
 
@@ -502,12 +686,11 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 			newStartDate.setDate(newStartDate.getDate() + 1);
 		} catch (error: any) {
 			console.error('Date parse error:', error);
-			this.errorMessage = `Ошибка даты: ${error.message}`;
+			this.setMessage(`Ошибка даты: ${error.message}`, 'error');
 			this.cdr.markForCheck();
 			return;
 		}
 		this.isLoading = true;
-		this.errorMessage = null;
 		this.cdr.markForCheck();
 		forkJoin({
 			contractor: this.transactionService.getContractorById(pass.contractorId),
@@ -518,7 +701,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				takeUntil(this.destroy$),
 				catchError((err) => {
 					console.error('Extend forkJoin error:', err);
-					this.errorMessage = `Ошибка продления: ${err?.error?.message || err?.message || 'Ошибка сервера'}`;
+					this.setMessage(`Ошибка продления: ${err?.error?.message || err?.message || 'Ошибка сервера'}`, 'error');
 					this.isLoading = false;
 					this.cdr.markForCheck();
 					return of(null);
@@ -528,7 +711,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				next: (data) => {
 					if (!data || !data.contractor || !data.store || !data.passType) {
 						this.isLoading = false;
-						if (!this.errorMessage) this.errorMessage = 'Неполные данные для продления.';
+						if (!this.errorMessage) this.setMessage('Неполные данные для продления.', 'error');
 						console.error('Incomplete extend data:', data);
 						this.cdr.markForCheck();
 						return;
@@ -570,19 +753,61 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 	}
 
 	closePass(passId: number): void {
-		const closeReason = prompt('Введите причину закрытия пропуска:');
+		let pass: PassDetailsDto | undefined;
+		for (const result of this.results) {
+			for (const contractor of result.contractors) {
+				pass = contractor.activePasses.find((p) => p.id === passId);
+				if (pass) break;
+			}
+			if (pass) break;
+		}
+
+		if (!pass) {
+			this.setMessage(`Пропуск с ID ${passId} не найден.`, 'error');
+			this.cdr.markForCheck();
+			return;
+		}
+
+		if (pass.isClosed) {
+			this.setMessage(`Пропуск с ID ${passId} уже закрыт.`, 'error');
+			this.cdr.markForCheck();
+			return;
+		}
+
+		const closeReason = prompt('Укажите причину закрытия пропуска:');
 		if (!closeReason) return;
 
-		this.passService.closePass(passId, closeReason).subscribe({
+		this.isLoading = true;
+		this.cdr.markForCheck();
+
+		const user = this.userService.getCurrentUser();
+		const closedBy = user?.userName || 'Неизвестно';
+		if (closedBy === 'Неизвестно') {
+			console.warn('closedBy установлен как Неизвестно, пользователь:', user);
+			this.setMessage('Не удалось определить пользователя. Пожалуйста, войдите снова.', 'error');
+			this.isLoading = false;
+			this.cdr.markForCheck();
+			return;
+		}
+
+		this.passService.closePass(passId, closeReason, closedBy).subscribe({
 			next: () => {
+				console.debug('Пропуск успешно закрыт, closedBy:', closedBy);
+				this.setMessage(`Пропуск закрыт. Закрыл: ${closedBy}, Когда: ${new Date().toLocaleString()}`, 'success');
 				this.searchPasses();
+				this.isLoading = false;
+				this.cdr.markForCheck();
 			},
 			error: (err: any) => {
+				console.error('Ошибка при закрытии пропуска:', err);
+				this.isLoading = false;
 				if (err.status === 400) {
+					this.setMessage(`Пропуск закрыт (400). Закрыл: ${closedBy}, Когда: ${new Date().toLocaleString()}`, 'success');
 					this.searchPasses();
 				} else {
-					this.errorMessage = 'Ошибка закрытия пропуска';
+					this.setMessage('Ошибка закрытия пропуска: ' + (err.error?.message || 'Неизвестная ошибка'), 'error');
 				}
+				this.cdr.markForCheck();
 			},
 		});
 	}
@@ -610,12 +835,11 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 
 	goToCreateTransaction(): void {
 		if (!this.isFieldConfirmed('Building') || !this.isFieldConfirmed('Floor') || !this.isFieldConfirmed('Line') || !this.isFieldConfirmed('StoreNumber')) {
-			this.errorMessage = 'Все поля должны быть заполнены и подтверждены.';
+			this.setMessage('Все поля должны быть заполнены и подтверждены.', 'error');
 			this.cdr.markForCheck();
 			return;
 		}
 		this.isLoading = true;
-		this.errorMessage = null;
 		this.cdr.markForCheck();
 		const building = this.confirmedFields['Building']!;
 		const floor = this.confirmedFields['Floor']!;
@@ -627,10 +851,12 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				takeUntil(this.destroy$),
 				catchError((err) => {
 					console.error('getStoreByDetails error:', err);
-					this.errorMessage =
+					this.setMessage(
 						err.status === 404
 							? `Торговая точка ${building}-${floor}-${line}-${storeNumber} не найдена.`
-							: `Ошибка получения данных торговой точки: ${err.message || 'Ошибка'}`;
+							: `Ошибка получения данных торговой точки: ${err.message || 'Ошибка'}`,
+						'error'
+					);
 					this.isLoading = false;
 					this.cdr.markForCheck();
 					return of(null);
@@ -640,7 +866,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				next: (store: TransactionStore | null) => {
 					this.isLoading = false;
 					if (!store) {
-						if (!this.errorMessage) this.errorMessage = 'Торговая точка не найдена.';
+						if (!this.errorMessage) this.setMessage('Торговая точка не найдена.', 'error');
 						this.cdr.markForCheck();
 						return;
 					}

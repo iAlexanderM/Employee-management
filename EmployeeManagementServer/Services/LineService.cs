@@ -1,9 +1,9 @@
-﻿using EmployeeManagementServer.Models;
-using EmployeeManagementServer.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using EmployeeManagementServer.Models;
+using EmployeeManagementServer.Data;
 
 namespace EmployeeManagementServer.Services
 {
@@ -16,16 +16,31 @@ namespace EmployeeManagementServer.Services
             _context = context;
         }
 
-        public async Task<int> GetTotalLinesCountAsync()
+        public async Task<int> GetTotalLinesCountAsync(bool? isArchived = null)
         {
-            return await _context.Lines.CountAsync(b => !b.IsArchived);
+            var query = _context.Lines.AsQueryable();
+
+            if (isArchived.HasValue)
+            {
+                query = query.Where(b => b.IsArchived == isArchived.Value);
+            }
+
+            return await query.CountAsync();
         }
 
-        public async Task<List<Line>> GetLinesAsync(int skip, int pageSize)
+        public async Task<List<Line>> GetLinesAsync(int skip, int pageSize, bool? isArchived = null)
         {
-            return await _context.Lines
-                .Where(b => !b.IsArchived)
-                .OrderBy(b => b.SortOrder ?? b.Id) // Сортировка по SortOrder или Id
+            var query = _context.Lines.AsQueryable();
+
+            if (isArchived.HasValue)
+            {
+                query = query.Where(b => b.IsArchived == isArchived.Value);
+            }
+
+            return await query
+                .OrderBy(b => b.SortOrder == null ? 1 : 0)
+                .ThenBy(b => b.SortOrder ?? int.MaxValue)
+                .ThenBy(b => b.Id)
                 .Skip(skip)
                 .Take(pageSize)
                 .ToListAsync();
@@ -33,14 +48,13 @@ namespace EmployeeManagementServer.Services
 
         public async Task<Line> GetLineByIdAsync(int id)
         {
-            return await _context.Lines.FirstOrDefaultAsync(b => b.Id == id && !b.IsArchived);
+            return await _context.Lines.FirstOrDefaultAsync(b => b.Id == id);
         }
 
         public async Task<Line> AddLineAsync(Line line)
         {
             line.Name = NormalizeName(line.Name);
 
-            // Проверка на дублирование имени
             if (await _context.Lines.AnyAsync(b => b.Name == line.Name && !b.IsArchived))
             {
                 return null;
@@ -49,7 +63,6 @@ namespace EmployeeManagementServer.Services
             _context.Lines.Add(line);
             await _context.SaveChangesAsync();
 
-            // Если SortOrder не указан, назначаем его равным Id
             if (!line.SortOrder.HasValue)
             {
                 line.SortOrder = line.Id;
@@ -65,18 +78,16 @@ namespace EmployeeManagementServer.Services
             newName = NormalizeName(newName);
 
             var line = await _context.Lines.FindAsync(id);
-            if (line == null || line.IsArchived)
+            if (line == null)
             {
                 return null;
             }
 
-            // Проверка на уникальность имени
-            if (await _context.Lines.AnyAsync(b => b.Name == newName && b.Id != id))
+            if (await _context.Lines.AnyAsync(b => b.Name == newName && b.Id != id && !b.IsArchived))
             {
                 return false;
             }
 
-            // Проверка на дублирование SortOrder
             if (sortOrder.HasValue && await _context.Lines.AnyAsync(b => b.SortOrder == sortOrder && b.Id != id))
             {
                 throw new InvalidOperationException("Линия с таким значением SortOrder уже существует.");
@@ -85,7 +96,7 @@ namespace EmployeeManagementServer.Services
             line.Name = newName;
             line.SortOrder = sortOrder ?? line.SortOrder;
 
-            _context.Entry(line).Property(b => b.CreatedAt).IsModified = false; // Сохраняем дату создания
+            _context.Entry(line).Property(b => b.CreatedAt).IsModified = false;
             await _context.SaveChangesAsync();
             return true;
         }

@@ -1,9 +1,9 @@
-﻿using EmployeeManagementServer.Models;
-using EmployeeManagementServer.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using EmployeeManagementServer.Models;
+using EmployeeManagementServer.Data;
 
 namespace EmployeeManagementServer.Services
 {
@@ -16,16 +16,31 @@ namespace EmployeeManagementServer.Services
             _context = context;
         }
 
-        public async Task<int> GetTotalStoreNumbersCountAsync()
+        public async Task<int> GetTotalStoreNumbersCountAsync(bool? isArchived = null)
         {
-            return await _context.StoreNumbers.CountAsync(b => !b.IsArchived);
+            var query = _context.StoreNumbers.AsQueryable();
+
+            if (isArchived.HasValue)
+            {
+                query = query.Where(b => b.IsArchived == isArchived.Value);
+            }
+
+            return await query.CountAsync();
         }
 
-        public async Task<List<StoreNumber>> GetStoreNumbersAsync(int skip, int pageSize)
+        public async Task<List<StoreNumber>> GetStoreNumbersAsync(int skip, int pageSize, bool? isArchived = null)
         {
-            return await _context.StoreNumbers
-                .Where(b => !b.IsArchived)
-                .OrderBy(b => b.SortOrder ?? b.Id) // Сортировка по SortOrder или Id
+            var query = _context.StoreNumbers.AsQueryable();
+
+            if (isArchived.HasValue)
+            {
+                query = query.Where(b => b.IsArchived == isArchived.Value);
+            }
+
+            return await query
+                .OrderBy(b => b.SortOrder == null ? 1 : 0)
+                .ThenBy(b => b.SortOrder ?? int.MaxValue)
+                .ThenBy(b => b.Id)
                 .Skip(skip)
                 .Take(pageSize)
                 .ToListAsync();
@@ -33,14 +48,13 @@ namespace EmployeeManagementServer.Services
 
         public async Task<StoreNumber> GetStoreNumberByIdAsync(int id)
         {
-            return await _context.StoreNumbers.FirstOrDefaultAsync(b => b.Id == id && !b.IsArchived);
+            return await _context.StoreNumbers.FirstOrDefaultAsync(b => b.Id == id);
         }
 
         public async Task<StoreNumber> AddStoreNumberAsync(StoreNumber storeNumber)
         {
             storeNumber.Name = NormalizeName(storeNumber.Name);
 
-            // Проверка на дублирование имени
             if (await _context.StoreNumbers.AnyAsync(b => b.Name == storeNumber.Name && !b.IsArchived))
             {
                 return null;
@@ -49,7 +63,6 @@ namespace EmployeeManagementServer.Services
             _context.StoreNumbers.Add(storeNumber);
             await _context.SaveChangesAsync();
 
-            // Если SortOrder не указан, назначаем его равным Id
             if (!storeNumber.SortOrder.HasValue)
             {
                 storeNumber.SortOrder = storeNumber.Id;
@@ -65,18 +78,16 @@ namespace EmployeeManagementServer.Services
             newName = NormalizeName(newName);
 
             var storeNumber = await _context.StoreNumbers.FindAsync(id);
-            if (storeNumber == null || storeNumber.IsArchived)
+            if (storeNumber == null)
             {
                 return null;
             }
 
-            // Проверка на уникальность имени
-            if (await _context.StoreNumbers.AnyAsync(b => b.Name == newName && b.Id != id))
+            if (await _context.StoreNumbers.AnyAsync(b => b.Name == newName && b.Id != id && !b.IsArchived))
             {
                 return false;
             }
 
-            // Проверка на дублирование SortOrder
             if (sortOrder.HasValue && await _context.StoreNumbers.AnyAsync(b => b.SortOrder == sortOrder && b.Id != id))
             {
                 throw new InvalidOperationException("Точка с таким значением SortOrder уже существует.");
@@ -85,7 +96,7 @@ namespace EmployeeManagementServer.Services
             storeNumber.Name = newName;
             storeNumber.SortOrder = sortOrder ?? storeNumber.SortOrder;
 
-            _context.Entry(storeNumber).Property(b => b.CreatedAt).IsModified = false; // Сохраняем дату создания
+            _context.Entry(storeNumber).Property(b => b.CreatedAt).IsModified = false;
             await _context.SaveChangesAsync();
             return true;
         }

@@ -29,92 +29,137 @@ namespace EmployeeManagementServer.Controllers
         [HttpGet]
         public async Task<IActionResult> GetStoreNumbers(
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 25)
+            [FromQuery] int pageSize = 25,
+            [FromQuery] bool? isArchived = null)
         {
-            if (page < 1 || pageSize < 1)
+            try
             {
-                return BadRequest("Page and pageSize must be greater than 0.");
+                if (page < 1 || pageSize < 1)
+                {
+                    return BadRequest("Page and pageSize must be greater than 0.");
+                }
+
+                int skip = (page - 1) * pageSize;
+                int totalStoreNumbers = await _storeNumberService.GetTotalStoreNumbersCountAsync(isArchived);
+                var storeNumbers = await _storeNumberService.GetStoreNumbersAsync(skip, pageSize, isArchived);
+
+                var storeNumberDtos = _mapper.Map<List<StoreNumberDto>>(storeNumbers);
+
+                return Ok(new
+                {
+                    total = totalStoreNumbers,
+                    storeNumbers = storeNumberDtos
+                });
             }
-
-            int skip = (page - 1) * pageSize;
-            int totalStoreNumbers = await _storeNumberService.GetTotalStoreNumbersCountAsync();
-            var storeNumbers = await _storeNumberService.GetStoreNumbersAsync(skip, pageSize);
-
-            var storeNumberDtos = _mapper.Map<List<StoreNumberDto>>(storeNumbers);
-
-            return Ok(new
+            catch (Exception ex)
             {
-                total = totalStoreNumbers,
-                storeNumbers = storeNumberDtos
-            });
+                _logger.LogError(ex, "Ошибка при получении зданий");
+                return StatusCode(500, "Ошибка сервера.");
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetStoreNumberById(int id)
         {
-            var storeNumber = await _storeNumberService.GetStoreNumberByIdAsync(id);
-            if (storeNumber == null)
+            try
             {
-                return NotFound("StoreNumber not found.");
-            }
+                var storeNumber = await _storeNumberService.GetStoreNumberByIdAsync(id);
+                if (storeNumber == null)
+                {
+                    return NotFound("StoreNumber not found.");
+                }
 
-            var storeNumberDto = _mapper.Map<StoreNumberDto>(storeNumber);
-            return Ok(storeNumberDto);
+                var storeNumberDto = _mapper.Map<StoreNumberDto>(storeNumber);
+                return Ok(storeNumberDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при получении точки с ID {Id}", id);
+                return StatusCode(500, "Ошибка сервера.");
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateStoreNumber([FromBody] StoreNumberDto storeNumberDto)
         {
-            if (storeNumberDto == null || string.IsNullOrWhiteSpace(storeNumberDto.Name))
+            try
             {
-                return BadRequest("Invalid data.");
+                if (storeNumberDto == null || string.IsNullOrWhiteSpace(storeNumberDto.Name))
+                {
+                    return BadRequest("Invalid data.");
+                }
+
+                var storeNumber = _mapper.Map<StoreNumber>(storeNumberDto);
+                var createdStoreNumber = await _storeNumberService.AddStoreNumberAsync(storeNumber);
+
+                if (createdStoreNumber == null)
+                {
+                    return Conflict("StoreNumber with the same name already exists.");
+                }
+
+                var createdStoreNumberDto = _mapper.Map<StoreNumberDto>(createdStoreNumber);
+                return CreatedAtAction(nameof(GetStoreNumberById), new { id = createdStoreNumberDto.Id }, createdStoreNumberDto);
             }
-
-            var storeNumber = _mapper.Map<StoreNumber>(storeNumberDto);
-            var createdStoreNumber = await _storeNumberService.AddStoreNumberAsync(storeNumber);
-
-            if (createdStoreNumber == null)
+            catch (Exception ex)
             {
-                return Conflict("StoreNumber with the same name already exists.");
+                _logger.LogError(ex, "Ошибка при создании точки");
+                return StatusCode(500, "Ошибка сервера.");
             }
-
-            var createdStoreNumberDto = _mapper.Map<StoreNumberDto>(createdStoreNumber);
-            return CreatedAtAction(nameof(GetStoreNumberById), new { id = createdStoreNumberDto.Id }, createdStoreNumberDto);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateStoreNumber(int id, [FromBody] StoreNumberDto storeNumberDto)
         {
-            if (storeNumberDto == null || string.IsNullOrWhiteSpace(storeNumberDto.Name))
+            try
             {
-                return BadRequest("Invalid data.");
+                if (storeNumberDto == null || string.IsNullOrWhiteSpace(storeNumberDto.Name))
+                {
+                    return BadRequest("Invalid data.");
+                }
+
+                var result = await _storeNumberService.UpdateStoreNumberAsync(id, storeNumberDto.Name, storeNumberDto.SortOrder);
+
+                if (result == null)
+                {
+                    return NotFound("StoreNumber not found.");
+                }
+
+                if (result == false)
+                {
+                    return Conflict("StoreNumber with the same name already exists.");
+                }
+
+                return NoContent();
             }
-
-            var result = await _storeNumberService.UpdateStoreNumberAsync(id, storeNumberDto.Name, storeNumberDto.SortOrder);
-
-            if (result == null)
+            catch (InvalidOperationException ex)
             {
-                return NotFound("StoreNumber not found.");
+                return BadRequest(ex.Message);
             }
-
-            if (result == false)
+            catch (Exception ex)
             {
-                return Conflict("StoreNumber with the same name already exists.");
+                _logger.LogError(ex, "Ошибка при обновлении точки с ID {Id}", id);
+                return StatusCode(500, "Ошибка сервера.");
             }
-
-            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> ArchiveStoreNumber(int id)
         {
-            var success = await _storeNumberService.ArchiveStoreNumberAsync(id);
-            if (!success)
+            try
             {
-                return NotFound("StoreNumber not found.");
-            }
+                var success = await _storeNumberService.ArchiveStoreNumberAsync(id);
+                if (!success)
+                {
+                    return NotFound("StoreNumber not found.");
+                }
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при архивировании точки с ID {Id}", id);
+                return StatusCode(500, "Ошибка сервера.");
+            }
         }
     }
 }

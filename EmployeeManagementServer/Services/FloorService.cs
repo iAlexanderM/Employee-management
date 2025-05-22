@@ -1,9 +1,9 @@
-﻿using EmployeeManagementServer.Models;
-using EmployeeManagementServer.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using EmployeeManagementServer.Models;
+using EmployeeManagementServer.Data;
 
 namespace EmployeeManagementServer.Services
 {
@@ -16,16 +16,31 @@ namespace EmployeeManagementServer.Services
             _context = context;
         }
 
-        public async Task<int> GetTotalFloorsCountAsync()
+        public async Task<int> GetTotalFloorsCountAsync(bool? isArchived = null)
         {
-            return await _context.Floors.CountAsync(b => !b.IsArchived);
+            var query = _context.Floors.AsQueryable();
+
+            if (isArchived.HasValue)
+            {
+                query = query.Where(b => b.IsArchived == isArchived.Value);
+            }
+
+            return await query.CountAsync();
         }
 
-        public async Task<List<Floor>> GetFloorsAsync(int skip, int pageSize)
+        public async Task<List<Floor>> GetFloorsAsync(int skip, int pageSize, bool? isArchived = null)
         {
-            return await _context.Floors
-                .Where(b => !b.IsArchived)
-                .OrderBy(b => b.SortOrder ?? b.Id) // Сортировка по SortOrder или Id
+            var query = _context.Floors.AsQueryable();
+
+            if (isArchived.HasValue)
+            {
+                query = query.Where(b => b.IsArchived == isArchived.Value);
+            }
+
+            return await query
+                .OrderBy(b => b.SortOrder == null ? 1 : 0)
+                .ThenBy(b => b.SortOrder ?? int.MaxValue)
+                .ThenBy(b => b.Id)
                 .Skip(skip)
                 .Take(pageSize)
                 .ToListAsync();
@@ -33,14 +48,13 @@ namespace EmployeeManagementServer.Services
 
         public async Task<Floor> GetFloorByIdAsync(int id)
         {
-            return await _context.Floors.FirstOrDefaultAsync(b => b.Id == id && !b.IsArchived);
+            return await _context.Floors.FirstOrDefaultAsync(b => b.Id == id);
         }
 
         public async Task<Floor> AddFloorAsync(Floor floor)
         {
             floor.Name = NormalizeName(floor.Name);
 
-            // Проверка на дублирование имени
             if (await _context.Floors.AnyAsync(b => b.Name == floor.Name && !b.IsArchived))
             {
                 return null;
@@ -49,7 +63,6 @@ namespace EmployeeManagementServer.Services
             _context.Floors.Add(floor);
             await _context.SaveChangesAsync();
 
-            // Если SortOrder не указан, назначаем его равным Id
             if (!floor.SortOrder.HasValue)
             {
                 floor.SortOrder = floor.Id;
@@ -65,18 +78,16 @@ namespace EmployeeManagementServer.Services
             newName = NormalizeName(newName);
 
             var floor = await _context.Floors.FindAsync(id);
-            if (floor == null || floor.IsArchived)
+            if (floor == null)
             {
                 return null;
             }
 
-            // Проверка на уникальность имени
-            if (await _context.Floors.AnyAsync(b => b.Name == newName && b.Id != id))
+            if (await _context.Floors.AnyAsync(b => b.Name == newName && b.Id != id && !b.IsArchived))
             {
                 return false;
             }
 
-            // Проверка на дублирование SortOrder
             if (sortOrder.HasValue && await _context.Floors.AnyAsync(b => b.SortOrder == sortOrder && b.Id != id))
             {
                 throw new InvalidOperationException("Этаж с таким значением SortOrder уже существует.");
@@ -85,7 +96,7 @@ namespace EmployeeManagementServer.Services
             floor.Name = newName;
             floor.SortOrder = sortOrder ?? floor.SortOrder;
 
-            _context.Entry(floor).Property(b => b.CreatedAt).IsModified = false; // Сохраняем дату создания
+            _context.Entry(floor).Property(b => b.CreatedAt).IsModified = false;
             await _context.SaveChangesAsync();
             return true;
         }
