@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,6 +8,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS, NativeDateAdapter } from '@angular/material/core';
 import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ReportService } from '../../../services/report.service';
 import { IssuedPassesReportData } from '../../../models/report.models';
 import { MatIconModule } from '@angular/material/icon';
@@ -30,7 +31,7 @@ export const MY_DATE_FORMATS = {
 	imports: [
 		CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
 		MatButtonModule, MatDatepickerModule, MatNativeDateModule, MatTableModule,
-		MatIconModule, MatAutocompleteModule
+		MatIconModule, MatAutocompleteModule, MatPaginatorModule
 	],
 	templateUrl: './issued-passes-report.component.html',
 	styleUrls: ['./issued-passes-report.component.css'],
@@ -52,6 +53,12 @@ export class IssuedPassesReportComponent implements OnInit, OnDestroy {
 	floorSuggestions$!: Observable<string[]>;
 	lineSuggestions$!: Observable<string[]>;
 	private destroy$ = new Subject<void>();
+	totalCount = 0;
+	pageSize = 50;
+	pageIndex = 0;
+	isLoading = false;
+
+	@ViewChild(MatPaginator) paginator!: MatPaginator;
 
 	constructor(
 		private fb: FormBuilder,
@@ -119,9 +126,10 @@ export class IssuedPassesReportComponent implements OnInit, OnDestroy {
 
 	generateReport(): void {
 		if (this.reportForm.invalid) {
-			alert('Пожалуйста, выберите начальную и конечную даты.');
+			this.reportForm.markAllAsTouched();
 			return;
 		}
+		this.isLoading = true;
 		const values = this.reportForm.value;
 		const params: any = {
 			startDate: this.formatDate(values.startDate),
@@ -134,23 +142,42 @@ export class IssuedPassesReportComponent implements OnInit, OnDestroy {
 
 		console.log('Generated params:', params);
 
-		this.reportService.getReportData('issued-passes', params).subscribe({
-			next: (data: IssuedPassesReportData[]) => {
-				console.log('Received data:', data);
-				this.dataSource = data;
+		this.reportService.getReportData('issued-passes', params, this.pageIndex + 1, this.pageSize).subscribe({
+			next: (response: { data: IssuedPassesReportData[], totalCount: number }) => {
+				console.log('Full response:', JSON.stringify(response, null, 2));
+				console.log('Received data:', response.data);
+				this.dataSource = Array.isArray(response.data) ? response.data : [];
+				this.totalCount = typeof response.totalCount === 'number' ? response.totalCount : 0;
+				console.log('dataSource:', this.dataSource);
+				console.log('totalCount:', this.totalCount);
+				this.isLoading = false;
 			},
-			error: (err) => console.error('Error fetching report:', err)
+			error: (err) => {
+				console.error('Error fetching report:', err);
+				this.dataSource = [];
+				this.totalCount = 0;
+				this.isLoading = false;
+			}
 		});
+	}
+
+	onPageChange(event: PageEvent): void {
+		this.pageIndex = event.pageIndex;
+		this.pageSize = event.pageSize;
+		this.generateReport();
 	}
 
 	resetForm(): void {
 		this.reportForm.reset();
 		this.dataSource = [];
+		this.pageIndex = 0;
+		this.totalCount = 0;
+		this.isLoading = false;
 	}
 
 	downloadReport(): void {
 		if (this.reportForm.invalid) {
-			alert('Пожалуйста, выберите начальную и конечную даты.');
+			this.reportForm.markAllAsTouched();
 			return;
 		}
 		const values = this.reportForm.value;
@@ -163,13 +190,18 @@ export class IssuedPassesReportComponent implements OnInit, OnDestroy {
 		if (values.line) params.line = values.line;
 		if (values.passType) params.passType = values.passType;
 
-		this.reportService.downloadReport('issued-passes', params).subscribe(blob => {
-			const url = window.URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = url;
-			link.download = 'IssuedPassesReport.xlsx';
-			link.click();
-			window.URL.revokeObjectURL(url);
+		this.reportService.downloadReport('issued-passes', params).subscribe({
+			next: (blob) => {
+				const url = window.URL.createObjectURL(blob);
+				const link = document.createElement('a');
+				link.href = url;
+				link.download = 'IssuedPassesReport.xlsx';
+				link.click();
+				window.URL.revokeObjectURL(url);
+			},
+			error: (err) => {
+				console.error('Error downloading report:', err);
+			}
 		});
 	}
 }

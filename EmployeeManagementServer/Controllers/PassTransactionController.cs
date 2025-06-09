@@ -194,7 +194,6 @@ namespace EmployeeManagementServer.Controllers
                         originalPass.IsClosed = true;
                         originalPass.CloseReason = "Закрыто продлением";
                         originalPass.CloseDate = DateTime.UtcNow;
-                        originalPass.ClosedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                         _context.Passes.Update(originalPass);
                     }
                 }

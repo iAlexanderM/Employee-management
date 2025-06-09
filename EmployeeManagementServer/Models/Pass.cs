@@ -24,7 +24,8 @@ namespace EmployeeManagementServer.Models
         public bool IsClosed { get; set; }
         public string? CloseReason { get; set; }
         public DateTime? CloseDate { get; set; }
-        public string? ClosedBy { get; set; }
+        public string? ClosedByUserId { get; set; }
+        [ForeignKey("ClosedByUserId")]
         public ApplicationUser? ClosedByUser { get; set; }
         public string? MainPhotoPath { get; set; }
         public string Position { get; set; } = string.Empty;

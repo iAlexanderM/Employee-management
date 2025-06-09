@@ -50,53 +50,12 @@ namespace EmployeeManagementServer.Controllers
 
                 var contractors = await _contractorService.GetContractorsAsync(skip, pageSize, isArchived);
 
+                var contractorDtos = _mapper.Map<List<ContractorResponseDto>>(contractors);
+
                 var response = new
                 {
                     total,
-                    contractors = contractors.Select(c => new
-                    {
-                        c.Id,
-                        c.FirstName,
-                        c.LastName,
-                        c.MiddleName,
-                        c.Citizenship,
-                        c.Nationality,
-                        c.BirthDate,
-                        c.DocumentType,
-                        c.PassportSerialNumber,
-                        c.PassportIssuedBy,
-                        c.PassportIssueDate,
-                        c.PhoneNumber,
-                        c.ProductType,
-                        c.IsArchived,
-                        c.SortOrder,
-                        c.CreatedAt,
-                        c.Photos,
-                        ActivePasses = c.Passes.Where(p => p.PassStatus == "Active").Select(p => new PassDetailsDto
-                        {
-                            Id = p.Id,
-                            UniquePassId = p.UniquePassId,
-                            PassTypeName = p.PassType?.Name ?? "Unknown",
-                            StartDate = p.StartDate,
-                            EndDate = p.EndDate,
-                            ContractorName = $"{c.LastName} {c.FirstName} {c.MiddleName}",
-                            IsClosed = p.IsClosed,
-                            CloseReason = p.CloseReason,
-                            PrintStatus = p.PrintStatus
-                        }).ToList(),
-                        ClosedPasses = c.Passes.Where(p => p.PassStatus == "Closed").Select(p => new PassDetailsDto
-                        {
-                            Id = p.Id,
-                            UniquePassId = p.UniquePassId,
-                            PassTypeName = p.PassType?.Name ?? "Unknown",
-                            StartDate = p.StartDate,
-                            EndDate = p.EndDate,
-                            ContractorName = $"{c.LastName} {c.FirstName} {c.MiddleName}",
-                            IsClosed = p.IsClosed,
-                            CloseReason = p.CloseReason,
-                            PrintStatus = p.PrintStatus
-                        }).ToList()
-                    }).ToList()
+                    contractors = contractorDtos 
                 };
                 return Ok(response);
             }
@@ -111,84 +70,31 @@ namespace EmployeeManagementServer.Controllers
         public async Task<IActionResult> GetContractor(int id)
         {
             var contractor = await _contractorService.GetContractorByIdAsync(id);
-            if (contractor == null)
-            {
-                return NotFound();
-            }
-
-            var response = new
-            {
-                contractor.Id,
-                contractor.FirstName,
-                contractor.LastName,
-                contractor.MiddleName,
-                contractor.Citizenship,
-                contractor.Nationality,
-                contractor.BirthDate,
-                contractor.DocumentType,
-                contractor.PassportSerialNumber,
-                contractor.PassportIssuedBy,
-                contractor.PassportIssueDate,
-                contractor.PhoneNumber,
-                contractor.ProductType,
-                contractor.IsArchived,
-                contractor.SortOrder,
-                contractor.CreatedAt,
-                contractor.Note,
-                Photos = contractor.Photos.Select(p => new
-                {
-                    id = p.Id,
-                    filePath = p.FilePath,
-                    isDocumentPhoto = p.IsDocumentPhoto,
-                    contractorId = p.ContractorId
-                }).ToList(),
-                Passes = contractor.Passes
-                    .OrderByDescending(p => p.StartDate)
-                    .Select(p => new
-                    {
-                        id = p.Id,
-                        passTypeId = p.PassTypeId,
-                        passTypeName = p.PassType?.Name ?? "Unknown",
-                        cost = p.PassType.Cost,
-                        contractorId = p.ContractorId,
-                        storeId = p.StoreId,
-                        position = p.Position,
-                        startDate = p.StartDate,
-                        endDate = p.EndDate,
-                        transactionDate = p.TransactionDate,
-                        isClosed = p.IsClosed,
-                        passStatus = p.PassStatus,
-                        printStatus = p.PrintStatus,
-                        closeReason = p.CloseReason,
-                        closeDate = p.CloseDate,
-                        closedBy = p.ClosedBy
-                    }).ToList()
-            };
-
-            return Ok(response);
+            var contractorResponseDto = _mapper.Map<ContractorResponseDto>(contractor);
+            return Ok(contractorResponseDto);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateContractor([FromForm] ContractorDto contractorDto)
+        public async Task<IActionResult> CreateContractor([FromForm] ContractorCreateDto contractorCreateDto) 
         {
-            _logger.LogInformation("Данные, полученные с фронтенда: {@contractorDto}", contractorDto);
+            _logger.LogInformation("Данные, полученные с фронтенда: {@contractorCreateDto}", contractorCreateDto);
 
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var existingContractor = await _contractorService.FindContractorByPassportSerialNumberAsync(contractorDto.PassportSerialNumber);
+            var existingContractor = await _contractorService.FindContractorByPassportSerialNumberAsync(contractorCreateDto.PassportSerialNumber);
             if (existingContractor != null)
             {
                 return BadRequest("Контрагент с таким номером паспорта уже существует.");
             }
 
-            var contractor = _mapper.Map<Contractor>(contractorDto);
+            var contractor = _mapper.Map<Contractor>(contractorCreateDto);
 
-            if (contractorDto.Photos != null && contractorDto.Photos.Count > 0)
+            if (contractorCreateDto.Photos != null && contractorCreateDto.Photos.Count > 0)
             {
-                foreach (var photo in contractorDto.Photos)
+                foreach (var photo in contractorCreateDto.Photos)
                 {
                     var photoPath = await _contractorService.SavePhotoAsync(photo, false);
                     contractor.Photos.Add(new ContractorPhoto
@@ -199,9 +105,9 @@ namespace EmployeeManagementServer.Controllers
                 }
             }
 
-            if (contractorDto.DocumentPhotos != null && contractorDto.DocumentPhotos.Count > 0)
+            if (contractorCreateDto.DocumentPhotos != null && contractorCreateDto.DocumentPhotos.Count > 0)
             {
-                foreach (var docPhoto in contractorDto.DocumentPhotos)
+                foreach (var docPhoto in contractorCreateDto.DocumentPhotos)
                 {
                     var docPhotoPath = await _contractorService.SavePhotoAsync(docPhoto, true);
                     contractor.Photos.Add(new ContractorPhoto
@@ -214,32 +120,39 @@ namespace EmployeeManagementServer.Controllers
 
             await _contractorService.CreateContractorAsync(contractor, User.Identity?.Name ?? "Unknown");
             _logger.LogInformation($"Контрагент с ID {contractor.Id} успешно создан.");
-            return Ok(contractor);
+
+            var createdContractorResponseDto = _mapper.Map<ContractorResponseDto>(contractor);
+            return Ok(createdContractorResponseDto);
         }
 
-        // Замененный метод
         [HttpPut("edit/{id}")]
-        public async Task<IActionResult> UpdateContractor(int id, [FromForm] ContractorDto contractorDto)
+        public async Task<IActionResult> UpdateContractor(int id, [FromForm] ContractorUpdateDto contractorUpdateDto)
         {
             try
             {
-                var contractor = _mapper.Map<Contractor>(contractorDto);
-                contractor.Id = id;
+                var existingContractor = await _contractorService.GetContractorByIdAsync(id);
+                if (existingContractor == null)
+                {
+                    return NotFound($"Контрагент с ID {id} не найден.");
+                }
+
+                _mapper.Map(contractorUpdateDto, existingContractor);
+
                 await _contractorService.UpdateContractorAsync(
-                    contractor,
-                    contractorDto.Photos,
-                    contractorDto.DocumentPhotos,
-                    contractorDto.PhotosToRemove.Concat(contractorDto.DocumentPhotosToRemove ?? new List<int>()).ToList(),
+                    existingContractor, 
+                    contractorUpdateDto.Photos,
+                    contractorUpdateDto.DocumentPhotos,
+                    contractorUpdateDto.PhotosToRemove.Concat(contractorUpdateDto.DocumentPhotosToRemove ?? new List<int>()).ToList(),
                     User.Identity?.Name ?? "Unknown");
                 return Ok();
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Ошибка при обновлении контрагента с ID {ContractorId}: {ErrorMessage}", id, ex.Message);
                 return BadRequest(ex.Message);
             }
         }
 
-        // Замененный метод
         [HttpPut("{id}/archive")]
         public async Task<IActionResult> ArchiveContractor(int id)
         {
@@ -254,7 +167,6 @@ namespace EmployeeManagementServer.Controllers
             }
         }
 
-        // Замененный метод
         [HttpPut("{id}/unarchive")]
         public async Task<IActionResult> UnarchiveContractor(int id)
         {

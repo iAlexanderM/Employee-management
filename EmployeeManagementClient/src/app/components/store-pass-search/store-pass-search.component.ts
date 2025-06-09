@@ -263,7 +263,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 			.subscribe((response: PassByStoreResponseDto[]) => {
 				const filteredResults = response.filter(result => !result.isArchived);
 				if (filteredResults.length === 0) {
-					this.errorMessage = 'Активные торговые точки не найдены';
+					this.errorMessage = 'Торговая точка не найдена или не существует.';
 					this.isLoading = false;
 					this.cdr.markForCheck();
 					return;
@@ -517,6 +517,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 			storeNumber: this.confirmedFields['StoreNumber'] || '',
 			showActive: true,
 			showClosed: false,
+			isArchived: false
 		};
 	}
 

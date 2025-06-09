@@ -75,7 +75,6 @@ namespace EmployeeManagementServer.Services
                 query = query.Where(s => EF.Functions.ILike(s.StoreNumber, storeNumberFilter));
             }
 
-            // Фильтрация по IsArchived (по умолчанию false, если не указано)
             if (searchDto.IsArchived.HasValue)
             {
                 query = query.Where(s => s.IsArchived == searchDto.IsArchived.Value);

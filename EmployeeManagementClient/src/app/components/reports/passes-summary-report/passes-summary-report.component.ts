@@ -11,16 +11,18 @@ import { PassesSummaryReportData, PassTypeDetail } from '../../../models/report.
 import { ReportService } from '../../../services/report.service';
 import { MatIconModule } from '@angular/material/icon';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { forkJoin, of } from 'rxjs';
+import { of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
 export const MY_DATE_FORMATS = {
 	parse: { dateInput: 'LL' },
 	display: {
-		dateInput: 'DD.MM.YYYY', monthYearLabel: 'MMM YY', dateA11yLabel: 'LL', monthYearA11yLabel: 'MMMM YY',
+		dateInput: 'DD.MM.YYYY',
+		monthYearLabel: 'MMM YY',
+		dateA11yLabel: 'LL',
+		monthYearA11yLabel: 'MMMM YY',
 	},
 };
-
 
 @Component({
 	selector: 'app-passes-summary-report',
@@ -49,13 +51,12 @@ export const MY_DATE_FORMATS = {
 })
 export class PassesSummaryReportComponent implements OnInit {
 	reportForm: FormGroup;
-	// ВОЗВРАЩАЕМ 'actions'
 	displayedColumns: string[] = ['queueType', 'totalAmount', 'passCount', 'actions'];
 	detailColumns: string[] = ['passType', 'amount', 'count'];
 	dataSource: PassesSummaryReportData[] = [];
 	expandedElement: PassesSummaryReportData | null = null;
+	isLoading = false;
 
-	// ... конструктор и остальные методы БЕЗ ИЗМЕНЕНИЙ ...
 	constructor(
 		private fb: FormBuilder,
 		private reportService: ReportService,
@@ -75,9 +76,10 @@ export class PassesSummaryReportComponent implements OnInit {
 
 	generateReport(): void {
 		if (this.reportForm.invalid) {
-			alert('Пожалуйста, выберите начальную и конечную даты.');
+			this.reportForm.markAllAsTouched();
 			return;
 		}
+		this.isLoading = true;
 		const { startDate, endDate } = this.reportForm.value;
 		const dateParams = {
 			startDate: this.formatDate(startDate),
@@ -87,13 +89,22 @@ export class PassesSummaryReportComponent implements OnInit {
 		this.expandedElement = null;
 		this.dataSource = [];
 
-		this.reportService.getReportData('passes-summary', dateParams).subscribe((data: PassesSummaryReportData[]) => {
-			this.dataSource = data.map(item => ({
-				...item,
-				showDetails: false,
-				passTypeDetails: null,
-				isLoadingDetails: false
-			}));
+		this.reportService.getReportData('passes-summary', dateParams).subscribe({
+			next: (data) => {
+				console.log('Received data:', data);
+				this.dataSource = (Array.isArray(data) ? data : []).map((item: PassesSummaryReportData) => ({
+					...item,
+					showDetails: false,
+					passTypeDetails: null,
+					isLoadingDetails: false
+				}));
+				this.isLoading = false;
+			},
+			error: (err) => {
+				console.error('Error fetching report:', err);
+				this.dataSource = [];
+				this.isLoading = false;
+			}
 		});
 	}
 
@@ -101,6 +112,7 @@ export class PassesSummaryReportComponent implements OnInit {
 		this.reportForm.reset();
 		this.dataSource = [];
 		this.expandedElement = null;
+		this.isLoading = false;
 	}
 
 	toggleDetails(element: PassesSummaryReportData): void {
@@ -122,19 +134,16 @@ export class PassesSummaryReportComponent implements OnInit {
 					endDate: this.formatDate(endDate)
 				};
 
-				this.reportService.getPassTypeDetails(element.queueType, dateParams)
-					.pipe(
-						tap(() => element.isLoadingDetails = false),
-						catchError(() => {
-							element.isLoadingDetails = false;
-							element.passTypeDetails = [];
-							alert(`Не удалось загрузить детали для типа очереди: ${element.queueType}`);
-							return of([]);
-						})
-					)
-					.subscribe(details => {
-						element.passTypeDetails = details as PassTypeDetail[];
-					});
+				this.reportService.getPassTypeDetails(element.queueType, dateParams).pipe(
+					tap(() => element.isLoadingDetails = false),
+					catchError(() => {
+						element.isLoadingDetails = false;
+						element.passTypeDetails = [];
+						return of([]);
+					})
+				).subscribe(details => {
+					element.passTypeDetails = details as PassTypeDetail[];
+				});
 			}
 		}
 	}

@@ -197,7 +197,7 @@
 						<tbody>
 							<tr *ngFor="let pass of contractor.passes">
 								<td>{{ getPassTypeName(pass) }}</td>
-								<td>{{ pass.storeFullName || 'Не указано' }}</td>
+								<td>{{ getFullStoreName(pass) }}</td>
 								<td>{{ pass.position || 'Не указана' }}</td>
 								<td>{{ pass.cost ? pass.cost : 'Не указана' }}</td>
 								<td>{{ pass.transactionDate | date: 'dd.MM.yyyy HH:mm' }}</td>

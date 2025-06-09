@@ -1,24 +1,41 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ContractorWatchService } from '../../../services/contractor-watch.service';
 import { TransactionService } from '../../../services/transaction.service';
 import { HistoryService } from '../../../services/history.service';
-import { HistoryEntry, ChangeValue } from '../../../models/history.model';
 import { AuthService } from '../../../services/auth.service';
 import { PassService } from '../../../services/pass.service';
-import { Contractor, Photo, ContractorDto } from '../../../models/contractor.model';
-import { Pass } from '../../../models/pass.model';
-import { trigger, transition, style, animate } from '@angular/animations';
 import { UserService } from '../../../services/user.service';
+import { Contractor, ContractorDto } from '../../../models/contractor.model';
+import { Pass } from '../../../models/pass.model';
+import { HistoryEntry, ChangeValue } from '../../../models/history.model';
+import { Subscription, merge, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { trigger, transition, style, animate } from '@angular/animations';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
 	selector: 'app-contractor-details',
 	standalone: true,
-	imports: [CommonModule, RouterModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		RouterModule,
+		ReactiveFormsModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatTableModule,
+		MatIconModule,
+	],
 	templateUrl: './contractor-details.component.html',
 	styleUrls: ['./contractor-details.component.css'],
 	changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,7 +51,7 @@ import { UserService } from '../../../services/user.service';
 		]),
 	],
 })
-export class ContractorDetailsComponent implements OnInit {
+export class ContractorDetailsComponent implements OnInit, OnDestroy {
 	contractor: Contractor | null = null;
 	documentPhotoUrls: string[] = [];
 	visibleDocumentPhotoUrls: string[] = [];
@@ -46,8 +63,8 @@ export class ContractorDetailsComponent implements OnInit {
 	errorMessage: string | null = null;
 	showHistory = false;
 	userMap: { [key: string]: string } = {};
-	private storesCache: { [key: number]: any } = {};
 	private readonly apiBaseUrl = 'http://localhost:8080';
+	private subscriptions: Subscription[] = [];
 
 	constructor(
 		private route: ActivatedRoute,
@@ -59,8 +76,7 @@ export class ContractorDetailsComponent implements OnInit {
 		private authService: AuthService,
 		private passService: PassService,
 		private fb: FormBuilder,
-		private cdr: ChangeDetectorRef,
-		private http: HttpClient
+		private cdr: ChangeDetectorRef
 	) {
 		this.noteForm = this.fb.group({
 			note: ['', [Validators.maxLength(500)]],
@@ -71,31 +87,51 @@ export class ContractorDetailsComponent implements OnInit {
 		const id = this.route.snapshot.paramMap.get('id');
 		if (id) {
 			this.loadUsersFromTransactions();
+			this.loadCurrentUser();
 			this.fetchContractorData(id);
+		} else {
+			this.errorMessage = 'ID контрагента не указан.';
+			this.cdr.markForCheck();
+		}
+	}
+
+	ngOnDestroy(): void {
+		this.subscriptions.forEach((sub) => sub.unsubscribe());
+	}
+
+	private loadCurrentUser(): void {
+		const user = this.userService.getCurrentUser();
+		if (user && user.id && user.userName) {
+			this.userMap[user.id] = user.userName;
+			console.debug('Current user added to userMap:', { id: user.id, name: user.userName });
+		} else {
+			console.warn('Не удалось загрузить текущего пользователя:', user);
 		}
 	}
 
 	private loadUsersFromTransactions(): void {
-		this.transactionService.searchTransactions({}, 1, 100).subscribe({
+		const sub = this.transactionService.searchTransactions({}, 1, 100).subscribe({
 			next: (result) => {
 				result.transactions.forEach((t: any) => {
-					if (t.user) {
-						this.userMap[t.userId] = t.user.userName || 'Неизвестно';
+					if (t.user && t.userId && t.user.userName) {
+						this.userMap[t.userId] = t.user.userName;
 					}
 				});
+				console.debug('userMap после загрузки транзакций:', this.userMap);
 				this.cdr.markForCheck();
 			},
-			error: (err) => console.error('Ошибка загрузки пользователей:', err),
+			error: (err) => console.error('Ошибка загрузки пользователей из транзакций:', err),
 		});
+		this.subscriptions.push(sub);
 	}
 
 	private fetchContractorData(id: string): void {
-		this.contractorService.getContractor(id).subscribe({
-			next: (data: Contractor) => {
-				this.contractor = data;
+		const sub = this.contractorService.getContractor(id).subscribe({
+			next: (data: ContractorDto) => {
+				this.contractor = this.normalizeContractorData(data);
 				this.noteForm.patchValue({ note: this.contractor.note || '' });
 				this.loadDocumentPhotos();
-				this.fetchStoresForPasses();
+				console.debug('Пропуска для контрагента (после нормализации):', this.contractor.passes);
 				if (this.showHistory) {
 					this.loadHistory(id);
 				}
@@ -107,14 +143,24 @@ export class ContractorDetailsComponent implements OnInit {
 				this.cdr.markForCheck();
 			},
 		});
+		this.subscriptions.push(sub);
 	}
 
 	private normalizeContractorData(data: ContractorDto): Contractor {
+		const activePasses = this.normalizePasses(data.activePasses || []);
+		const closedPasses = this.normalizePasses(data.closedPasses || []);
+		const passes = activePasses.concat(closedPasses);
+		const photos = Array.isArray(data.photos) ? data.photos : [];
+		const documentPhotos = Array.isArray(data.documentPhotos) ? data.documentPhotos : [];
+
+		console.debug('Исходные данные контрагента:', data);
+		console.debug('Пропуска:', passes);
+
 		return {
 			id: data.id,
 			firstName: data.firstName || '',
 			lastName: data.lastName || '',
-			middleName: data.middleName,
+			middleName: data.middleName || '',
 			birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
 			documentType: data.documentType || '',
 			passportSerialNumber: data.passportSerialNumber || '',
@@ -126,12 +172,36 @@ export class ContractorDetailsComponent implements OnInit {
 			phoneNumber: data.phoneNumber || '',
 			createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
 			sortOrder: data.sortOrder || 0,
-			photos: Array.isArray(data.photos) ? data.photos : [],
-			documentPhotos: Array.isArray(data.documentPhotos) ? data.documentPhotos : [],
+			photos,
+			documentPhotos,
 			isArchived: data.isArchived || false,
-			passes: data.passes || [],
+			passes,
+			activePasses,
+			closedPasses,
 			note: data.note,
 		};
+	}
+
+	getFullStoreName(pass: Pass): string {
+		const parts = [];
+		if (pass.building) {
+			parts.push(pass.building);
+		}
+		if (pass.floor) {
+			parts.push(`${pass.floor}`);
+		}
+		if (pass.line) {
+			parts.push(`${pass.line}`);
+		}
+		if (pass.storeNumber) {
+			parts.push(`${pass.storeNumber}`);
+		}
+
+		if (parts.length === 0) {
+			return 'Не указано';
+		}
+
+		return parts.join(', ');
 	}
 
 	private normalizePasses(passes: Pass[]): Pass[] {
@@ -147,7 +217,10 @@ export class ContractorDetailsComponent implements OnInit {
 			cost: p.cost ?? 0,
 			storeId: p.storeId,
 			store: p.store,
-			storeFullName: p.store ? this.formatStoreFullName(p.store) : undefined,
+			building: p.building,
+			floor: p.floor,
+			line: p.line,
+			storeNumber: p.storeNumber,
 			startDate: p.startDate ? new Date(p.startDate) : new Date(),
 			endDate: p.endDate ? new Date(p.endDate) : new Date(),
 			transactionDate: p.transactionDate ? new Date(p.transactionDate) : new Date(),
@@ -162,63 +235,6 @@ export class ContractorDetailsComponent implements OnInit {
 			status: p.status || '',
 			note: p.note || '',
 		}));
-	}
-
-	private fetchStoresForPasses(): void {
-		if (!this.contractor?.passes?.length) return;
-		const uniqueStoreIds = [...new Set(this.contractor.passes.map((pass) => pass.storeId))];
-		uniqueStoreIds.forEach((storeId) => {
-			if (!this.storesCache[storeId] && !this.contractor?.passes.some((p) => p.storeId === storeId && p.store)) {
-				const token = this.authService.getToken();
-				const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-				this.http.get<any>(`${this.apiBaseUrl}/api/store/${storeId}`, { headers }).subscribe({
-					next: (storeData: any) => {
-						this.storesCache[storeId] = storeData;
-						this.updatePassesWithStore(storeId, storeData);
-						this.cdr.markForCheck();
-					},
-					error: (err: any) => {
-						console.error(`Ошибка загрузки магазина ${storeId}:`, err);
-						this.updatePassesWithFallback(storeId);
-						this.cdr.markForCheck();
-					},
-				});
-			}
-		});
-	}
-
-	private updatePassesWithStore(storeId: number, storeData: any): void {
-		if (this.contractor?.passes) {
-			this.contractor.passes = this.contractor.passes.map((pass) => {
-				if (pass.storeId === storeId && !pass.storeFullName) {
-					pass.storeFullName = this.formatStoreFullName(storeData);
-				}
-				return pass;
-			});
-		}
-	}
-
-	private updatePassesWithFallback(storeId: number): void {
-		if (this.contractor?.passes) {
-			this.contractor.passes = this.contractor.passes.map((pass) => {
-				if (pass.storeId === storeId && !pass.storeFullName) {
-					pass.storeFullName = `Торговая точка ${storeId}`;
-				}
-				return pass;
-			});
-		}
-	}
-
-	private formatStoreFullName(store: any): string {
-		if (store && typeof store === 'object') {
-			return '[+PLACE_ZDANIE+] [+PLACE_ETAJH+] [+PLACE_LINIA+] [+PLACE_TOCHKA+]'
-				.replace('[+PLACE_ZDANIE+]', store.building || 'N/A')
-				.replace('[+PLACE_ETAJH+]', store.floor || '')
-				.replace('[+PLACE_LINIA+]', store.line || '')
-				.replace('[+PLACE_TOCHKA+]', store.storeNumber || 'N/A')
-				.replace('[+PLACE_ZONA+]', '');
-		}
-		return 'Торговая точка неизвестно';
 	}
 
 	getFirstPhoto(): string | null {
@@ -249,7 +265,13 @@ export class ContractorDetailsComponent implements OnInit {
 	}
 
 	getClosedByName(closedBy: string | undefined): string {
-		return closedBy ? this.userMap[closedBy] || closedBy : 'Неизвестно';
+		if (!closedBy) {
+			console.debug('closedBy отсутствует или пустой');
+			return 'Неизвестно';
+		}
+		const name = this.userMap[closedBy] || closedBy;
+		console.debug(`closedBy ${closedBy} mapped to name:`, name);
+		return name;
 	}
 
 	closePass(passId: number): void {
@@ -265,49 +287,39 @@ export class ContractorDetailsComponent implements OnInit {
 			return;
 		}
 		const reason = prompt('Укажите причину закрытия пропуска:');
-		if (reason && this.contractor) {
-			const user = this.userService.getCurrentUser();
-			console.debug('Получен пользователь в closePass:', user);
-			const closedBy = user?.userName || 'Неизвестно';
-			console.debug('Устанавливаем closedBy:', closedBy);
-			if (closedBy === 'Неизвестно') {
-				console.warn('closedBy установлен как Неизвестно, пользователь:', user);
-				this.errorMessage = 'Не удалось определить пользователя. Пожалуйста, войдите снова.';
-				this.cdr.markForCheck();
-				return;
-			}
-			this.passService.closePass(passId, reason, closedBy).subscribe({
-				next: () => {
-					console.debug('Пропуск успешно закрыт, closedBy:', closedBy);
-					pass.isClosed = true;
-					pass.closeDate = new Date();
-					pass.closeReason = reason;
-					pass.closedBy = closedBy;
-					if (this.contractor) {
-						this.loadHistory(this.contractor.id.toString());
-						this.loadUsers();
-					}
-					this.cdr.markForCheck();
-				},
-				error: (err) => {
-					console.error('Ошибка при закрытии пропуска:', err);
-					this.errorMessage = 'Не удалось закрыть пропуск: ' + (err.error?.message || 'Неизвестная ошибка');
-					this.cdr.markForCheck();
-				}
-			});
-		}
-	}
-
-	private loadUsers(): void {
-		const user = this.userService.getCurrentUser();
-		if (user && user.id && user.userName) {
-			this.userMap[user.id] = user.userName;
-			console.debug('userMap:', this.userMap);
-			console.debug('Есть ли пользователь 60808ee9-e697-42bd-9bf1-2218c0c2a382:', this.userMap['60808ee9-e697-42bd-9bf1-2218c0c2a382']);
+		if (!reason) {
+			this.errorMessage = 'Причина закрытия не указана.';
 			this.cdr.markForCheck();
-		} else {
-			console.warn('Не удалось получить данные текущего пользователя из UserService:', user);
+			return;
 		}
+		const user = this.userService.getCurrentUser();
+		const closedBy = user?.id;
+		if (!closedBy || !user?.userName) {
+			console.warn('Не удалось определить пользователя:', user);
+			this.errorMessage = 'Не удалось определить пользователя. Пожалуйста, войдите снова.';
+			this.cdr.markForCheck();
+			return;
+		}
+		const sub = this.passService.closePass(passId, reason, closedBy).subscribe({
+			next: () => {
+				console.debug('Пропуск успешно закрыт, closedBy:', closedBy, 'userName:', user.userName);
+				pass.isClosed = true;
+				pass.closeDate = new Date();
+				pass.closeReason = reason;
+				pass.closedBy = closedBy;
+				this.userMap[closedBy] = user.userName;
+				if (this.contractor) {
+					this.loadHistory(this.contractor.id.toString());
+				}
+				this.cdr.markForCheck();
+			},
+			error: (err) => {
+				console.error('Ошибка при закрытии пропуска:', err);
+				this.errorMessage = 'Не удалось закрыть пропуск: ' + (err.error?.message || 'Неизвестная ошибка');
+				this.cdr.markForCheck();
+			},
+		});
+		this.subscriptions.push(sub);
 	}
 
 	reopenPass(passId: number): void {
@@ -323,7 +335,7 @@ export class ContractorDetailsComponent implements OnInit {
 			return;
 		}
 		if (this.contractor) {
-			this.passService.reopenPass(passId).subscribe({
+			const sub = this.passService.reopenPass(passId).subscribe({
 				next: () => {
 					pass.isClosed = false;
 					pass.closeDate = undefined;
@@ -340,6 +352,7 @@ export class ContractorDetailsComponent implements OnInit {
 					this.cdr.markForCheck();
 				},
 			});
+			this.subscriptions.push(sub);
 		}
 	}
 
@@ -349,7 +362,8 @@ export class ContractorDetailsComponent implements OnInit {
 			this.cdr.markForCheck();
 			return;
 		}
-		const hasActivePasses = this.contractor.passes.some((pass) => !pass.isClosed);
+		const passes = this.contractor.passes;
+		const hasActivePasses = passes.some((pass: Pass) => !pass.isClosed);
 		if (hasActivePasses) {
 			this.errorMessage = 'Нельзя заархивировать контрагента с активными пропусками.';
 			this.cdr.markForCheck();
@@ -360,7 +374,7 @@ export class ContractorDetailsComponent implements OnInit {
 			this.cdr.markForCheck();
 			return;
 		}
-		this.contractorService.archiveContractor(this.contractor.id).subscribe({
+		const sub = this.contractorService.archiveContractor(this.contractor.id).subscribe({
 			next: () => {
 				if (this.contractor) {
 					this.contractor.isArchived = true;
@@ -375,6 +389,7 @@ export class ContractorDetailsComponent implements OnInit {
 				this.cdr.markForCheck();
 			},
 		});
+		this.subscriptions.push(sub);
 	}
 
 	unarchiveContractor(): void {
@@ -388,7 +403,7 @@ export class ContractorDetailsComponent implements OnInit {
 			this.cdr.markForCheck();
 			return;
 		}
-		this.contractorService.unarchiveContractor(this.contractor.id).subscribe({
+		const sub = this.contractorService.unarchiveContractor(this.contractor.id).subscribe({
 			next: () => {
 				if (this.contractor) {
 					this.contractor.isArchived = false;
@@ -403,6 +418,7 @@ export class ContractorDetailsComponent implements OnInit {
 				this.cdr.markForCheck();
 			},
 		});
+		this.subscriptions.push(sub);
 	}
 
 	get note(): string {
@@ -421,7 +437,7 @@ export class ContractorDetailsComponent implements OnInit {
 			this.cdr.markForCheck();
 			return;
 		}
-		this.contractorService.updateNote(this.contractor.id.toString(), this.note).subscribe({
+		const sub = this.contractorService.updateNote(this.contractor.id.toString(), this.note).subscribe({
 			next: () => {
 				if (this.contractor) {
 					this.contractor.note = this.note;
@@ -437,14 +453,15 @@ export class ContractorDetailsComponent implements OnInit {
 				this.cdr.markForCheck();
 			},
 		});
+		this.subscriptions.push(sub);
 	}
 
 	loadHistory(contractorId: string): void {
 		this.isLoadingHistory = true;
 		this.errorMessage = null;
-		this.historyService.getHistory('contractor', contractorId).subscribe({
+		const sub = this.historyService.getHistory('contractor', contractorId).subscribe({
 			next: (historyEntries: HistoryEntry[]) => {
-				console.debug('Загружено записей истории:', historyEntries.length);
+				console.debug('Загружено записей истории:', historyEntries.length, historyEntries);
 				this.historyEntries = historyEntries;
 				this.isLoadingHistory = false;
 				if (historyEntries.length === 0) {
@@ -460,13 +477,13 @@ export class ContractorDetailsComponent implements OnInit {
 				this.cdr.markForCheck();
 			},
 		});
+		this.subscriptions.push(sub);
 	}
 
 	formatHistoryChanges(changes: { [key: string]: ChangeValue } | undefined): string {
 		if (!changes || !Object.keys(changes).length) {
 			return 'Изменения отсутствуют';
 		}
-
 		return Object.entries(changes)
 			.map(([key, value]) => {
 				const fieldName = this.translateFieldName(key);

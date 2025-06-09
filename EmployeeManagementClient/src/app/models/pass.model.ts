@@ -28,4 +28,8 @@ export interface Pass {
 	printStatus?: string;
 	status: string;
 	note?: string;
+	building?: string;
+	floor?: string;
+	line?: string;
+	storeNumber?: number;
 }

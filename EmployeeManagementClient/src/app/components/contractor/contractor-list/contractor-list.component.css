@@ -1,57 +1,88 @@
-/* Специфические стили для формы поиска */
-.row.mb-2 {
+/* Search Form */
+.search-form {
+	padding: 8px 0;
+	margin-bottom: 16px;
+}
+
+mat-grid-list {
+	width: 100%;
+}
+
+mat-grid-tile {
 	display: flex;
-	flex-direction: column;
-	gap: 0px !important;
-	width: 400px !important;
-	margin: 0 !important;
-	padding: 0px !important;
+	align-items: flex-start;
+	padding-top: 6px;
+	/* Space for floating labels */
 }
 
-.col-md-3 {
-	width: 100% !important;
-	padding: 0 !important;
-	margin: 0 !important;
-	margin-bottom: -20px !important;
+mat-form-field.full-width {
+	width: 100%;
 }
 
-/* Распределение ширины столбцов - Contractor Table */
-.contractor-table th:nth-child(1),
-.contractor-table td:nth-child(1) {
-	width: 3%;
+/* Table */
+mat-table {
+	width: 100%;
 }
 
-.contractor-table th:nth-child(2),
-.contractor-table td:nth-child(2) {
-	width: 3%;
+.contractor-img {
+	width: 80px;
+	height: 80px;
+	object-fit: cover;
+	border-radius: 4px;
 }
 
-.contractor-table th:nth-child(3),
-.contractor-table td:nth-child(3),
-.contractor-table th:nth-child(4),
-.contractor-table td:nth-child(4) {
-	width: 15%;
+/* Pagination */
+.pagination-container {
+	display: flex;
+	justify-content: flex-start;
+	margin-top: 16px;
 }
 
-.contractor-table th:nth-child(5),
-.contractor-table td:nth-child(5),
-.contractor-table th:nth-child(6),
-.contractor-table td:nth-child(6),
-.contractor-table th:nth-child(7),
-.contractor-table td:nth-child(7),
-.contractor-table th:nth-child(8),
-.contractor-table td:nth-child(8) {
-	width: 15%;
+.pagination-squares {
+	display: flex;
+	gap: 8px;
 }
 
-.contractor-table th:nth-child(9),
-.contractor-table td:nth-child(9),
-.contractor-table th:nth-child(10),
-.contractor-table td:nth-child(10) {
-	width: 8%;
+.square {
+	padding: 8px 12px;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	cursor: pointer;
+	user-select: none;
 }
 
-.contractor-table th:nth-child(11),
-.contractor-table td:nth-child(11) {
-	width: 150px;
+.square.active {
+	background-color: #3f51b5;
+	color: white;
+	border-color: #3f51b5;
+}
+
+.square.disabled {
+	cursor: default;
+	color: #bdbdbd;
+}
+
+/* Utilities */
+.d-flex {
+	display: flex;
+}
+
+.gap-2 {
+	gap: 8px;
+}
+
+.mt-4 {
+	margin-top: 16px;
+}
+
+.mb-4 {
+	margin-bottom: 16px;
+}
+
+.justify-content-start {
+	justify-content: flex-start;
+}
+
+.text-center {
+	text-align: center;
 }

@@ -1,170 +1,47 @@
-@font-face {
-	font-family: 'Poppins';
-	src: url('/assets/fonts/Poppins-Regular.ttf') format('truetype');
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'Poppins';
-	src: url('/assets/fonts/Poppins-SemiBold.ttf') format('truetype');
-	font-weight: 600;
-	font-style: normal;
-	font-display: swap;
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
 }
 
 html,
 body {
-	font-family: 'Poppins', 'Roboto', sans-serif;
 	margin: 0;
 	padding: 0;
 	height: 100%;
-	box-sizing: border-box;
-	background-color: #f5f7fa;
-	color: #111827;
-	font-size: 13px;
-	overflow-x: hidden;
-}
-
-*,
-*::before,
-*::after {
-	box-sizing: inherit;
-}
-
-.container {
-	width: 100%;
-	max-width: 1920px;
-	margin: 0 auto;
-	padding: 16px;
-}
-
-/* Кнопки */
-.action-btn {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	padding: 6px 12px;
-	border-radius: 5px;
-	font-size: 13px;
-	font-weight: 500;
-	text-decoration: none;
-	cursor: pointer;
-	transition: background-color 0.2s ease;
-}
-
-.action-btn-primary {
-	background-color: #4b6cb7;
-	color: #ffffff;
-	border: none;
-}
-
-.action-btn-primary:hover {
-	background-color: #3b579d;
-}
-
-.action-btn-secondary {
-	background-color: #e5e7eb;
-	color: #111827;
-	border: none;
-}
-
-.action-btn-secondary:hover {
-	background-color: #d1d5db;
-}
-
-.action-btn-danger {
-	background-color: #ef4444;
-	color: #ffffff;
-	border: none;
-}
-
-.action-btn-danger:hover {
-	background-color: #dc2626;
-}
-
-.btn-sm {
-	padding: 4px 8px;
-	font-size: 12px;
-}
-
-/* Формы */
-.form-control {
 	font-family: 'Poppins', 'Roboto', sans-serif;
-	padding: 6px 10px;
-	border: 1px solid #e5e7eb;
-	border-radius: 5px;
-	font-size: 13px;
-	background-color: #ffffff;
-	width: 100%;
+	font-size: 14px;
+	color: #333333;
+	background-color: #f8fafc;
 }
 
-.form-control:focus {
-	border-color: #4b6cb7;
-	outline: none;
+/* Ensure mat-form-field matches documentation */
+mat-form-field .mat-form-field-wrapper {
+	padding-bottom: 0;
 }
 
-textarea.form-control {
-	resize: vertical;
-	min-height: 60px;
+mat-form-field .mat-form-field-outline {
+	border-width: 2px;
+	border-radius: 4px;
 }
 
-.error-message {
-	color: #ef4444;
-	font-size: 11px;
-	margin-top: 3px;
+mat-form-field .mat-form-field-label {
+	font-size: 14px;
+	top: 1.5em;
 }
 
-/* Утилитарные классы */
-.d-flex {
-	display: flex;
+mat-form-field.mat-focused .mat-form-field-label {
+	transform: translateY(-1.3em) scale(0.75);
+	color: #3f51b5;
 }
 
-.gap-2 {
-	gap: 8px;
+mat-form-field .mat-form-field-infix {
+	padding: 0.8em 0;
 }
 
-.gap-3 {
-	gap: 12px;
-}
-
-.gap-4 {
-	gap: 16px;
-}
-
-.justify-content-between {
-	justify-content: space-between;
-}
-
-.align-items-center {
-	align-items: center;
-}
-
-.align-items-start {
-	align-items: flex-start;
-}
-
-.mb-2 {
-	margin-bottom: 8px;
-}
-
-.mb-4 {
-	margin-bottom: 16px;
-}
-
-.mb-5 {
-	margin-bottom: 24px;
-}
-
-.mt-2 {
-	margin-top: 8px;
-}
-
-.text-center {
-	text-align: center;
-}
-
-.text-muted {
-	color: #6b7280;
+mat-icon.mat-icon {
+	font-size: 20px;
+	width: 20px;
+	height: 20px;
+	vertical-align: middle;
 }

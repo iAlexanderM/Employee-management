@@ -24,6 +24,10 @@ namespace EmployeeManagementServer.Services
         {
             var query = _context.Contractors
                 .Include(c => c.Photos)
+                .Include(c => c.Passes)
+                    .ThenInclude(p => p.PassType)
+                .Include(c => c.Passes)
+                    .ThenInclude(p => p.Store) 
                 .AsQueryable();
 
             query = ApplyFilters(query, searchDto);
@@ -83,7 +87,6 @@ namespace EmployeeManagementServer.Services
                 query = query.Where(c => EF.Functions.ILike(c.ProductType.Trim(), $"%{searchDto.ProductType.Trim()}%"));
             }
 
-            // Фильтрация по IsArchived (по умолчанию false, если не указано)
             if (searchDto.IsArchived.HasValue)
             {
                 query = query.Where(c => c.IsArchived == searchDto.IsArchived.Value);

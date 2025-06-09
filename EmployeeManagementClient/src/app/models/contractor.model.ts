@@ -36,13 +36,13 @@ export interface ContractorDto {
 	firstName: string;
 	lastName: string;
 	middleName?: string;
-	birthDate: string;
+	birthDate?: string;
 	citizenship: string;
 	nationality: string;
 	documentType: string;
 	passportSerialNumber: string;
 	passportIssuedBy: string;
-	passportIssueDate: string;
+	passportIssueDate?: string;
 	phoneNumber: string;
 	productType: string;
 	isArchived: boolean;
@@ -51,5 +51,7 @@ export interface ContractorDto {
 	photos: Photo[];
 	documentPhotos: Photo[];
 	passes: Pass[];
+	activePasses: Pass[];
+	closedPasses: Pass[];
 	note?: string;
 }

@@ -25,7 +25,7 @@ namespace EmployeeManagementServer.Services
         {
             return await _context.Nationalities
                 .Where(b => !b.IsArchived)
-                .OrderBy(b => b.SortOrder ?? b.Id) // Сортировка по SortOrder или Id
+                .OrderBy(b => b.SortOrder ?? b.Id) 
                 .Skip(skip)
                 .Take(pageSize)
                 .ToListAsync();
@@ -40,7 +40,6 @@ namespace EmployeeManagementServer.Services
         {
             nationality.Name = NormalizeName(nationality.Name);
 
-            // Проверка на дублирование имени
             if (await _context.Nationalities.AnyAsync(b => b.Name == nationality.Name && !b.IsArchived))
             {
                 return null;
@@ -49,7 +48,6 @@ namespace EmployeeManagementServer.Services
             _context.Nationalities.Add(nationality);
             await _context.SaveChangesAsync();
 
-            // Если SortOrder не указан, назначаем его равным Id
             if (!nationality.SortOrder.HasValue)
             {
                 nationality.SortOrder = nationality.Id;
@@ -70,13 +68,11 @@ namespace EmployeeManagementServer.Services
                 return null;
             }
 
-            // Проверка на уникальность имени
             if (await _context.Nationalities.AnyAsync(b => b.Name == newName && b.Id != id))
             {
                 return false;
             }
 
-            // Проверка на дублирование SortOrder
             if (sortOrder.HasValue && await _context.Nationalities.AnyAsync(b => b.SortOrder == sortOrder && b.Id != id))
             {
                 throw new InvalidOperationException("Национальность с таким значением SortOrder уже существует.");

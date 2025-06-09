@@ -5,36 +5,21 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-// Импортируем необходимые токены и адаптер
-import {
-	MatNativeDateModule,
-	MAT_DATE_LOCALE,
-	DateAdapter,
-	MAT_DATE_FORMATS,
-	NativeDateAdapter
-} from '@angular/material/core';
+import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS, NativeDateAdapter } from '@angular/material/core';
 import { MatTableModule } from '@angular/material/table';
 import { ReportService } from '../../../services/report.service';
 import { FinancialReportData } from '../../../models/report.models';
 import { MatIconModule } from '@angular/material/icon';
 
-// Определяем кастомные форматы дат
 export const MY_DATE_FORMATS = {
-	parse: {
-		dateInput: 'LL', // Формат для парсинга ввода (Moment.js/Luxon синтаксис, NativeDateAdapter может игнорировать)
-	},
+	parse: { dateInput: 'LL' },
 	display: {
-		dateInput: 'DD.MM.YYYY', // <--- Вот нужный формат отображения в поле ввода
-		monthYearLabel: 'MMM YYYY', // Формат в заголовке календаря
-		dateA11yLabel: 'LL', // Формат для скринридеров
-		monthYearA11yLabel: 'MMMM YYYY', // Формат месяца/года для скринридеров
+		dateInput: 'DD.MM.YYYY',
+		monthYearLabel: 'MMM YYYY',
+		dateA11yLabel: 'LL',
+		monthYearA11yLabel: 'MMMM YYYY',
 	},
 };
-
-// Кастомный DateAdapter для корректного парсинга DD.MM.YYYY (если Native не справляется)
-// Можно использовать готовые адаптеры (Moment, Luxon) или расширить NativeDateAdapter
-// Для простоты пока оставим NativeDateAdapter и будем полагаться на display формат
-// Если ввод DD.MM.YYYY не заработает, потребуется более сложный адаптер
 
 @Component({
 	selector: 'app-financial-report',
@@ -47,11 +32,8 @@ export const MY_DATE_FORMATS = {
 	templateUrl: './financial-report.component.html',
 	styleUrls: ['./financial-report.component.css'],
 	providers: [
-		// Указываем локаль (для названий месяцев, дней недели)
 		{ provide: MAT_DATE_LOCALE, useValue: 'ru-RU' },
-		// Используем стандартный NativeDateAdapter
 		{ provide: DateAdapter, useClass: NativeDateAdapter },
-		// Предоставляем наши кастомные форматы
 		{ provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
 	]
 })
@@ -59,8 +41,8 @@ export class FinancialReportComponent implements OnInit {
 	reportForm: FormGroup;
 	displayedColumns: string[] = ['tokenType', 'paidAmount', 'transactionCount'];
 	dataSource: FinancialReportData[] = [];
+	isLoading = false;
 
-	// ... остальной код конструктора и методов без изменений ...
 	constructor(private fb: FormBuilder, private reportService: ReportService) {
 		this.reportForm = this.fb.group({
 			startDate: [null, Validators.required],
@@ -72,13 +54,14 @@ export class FinancialReportComponent implements OnInit {
 
 	generateReport(): void {
 		if (this.reportForm.invalid) {
-			alert('Пожалуйста, выберите начальную и конечную даты.');
+			this.reportForm.markAllAsTouched();
 			return;
 		}
+		this.isLoading = true;
 		const { startDate, endDate } = this.reportForm.value;
 		const formatDate = (date: Date) => {
 			const day = String(date.getDate()).padStart(2, '0');
-			const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() возвращает 0-11
+			const month = String(date.getMonth() + 1).padStart(2, '0');
 			const year = date.getFullYear();
 			return `${year}-${month}-${day}`;
 		};
@@ -87,19 +70,30 @@ export class FinancialReportComponent implements OnInit {
 			endDate: formatDate(endDate)
 		};
 		console.log('Params:', params);
-		this.reportService.getReportData('financial', params).subscribe((data: FinancialReportData[]) => {
-			this.dataSource = data;
+		this.reportService.getReportData('financial', params).subscribe({
+			next: (data) => {
+				console.log('Received data:', data);
+				this.dataSource = Array.isArray(data) ? data : [];
+				console.log('dataSource after assignment:', this.dataSource);
+				this.isLoading = false;
+			},
+			error: (err) => {
+				console.error('Error fetching financial report:', err);
+				this.dataSource = [];
+				this.isLoading = false;
+			}
 		});
 	}
 
 	resetForm(): void {
 		this.reportForm.reset();
 		this.dataSource = [];
+		this.isLoading = false;
 	}
 
 	downloadReport(): void {
 		if (this.reportForm.invalid) {
-			alert('Пожалуйста, выберите начальную и конечную даты.');
+			this.reportForm.markAllAsTouched();
 			return;
 		}
 		const { startDate, endDate } = this.reportForm.value;
@@ -107,13 +101,18 @@ export class FinancialReportComponent implements OnInit {
 			startDate: startDate.toISOString().split('T')[0],
 			endDate: endDate.toISOString().split('T')[0]
 		};
-		this.reportService.downloadReport('financial', params).subscribe(blob => {
-			const url = window.URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = url;
-			link.download = 'FinancialReport.xlsx';
-			link.click();
-			window.URL.revokeObjectURL(url);
+		this.reportService.downloadReport('financial', params).subscribe({
+			next: (blob) => {
+				const url = window.URL.createObjectURL(blob);
+				const link = document.createElement('a');
+				link.href = url;
+				link.download = 'FinancialReport.xlsx';
+				link.click();
+				window.URL.revokeObjectURL(url);
+			},
+			error: (err) => {
+				console.error('Error downloading report:', err);
+			}
 		});
 	}
 }

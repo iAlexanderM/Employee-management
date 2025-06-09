@@ -2,7 +2,7 @@
 {
     public class CloseReason
     {
-        public int Id { get; set; } // Уникальный идентификатор
-        public string Name { get; set; } = string.Empty; // Название причины
+        public int Id { get; set; } 
+        public string Name { get; set; } = string.Empty; 
     }
 }

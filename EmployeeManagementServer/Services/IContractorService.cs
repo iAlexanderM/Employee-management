@@ -15,7 +15,6 @@ namespace EmployeeManagementServer.Services
         Task<Contractor?> FindContractorByPassportSerialNumberAsync(string passportSerialNumber);
         Task<int> GetTotalContractorsCountAsync(bool? isArchived = false);
         Task<List<Contractor>> GetContractorsAsync(int skip, int take, bool? isArchived = false);
-        Task<object> GetContractorAsync(int id);
         Task<string?> GetLastNonDocumentPhotoAsync(int contractorId);
         Task ArchiveContractorAsync(int id, string archivedBy = "Unknown");
         Task UnarchiveContractorAsync(int id, string unarchivedBy = "Unknown");

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS, NativeDateAdapter } from '@angular/material/core';
 import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ReportService } from '../../../services/report.service';
 import { ExpiringPassesReportData } from '../../../models/report.models';
 import { MatIconModule } from '@angular/material/icon';
@@ -22,7 +23,7 @@ export const MY_DATE_FORMATS = {
 	imports: [
 		CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
 		MatButtonModule, MatDatepickerModule, MatNativeDateModule, MatTableModule,
-		MatIconModule
+		MatIconModule, MatPaginatorModule
 	],
 	templateUrl: './expiring-passes-report.component.html',
 	styleUrls: ['./expiring-passes-report.component.css'],
@@ -38,6 +39,12 @@ export class ExpiringPassesReportComponent implements OnInit {
 		'passType', 'endDate', 'building', 'floor', 'line', 'storeNumber', 'contractorId', 'fullName', 'position', 'note'
 	];
 	dataSource: ExpiringPassesReportData[] = [];
+	totalCount = 0;
+	pageSize = 50;
+	pageIndex = 0;
+	isLoading = false;
+
+	@ViewChild(MatPaginator) paginator!: MatPaginator;
 
 	constructor(
 		private fb: FormBuilder,
@@ -60,9 +67,10 @@ export class ExpiringPassesReportComponent implements OnInit {
 
 	generateReport(): void {
 		if (this.reportForm.invalid) {
-			alert('Пожалуйста, выберите начальную и конечную даты.');
+			this.reportForm.markAllAsTouched();
 			return;
 		}
+		this.isLoading = true;
 		const { startDate, endDate } = this.reportForm.value;
 		const params = {
 			startDate: this.formatDate(startDate),
@@ -71,23 +79,39 @@ export class ExpiringPassesReportComponent implements OnInit {
 
 		console.log('Generated params:', params);
 
-		this.reportService.getReportData('expiring-passes', params).subscribe({
-			next: (data: ExpiringPassesReportData[]) => {
-				console.log('Received data:', data);
-				this.dataSource = data;
+		this.reportService.getReportData('expiring-passes', params, this.pageIndex + 1, this.pageSize).subscribe({
+			next: (response: { totalCount: number, data: ExpiringPassesReportData[] }) => {
+				console.log('Received data:', response.data); // Update to response.data
+				this.dataSource = response.data || [];
+				this.totalCount = response.totalCount ?? 0;
+				this.isLoading = false;
 			},
-			error: (err) => console.error('Error fetching expiring passes:', err)
+			error: (err) => {
+				console.error('Error fetching expiring passes:', err);
+				this.dataSource = [];
+				this.totalCount = 0;
+				this.isLoading = false;
+			}
 		});
+	}
+
+	onPageChange(event: PageEvent): void {
+		this.pageIndex = event.pageIndex;
+		this.pageSize = event.pageSize;
+		this.generateReport();
 	}
 
 	resetForm(): void {
 		this.reportForm.reset();
 		this.dataSource = [];
+		this.pageIndex = 0;
+		this.totalCount = 0;
+		this.isLoading = false;
 	}
 
 	downloadReport(): void {
 		if (this.reportForm.invalid) {
-			alert('Пожалуйста, выберите начальную и конечную даты.');
+			this.reportForm.markAllAsTouched();
 			return;
 		}
 		const { startDate, endDate } = this.reportForm.value;
@@ -96,13 +120,18 @@ export class ExpiringPassesReportComponent implements OnInit {
 			endDate: this.formatDate(endDate)
 		};
 
-		this.reportService.downloadReport('expiring-passes', params).subscribe(blob => {
-			const url = window.URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = url;
-			link.download = 'ExpiringPassesReport.xlsx';
-			link.click();
-			window.URL.revokeObjectURL(url);
+		this.reportService.downloadReport('expiring-passes', params).subscribe({
+			next: (blob) => {
+				const url = window.URL.createObjectURL(blob);
+				const link = document.createElement('a');
+				link.href = url;
+				link.download = 'ExpiringPassesReport.xlsx';
+				link.click();
+				window.URL.revokeObjectURL(url);
+			},
+			error: (err) => {
+				console.error('Error downloading report:', err);
+			}
 		});
 	}
 }

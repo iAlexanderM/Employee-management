@@ -66,13 +66,11 @@ namespace EmployeeManagementServer.Data
                 {
                     if (entry.State == EntityState.Added)
                     {
-                        // Устанавливаем CreatedAt для новых записей
                         createdAtEntry.CurrentValue = DateTime.UtcNow;
                         createdAtEntry.IsModified = true;
                     }
                     else if (entry.State == EntityState.Modified)
                     {
-                        // Предотвращаем изменение CreatedAt при модификации
                         createdAtEntry.IsModified = false;
                     }
                 }
@@ -80,7 +78,6 @@ namespace EmployeeManagementServer.Data
                 var updatedAtEntry = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "UpdatedAt");
                 if (updatedAtEntry != null)
                 {
-                    // Устанавливаем UpdatedAt для добавления или модификации
                     updatedAtEntry.CurrentValue = DateTime.UtcNow;
                     updatedAtEntry.IsModified = true;
                 }
@@ -220,7 +217,6 @@ namespace EmployeeManagementServer.Data
             builder.Entity<CloseReason>().ToTable("CloseReasons");
             builder.Entity<DataProtectionKey>().ToTable("DataProtectionKeys");
 
-            // Конвертация DateTime в UTC
             foreach (var entityType in builder.Model.GetEntityTypes())
             {
                 var properties = entityType.GetProperties()

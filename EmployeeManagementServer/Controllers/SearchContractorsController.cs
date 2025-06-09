@@ -27,9 +27,9 @@ namespace EmployeeManagementServer.Controllers
 
         [HttpGet]
         public async Task<IActionResult> SearchContractors(
-            [FromQuery] ContractorSearchDto searchDto,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 25)
+    [FromQuery] ContractorSearchDto searchDto,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 25)
         {
             if (page < 1 || pageSize < 1)
             {
@@ -39,11 +39,16 @@ namespace EmployeeManagementServer.Controllers
             _logger.LogInformation("Поиск контрагентов с параметрами: {@SearchDto}, page: {Page}, pageSize: {PageSize}", searchDto, page, pageSize);
 
             var contractors = await _contractorSearchService.SearchContractorsAsync(searchDto);
-            var contractorDtos = _mapper.Map<List<ContractorDto>>(contractors);
+            var total = contractors.Count;
+            var pagedContractors = contractors
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+            var contractorDtos = _mapper.Map<List<ContractorDto>>(pagedContractors);
 
             return Ok(new
             {
-                total = contractors.Count,
+                total,
                 contractors = contractorDtos
             });
         }

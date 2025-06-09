@@ -6,7 +6,7 @@ import { ContractorEditService } from '../../../services/contractor-edit.service
 import { ContractorWatchService } from '../../../services/contractor-watch.service';
 import { HistoryService } from '../../../services/history.service';
 import { AuthService } from '../../../services/auth.service';
-import { Contractor, Photo } from '../../../models/contractor.model';
+import { Contractor, ContractorDto, Photo } from '../../../models/contractor.model';
 import { HttpClientModule } from '@angular/common/http';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { CitizenshipAndNationalityModalComponent } from '../../modals/citizenship-and-nationality-modal/citizenship-and-nationality-modal.component';
@@ -77,24 +77,58 @@ export class ContractorEditComponent implements OnInit {
 		});
 	}
 
+	private normalizeContractorData(data: ContractorDto): Contractor {
+		const activePasses = data.activePasses;
+		const closedPasses = data.closedPasses;
+		const passes = activePasses.concat(closedPasses);
+		const photos = Array.isArray(data.photos) ? data.photos : [];
+		const documentPhotos = Array.isArray(data.documentPhotos) ? data.documentPhotos : [];
+
+		return {
+			id: data.id,
+			firstName: data.firstName || '',
+			lastName: data.lastName || '',
+			middleName: data.middleName || '',
+			birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
+			documentType: data.documentType || '',
+			passportSerialNumber: data.passportSerialNumber || '',
+			passportIssuedBy: data.passportIssuedBy || '',
+			citizenship: data.citizenship || '',
+			nationality: data.nationality || '',
+			passportIssueDate: data.passportIssueDate ? new Date(data.passportIssueDate) : undefined,
+			productType: data.productType || '',
+			phoneNumber: data.phoneNumber || '',
+			createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+			sortOrder: data.sortOrder || 0,
+			photos,
+			documentPhotos,
+			isArchived: data.isArchived || false,
+			passes,
+			activePasses,
+			closedPasses,
+			note: data.note,
+		};
+	}
+
 	loadContractor(): void {
 		this.contractorWatchService.getContractor(this.contractorId).subscribe({
-			next: (contractor: Contractor) => {
-				console.log('Данные контрагента получены:', contractor);
-				this.originalContractor = { ...contractor };
+			next: (data: ContractorDto) => {
+				console.log('Данные контрагента получены:', data);
+				const contractor = this.normalizeContractorData(data);
+				this.originalContractor = contractor;
 
 				this.contractorForm.patchValue({
 					FirstName: contractor.firstName,
 					LastName: contractor.lastName,
 					MiddleName: contractor.middleName,
 					BirthDate: contractor.birthDate
-						? new Date(contractor.birthDate).toISOString().slice(0, 10)
+						? contractor.birthDate.toISOString().slice(0, 10)
 						: '',
 					DocumentType: contractor.documentType,
 					PassportSerialNumber: contractor.passportSerialNumber,
 					PassportIssuedBy: contractor.passportIssuedBy,
 					PassportIssueDate: contractor.passportIssueDate
-						? new Date(contractor.passportIssueDate).toISOString().slice(0, 10)
+						? contractor.passportIssueDate.toISOString().slice(0, 10)
 						: '',
 					Citizenship: contractor.citizenship,
 					Nationality: contractor.nationality,

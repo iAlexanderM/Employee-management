@@ -25,20 +25,16 @@ using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Настройка конфигурации
 builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
-// Подключение к базе данных
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
            .LogTo(Console.WriteLine, LogLevel.Information));
 
-// Настройка Data Protection
 builder.Services.AddDataProtection()
     .PersistKeysToDbContext<ApplicationDbContext>();
 
-// Настройка Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = false;
@@ -50,13 +46,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// Регистрация сервисов
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddHostedService<ExpiredTokenCleanupService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
-// Настройка аутентификации JWT
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -99,7 +93,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Настройка авторизации
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
@@ -107,7 +100,6 @@ builder.Services.AddAuthorization(options =>
         .Build();
 });
 
-// Настройка CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins", builder =>
@@ -119,7 +111,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Регистрация остальных сервисов
 builder.Services.AddScoped<ContractorService>();
 builder.Services.AddScoped<IContractorSearchService, ContractorSearchService>();
 builder.Services.AddScoped<IStoreService, StoreService>();
@@ -153,13 +144,10 @@ builder.Services.AddScoped<SuggestionsService>();
 builder.Services.AddScoped<JwtPassTokenService>();
 builder.Services.AddScoped<IHistoryService, HistoryService>();
 
-// AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-// Логирование
 builder.Logging.AddConsole();
 
-// Swagger
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -195,13 +183,10 @@ builder.Services.AddSwaggerGen(c =>
     }
 });
 
-// SignalR
 builder.Services.AddSignalR();
 
-// Memory Cache
 builder.Services.AddMemoryCache();
 
-// Контроллеры
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -210,17 +195,14 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
 
-// Построение приложения
 var app = builder.Build();
 
-// Инициализация базы данных и ролей
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    // Миграция базы данных с повторными попытками
     var retryCount = 5;
     var delay = TimeSpan.FromSeconds(5);
     for (int i = 0; i < retryCount; i++)
@@ -242,7 +224,6 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    // Создание ролей
     string[] roleNames = { "Admin", "Cashier", "Manager" };
     foreach (var roleName in roleNames)
     {
@@ -288,7 +269,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();

@@ -146,108 +146,38 @@ namespace EmployeeManagementServer.Controllers
             return Ok(details);
         }
 
-        [HttpGet("issued-passes-data")]
-        [Authorize(Roles = "Admin, Cashier")]
-        public async Task<IActionResult> GetIssuedPassesReportData(DateTime startDate, DateTime endDate, string? building = null, string? floor = null, string? line = null, string? passType = null)
-        {
-            endDate = endDate.Date.AddDays(1).AddTicks(-1);
-            var query = _context.Passes
-                .Include(p => p.PassType)
-                .Include(p => p.Store)
-                .Include(p => p.Contractor)
-                .Where(p => p.StartDate >= startDate && p.StartDate <= endDate);
-
-            if (!string.IsNullOrEmpty(building)) query = query.Where(p => p.Store.Building == building);
-            if (!string.IsNullOrEmpty(floor)) query = query.Where(p => p.Store.Floor == floor);
-            if (!string.IsNullOrEmpty(line)) query = query.Where(p => p.Store.Line == line);
-            if (!string.IsNullOrEmpty(passType)) query = query.Where(p => p.PassType.Name == passType);
-
-            var passes = await query
-                .Select(p => new
-                {
-                    PassType = p.PassType.Name,
-                    Building = p.Store.Building,
-                    Floor = p.Store.Floor,
-                    Line = p.Store.Line,
-                    StoreNumber = p.Store.StoreNumber,
-                    ContractorId = p.ContractorId,
-                    FullName = $"{p.Contractor.LastName} {p.Contractor.FirstName} {p.Contractor.MiddleName}",
-                    Position = p.Position,
-                    Citizenship = p.Contractor.Citizenship,
-                    Nationality = p.Contractor.Nationality,
-                    StartDate = p.StartDate,
-                    EndDate = p.EndDate,
-                    Status = p.IsClosed ? "Closed" : "Active",
-                    Phone = p.Contractor.PhoneNumber,
-                    ProductType = p.Contractor.ProductType
-                })
-                .ToListAsync();
-
-            Console.WriteLine($"Issued passes found: {passes.Count}");
-            return Ok(passes);
-        }
-
-        [HttpGet("issued-passes")]
-        [Authorize(Roles = "Admin, Cashier")]
-        public async Task<IActionResult> GetIssuedPassesReport(DateTime startDate, DateTime endDate, string? building = null, string? floor = null, string? line = null, string? passType = null)
-        {
-            endDate = endDate.Date.AddDays(1).AddTicks(-1);
-            return await GenerateExcel("issued-passes", startDate, endDate, building, floor, line, null, passType);
-        }
-
-        [HttpGet("expiring-passes-data")]
-        [Authorize(Roles = "Admin, Cashier")]
-        public async Task<IActionResult> GetExpiringPassesReportData(DateTime startDate, DateTime endDate)
-        {
-            endDate = endDate.Date.AddDays(1).AddTicks(-1);
-            var passes = await _context.Passes
-                .Include(p => p.PassType)
-                .Include(p => p.Store)
-                .Include(p => p.Contractor)
-                .Where(p => !p.IsClosed && p.EndDate >= startDate && p.EndDate <= endDate)
-                .Select(p => new
-                {
-                    PassType = p.PassType.Name,
-                    EndDate = p.EndDate,
-                    Building = p.Store.Building,
-                    Floor = p.Store.Floor,
-                    Line = p.Store.Line,
-                    StoreNumber = p.Store.StoreNumber,
-                    ContractorId = p.ContractorId,
-                    FullName = $"{p.Contractor.LastName} {p.Contractor.FirstName} {p.Contractor.MiddleName}",
-                    Position = p.Position,
-                    Note = p.Contractor.Note
-                })
-                .ToListAsync();
-
-            Console.WriteLine($"Expiring passes found: {passes.Count}");
-            return Ok(passes);
-        }
-
-        [HttpGet("expiring-passes")]
-        [Authorize(Roles = "Admin, Cashier")]
-        public async Task<IActionResult> GetExpiringPassesReport(DateTime startDate, DateTime endDate)
-        {
-            endDate = endDate.Date.AddDays(1).AddTicks(-1);
-            return await GenerateExcel("expiring-passes", startDate, endDate);
-        }
-
         [HttpGet("active-passes-data")]
         [Authorize(Roles = "Admin, Cashier")]
-        public async Task<IActionResult> GetActivePassesReportData(string? passType = null, string? building = null, string? floor = null, string? line = null)
+        public async Task<IActionResult> GetActivePassesReportData(
+    string? passType = null,
+    string? building = null,
+    string? floor = null,
+    string? line = null,
+    int page = 1,
+    int pageSize = 50,
+    bool disablePagination = false)
         {
+            if (!disablePagination)
+            {
+                if (page < 1) page = 1;
+                if (pageSize < 1) pageSize = 50;
+            }
+
             var query = _context.Passes
                 .Include(p => p.PassType)
                 .Include(p => p.Store)
                 .Include(p => p.Contractor)
-                .Where(p => !p.IsClosed);
+                .Where(p => !p.IsClosed); 
 
             if (!string.IsNullOrEmpty(passType)) query = query.Where(p => p.PassType.Name == passType);
             if (!string.IsNullOrEmpty(building)) query = query.Where(p => p.Store.Building == building);
             if (!string.IsNullOrEmpty(floor)) query = query.Where(p => p.Store.Floor == floor);
             if (!string.IsNullOrEmpty(line)) query = query.Where(p => p.Store.Line == line);
 
-            var passes = await query
+            var totalCount = await query.CountAsync();
+
+            var passesQuery = query
+                .OrderBy(p => p.StartDate)
                 .Select(p => new
                 {
                     PassType = p.PassType.Name,
@@ -270,18 +200,164 @@ namespace EmployeeManagementServer.Controllers
                     PassportIssueDate = p.Contractor.PassportIssueDate,
                     ProductType = p.Contractor.ProductType,
                     BirthDate = p.Contractor.BirthDate
-                })
-                .ToListAsync();
+                });
 
-            Console.WriteLine($"Active passes found: {passes.Count}");
-            return Ok(passes);
+            var passes = disablePagination
+                ? await passesQuery.ToListAsync()
+                : await passesQuery
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+            Console.WriteLine($"Active passes found: {passes.Count} (Page: {page}, PageSize: {pageSize}, Total: {totalCount})");
+            return Ok(new { TotalCount = totalCount, Data = passes });
         }
 
         [HttpGet("active-passes")]
         [Authorize(Roles = "Admin, Cashier")]
-        public async Task<IActionResult> GetActivePassesReport(string? passType = null, string? building = null, string? floor = null, string? line = null)
+        public async Task<IActionResult> GetActivePassesReport(
+            string? passType = null,
+            string? building = null,
+            string? floor = null,
+            string? line = null)
         {
             return await GenerateExcel("active-passes", null, null, building, floor, line, null, passType);
+        }
+
+        [HttpGet("issued-passes-data")]
+        [Authorize(Roles = "Admin, Cashier")]
+        public async Task<IActionResult> GetIssuedPassesReportData(
+    DateTime startDate,
+    DateTime endDate,
+    string? building = null,
+    string? floor = null,
+    string? line = null,
+    string? passType = null,
+    int page = 1,
+    int pageSize = 50,
+    bool disablePagination = false)
+        {
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 50;
+
+            endDate = endDate.Date.AddDays(1).AddTicks(-1);
+            var query = _context.Passes
+                .Include(p => p.PassType)
+                .Include(p => p.Store)
+                .Include(p => p.Contractor)
+                .Where(p => p.StartDate >= startDate && p.StartDate <= endDate);
+
+            if (!string.IsNullOrEmpty(building)) query = query.Where(p => p.Store != null && p.Store.Building == building);
+            if (!string.IsNullOrEmpty(floor)) query = query.Where(p => p.Store != null && p.Store.Floor == floor);
+            if (!string.IsNullOrEmpty(line)) query = query.Where(p => p.Store != null && p.Store.Line == line);
+            if (!string.IsNullOrEmpty(passType)) query = query.Where(p => p.PassType != null && p.PassType.Name == passType);
+
+            var totalCount = await query.CountAsync();
+            Console.WriteLine($"Total issued passes count: {totalCount}");
+
+            var passesQuery = query
+        .OrderBy(p => p.StartDate)
+        .Select(p => new
+        {
+            PassType = p.PassType != null ? p.PassType.Name : "",
+            Building = p.Store != null ? p.Store.Building : "",
+            Floor = p.Store != null ? p.Store.Floor : "",
+            Line = p.Store != null ? p.Store.Line : "",
+            StoreNumber = p.Store != null ? p.Store.StoreNumber : "",
+            ContractorId = p.ContractorId,
+            FullName = p.Contractor != null ? $"{p.Contractor.LastName} {p.Contractor.FirstName} {p.Contractor.MiddleName}".Trim() : "",
+            Position = p.Position ?? "",
+            Citizenship = p.Contractor != null ? p.Contractor.Citizenship : "",
+            Nationality = p.Contractor != null ? p.Contractor.Nationality : "",
+            StartDate = p.StartDate,
+            EndDate = p.EndDate,
+            Status = p.IsClosed ? "Closed" : "Active",
+            Phone = p.Contractor != null ? p.Contractor.PhoneNumber : "",
+            ProductType = p.Contractor != null ? p.Contractor.ProductType : ""
+        });
+
+            var passes = disablePagination
+                ? await passesQuery.ToListAsync()
+                : await passesQuery
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+            Console.WriteLine($"Issued passes found: {passes.Count} (Page: {page}, PageSize: {pageSize}, Total: {totalCount})");
+            return Ok(new { TotalCount = totalCount, Data = passes });
+        }
+
+        [HttpGet("issued-passes")]
+        [Authorize(Roles = "Admin, Cashier")]
+        public async Task<IActionResult> GetIssuedPassesReport(
+            DateTime startDate,
+            DateTime endDate,
+            string? building = null,
+            string? floor = null,
+            string? line = null,
+            string? passType = null)
+        {
+            endDate = endDate.Date.AddDays(1).AddTicks(-1);
+            return await GenerateExcel("issued-passes", startDate, endDate, building, floor, line, null, passType);
+        }
+
+        [HttpGet("expiring-passes-data")]
+        [Authorize(Roles = "Admin, Cashier")]
+        public async Task<IActionResult> GetExpiringPassesReportData(
+    DateTime startDate,
+    DateTime endDate,
+    int page = 1,
+    int pageSize = 50,
+    bool disablePagination = false)
+        {
+            if (!disablePagination)
+            {
+                if (page < 1) page = 1;
+                if (pageSize < 1) pageSize = 50;
+            }
+
+            endDate = endDate.Date.AddDays(1).AddTicks(-1);
+            var query = _context.Passes
+                .Include(p => p.PassType)
+                .Include(p => p.Store)
+                .Include(p => p.Contractor)
+                .Where(p => !p.IsClosed && p.EndDate >= startDate && p.EndDate <= endDate);
+
+            var totalCount = await query.CountAsync();
+
+            var passesQuery = query
+                .OrderBy(p => p.EndDate)
+                .Select(p => new
+                {
+                    PassType = p.PassType.Name,
+                    EndDate = p.EndDate,
+                    Building = p.Store.Building,
+                    Floor = p.Store.Floor,
+                    Line = p.Store.Line,
+                    StoreNumber = p.Store.StoreNumber,
+                    ContractorId = p.ContractorId,
+                    FullName = $"{p.Contractor.LastName} {p.Contractor.FirstName} {p.Contractor.MiddleName}",
+                    Position = p.Position,
+                    Note = p.Contractor.Note
+                });
+
+            var passes = disablePagination
+                ? await passesQuery.ToListAsync()
+                : await passesQuery
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+            Console.WriteLine($"Expiring passes found: {passes.Count} (Page: {page}, PageSize: {pageSize}, Total: {totalCount})");
+            return Ok(new { TotalCount = totalCount, Data = passes });
+        }
+
+        [HttpGet("expiring-passes")]
+        [Authorize(Roles = "Admin, Cashier")]
+        public async Task<IActionResult> GetExpiringPassesReport(DateTime startDate, DateTime endDate)
+        {
+            endDate = endDate.Date.AddDays(1).AddTicks(-1);
+            return await GenerateExcel("expiring-passes", startDate, endDate);
         }
 
         [HttpGet("suggestions/building")]
@@ -332,14 +408,14 @@ namespace EmployeeManagementServer.Controllers
         }
 
         private async Task<IActionResult> GenerateExcel(
-            string reportType,
-            DateTime? startDate = null,
-            DateTime? endDate = null,
-            string? building = null,
-            string? floor = null,
-            string? line = null,
-            int? passTypeId = null,
-            string? passType = null)
+    string reportType,
+    DateTime? startDate = null,
+    DateTime? endDate = null,
+    string? building = null,
+    string? floor = null,
+    string? line = null,
+    int? passTypeId = null,
+    string? passType = null)
         {
             using (var workbook = new XLWorkbook())
             {
@@ -350,7 +426,17 @@ namespace EmployeeManagementServer.Controllers
                 {
                     case "financial":
                         var financialData = await GetFinancialReportData(startDate!.Value, endDate!.Value);
-                        var financialItems = ((OkObjectResult)financialData).Value as IEnumerable<dynamic>;
+                        if (!(financialData is OkObjectResult financialOkResult))
+                        {
+                            Console.WriteLine($"Error: Financial report data returned non-OK result: {financialData}");
+                            return StatusCode(500, "Failed to retrieve financial report data");
+                        }
+                        var financialItems = financialOkResult.Value as IEnumerable<dynamic>;
+                        if (financialItems == null)
+                        {
+                            Console.WriteLine("Error: Financial report items are null");
+                            return StatusCode(500, "Financial report data is empty");
+                        }
                         worksheet.Cell(row, 1).Value = "Тип оплаты";
                         worksheet.Cell(row, 2).Value = "Оплачено на сумму";
                         worksheet.Cell(row, 3).Value = "Создано транзакций";
@@ -366,7 +452,17 @@ namespace EmployeeManagementServer.Controllers
 
                     case "passes-summary":
                         var summaryData = await GetPassesSummaryReportData(startDate!.Value, endDate!.Value);
-                        var summaryItems = ((OkObjectResult)summaryData).Value as IEnumerable<dynamic>;
+                        if (!(summaryData is OkObjectResult summaryOkResult))
+                        {
+                            Console.WriteLine($"Error: Passes summary report data returned non-OK result: {summaryData}");
+                            return StatusCode(500, "Failed to retrieve passes summary report data");
+                        }
+                        var summaryItems = summaryOkResult.Value as IEnumerable<dynamic>;
+                        if (summaryItems == null)
+                        {
+                            Console.WriteLine("Error: Passes summary report items are null");
+                            return StatusCode(500, "Passes summary report data is empty");
+                        }
                         worksheet.Cell(row, 1).Value = "Тип очереди";
                         worksheet.Cell(row, 2).Value = "Сумма по типу очереди";
                         worksheet.Cell(row, 3).Value = "Количество пропусков";
@@ -381,8 +477,25 @@ namespace EmployeeManagementServer.Controllers
                         break;
 
                     case "issued-passes":
-                        var issuedData = await GetIssuedPassesReportData(startDate!.Value, endDate!.Value, building, floor, line, passType);
-                        var issuedItems = ((OkObjectResult)issuedData).Value as IEnumerable<dynamic>;
+                        var issuedData = await GetIssuedPassesReportData(startDate!.Value, endDate!.Value, building, floor, line, passType, disablePagination: true);
+                        if (!(issuedData is OkObjectResult issuedOkResult))
+                        {
+                            Console.WriteLine($"Error: Issued passes report data returned non-OK result: {issuedData}");
+                            return StatusCode(500, "Failed to retrieve issued passes report data");
+                        }
+                        var issuedResult = issuedOkResult.Value as dynamic;
+                        if (issuedResult == null || issuedResult.Data == null)
+                        {
+                            Console.WriteLine("Error: Issued passes report data or Data property is null");
+                            return StatusCode(500, "Issued passes report data is empty");
+                        }
+                        var issuedItems = issuedResult.Data as IEnumerable<dynamic>;
+                        if (issuedItems == null)
+                        {
+                            Console.WriteLine("Error: Issued passes report items are null");
+                            return StatusCode(500, "Issued passes report items are empty");
+                        }
+                        Console.WriteLine($"Issued passes items count: {issuedItems.Count()}");
                         worksheet.Cell(row, 1).Value = "Тип пропуска";
                         worksheet.Cell(row, 2).Value = "Здание";
                         worksheet.Cell(row, 3).Value = "Этаж";
@@ -411,8 +524,8 @@ namespace EmployeeManagementServer.Controllers
                             worksheet.Cell(row, 8).Value = item.Position ?? "";
                             worksheet.Cell(row, 9).Value = item.Citizenship ?? "";
                             worksheet.Cell(row, 10).Value = item.Nationality ?? "";
-                            worksheet.Cell(row, 11).Value = item.StartDate.ToString("dd.MM.yyyy");
-                            worksheet.Cell(row, 12).Value = item.EndDate.ToString("dd.MM.yyyy");
+                            worksheet.Cell(row, 11).Value = item.StartDate?.ToString("dd.MM.yyyy") ?? "";
+                            worksheet.Cell(row, 12).Value = item.EndDate?.ToString("dd.MM.yyyy") ?? "";
                             worksheet.Cell(row, 13).Value = item.Status ?? "";
                             worksheet.Cell(row, 14).Value = item.Phone ?? "";
                             worksheet.Cell(row, 15).Value = item.ProductType ?? "";
@@ -421,8 +534,25 @@ namespace EmployeeManagementServer.Controllers
                         break;
 
                     case "expiring-passes":
-                        var expiringData = await GetExpiringPassesReportData(startDate!.Value, endDate!.Value);
-                        var expiringItems = ((OkObjectResult)expiringData).Value as IEnumerable<dynamic>;
+                        var expiringData = await GetExpiringPassesReportData(startDate!.Value, endDate!.Value, disablePagination: true);
+                        if (!(expiringData is OkObjectResult expiringOkResult))
+                        {
+                            Console.WriteLine($"Error: Expiring passes report data returned non-OK result: {expiringData}");
+                            return StatusCode(500, "Failed to retrieve expiring passes report data");
+                        }
+                        var expiringResult = expiringOkResult.Value as dynamic;
+                        if (expiringResult == null || expiringResult.Data == null)
+                        {
+                            Console.WriteLine("Error: Expiring passes report data or Data property is null");
+                            return StatusCode(500, "Expiring passes report data is empty");
+                        }
+                        var expiringItems = expiringResult.Data as IEnumerable<dynamic>;
+                        if (expiringItems == null)
+                        {
+                            Console.WriteLine("Error: Expiring passes report items are null");
+                            return StatusCode(500, "Expiring passes report items are empty");
+                        }
+                        Console.WriteLine($"Expiring passes items count: {expiringItems.Count()}");
                         worksheet.Cell(row, 1).Value = "Тип пропуска";
                         worksheet.Cell(row, 2).Value = "Дата окончания";
                         worksheet.Cell(row, 3).Value = "Здание";
@@ -437,7 +567,7 @@ namespace EmployeeManagementServer.Controllers
                         foreach (var item in expiringItems)
                         {
                             worksheet.Cell(row, 1).Value = item.PassType ?? "";
-                            worksheet.Cell(row, 2).Value = item.EndDate.ToString("dd.MM.yyyy");
+                            worksheet.Cell(row, 2).Value = item.EndDate?.ToString("dd.MM.yyyy") ?? "";
                             worksheet.Cell(row, 3).Value = item.Building ?? "";
                             worksheet.Cell(row, 4).Value = item.Floor ?? "";
                             worksheet.Cell(row, 5).Value = item.Line ?? "";
@@ -451,8 +581,25 @@ namespace EmployeeManagementServer.Controllers
                         break;
 
                     case "active-passes":
-                        var activeData = await GetActivePassesReportData(passType, building, floor, line);
-                        var activeItems = ((OkObjectResult)activeData).Value as IEnumerable<dynamic>;
+                        var activeData = await GetActivePassesReportData(passType, building, floor, line, disablePagination: true);
+                        if (!(activeData is OkObjectResult activeOkResult))
+                        {
+                            Console.WriteLine($"Error: Active passes report data returned non-OK result: {activeData}");
+                            return StatusCode(500, "Failed to retrieve active passes report data");
+                        }
+                        var activeResult = activeOkResult.Value as dynamic;
+                        if (activeResult == null || activeResult.Data == null)
+                        {
+                            Console.WriteLine("Error: Active passes report data or Data property is null");
+                            return StatusCode(500, "Active passes report data is empty");
+                        }
+                        var activeItems = activeResult.Data as IEnumerable<dynamic>;
+                        if (activeItems == null)
+                        {
+                            Console.WriteLine("Error: Active passes report items are null");
+                            return StatusCode(500, "Active passes report items are empty");
+                        }
+                        Console.WriteLine($"Active passes items count: {activeItems.Count()}");
                         worksheet.Cell(row, 1).Value = "№ п/п";
                         worksheet.Cell(row, 2).Value = "Тип пропуска";
                         worksheet.Cell(row, 3).Value = "Здание";
@@ -487,8 +634,8 @@ namespace EmployeeManagementServer.Controllers
                             worksheet.Cell(row, 7).Value = item.ContractorId;
                             worksheet.Cell(row, 8).Value = item.FullName ?? "";
                             worksheet.Cell(row, 9).Value = item.Position ?? "";
-                            worksheet.Cell(row, 10).Value = item.StartDate.ToString("dd.MM.yyyy");
-                            worksheet.Cell(row, 11).Value = item.EndDate.ToString("dd.MM.yyyy");
+                            worksheet.Cell(row, 10).Value = item.StartDate?.ToString("dd.MM.yyyy") ?? "";
+                            worksheet.Cell(row, 11).Value = item.EndDate?.ToString("dd.MM.yyyy") ?? "";
                             worksheet.Cell(row, 12).Value = item.PassNumber ?? "";
                             worksheet.Cell(row, 13).Value = item.Citizenship ?? "";
                             worksheet.Cell(row, 14).Value = item.Nationality ?? "";
@@ -496,9 +643,9 @@ namespace EmployeeManagementServer.Controllers
                             worksheet.Cell(row, 16).Value = item.DocumentType ?? "";
                             worksheet.Cell(row, 17).Value = item.PassportSerialNumber ?? "";
                             worksheet.Cell(row, 18).Value = item.PassportIssuedBy ?? "";
-                            worksheet.Cell(row, 19).Value = item.PassportIssueDate.ToString("dd.MM.yyyy");
+                            worksheet.Cell(row, 19).Value = item.PassportIssueDate?.ToString("dd.MM.yyyy") ?? "";
                             worksheet.Cell(row, 20).Value = item.ProductType ?? "";
-                            worksheet.Cell(row, 21).Value = item.BirthDate.ToString("dd.MM.yyyy");
+                            worksheet.Cell(row, 21).Value = item.BirthDate?.ToString("dd.MM.yyyy") ?? "";
                             row++;
                         }
                         break;

@@ -43,16 +43,11 @@ namespace EmployeeManagementServer.Controllers
 
             DateTime today = DateTime.UtcNow.Date;
 
-            // ---> НАЧАЛО ИЗМЕНЕНИЙ <---
-
-            // 1. Найти ЛЮБОЙ активный талон этого пользователя
             var existingActive = await _context.QueueTokens
                 .FirstOrDefaultAsync(t => t.UserId == userId && t.Status == "Active");
 
-            // 2. Если активный талон существует...
             if (existingActive != null)
             {
-                // 3. ...и он СОЗДАН НЕ СЕГОДНЯ...
                 if (existingActive.CreatedDate != today)
                 {
                     existingActive.Status = "Closed"; 

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ReportService } from '../../../services/report.service';
 import { ActivePassesReportData } from '../../../models/report.models';
 import { MatIconModule } from '@angular/material/icon';
@@ -19,7 +20,7 @@ import { debounceTime, distinctUntilChanged, switchMap, takeUntil, startWith } f
 	imports: [
 		CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
 		MatButtonModule, MatTableModule, MatIconModule, MatAutocompleteModule,
-		MatCheckboxModule
+		MatCheckboxModule, MatPaginatorModule
 	],
 	templateUrl: './active-passes-report.component.html',
 	styleUrls: ['./active-passes-report.component.css']
@@ -41,6 +42,12 @@ export class ActivePassesReportComponent implements OnInit, OnDestroy {
 	floorSuggestions$!: Observable<string[]>;
 	lineSuggestions$!: Observable<string[]>;
 	private destroy$ = new Subject<void>();
+	totalCount = 0;
+	pageSize = 50;
+	pageIndex = 0;
+	isLoading = false;
+
+	@ViewChild(MatPaginator) paginator!: MatPaginator;
 
 	constructor(
 		private fb: FormBuilder,
@@ -101,6 +108,7 @@ export class ActivePassesReportComponent implements OnInit, OnDestroy {
 	}
 
 	generateReport(): void {
+		this.isLoading = true;
 		const values = this.reportForm.value;
 		const params: any = {};
 		if (values.passType) params.passType = values.passType;
@@ -110,14 +118,30 @@ export class ActivePassesReportComponent implements OnInit, OnDestroy {
 
 		console.log('Generated params:', params);
 
-		this.reportService.getReportData('active-passes', params).subscribe({
-			next: (data: ActivePassesReportData[]) => {
+		this.reportService.getReportData('active-passes', params, this.pageIndex + 1, this.pageSize).subscribe({
+			next: ({ data, totalCount }: { data: ActivePassesReportData[], totalCount: number }) => {
 				console.log('Received data:', data);
-				this.dataSource = data.map((item, index) => ({ ...item, index: index + 1 }));
+				this.dataSource = data.map((item: ActivePassesReportData, index: number) => ({
+					...item,
+					index: (this.pageIndex * this.pageSize) + index + 1
+				})) || [];
+				this.totalCount = totalCount ?? 0;
 				this.updateDisplayedColumns();
+				this.isLoading = false;
 			},
-			error: (err) => console.error('Error fetching report:', err)
+			error: (err) => {
+				console.error('Error fetching report:', err);
+				this.dataSource = [];
+				this.totalCount = 0;
+				this.isLoading = false;
+			}
 		});
+	}
+
+	onPageChange(event: PageEvent): void {
+		this.pageIndex = event.pageIndex;
+		this.pageSize = event.pageSize;
+		this.generateReport();
 	}
 
 	private updateDisplayedColumns(): void {
@@ -137,6 +161,9 @@ export class ActivePassesReportComponent implements OnInit, OnDestroy {
 		});
 		this.dataSource = [];
 		this.displayedColumns = [...this.baseDisplayedColumns];
+		this.pageIndex = 0;
+		this.totalCount = 0;
+		this.isLoading = false;
 	}
 
 	downloadReport(): void {
@@ -147,13 +174,18 @@ export class ActivePassesReportComponent implements OnInit, OnDestroy {
 		if (values.floor) params.floor = values.floor;
 		if (values.line) params.line = values.line;
 
-		this.reportService.downloadReport('active-passes', params).subscribe(blob => {
-			const url = window.URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = url;
-			link.download = 'ActivePassesReport.xlsx';
-			link.click();
-			window.URL.revokeObjectURL(url);
+		this.reportService.downloadReport('active-passes', params).subscribe({
+			next: (blob) => {
+				const url = window.URL.createObjectURL(blob);
+				const link = document.createElement('a');
+				link.href = url;
+				link.download = 'ActivePassesReport.xlsx';
+				link.click();
+				window.URL.revokeObjectURL(url);
+			},
+			error: (err) => {
+				console.error('Error downloading report:', err);
+			}
 		});
 	}
 }

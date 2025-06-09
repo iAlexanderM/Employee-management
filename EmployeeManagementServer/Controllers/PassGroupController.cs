@@ -22,7 +22,6 @@ namespace EmployeeManagementServer.Controllers
             _context = context;
         }
 
-        // Создать группу пропусков
         [HttpPost]
         public async Task<IActionResult> CreatePassGroup([FromBody] PassGroupDto passGroupDto)
         {
@@ -42,7 +41,6 @@ namespace EmployeeManagementServer.Controllers
             return CreatedAtAction(nameof(GetPassGroupById), new { id = passGroup.Id }, passGroup);
         }
 
-        // Получить группу пропусков по ID
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPassGroupById(int id)
         {
@@ -55,17 +53,15 @@ namespace EmployeeManagementServer.Controllers
             return Ok(passGroup);
         }
 
-        // Получить все группы пропусков
         [HttpGet]
         public async Task<IActionResult> GetAllPassGroups()
         {
             var passGroups = await _context.PassGroups
-                .Include(pg => pg.PassTypes) // Включаем связанные PassTypes для полной информации
+                .Include(pg => pg.PassTypes)
                 .ToListAsync();
             return Ok(passGroups);
         }
 
-        // Обновить группу пропусков
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePassGroup(int id, [FromBody] PassGroupDto passGroupDto)
         {
@@ -86,7 +82,6 @@ namespace EmployeeManagementServer.Controllers
             return NoContent();
         }
 
-        // Удалить группу пропусков
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePassGroup(int id)
         {

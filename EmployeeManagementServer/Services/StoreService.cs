@@ -134,7 +134,7 @@ namespace EmployeeManagementServer.Services
                 EntityId = store.Id.ToString(),
                 Action = "create",
                 Details = $"Магазин {store.Id} успешно создан.",
-                ChangesJson = "{}", // Пустой JSON, как в ContractorService
+                ChangesJson = "{}",
                 ChangedBy = createdBy ?? "Unknown",
                 ChangedAt = DateTime.UtcNow
             });

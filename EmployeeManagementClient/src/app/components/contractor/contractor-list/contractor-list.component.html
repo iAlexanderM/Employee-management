@@ -1,160 +1,212 @@
-<div class="panel-header panel-header-sm"></div>
 <div class="main-content">
-	<div class="row">
-		<div class="col-md-12">
-			<div class="card">
-				<div class="card-header">
-					<h4 class="card-title">Поиск контрагентов</h4>
+	<mat-card>
+		<mat-card-header>
+			<mat-card-title>Поиск контрагентов</mat-card-title>
+		</mat-card-header>
+		<br />
+		<mat-card-content>
+			<div class="d-flex gap-2 mb-4">
+				<button mat-stroked-button (click)="toggleSearchForm()">
+					{{ isExpanded ? 'Свернуть' : 'Развернуть' }}
+				</button>
+				<button mat-stroked-button (click)="toggleArchived()">
+					{{ showArchived ? 'Показать активных' : 'Показать архивных' }}
+				</button>
+			</div>
+
+			<!-- Форма поиска -->
+			<form *ngIf="isExpanded" [formGroup]="searchForm" (ngSubmit)="searchContractors()" class="search-form">
+				<mat-grid-list cols="3" rowHeight="68px" gutterSize="16px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Код контрагента</mat-label>
+							<input matInput formControlName="Id" type="text" placeholder="Введите код"
+								inputmode="numeric" pattern="[0-9]*" />
+							<mat-icon matSuffix>code</mat-icon>
+							<mat-error *ngIf="searchForm.get('Id')?.hasError('pattern')">
+								Введите только цифры
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Имя</mat-label>
+							<input matInput formControlName="FirstName" type="text" placeholder="Введите имя" />
+							<mat-icon matSuffix>person</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Фамилия</mat-label>
+							<input matInput formControlName="LastName" type="text" placeholder="Введите фамилию" />
+							<mat-icon matSuffix>person</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Отчество</mat-label>
+							<input matInput formControlName="MiddleName" type="text" placeholder="Введите отчество" />
+							<mat-icon matSuffix>person</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Дата рождения</mat-label>
+							<input matInput formControlName="BirthDate" type="date" placeholder="Выберите дату" />
+							<mat-icon matSuffix>calendar_today</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Тип документа</mat-label>
+							<input matInput formControlName="DocumentType" type="text"
+								placeholder="Введите тип документа" />
+							<mat-icon matSuffix>description</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Серия и номер паспорта</mat-label>
+							<input matInput formControlName="PassportSerialNumber" type="text"
+								placeholder="Введите серию и номер" />
+							<mat-icon matSuffix>badge</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Кем выдан</mat-label>
+							<input matInput formControlName="PassportIssuedBy" type="text"
+								placeholder="Введите кем выдан" />
+							<mat-icon matSuffix>business</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Дата выдачи</mat-label>
+							<input matInput formControlName="PassportIssueDate" type="date"
+								placeholder="Выберите дату" />
+							<mat-icon matSuffix>calendar_today</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Номер телефона</mat-label>
+							<input matInput formControlName="PhoneNumber" type="tel" mask="0 (000) 000-00-00"
+								placeholder="8 (___) ___-__-__" inputmode="tel" />
+							<mat-icon matSuffix>phone</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+				</mat-grid-list>
+				<div class="d-flex justify-content-start gap-2 mt-4">
+					<button mat-raised-button color="primary" type="submit">Найти</button>
+					<button mat-stroked-button color="primary" type="button" (click)="resetFilters()">
+						Сбросить
+					</button>
 				</div>
-				<div class="card-body">
-					<button mat-stroked-button class="mb-3" (click)="toggleSearchForm()">
-						{{ isExpanded ? 'Свернуть' : 'Развернуть' }}
-					</button>
-					<button mat-stroked-button class="mb-3 ms-2" (click)="toggleArchived()">
-						{{ showArchived ? 'Показать активных' : 'Показать архивных' }}
-					</button>
+			</form>
 
-					<!-- Форма поиска -->
-					<form *ngIf="isExpanded" [formGroup]="searchForm" (ngSubmit)="searchContractors()" class="mb-4">
-						<div class="row">
-							<div class="col-md-4">
-								<label for="Id">Код контрагента:</label>
-								<input id="Id" formControlName="Id" type="text" class="form-control" />
-							</div>
-							<div class="col-md-4">
-								<label for="FirstName">Имя:</label>
-								<input id="FirstName" formControlName="FirstName" type="text" class="form-control" />
-							</div>
-							<div class="col-md-4">
-								<label for="LastName">Фамилия:</label>
-								<input id="LastName" formControlName="LastName" type="text" class="form-control" />
-							</div>
-							<div class="col-md-4 mt-3">
-								<label for="MiddleName">Отчество:</label>
-								<input id="MiddleName" formControlName="MiddleName" type="text" class="form-control" />
-							</div>
-							<div class="col-md-4 mt-3">
-								<label for="BirthDate">Дата рождения:</label>
-								<input id="BirthDate" formControlName="BirthDate" type="date" class="form-control" />
-							</div>
-							<div class="col-md-4 mt-3">
-								<label for="DocumentType">Тип документа:</label>
-								<input id="DocumentType" formControlName="DocumentType" type="text"
-									class="form-control" />
-							</div>
-							<div class="col-md-4 mt-3">
-								<label for="PassportSerialNumber">Серия и номер паспорта:</label>
-								<input id="PassportSerialNumber" formControlName="PassportSerialNumber" type="text"
-									class="form-control" />
-							</div>
-							<div class="col-md-4 mt-3">
-								<label for="PassportIssuedBy">Кем выдан:</label>
-								<input id="PassportIssuedBy" formControlName="PassportIssuedBy" type="text"
-									class="form-control" />
-							</div>
-							<div class="col-md-4 mt-3">
-								<label for="PassportIssueDate">Дата выдачи:</label>
-								<input id="PassportIssueDate" formControlName="PassportIssueDate" type="date"
-									class="form-control" />
-							</div>
-							<div class="col-md-4 mt-3">
-								<label for="PhoneNumber">Номер телефона:</label>
-								<input id="PhoneNumber" formControlName="PhoneNumber" type="text"
-									mask="0 (000) 000-00-00" placeholder="8 (___) ___-__-__" class="form-control" />
-							</div>
-						</div>
-						<div class="row mt-4">
-							<div class="col-md-12 text-end">
-								<button mat-raised-button color="primary" type="submit">Найти</button>
-								<button mat-stroked-button color="primary" type="button"
-									(click)="resetFilters()">Сбросить</button>
-							</div>
-						</div>
-					</form>
-
-					<div class="d-flex align-items-center justify-content-between mb-2">
-						<button mat-flat-button color="accent" routerLink="/contractors/new">Добавить нового
-							контрагента</button>
-						<div class="d-flex justify-content-end align-items-center mb-3">
-							<label for="pageSize" class="me-2">Элементов на странице:</label>
-							<select id="pageSize" class="form-select w-auto" [value]="pageSize"
-								(change)="onPageSizeChange($event)">
-								<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
-							</select>
-						</div>
-					</div>
-
-					<!-- Пагинация -->
-					<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
-						<div class="pagination-squares">
-							<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-								[class.disabled]="page === '...'" (click)="onPageClick(page)">
-								{{ page }}
-							</div>
-						</div>
-					</div>
-
-					<!-- Сообщение при загрузке -->
-					<div *ngIf="isLoading" class="text-center mt-4">
-						<p>Загрузка данных...</p>
-					</div>
-					<br>
-					<!-- Таблица контрагентов -->
-					<div *ngIf="!isLoading">
-						<table class="table table-bordered contractor-table" *ngIf="displayedContractors.length > 0">
-							<thead>
-								<tr>
-									<th>Сортировка</th>
-									<th>ID</th>
-									<th>Имя</th>
-									<th>Фамилия</th>
-									<th>Отчество</th>
-									<th>Дата рождения</th>
-									<th>Фото</th>
-									<th>Статус</th>
-									<th>Действия</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr *ngFor="let contractor of displayedContractors">
-									<td>{{ contractor.sortOrder }}</td>
-									<td>{{ contractor.id }}</td>
-									<td>{{ contractor.firstName }}</td>
-									<td>{{ contractor.lastName }}</td>
-									<td>{{ contractor.middleName }}</td>
-									<td>{{ contractor.birthDate | date: 'dd.MM.yyyy' }}</td>
-									<td>
-										<img *ngIf="getFirstPhoto(contractor)" [src]="getFirstPhoto(contractor)"
-											alt="Фото контрагента" class="contractor-img" />
-									</td>
-									<td>{{ contractor.isArchived ? 'Архивирован' : 'Активен' }}</td>
-									<td>
-										<button mat-raised-button color="primary"
-											(click)="navigateToDetails(contractor.id)">Просмотреть</button>
-										<button mat-flat-button color="accent"
-											(click)="navigateToEdit(contractor.id)">Редактировать</button>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-
-						<!-- Нет данных -->
-						<ng-template #noData>
-							<p class="text-center mt-4">Нет данных для отображения</p>
-						</ng-template>
-					</div>
-
-					<!-- Пагинация -->
-					<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
-						<div class="pagination-squares">
-							<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-								[class.disabled]="page === '...'" (click)="onPageClick(page)">
-								{{ page }}
-							</div>
-						</div>
-					</div>
+			<div class="d-flex align-items-center justify-content-between mb-4">
+				<button mat-flat-button color="accent" routerLink="/contractors/new">
+					Добавить нового контрагента
+				</button>
+				<div class="d-flex align-items-center gap-2">
+					<span>Элементов на странице:</span>
+					<mat-select [(value)]="pageSize" (selectionChange)="onPageSizeChange($event)">
+						<mat-option *ngFor="let size of pageSizeOptions" [value]="size">
+							{{ size }}
+						</mat-option>
+					</mat-select>
 				</div>
 			</div>
-		</div>
-	</div>
+
+			<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
+				<div class="pagination-squares">
+					<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" (click)="onPageClick(page)">
+						{{ page }}
+					</span>
+				</div>
+			</div>
+
+			<div *ngIf="isLoading" class="text-center mt-4">
+				<mat-spinner></mat-spinner>
+				<p>Загрузка данных...</p>
+			</div>
+			<br>
+			<div *ngIf="!isLoading && displayedContractors.length > 0">
+				<mat-table [dataSource]="displayedContractors" class="mat-elevation-z2">
+					<ng-container matColumnDef="photo">
+						<mat-header-cell *matHeaderCellDef>Фото</mat-header-cell>
+						<mat-cell *matCellDef="let contractor">
+							<img *ngIf="getFirstPhoto(contractor)" [src]="getFirstPhoto(contractor)"
+								alt="Фото контрагента" class="contractor-img" />
+						</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="sortOrder">
+						<mat-header-cell *matHeaderCellDef>Сортировка</mat-header-cell>
+						<mat-cell *matCellDef="let contractor">{{ contractor.sortOrder }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="id">
+						<mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
+						<mat-cell *matCellDef="let contractor">{{ contractor.id }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="firstName">
+						<mat-header-cell *matHeaderCellDef>Имя</mat-header-cell>
+						<mat-cell *matCellDef="let contractor">{{ contractor.firstName }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="lastName">
+						<mat-header-cell *matHeaderCellDef>Фамилия</mat-header-cell>
+						<mat-cell *matCellDef="let contractor">{{ contractor.lastName }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="middleName">
+						<mat-header-cell *matHeaderCellDef>Отчество</mat-header-cell>
+						<mat-cell *matCellDef="let contractor">{{ contractor.middleName }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="birthDate">
+						<mat-header-cell *matHeaderCellDef>Дата рождения</mat-header-cell>
+						<mat-cell *matCellDef="let contractor">{{ contractor.birthDate | date: 'dd.MM.yyyy'
+							}}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="actions">
+						<mat-header-cell *matHeaderCellDef>Действия</mat-header-cell>
+						<mat-cell *matCellDef="let contractor">
+							<button mat-icon-button color="primary" (click)="navigateToDetails(contractor.id)"
+								matTooltip="Просмотреть">
+								<mat-icon>person</mat-icon>
+							</button>
+							<button mat-icon-button color="accent" (click)="navigateToEdit(contractor.id)"
+								matTooltip="Редактировать">
+								<mat-icon>mode_edit_outline</mat-icon>
+							</button>
+							<button mat-icon-button color="warn" (click)="toggleArchiveStatus(contractor)"
+								*ngIf="!contractor.isArchived" matTooltip="Архивировать">
+								<mat-icon>warning</mat-icon>
+							</button>
+							<button mat-icon-button color="warn" (click)="toggleArchiveStatus(contractor)"
+								*ngIf="contractor.isArchived" matTooltip="Разархивировать">
+								<mat-icon>upload</mat-icon>
+							</button>
+						</mat-cell>
+					</ng-container>
+					<mat-header-row
+						*matHeaderRowDef="['photo', 'sortOrder', 'id', 'firstName', 'lastName', 'middleName', 'birthDate', 'actions']"></mat-header-row>
+					<mat-row
+						*matRowDef="let row; columns: ['photo', 'sortOrder', 'id', 'firstName', 'lastName', 'middleName', 'birthDate', 'actions']"></mat-row>
+				</mat-table>
+			</div>
+
+			<div *ngIf="!isLoading && displayedContractors.length === 0" class="text-center mt-4">
+				<p>Нет данных для отображения</p>
+			</div>
+
+			<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
+				<div class="pagination-squares">
+					<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" (click)="onPageClick(page)">
+						{{ page }}
+					</span>
+				</div>
+			</div>
+		</mat-card-content>
+	</mat-card>
 </div>

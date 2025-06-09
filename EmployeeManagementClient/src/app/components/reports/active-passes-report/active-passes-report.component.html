@@ -77,6 +77,10 @@
 		</div>
 	</form>
 
+	<mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="[50]"
+		(page)="onPageChange($event)" showFirstLastButtons>
+	</mat-paginator>
+
 	<mat-table [dataSource]="dataSource" class="mat-elevation-z8" *ngIf="dataSource.length > 0">
 		<ng-container matColumnDef="index">
 			<mat-header-cell *matHeaderCellDef>№ п/п</mat-header-cell>
@@ -166,4 +170,8 @@
 		<mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
 		<mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
 	</mat-table>
+
+	<mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="[50]"
+		(page)="onPageChange($event)" showFirstLastButtons>
+	</mat-paginator>
 </div>

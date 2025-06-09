@@ -8,7 +8,8 @@ import { Contractor, ContractorDto } from '../models/contractor.model';
 	providedIn: 'root',
 })
 export class ContractorWatchService {
-	private apiUrl = 'http://localhost:8080/api/contractors'; // Ensure this matches your backend
+	private apiUrl = 'http://localhost:8080/api/contractors';
+	private searchApiUrl = 'http://localhost:8080/api/SearchContractors';
 
 	constructor(private http: HttpClient) { }
 
@@ -41,7 +42,7 @@ export class ContractorWatchService {
 			}
 		});
 
-		return this.http.get<{ contractors: Contractor[]; total: number }>(`${this.apiUrl}/search`, { params }).pipe(
+		return this.http.get<{ contractors: Contractor[]; total: number }>(`${this.searchApiUrl}`, { params }).pipe(
 			map((response) => ({
 				Contractors: response.contractors,
 				Total: response.total,
@@ -53,8 +54,8 @@ export class ContractorWatchService {
 		);
 	}
 
-	getContractor(id: string): Observable<Contractor> {
-		return this.http.get<Contractor>(`${this.apiUrl}/${id}`).pipe(
+	getContractor(id: string): Observable<ContractorDto> {
+		return this.http.get<ContractorDto>(`${this.apiUrl}/${id}`).pipe(
 			catchError((error) => {
 				console.error('Ошибка при получении контрагента:', error);
 				throw error;
@@ -62,16 +63,15 @@ export class ContractorWatchService {
 		);
 	}
 
-	archiveContractor(id: number): Observable<ContractorDto> {
+	archiveContractor(id: number): Observable<void> {
 		const headers = new HttpHeaders({
 			Authorization: `Bearer ${localStorage.getItem('token')}`,
 			'Content-Type': 'application/json',
 		});
-		const body = { isArchived: true };
-		return this.http.put<ContractorDto>(`${this.apiUrl}/${id}/archive`, body, { headers }).pipe(
-			catchError((err) => {
-				console.error('Ошибка при архивировании контрагента:', err);
-				const errorMessage = err.error?.message || err.message || 'Неизвестная ошибка при архивировании';
+		return this.http.put<void>(`${this.apiUrl}/${id}/archive`, { isArchived: true }, { headers }).pipe(
+			catchError((error) => {
+				console.error('Ошибка при архивировании контрагента:', error);
+				const errorMessage = error.error?.message || error.message || 'Неизвестная ошибка при архивировании';
 				return throwError(() => new Error(errorMessage));
 			})
 		);

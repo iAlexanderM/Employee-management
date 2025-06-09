@@ -36,11 +36,9 @@ namespace EmployeeManagementServer.Services
                 throw new ArgumentNullException(nameof(historyEntry));
             }
 
-            // Логируем входные данные
             _logger.LogInformation("Логирование истории: EntityType={EntityType}, EntityId={EntityId}, Action={Action}, ChangesJson={ChangesJson}",
                 historyEntry.EntityType, historyEntry.EntityId, historyEntry.Action, historyEntry.ChangesJson);
 
-            // Проверяем ChangesJson
             if (!string.IsNullOrWhiteSpace(historyEntry.ChangesJson))
             {
                 try

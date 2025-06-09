@@ -47,7 +47,6 @@ namespace EmployeeManagementServer.Services
         {
             _logger.LogInformation("Начинаем обновление контрагента с ID {Id}", contractor.Id);
 
-            // Загружаем оригинального контрагента для сравнения
             var originalContractor = await _context.Contractors
                 .AsNoTracking()
                 .Include(c => c.Photos)
@@ -63,7 +62,6 @@ namespace EmployeeManagementServer.Services
                 throw new KeyNotFoundException($"Контрагент с ID {contractor.Id} не найден.");
             }
 
-            // Проверка уникальности PassportSerialNumber
             if (originalContractor != null && originalContractor.PassportSerialNumber != contractor.PassportSerialNumber)
             {
                 if (!string.IsNullOrWhiteSpace(contractor.PassportSerialNumber) &&
@@ -75,7 +73,6 @@ namespace EmployeeManagementServer.Services
                 }
             }
 
-            // Проверка уникальности SortOrder
             if (contractor.SortOrder.HasValue && originalContractor?.SortOrder != contractor.SortOrder)
             {
                 if (await _context.Contractors.AnyAsync(c => c.SortOrder == contractor.SortOrder && c.Id != contractor.Id))
@@ -86,13 +83,10 @@ namespace EmployeeManagementServer.Services
                 }
             }
 
-            // Формируем список изменений
             var changes = CompareContractors(originalContractor, contractor);
 
-            // Обновляем поля контрагента
             _context.Entry(contractorToUpdate).CurrentValues.SetValues(contractor);
 
-            // Обрабатываем удаление фотографий
             if (deletedPhotoIds != null && deletedPhotoIds.Any())
             {
                 await RemovePhotosAsync(contractorToUpdate, deletedPhotoIds);
@@ -104,7 +98,6 @@ namespace EmployeeManagementServer.Services
                 });
             }
 
-            // Обрабатываем добавление новых фотографий
             if (newPhotos != null && newPhotos.Any())
             {
                 await AddPhotosAsync(contractorToUpdate, newPhotos, false);
@@ -116,7 +109,6 @@ namespace EmployeeManagementServer.Services
                 });
             }
 
-            // Обрабатываем добавление новых фото документов
             if (newDocumentPhotos != null && newDocumentPhotos.Any())
             {
                 await AddPhotosAsync(contractorToUpdate, newDocumentPhotos, true);
@@ -130,7 +122,6 @@ namespace EmployeeManagementServer.Services
 
             await SaveChangesAsync();
 
-            // Логируем изменения в историю
             if (changes.Any())
             {
                 var historyEntry = new History
@@ -270,11 +261,13 @@ namespace EmployeeManagementServer.Services
         public async Task<Contractor> GetContractorByIdAsync(int id)
         {
             var contractor = await _context.Contractors
+                .Include(c => c.Photos)
                 .Include(c => c.Passes)
                     .ThenInclude(p => p.PassType)
                 .Include(c => c.Passes)
                     .ThenInclude(p => p.ClosedByUser)
-                .Include(c => c.Photos)
+                .Include(c => c.Passes)
+                    .ThenInclude(p => p.Store) 
                 .SingleOrDefaultAsync(c => c.Id == id);
 
             if (contractor == null)
@@ -328,7 +321,7 @@ namespace EmployeeManagementServer.Services
                 EntityId = contractor.Id.ToString(),
                 Action = "create",
                 Details = $"Контрагент {contractor.Id} успешно создан.",
-                ChangesJson = "{}", // Пустой JSON для избежания детализации
+                ChangesJson = "{}",
                 ChangedBy = createdBy ?? "Unknown",
                 ChangedAt = DateTime.UtcNow
             });
@@ -365,10 +358,14 @@ namespace EmployeeManagementServer.Services
                 .Include(c => c.Photos)
                 .Include(c => c.Passes)
                     .ThenInclude(p => p.PassType)
+                .Include(c => c.Passes)
+                    .ThenInclude(p => p.Store) 
                 .AsNoTracking()
                 .AsQueryable();
 
-            if (isArchived.HasValue)
+            if (isArchived
+
+        .HasValue)
             {
                 query = query.Where(c => c.IsArchived == isArchived.Value);
             }
@@ -380,68 +377,6 @@ namespace EmployeeManagementServer.Services
                 .ToListAsync();
 
             return contractors;
-        }
-
-        public async Task<object> GetContractorAsync(int id)
-        {
-            var contractor = await GetContractorByIdAsync(id);
-
-            var photosList = contractor.Photos?.Select(p => (object)new
-            {
-                id = p.Id,
-                filePath = p.FilePath,
-                isDocumentPhoto = p.IsDocumentPhoto,
-                contractorId = p.ContractorId
-            }).ToList() ?? new List<object>();
-
-            var passesList = contractor.Passes?
-                .OrderByDescending(p => p.StartDate)
-                .Select(p => (object)new
-                {
-                    id = p.Id,
-                    uniquePassId = p.UniquePassId,
-                    passTypeId = p.PassTypeId,
-                    passTypeName = p.PassType?.Name ?? "Unknown",
-                    cost = p.PassType?.Cost,
-                    contractorId = p.ContractorId,
-                    storeId = p.StoreId,
-                    position = p.Position,
-                    startDate = p.StartDate,
-                    endDate = p.EndDate,
-                    transactionDate = p.TransactionDate,
-                    isClosed = p.IsClosed,
-                    passStatus = p.PassStatus,
-                    printStatus = p.PrintStatus,
-                    closeReason = p.CloseReason,
-                    closeDate = p.CloseDate,
-                    closedBy = p.ClosedBy,
-                    closedByUserName = p.ClosedByUser?.UserName
-                }).ToList() ?? new List<object>();
-
-            var response = new
-            {
-                contractor.Id,
-                contractor.FirstName,
-                contractor.LastName,
-                contractor.MiddleName,
-                contractor.Citizenship,
-                contractor.Nationality,
-                contractor.BirthDate,
-                contractor.DocumentType,
-                contractor.PassportSerialNumber,
-                contractor.PassportIssuedBy,
-                contractor.PassportIssueDate,
-                contractor.PhoneNumber,
-                contractor.ProductType,
-                contractor.IsArchived,
-                contractor.SortOrder,
-                contractor.CreatedAt,
-                contractor.Note,
-                Photos = photosList,
-                Passes = passesList
-            };
-
-            return response;
         }
 
         public async Task<string?> GetLastNonDocumentPhotoAsync(int contractorId)

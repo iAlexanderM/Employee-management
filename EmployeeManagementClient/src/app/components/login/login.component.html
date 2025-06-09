@@ -1,36 +1,45 @@
-<div class="box">
-	<div class="box-form">
-		<div class="box-login">
-			<h2>Вход</h2>
-			<!-- Отображение сообщения об ошибке -->
+<!-- login.component.html -->
+<div class="login-container">
+	<mat-card class="login-card">
+		<mat-card-header>
+			<mat-card-title>Вход в систему</mat-card-title>
+		</mat-card-header>
+
+		<mat-card-content>
 			<div *ngIf="errorMessage" class="error-message">
-				<p>{{ errorMessage }}</p>
+				<mat-icon>error</mat-icon>
+				<span>{{ errorMessage }}</span>
 			</div>
-			<form [formGroup]="loginForm" (ngSubmit)="login()">
-				<div class="form-group">
-					<label for="username">Логин</label>
-					<input type="text" id="username" formControlName="username" placeholder="Введите ваш логин"
-						[ngClass]="{'is-invalid': loginForm.get('username')?.invalid && loginForm.get('username')?.touched}"
-						required />
-					<!-- Сообщение об ошибке для поля логина -->
-					<div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
-						class="invalid-feedback">
-						Логин обязателен.
-					</div>
-				</div>
-				<div class="form-group">
-					<label for="password">Пароль</label>
-					<input type="password" id="password" formControlName="password" placeholder="Введите ваш пароль"
-						[ngClass]="{'is-invalid': loginForm.get('password')?.invalid && loginForm.get('password')?.touched}"
-						required />
-					<!-- Сообщение об ошибке для поля пароля -->
-					<div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-						class="invalid-feedback">
-						Пароль обязателен.
-					</div>
-				</div>
-				<button type="submit" class="b-cta" [disabled]="loginForm.invalid">Войти</button>
+
+			<form [formGroup]="loginForm" (ngSubmit)="login()" class="login-form">
+				<mat-form-field appearance="outline" class="full-width">
+					<mat-label>Логин</mat-label>
+					<input matInput type="text" formControlName="username" placeholder="Введите ваш логин"
+						autocomplete="username">
+					<mat-error *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
+						{{ getErrorMessage('username') }}
+					</mat-error>
+				</mat-form-field>
+
+				<mat-form-field appearance="outline" class="full-width">
+					<mat-label>Пароль</mat-label>
+					<input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password"
+						placeholder="Введите ваш пароль" autocomplete="current-password">
+					<button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword"
+						[attr.aria-label]="'Hide password'" [attr.aria-pressed]="hidePassword">
+						<i class="material-icons" *ngIf="hidePassword">visibility_off</i>
+						<i class="material-icons" *ngIf="!hidePassword">visibility</i>
+					</button>
+					<mat-error *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+						{{ getErrorMessage('password') }}
+					</mat-error>
+				</mat-form-field>
+
+				<button mat-raised-button color="primary" type="submit" class="full-width login-button"
+					[disabled]="loginForm.invalid">
+					Войти
+				</button>
 			</form>
-		</div>
-	</div>
+		</mat-card-content>
+	</mat-card>
 </div>

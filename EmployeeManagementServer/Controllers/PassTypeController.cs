@@ -22,7 +22,6 @@ namespace EmployeeManagementServer.Controllers
             _context = context;
         }
 
-        // Создать тип пропуска
         [HttpPost]
         public async Task<IActionResult> CreatePassType([FromBody] PassTypeDto passTypeDto)
         {
@@ -51,7 +50,6 @@ namespace EmployeeManagementServer.Controllers
             return CreatedAtAction(nameof(GetPassTypeById), new { id = passType.Id }, passType);
         }
 
-        // Получить тип пропуска по ID
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPassTypeById(int id)
         {
@@ -62,7 +60,6 @@ namespace EmployeeManagementServer.Controllers
             return Ok(passType);
         }
 
-        // Получить типы пропусков по группе пропусков
         [HttpGet]
         public async Task<IActionResult> GetPassTypesByGroupId([FromQuery] int groupId)
         {
@@ -74,7 +71,6 @@ namespace EmployeeManagementServer.Controllers
             return Ok(passTypes);
         }
 
-        // Обновить тип пропуска
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePassType(int id, [FromBody] PassTypeDto passTypeDto)
         {
@@ -93,7 +89,6 @@ namespace EmployeeManagementServer.Controllers
             passType.Color = passTypeDto.Color;
             passType.IsArchived = passTypeDto.IsArchived;
 
-            // Обновление PassGroupId
             if (passType.PassGroupId != passTypeDto.PassGroupId)
             {
                 var passGroup = await _context.PassGroups.FindAsync(passTypeDto.PassGroupId);
@@ -109,7 +104,6 @@ namespace EmployeeManagementServer.Controllers
             return NoContent();
         }
 
-        // Удалить тип пропуска
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePassType(int id)
         {
@@ -123,7 +117,6 @@ namespace EmployeeManagementServer.Controllers
             return NoContent();
         }
 
-        // Поиск типов пропусков по ID и названию
         [HttpGet("search")]
         public async Task<IActionResult> SearchPassTypes([FromQuery] int? id, [FromQuery] string? name)
         {

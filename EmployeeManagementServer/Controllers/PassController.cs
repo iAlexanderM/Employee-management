@@ -9,6 +9,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Security.Claims;
 using EmployeeManagementServer.Models.DTOs;
+using AutoMapper;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace EmployeeManagementServer.Controllers
 {
@@ -19,16 +21,15 @@ namespace EmployeeManagementServer.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<PassController> _logger;
+        private readonly IMapper _mapper;
 
-        public PassController(ApplicationDbContext context, ILogger<PassController> logger)
+        public PassController(ApplicationDbContext context, ILogger<PassController> logger, IMapper mapper)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        /// <summary>
-        /// Получить все пропуска с полной информацией.
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetAllPasses()
         {
@@ -38,15 +39,13 @@ namespace EmployeeManagementServer.Controllers
                 .Include(p => p.Contractor)
                 .Include(p => p.Store)
                 .Include(p => p.PassTransaction)
+                .Include(p => p.ClosedByUser)
                 .ToListAsync();
 
             _logger.LogInformation("Возвращено {Count} пропусков.", passes.Count);
             return Ok(passes);
         }
 
-        /// <summary>
-        /// Получить пропуск по его ID.
-        /// </summary>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPassById(int id)
         {
@@ -56,6 +55,7 @@ namespace EmployeeManagementServer.Controllers
                 .Include(p => p.Contractor)
                 .Include(p => p.Store)
                 .Include(p => p.PassTransaction)
+                .Include(p => p.ClosedByUser)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (pass == null)
@@ -67,9 +67,6 @@ namespace EmployeeManagementServer.Controllers
             return Ok(pass);
         }
 
-        /// <summary>
-        /// Получить выданные пропуска по ID транзакции.
-        /// </summary>
         [HttpGet("by-transaction-id/{transactionId}")]
         public async Task<IActionResult> GetPassesByTransactionId(int transactionId)
         {
@@ -81,6 +78,7 @@ namespace EmployeeManagementServer.Controllers
                     .ThenInclude(c => c.Photos)
                 .Include(p => p.Store)
                 .Include(p => p.PassTransaction)
+                .Include(p => p.ClosedByUser)
                 .Where(p => p.PassTransactionId == transactionId && p.PrintStatus == "Printed")
                 .ToListAsync();
 
@@ -94,9 +92,6 @@ namespace EmployeeManagementServer.Controllers
             return Ok(passes);
         }
 
-        /// <summary>
-        /// Получить пропуска в очереди на печать по ID транзакции.
-        /// </summary>
         [HttpGet("by-transaction-id/{transactionId}/pending")]
         public async Task<IActionResult> GetPendingPassesByTransactionId(int transactionId)
         {
@@ -121,9 +116,6 @@ namespace EmployeeManagementServer.Controllers
             return Ok(passes);
         }
 
-        /// <summary>
-        /// Получить пропуска в очереди на печать с пагинацией и фильтром по contractorId.
-        /// </summary>
         [HttpGet("print-queue")]
         public async Task<IActionResult> GetPrintQueue(
             [FromQuery] int page = 1,
@@ -163,7 +155,7 @@ namespace EmployeeManagementServer.Controllers
                     transactionId = pt.Id,
                     manager = pt.User != null ? pt.User.UserName : "Admin",
                     queueNumber = pt.Token,
-                    serviceType = "Пропуск", // Пока оставляем фиксированное значение, можно расширить позже
+                    serviceType = "Пропуск",
                     passCount = pt.Passes.Count(p => p.PrintStatus == "PendingPrint"),
                     passTypes = pt.Passes
                         .Where(p => p.PrintStatus == "PendingPrint")
@@ -180,9 +172,6 @@ namespace EmployeeManagementServer.Controllers
             return Ok(new { items, total });
         }
 
-        /// <summary>
-        /// Получить выданные пропуска с пагинацией и фильтром по contractorId.
-        /// </summary>
         [HttpGet("issued")]
         public async Task<IActionResult> GetIssuedPasses(
             [FromQuery] int page = 1,
@@ -220,7 +209,7 @@ namespace EmployeeManagementServer.Controllers
                 transactionId = pt.Id,
                 manager = pt.User != null ? pt.User.UserName : "Admin",
                 queueNumber = pt.Token,
-                serviceType = GetServiceType(pt.TokenType), // Используем вспомогательный метод
+                serviceType = GetServiceType(pt.TokenType), 
                 passCount = pt.Passes.Count(p => p.PrintStatus == "Printed"),
                 passTypes = pt.Passes
                     .Where(p => p.PrintStatus == "Printed")
@@ -236,9 +225,6 @@ namespace EmployeeManagementServer.Controllers
             return Ok(new { items, total });
         }
 
-        /// <summary>
-        /// Выдать все пропуска в очереди для указанной транзакции по её ID.
-        /// </summary>
         [HttpPost("issue-by-transaction-id/{transactionId}")]
         public async Task<IActionResult> IssuePassesByTransactionId(int transactionId)
         {
@@ -266,9 +252,6 @@ namespace EmployeeManagementServer.Controllers
             return NoContent();
         }
 
-        /// <summary>
-        /// Выдать пропуск по его ID.
-        /// </summary>
         [HttpPost("{id}/issue")]
         public async Task<IActionResult> IssuePass(int id)
         {
@@ -295,13 +278,10 @@ namespace EmployeeManagementServer.Controllers
             return NoContent();
         }
 
-        /// <summary>
-        /// Закрыть пропуск по его ID с указанием причины.
-        /// </summary>
         [HttpPost("{id}/close")]
         public async Task<IActionResult> ClosePass(int id, [FromBody] ClosePassDto dto)
         {
-            _logger.LogInformation("Получен запрос на закрытие пропуска с ID {Id}, ClosedBy: {ClosedBy}", id, dto.ClosedBy);
+            _logger.LogInformation("Получен запрос на закрытие пропуска с ID {Id}, CloseReason: {CloseReason}", id, dto.CloseReason);
 
             if (!ModelState.IsValid)
             {
@@ -334,12 +314,12 @@ namespace EmployeeManagementServer.Controllers
             pass.IsClosed = true;
             pass.CloseReason = dto.CloseReason;
             pass.CloseDate = DateTime.UtcNow;
-            pass.ClosedBy = dto.ClosedBy; 
+            pass.ClosedByUserId = userId;
 
             _context.Passes.Update(pass);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Пропуск с ID {Id} успешно закрыт, ClosedBy: {ClosedBy}", id, dto.ClosedBy);
+            _logger.LogInformation("Пропуск с ID {Id} успешно закрыт пользователем с ID: {UserId}", id, userId);
             return NoContent();
         }
 
@@ -355,9 +335,8 @@ namespace EmployeeManagementServer.Controllers
                 return NotFound("Пропуск не найден.");
             }
 
-            // Проверяем, закрыт ли пропуск, прежде чем пытаться его открыть
-            // Используем условие, обратное условию закрытия в ClosePass
             bool isCurrentlyClosed = pass.PassStatus == "Closed" || pass.IsClosed;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (!isCurrentlyClosed)
             {
@@ -365,12 +344,11 @@ namespace EmployeeManagementServer.Controllers
                 return BadRequest("Пропуск уже открыт или не был закрыт.");
             }
 
-            // Открываем пропуск
             pass.PassStatus = "Active";
             pass.IsClosed = false;
             pass.CloseReason = null; 
-            pass.CloseDate = null; 
-            pass.ClosedBy = null; 
+            pass.CloseDate = null;
+            pass.ClosedByUserId = userId;
 
             _context.Passes.Update(pass);
             await _context.SaveChangesAsync();
@@ -379,9 +357,6 @@ namespace EmployeeManagementServer.Controllers
             return NoContent(); 
         }
 
-        /// <summary>
-        /// Вспомогательный метод для определения типа услуги по TokenType.
-        /// </summary>
         private string GetServiceType(string tokenType)
         {
             return tokenType switch

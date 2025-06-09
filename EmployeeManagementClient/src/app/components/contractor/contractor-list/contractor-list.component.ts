@@ -2,13 +2,21 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ContractorWatchService } from '../../../services/contractor-watch.service';
-import { Contractor } from '../../../models/contractor.model';
+import { Contractor, ContractorDto } from '../../../models/contractor.model';
 import { CommonModule } from '@angular/common';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
-import { Subscription } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTableModule } from '@angular/material/table';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
 	selector: 'app-contractor-list',
@@ -21,6 +29,14 @@ import { MatInputModule } from '@angular/material/input';
 		MatButtonModule,
 		MatFormFieldModule,
 		MatInputModule,
+		MatCardModule,
+		MatGridListModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatTooltipModule,
+		MatProgressSpinnerModule,
+		MatSnackBarModule,
 	],
 	providers: [provideNgxMask()],
 	templateUrl: './contractor-list.component.html',
@@ -39,7 +55,7 @@ export class ContractorListComponent implements OnInit, OnDestroy {
 	isExpanded = false;
 	isLoading = false;
 	activeFilters: { [key: string]: any } = {};
-	showArchived = false; // Добавлено для переключения активных/архивных
+	showArchived = false;
 
 	searchForm: FormGroup;
 	private subscriptions: Subscription[] = [];
@@ -47,7 +63,8 @@ export class ContractorListComponent implements OnInit, OnDestroy {
 	constructor(
 		private contractorService: ContractorWatchService,
 		private router: Router,
-		private fb: FormBuilder
+		private fb: FormBuilder,
+		private snackBar: MatSnackBar
 	) {
 		this.searchForm = this.fb.group({
 			Id: ['', Validators.pattern(/^\d+$/)],
@@ -98,6 +115,7 @@ export class ContractorListComponent implements OnInit, OnDestroy {
 				error: (err) => {
 					this.isLoading = false;
 					console.error('[loadContractors - Search] Ошибка:', err);
+					this.snackBar.open('Ошибка при поиске контрагентов', 'Закрыть', { duration: 5000 });
 					this.allContractors = [];
 					this.displayedContractors = [];
 					this.totalItems = 0;
@@ -109,7 +127,7 @@ export class ContractorListComponent implements OnInit, OnDestroy {
 			const params = {
 				Page: this.currentPage,
 				PageSize: this.pageSize,
-				IsArchived: this.showArchived, // Добавлен параметр IsArchived
+				IsArchived: this.showArchived,
 				...this.activeFilters,
 			};
 
@@ -140,6 +158,7 @@ export class ContractorListComponent implements OnInit, OnDestroy {
 				error: (err) => {
 					this.isLoading = false;
 					console.error('[loadContractors - Server] Ошибка:', err);
+					this.snackBar.open('Ошибка при загрузке контрагентов', 'Закрыть', { duration: 5000 });
 					this.resetPagination();
 				},
 			});
@@ -172,9 +191,8 @@ export class ContractorListComponent implements OnInit, OnDestroy {
 		this.goToPage(page as number);
 	}
 
-	onPageSizeChange(event: Event): void {
-		const selectElement = event.target as HTMLSelectElement;
-		const newSize = parseInt(selectElement.value, 10);
+	onPageSizeChange(event: any): void {
+		const newSize = parseInt(event.value, 10);
 		if (!isNaN(newSize)) {
 			this.pageSize = newSize;
 			this.currentPage = 1;
@@ -215,7 +233,7 @@ export class ContractorListComponent implements OnInit, OnDestroy {
 		this.isSearchMode = false;
 		this.currentPage = 1;
 		this.activeFilters = {};
-		this.showArchived = false; // Сбрасываем фильтр архивных
+		this.showArchived = false;
 		this.loadContractors();
 	}
 
@@ -282,6 +300,30 @@ export class ContractorListComponent implements OnInit, OnDestroy {
 
 	navigateToEdit(id: number): void {
 		this.router.navigate(['/contractors/edit', id]);
+	}
+
+	toggleArchiveStatus(contractor: Contractor): void {
+		this.isLoading = true;
+		const action = contractor.isArchived
+			? this.contractorService.unarchiveContractor(contractor.id)
+			: this.contractorService.archiveContractor(contractor.id);
+
+		action.subscribe({
+			next: () => {
+				this.isLoading = false;
+				contractor.isArchived = !contractor.isArchived;
+				const message = contractor.isArchived ? 'Контрагент архивирован' : 'Контрагент разархивирован';
+				this.snackBar.open(message, 'Закрыть', { duration: 3000 });
+				console.log(`[toggleArchiveStatus] ${message}, ID: ${contractor.id}`);
+				this.loadContractors(this.isSearchMode);
+			},
+			error: (err: any) => {
+				this.isLoading = false;
+				const errorMessage = err.message || 'Произошла ошибка';
+				this.snackBar.open(`Ошибка: ${errorMessage}`, 'Закрыть', { duration: 5000 });
+				console.error('[toggleArchiveStatus] Ошибка:', err);
+			},
+		});
 	}
 
 	private resetPagination(): void {

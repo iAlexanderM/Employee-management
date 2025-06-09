@@ -11,7 +11,6 @@
         public bool? ShowClosed { get; set; }
         public string? Note { get; set; }
         public bool? IsArchived { get; set; } 
-
         public void Normalize()
         {
             Building = NormalizeString(Building);
@@ -19,7 +18,6 @@
             Line = NormalizeString(Line);
             StoreNumber = NormalizeString(StoreNumber);
         }
-
         private string? NormalizeString(string? input)
         {
             return string.IsNullOrWhiteSpace(input) ? null : input.Trim();

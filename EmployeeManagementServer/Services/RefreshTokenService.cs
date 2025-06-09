@@ -24,7 +24,6 @@ namespace EmployeeManagementServer.Services
             var refreshToken = await _context.RefreshTokens
                 .FirstOrDefaultAsync(rt => rt.Token == token && !rt.IsRevoked);
 
-            // Обновляем LastActive, если токен найден
             if (refreshToken != null)
             {
                 refreshToken.LastActive = DateTime.UtcNow;

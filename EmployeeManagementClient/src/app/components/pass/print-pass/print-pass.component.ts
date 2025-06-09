@@ -2,11 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PassService } from '../../../services/pass.service';
 import { ContractorWatchService } from '../../../services/contractor-watch.service';
-import { Pass } from '../../../models/pass.model';
-import { Contractor } from '../../../models/contractor.model';
+import { Pass } from '../../../models/pass.model'; // Import Pass directly
+import { Contractor, ContractorDto } from '../../../models/contractor.model';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser'; // Correct import
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -14,7 +14,7 @@ import { firstValueFrom } from 'rxjs';
 	standalone: true,
 	imports: [CommonModule, HttpClientModule],
 	templateUrl: './print-pass.component.html',
-	styleUrls: ['./print-pass.component.css']
+	styleUrls: ['./print-pass.component.css'],
 })
 export class PrintPassComponent implements OnInit {
 	passes: Pass[] = [];
@@ -27,7 +27,7 @@ export class PrintPassComponent implements OnInit {
 		private passService: PassService,
 		private contractorService: ContractorWatchService,
 		private router: Router,
-		private sanitizer: DomSanitizer
+		private sanitizer: DomSanitizer // Properly injected
 	) { }
 
 	ngOnInit(): void {
@@ -41,48 +41,83 @@ export class PrintPassComponent implements OnInit {
 		fetchMethod.subscribe({
 			next: (data: Pass[]) => {
 				this.passes = data;
-				console.log('Загруженные пропуска:', this.passes); // Отладка
+				console.debug('Loaded passes:', this.passes);
 				this.loadContractorData();
 			},
 			error: (error: any) => {
-				console.error('Ошибка при загрузке пропусков:', error);
+				console.error('Error loading passes:', error.message || error);
 				this.router.navigate(this.isPendingPrint ? ['/passes/print-queue'] : ['/passes/issued']);
-			}
+			},
 		});
 	}
 
+	private normalizeContractor(data: ContractorDto): Contractor {
+		const activePasses = data.activePasses || [];
+		const closedPasses = data.closedPasses || [];
+		const passes = data.passes || []; // Use provided passes
+		const photos = Array.isArray(data.photos) ? data.photos : [];
+		const documentPhotos = Array.isArray(data.documentPhotos) ? data.documentPhotos : [];
+
+		return {
+			id: data.id,
+			firstName: data.firstName || '',
+			lastName: data.lastName || '',
+			middleName: data.middleName || '',
+			birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
+			documentType: data.documentType || '',
+			passportSerialNumber: data.passportSerialNumber || '',
+			passportIssuedBy: data.passportIssuedBy || '',
+			citizenship: data.citizenship || '',
+			nationality: data.nationality || '',
+			passportIssueDate: data.passportIssueDate ? new Date(data.passportIssueDate) : undefined,
+			productType: data.productType || '',
+			phoneNumber: data.phoneNumber || '',
+			createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+			sortOrder: data.sortOrder || 0,
+			photos,
+			documentPhotos,
+			isArchived: data.isArchived || false,
+			passes,
+			activePasses,
+			closedPasses,
+			note: data.note,
+		};
+	}
+
 	async loadContractorData(): Promise<void> {
-		const contractorIds = [...new Set(this.passes.map(p => p.contractorId))];
+		const contractorIds = [...new Set(this.passes.map((p) => p.contractorId))];
 		try {
 			const contractors = await Promise.all(
-				contractorIds.map(id =>
-					firstValueFrom(this.contractorService.getContractor(id.toString())) // Changed from getContractorById to getContractor
+				contractorIds.map((id) =>
+					firstValueFrom(this.contractorService.getContractor(id.toString()))
 				)
 			);
 			const contractorMap = new Map<number, Contractor>();
-			contractors.forEach(c => {
-				if (c && 'id' in c) { // Check if c is a valid Contractor with an id
-					contractorMap.set(c.id, c as Contractor);
+			contractors.forEach((c) => {
+				if (c && 'id' in c) {
+					contractorMap.set(c.id, this.normalizeContractor(c));
 				}
 			});
-			console.log('Загруженные контрагенты:', contractorMap); // Отладка
+			console.debug('Loaded contractors:', contractorMap);
 			this.preparePrintContents(contractorMap);
 		} catch (error) {
-			console.error('Ошибка при загрузке данных контрагентов:', error);
+			console.error('Error loading contractor data:', error);
 			this.preparePrintContents(new Map());
 		}
 	}
 
 	getFirstPhoto(contractor: Contractor | null): string {
 		if (contractor?.photos?.length) {
-			const mainPhoto = contractor.photos.find(photo => !photo.isDocumentPhoto) || contractor.photos[0];
+			const mainPhoto = contractor.photos.find((photo) => !photo.isDocumentPhoto) || contractor.photos[0];
 			if (mainPhoto?.filePath) {
-				const photoUrl = `${this.apiBaseUrl}/${mainPhoto.filePath.replace(/\\/g, '/').replace(/^.*wwwroot\//, '')}`;
-				console.log('URL фото:', photoUrl); // Отладка
+				const photoUrl = `${this.apiBaseUrl}/${mainPhoto.filePath
+					.replace(/\\/g, '/')
+					.replace(/^.*wwwroot\//, '')}`;
+				console.debug('Photo URL:', photoUrl);
 				return photoUrl;
 			}
 		}
-		console.warn('Фото не найдено, используется заглушка:', contractor); // Отладка
+		console.warn('No photo found, using placeholder:', contractor);
 		return '/assets/images/default-photo.jpg';
 	}
 
@@ -95,22 +130,23 @@ export class PrintPassComponent implements OnInit {
 				.replace('[+PLACE_TOCHKA+]', store.storeNumber || 'N/A')
 				.replace('[+PLACE_ZONA+]', '');
 		}
-		return 'Торговая точка неизвестно';
+		return 'Unknown store';
 	}
 
 	preparePrintContents(contractorMap: Map<number, Contractor>): void {
-		this.printContents = this.passes.map(pass => {
+		this.printContents = this.passes.map((pass) => {
 			const contractor = contractorMap.get(pass.contractorId) || null;
 			if (!pass.passType?.printTemplate) {
-				console.error('Шаблон пропуска отсутствует:', pass);
-				return this.sanitizer.bypassSecurityTrustHtml('<p>Ошибка: шаблон не найден</p>');
+				console.error('Pass template missing:', pass);
+				return this.sanitizer.bypassSecurityTrustHtml('<p>Error: Template not found</p>');
 			}
 
 			const startDate = pass.startDate ? new Date(pass.startDate) : null;
 			const endDate = pass.endDate ? new Date(pass.endDate) : null;
 			const passNumber = `${pass.storeId}-${pass.contractorId}`;
 			const firstPhoto = this.getFirstPhoto(contractor);
-			const storeFullName = pass.storeFullName || this.formatStoreFullName(pass.store) || `Торговая точка ${pass.storeId}`;
+			const storeFullName =
+				pass.storeFullName || this.formatStoreFullName(pass.store) || `Store ${pass.storeId}`;
 
 			const rawContents = pass.passType.printTemplate
 				.replace('[+PASSNUMBER+]', passNumber)
@@ -133,7 +169,7 @@ export class PrintPassComponent implements OnInit {
 				.replace('[+Z_COLOR_EX+]', '')
 				.replace('[+Z_COLOR_EX_STYLE+]', '');
 
-			console.log('Сгенерированный HTML для пропуска:', rawContents); // Отладка
+			console.debug('Generated HTML for pass:', rawContents);
 			return this.sanitizer.bypassSecurityTrustHtml(rawContents);
 		});
 	}
@@ -145,12 +181,11 @@ export class PrintPassComponent implements OnInit {
 			printWindow.document.write(`
                 <html>
                   <head>
-                    <title>Печать пропуска #${this.passes[index].uniquePassId}</title>
+                    <title>Print Pass #${this.passes[index].uniquePassId}</title>
                     <style>
                       @page { margin: 0; }
                       body { margin: 0; padding: 0; }
                       img { max-width: 100%; height: auto; display: block; }
-                      /* Включаем фоновые изображения */
                       @media print {
                         body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                       }
@@ -165,38 +200,37 @@ export class PrintPassComponent implements OnInit {
             `);
 			printWindow.document.close();
 
-			// Обработка после печати
 			printWindow.onafterprint = () => {
 				if (this.isPendingPrint && this.passes[index].status !== 'Issued') {
 					const passId = this.passes[index].id;
 					this.passService.issuePass(passId).subscribe({
 						next: () => {
-							console.log(`Пропуск ${this.passes[index].uniquePassId} выдан.`);
+							console.log(`Pass ${this.passes[index].uniquePassId} issued.`);
 							this.passes[index].status = 'Issued';
 							printWindow.close();
 							this.checkAllIssued();
 						},
 						error: (error: any) => {
-							console.error('Ошибка при выдаче пропуска:', error);
+							console.error('Error issuing pass:', error);
 							printWindow.close();
-						}
+						},
 					});
 				} else {
 					printWindow.close();
 				}
 			};
 		} else {
-			console.error('Не удалось открыть окно печати.');
+			console.error('Failed to open print window.');
 		}
 	}
 
 	checkAllIssued(): void {
-		const allIssued = this.passes.every(pass => pass.status === 'Issued');
+		const allIssued = this.passes.every((pass) => pass.status === 'Issued');
 		if (allIssued) {
-			console.log('Все пропуска в транзакции выданы, перенаправляем обратно.');
+			console.log('All passes in transaction issued, redirecting.');
 			const contractorId = this.route.snapshot.queryParams['contractorId'];
 			this.router.navigate(this.isPendingPrint ? ['/passes/print-queue'] : ['/passes/issued'], {
-				queryParams: { contractorId: contractorId || undefined }
+				queryParams: { contractorId: contractorId || undefined },
 			});
 		}
 	}
@@ -204,7 +238,7 @@ export class PrintPassComponent implements OnInit {
 	goBack(): void {
 		const contractorId = this.route.snapshot.queryParams['contractorId'];
 		this.router.navigate(this.isPendingPrint ? ['/passes/print-queue'] : ['/passes/issued'], {
-			queryParams: { contractorId: contractorId || undefined }
+			queryParams: { contractorId: contractorId || undefined },
 		});
 	}
 

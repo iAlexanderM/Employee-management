@@ -258,7 +258,6 @@ namespace EmployeeManagementServer.Services
                     }).ToList()
             }).ToList();
 
-            _logger.LogInformation("Поиск завершён. Найдено магазинов с пропусками: {Count}", result.Count);
             if (result.Any())
             {
                 _logger.LogDebug("Пример результата: {@FirstResult}", result.First());

@@ -18,6 +18,7 @@
         public int? ContractorId { get; set; }
         public bool IsClosed { get; set; }
         public string? CloseReason { get; set; }
+        public string? ClosedBy { get; set; }
         public string PassStatus { get; set; } = "Active";
         public string PrintStatus { get; set; } = "PendingPrint";
         public string? ContractorPhotoPath { get; set; }
@@ -26,5 +27,6 @@
         public string? Floor { get; set; }
         public string? Line { get; set; }
         public string? StoreNumber { get; set; }
+        public int? StoreId { get; set; }
     }
 }
