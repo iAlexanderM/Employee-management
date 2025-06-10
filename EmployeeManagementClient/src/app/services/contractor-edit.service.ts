@@ -1,18 +1,20 @@
+// src/app/services/contractor-edit.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Contractor, Photo } from '../models/contractor.model';
 
 @Injectable({
 	providedIn: 'root'
 })
 export class ContractorEditService {
+	private apiUrl = 'http://localhost:8080/api/contractors/edit';
+
 	constructor(private http: HttpClient) { }
 
 	updateContractor(id: string, contractorData: any): Observable<any> {
 		const formData = this.buildFormData(contractorData);
-
-		console.log('Данные для отправки на сервер в сервисе:', contractorData);
-		return this.http.put(`/api/contractors/edit/${id}`, formData);
+		return this.http.put(`${this.apiUrl}/${id}`, formData);
 	}
 
 	private buildFormData(contractorData: any): FormData {
@@ -33,12 +35,17 @@ export class ContractorEditService {
 						formData.append('PhotosToRemove', photoId.toString());
 					});
 				} else if (contractorData[key] !== null && contractorData[key] !== undefined) {
-					// Обрабатываем другие поля, такие как sortOrder и createdAt
-					formData.append(key, contractorData[key].toString());
+					if (contractorData[key] instanceof Date) {
+						formData.append(key, contractorData[key].toISOString());
+					} else if (typeof contractorData[key] === 'boolean') {
+						formData.append(key, contractorData[key].toString());
+					}
+					else {
+						formData.append(key, contractorData[key]);
+					}
 				}
 			}
 		}
-
 		return formData;
 	}
 }

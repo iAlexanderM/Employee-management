@@ -1,303 +1,330 @@
 <div class="contractor-details container">
-	<!-- Error Message -->
-	<div *ngIf="errorMessage" class="alert alert-danger mt-4" role="alert">
+	<mat-card *ngIf="errorMessage" class="error-message" role="alert">
+		<mat-icon>error_outline</mat-icon>
 		{{ errorMessage }}
-	</div>
+	</mat-card>
 
-	<!-- Основной контент -->
 	<div class="content-grid" *ngIf="contractor">
-		<!-- Колонка 1: Фотографии -->
 		<div class="column-main">
-			<div class="action-buttons d-flex gap-2 mb-4">
-				<a class="action-btn action-btn-primary flex-grow-1" [routerLink]="['/contractors/edit', contractor.id]"
-					aria-label="Редактировать контрагента">
-					Редактировать
-				</a>
-				<a class="action-btn action-btn-secondary flex-grow-1" [routerLink]="['/passes/search']"
-					[queryParams]="{ contractorId: contractor.id }" aria-label="Посмотреть пропуска контрагента">
-					Пропуска
-				</a>
-				<button *ngIf="!contractor.isArchived" class="action-btn action-btn-danger flex-grow-1"
-					(click)="archiveContractor()" aria-label="Архивировать контрагента">
-					Архивировать
-				</button>
-				<button *ngIf="contractor.isArchived" class="action-btn action-btn-success flex-grow-1"
-					(click)="unarchiveContractor()" aria-label="Разархивировать контрагента">
-					Разархивировать
-				</button>
-			</div>
-			<div class="section-card">
-				<h2 class="section-title">ID: {{ contractor.id }}</h2>
-				<div class="photo-section d-flex gap-4">
-					<!-- Основное фото (слева) -->
-					<div class="photo-item">
-						<a *ngIf="getFirstPhoto()" [href]="getFirstPhoto()!" target="_blank"
-							aria-label="Открыть фото контрагента">
-							<img [src]="getFirstPhoto()!" alt="Фото контрагента" class="img-cont" />
-						</a>
-						<p *ngIf="!getFirstPhoto()" class="text-muted">Фото отсутствует</p>
+			<mat-card class="section-card">
+				<mat-card-title class="section-title">ID: {{ contractor.id }}</mat-card-title>
+				<mat-card-content>
+					<div class="action-buttons">
+						<button mat-tonal-button color="primary" class="action-btn action-btn-primary"
+							[routerLink]="['/contractors/edit', contractor.id]" aria-label="Редактировать контрагента">
+							Редактировать
+						</button>
+						<button mat-tonal-button color="accent" class="action-btn action-btn-secondary"
+							(click)="watchAllPasses()" aria-label="Посмотреть пропуска контрагента">
+							Пропуска
+						</button>
+						<button mat-tonal-button color="warn" class="action-btn action-btn-danger"
+							*ngIf="!contractor.isArchived" (click)="archiveContractor()"
+							aria-label="Архивировать контрагента">
+							Архивировать
+						</button>
+						<button mat-tonal-button color="primary" class="action-btn action-btn-success"
+							*ngIf="contractor.isArchived" (click)="unarchiveContractor()"
+							aria-label="Разархивировать контрагента">
+							Разархивировать
+						</button>
 					</div>
-					<!-- Фото документов (справа) -->
-					<div class="photo-item" *ngIf="documentPhotoUrls.length">
-						<div class="photo-gallery">
-							<a *ngIf="visibleDocumentPhotoUrls.length"
-								[href]="visibleDocumentPhotoUrls[visibleDocumentPhotoUrls.length - 1]" target="_blank"
-								(click)="openGallery(documentPhotoUrls.length === 1 ? 0 : documentPhotoUrls.length - 3); $event.preventDefault()"
-								aria-label="Открыть фото документа">
-								<img [src]="visibleDocumentPhotoUrls[visibleDocumentPhotoUrls.length - 1]"
-									alt="Фото документа" class="document-photo-large" />
+					<div class="photo-section">
+						<div class="photo-item">
+							<a *ngIf="getFirstPhoto()" [href]="getFirstPhoto()!" target="_blank"
+								aria-label="Открыть фото контрагента">
+								<img [src]="getFirstPhoto()!" alt="Фото контрагента" class="img-cont" />
 							</a>
-							<div class="photo-gallery-bottom d-flex gap-2 mt-2"
-								*ngIf="visibleDocumentPhotoUrls.length > 0 || documentPhotoUrls.length > 0">
-								<a *ngIf="visibleDocumentPhotoUrls.length > 1" [href]="visibleDocumentPhotoUrls[0]"
-									target="_blank"
-									(click)="openGallery(documentPhotoUrls.length === 1 ? 0 : documentPhotoUrls.length - 2); $event.preventDefault()"
-									aria-label="Открыть второе фото документа">
-									<img [src]="visibleDocumentPhotoUrls[0]" alt="Фото документа"
-										class="document-photo" />
-								</a>
-								<a *ngIf="visibleDocumentPhotoUrls.length > 2" [href]="visibleDocumentPhotoUrls[1]"
-									target="_blank"
+							<p *ngIf="!getFirstPhoto()" class="text-muted">Фото отсутствует</p>
+						</div>
+						<div class="photo-item" *ngIf="documentPhotoUrls.length">
+							<div class="photo-gallery">
+								<a *ngIf="documentPhotoUrls.length"
+									[href]="documentPhotoUrls[documentPhotoUrls.length - 1]" target="_blank"
 									(click)="openGallery(documentPhotoUrls.length - 1); $event.preventDefault()"
-									aria-label="Открыть третье фото документа">
-									<img [src]="visibleDocumentPhotoUrls[1]" alt="Фото документа"
-										class="document-photo" />
+									aria-label="Открыть последнее фото документа">
+									<img [src]="documentPhotoUrls[documentPhotoUrls.length - 1]" alt="Фото документа"
+										class="document-photo-large" />
 								</a>
-								<button class="action-btn action-btn-primary gallery-btn" (click)="openGallery(0)"
-									*ngIf="documentPhotoUrls.length > 0" aria-label="Открыть галерею документов">
-									+
-								</button>
+								<div class="photo-gallery-bottom">
+									<a *ngIf="documentPhotoUrls.length > 1"
+										[href]="documentPhotoUrls[documentPhotoUrls.length - 2]" target="_blank"
+										(click)="openGallery(documentPhotoUrls.length - 2); $event.preventDefault()"
+										aria-label="Открыть предпоследнее фото документа">
+										<img [src]="documentPhotoUrls[documentPhotoUrls.length - 2]"
+											alt="Фото документа" class="document-photo" />
+									</a>
+									<a *ngIf="documentPhotoUrls.length > 2"
+										[href]="documentPhotoUrls[documentPhotoUrls.length - 3]" target="_blank"
+										(click)="openGallery(documentPhotoUrls.length - 3); $event.preventDefault()"
+										aria-label="Открыть третье с конца фото документа">
+										<img [src]="documentPhotoUrls[documentPhotoUrls.length - 3]"
+											alt="Фото документа" class="document-photo" />
+									</a>
+									<button mat-tonal-button color="primary" class="action-btn gallery-btn"
+										(click)="openGallery(0)" *ngIf="documentPhotoUrls.length > 0"
+										aria-label="Открыть галерею документов"
+										[ngClass]="{'gallery-btn-large': documentPhotoUrls.length <= 2}">
+										+
+									</button>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			</div>
+				</mat-card-content>
+			</mat-card>
 		</div>
 
-		<!-- Колонка 2: Личные данные, Дополнительная информация -->
 		<div class="column-personal">
-			<div class="section-card mb-4">
-				<h2 class="section-title">Личные данные</h2>
-				<dl class="info-list">
-					<div class="info-item">
-						<dt class="info-label">Фамилия</dt>
-						<dd class="info-value">{{ contractor.lastName || 'Не указано' }}</dd>
-					</div>
-					<div class="info-item">
-						<dt class="info-label">Имя</dt>
-						<dd class="info-value">{{ contractor.firstName || 'Не указано' }}</dd>
-					</div>
-					<div class="info-item">
-						<dt class="info-label">Отчество</dt>
-						<dd class="info-value">{{ contractor.middleName || 'Не указано' }}</dd>
-					</div>
-					<div class="info-item">
-						<dt class="info-label">Телефон</dt>
-						<dd class="info-value">{{ formatPhoneNumber(contractor.phoneNumber) }}</dd>
-					</div>
-					<div class="info-item">
-						<dt class="info-label">Гражданство</dt>
-						<dd class="info-value">{{ contractor.citizenship || 'Не указано' }}</dd>
-					</div>
-					<div class="info-item">
-						<dt class="info-label">Национальность</dt>
-						<dd class="info-value">{{ contractor.nationality || 'Не указано' }}</dd>
-					</div>
-					<div class="info-item">
-						<dt class="info-label">Дата рождения</dt>
-						<dd class="info-value">
-							{{ contractor.birthDate ? (contractor.birthDate | date: 'dd.MM.yyyy') : 'Не указано' }}
-						</dd>
-					</div>
-				</dl>
-			</div>
-			<div class="section-card">
-				<h2 class="section-title">Дополнительная информация</h2>
-				<dl class="info-list">
-					<div class="info-item">
-						<dt class="info-label">Тип продукции</dt>
-						<dd class="info-value">{{ contractor.productType || 'Не указано' }}</dd>
-					</div>
-					<div class="info-item">
-						<dt class="info-label">Дата создания</dt>
-						<dd class="info-value">{{ contractor.createdAt | date: 'dd.MM.yyyy HH:mm' }}</dd>
-					</div>
-				</dl>
-			</div>
+			<mat-card class="section-card">
+				<mat-card-title class="section-title">Личные данные</mat-card-title>
+				<mat-card-content>
+					<dl class="info-list">
+						<div class="info-item">
+							<dt class="info-label">Фамилия</dt>
+							<dd class="info-value">{{ contractor.lastName || 'Не указано' }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Имя</dt>
+							<dd class="info-value">{{ contractor.firstName || 'Не указано' }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Отчество</dt>
+							<dd class="info-value">{{ contractor.middleName || 'Не указано' }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Телефон</dt>
+							<dd class="info-value">{{ formatPhoneNumber(contractor.phoneNumber) }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Гражданство</dt>
+							<dd class="info-value">{{ contractor.citizenship || 'Не указано' }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Национальность</dt>
+							<dd class="info-value">{{ contractor.nationality || 'Не указано' }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Дата рождения</dt>
+							<dd class="info-value">{{ contractor.birthDate ? (contractor.birthDate | date: 'dd.MM.yyyy')
+								: 'Не указано' }}</dd>
+						</div>
+					</dl>
+				</mat-card-content>
+			</mat-card>
+			<mat-card class="section-card">
+				<mat-card-title class="section-title">Дополнительная информация</mat-card-title>
+				<mat-card-content>
+					<dl class="info-list">
+						<div class="info-item">
+							<dt class="info-label">Тип продукции</dt>
+							<dd class="info-value">{{ contractor.productType || 'Не указано' }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Дата создания</dt>
+							<dd class="info-value">{{ contractor.createdAt | date: 'dd.MM.yyyy HH:mm' }}</dd>
+						</div>
+					</dl>
+				</mat-card-content>
+			</mat-card>
 		</div>
 
-		<!-- Колонка 3: Пометка, Паспортные данные -->
 		<div class="column-secondary">
-			<div class="section-card mb-4">
-				<h2 class="section-title">Пометка</h2>
-				<form [formGroup]="noteForm" (ngSubmit)="saveNote()" class="note-form">
-					<textarea formControlName="note" class="form-control" rows="3" placeholder="Введите пометку"
-						aria-label="Заметка контрагента"></textarea>
-					<div class="d-flex gap-2 mt-2">
-						<button type="submit" class="action-btn action-btn-primary" [disabled]="noteForm.pristine"
-							aria-label="Сохранить заметку">
-							Сохранить
-						</button>
-						<button type="button" class="action-btn action-btn-secondary"
-							(click)="noteForm.reset({ note: contractor.note })" [disabled]="noteForm.pristine"
-							aria-label="Отменить изменения заметки">
-							Отменить
-						</button>
-					</div>
-					<div class="error-message" *ngIf="noteForm.get('note')?.hasError('maxlength')">
-						Заметка не должна превышать 500 символов
-					</div>
-				</form>
-			</div>
-			<div class="section-card">
-				<h2 class="section-title">Паспортные данные</h2>
-				<dl class="info-list">
-					<div class="info-item">
-						<dt class="info-label">Тип документа</dt>
-						<dd class="info-value">{{ contractor.documentType || 'Не указано' }}</dd>
-					</div>
-					<div class="info-item">
-						<dt class="info-label">Серия и номер</dt>
-						<dd class="info-value">{{ contractor.passportSerialNumber || 'Не указано' }}</dd>
-					</div>
-					<div class="info-item">
-						<dt class="info-label">Кем выдан</dt>
-						<dd class="info-value">{{ contractor.passportIssuedBy || 'Не указано' }}</dd>
-					</div>
-					<div class="info-item">
-						<dt class="info-label">Дата выдачи</dt>
-						<dd class="info-value">
-							{{ contractor.passportIssueDate ? (contractor.passportIssueDate | date: 'dd.MM.yyyy') : 'Не
-							указано' }}
-						</dd>
-					</div>
-				</dl>
-			</div>
+			<mat-card class="section-card">
+				<mat-card-title class="section-title">Паспортные данные</mat-card-title>
+				<mat-card-content>
+					<dl class="info-list">
+						<div class="info-item">
+							<dt class="info-label">Тип документа</dt>
+							<dd class="info-value">{{ contractor.documentType || 'Не указано' }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Серия и номер</dt>
+							<dd class="info-value">{{ contractor.passportSerialNumber || 'Не указано' }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Кем выдан</dt>
+							<dd class="info-value">{{ contractor.passportIssuedBy || 'Не указано' }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Дата выдачи</dt>
+							<dd class="info-value">{{ contractor.passportIssueDate ? (contractor.passportIssueDate |
+								date: 'dd.MM.yyyy') : 'Не указано' }}</dd>
+						</div>
+					</dl>
+				</mat-card-content>
+			</mat-card>
+			<mat-card class="section-card">
+				<mat-card-title class="section-title">Пометка</mat-card-title>
+				<mat-card-content>
+					<form [formGroup]="noteForm" (ngSubmit)="saveNote()" class="note-form">
+						<mat-form-field appearance="outline" class="full-width-expand">
+							<textarea matInput #noteTextarea formControlName="note" maxlength="500"
+								placeholder="Введите пометку" aria-label="Заметка контрагента" cdkTextareaAutosize
+								cdkAutosizeMinRows="3" cdkAutosizeMaxRows="10"></textarea>
+							<mat-error *ngIf="noteForm.get('note')?.hasError('maxlength')">Заметка не должна превышать
+								500 символов</mat-error>
+						</mat-form-field>
+						<div class="action-controls">
+							<button mat-tonal-button color="primary" type="submit" [disabled]="noteForm.pristine"
+								aria-label="Сохранить заметку">
+								Сохранить
+							</button>
+							<button mat-tonal-button color="accent" type="button"
+								(click)="noteForm.reset({ note: contractor.note })" [disabled]="noteForm.pristine"
+								aria-label="Отменить изменения заметки">
+								Отменить
+							</button>
+						</div>
+					</form>
+				</mat-card-content>
+			</mat-card>
 		</div>
 
-		<!-- Колонка 4: Пропуска -->
 		<div class="column-full">
-			<div class="section-card">
-				<h2 class="section-title">Пропуска</h2>
-				<div class="table-wrapper">
-					<table class="data-table" role="grid" aria-label="Таблица пропусков контрагента">
-						<thead>
-							<tr>
-								<th scope="col">Тип пропуска</th>
-								<th scope="col">Торговая точка</th>
-								<th scope="col">Должность</th>
-								<th scope="col">Стоимость</th>
-								<th scope="col">Дата оформления</th>
-								<th scope="col">Дата начала</th>
-								<th scope="col">Дата окончания</th>
-								<th scope="col">Статус</th>
-								<th scope="col">Действия</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr *ngFor="let pass of contractor.passes">
-								<td>{{ getPassTypeName(pass) }}</td>
-								<td>{{ getFullStoreName(pass) }}</td>
-								<td>{{ pass.position || 'Не указана' }}</td>
-								<td>{{ pass.cost ? pass.cost : 'Не указана' }}</td>
-								<td>{{ pass.transactionDate | date: 'dd.MM.yyyy HH:mm' }}</td>
-								<td>{{ pass.startDate | date: 'dd.MM.yyyy' }}</td>
-								<td>{{ pass.endDate | date: 'dd.MM.yyyy' }}</td>
-								<td>
+			<mat-card class="section-card">
+				<mat-card-title class="section-title">Пропуска</mat-card-title>
+				<mat-card-content>
+					<div class="table-wrapper">
+						<table mat-table [dataSource]="contractor.passes" class="data-table" role="grid"
+							aria-label="Таблица пропусков контрагента">
+							<ng-container matColumnDef="passType">
+								<th mat-header-cell *matHeaderCellDef>Тип пропуска</th>
+								<td mat-cell *matCellDef="let pass">{{ getPassTypeName(pass) }}</td>
+							</ng-container>
+							<ng-container matColumnDef="store">
+								<th mat-header-cell *matHeaderCellDef>Торговая точка</th>
+								<td mat-cell *matCellDef="let pass">{{ getFullStoreName(pass) }}</td>
+							</ng-container>
+							<ng-container matColumnDef="position">
+								<th mat-header-cell *matHeaderCellDef>Должность</th>
+								<td mat-cell *matCellDef="let pass">{{ pass.position || 'Не указана' }}</td>
+							</ng-container>
+							<ng-container matColumnDef="cost">
+								<th mat-header-cell *matHeaderCellDef>Стоимость</th>
+								<td mat-cell *matCellDef="let pass">{{ pass.cost ? pass.cost : 'Не указана' }}</td>
+							</ng-container>
+							<ng-container matColumnDef="transactionDate">
+								<th mat-header-cell *matHeaderCellDef>Дата оформления</th>
+								<td mat-cell *matCellDef="let pass">{{ pass.transactionDate | date: 'dd.MM.yyyy
+									HH:mm:ss' }}</td>
+							</ng-container>
+							<ng-container matColumnDef="startDate">
+								<th mat-header-cell *matHeaderCellDef>Дата начала</th>
+								<td mat-cell *matCellDef="let pass">{{ pass.startDate | date: 'dd.MM.yyyy' }}</td>
+							</ng-container>
+							<ng-container matColumnDef="endDate">
+								<th mat-header-cell *matHeaderCellDef>Дата окончания</th>
+								<td mat-cell *matCellDef="let pass">{{ pass.endDate | date: 'dd.MM.yyyy' }}</td>
+							</ng-container>
+							<ng-container matColumnDef="status">
+								<th mat-header-cell *matHeaderCellDef>Статус</th>
+								<td mat-cell *matCellDef="let pass">
 									<span class="status status-active" *ngIf="!pass.isClosed">Активен</span>
 									<span class="status status-closed" *ngIf="pass.isClosed">Закрыт</span>
 									<div class="status-details" *ngIf="pass.isClosed">
-										{{ pass.closeDate ? (pass.closeDate | date: 'dd.MM.yyyy HH:mm') : 'Не указано'
-										}}<br />
+										Дата закрытия: {{ pass.closeDate ? (pass.closeDate | date:'dd.MM.yyyy HH:mm:ss')
+										: 'Не указана' }}<br />
 										Причина: {{ pass.closeReason || 'Не указана' }}<br />
 										Закрыл: {{ getClosedByName(pass.closedBy) }}
 									</div>
 								</td>
-								<td>
-									<button *ngIf="!pass.isClosed" class="action-btn action-btn-danger btn-sm"
+							</ng-container>
+							<ng-container matColumnDef="actions">
+								<th mat-header-cell *matHeaderCellDef>Действия</th>
+								<td mat-cell *matCellDef="let pass">
+									<button mat-icon-button color="action-btn btn-sm" *ngIf="!pass.isClosed"
 										(click)="closePass(pass.id)" aria-label="Закрыть пропуск">
-										Закрыть
+										<mat-icon>delete</mat-icon>
 									</button>
-									<button *ngIf="pass.isClosed && pass.closeReason !== 'Закрыто продлением'"
-										class="action-btn action-btn-success btn-sm" (click)="reopenPass(pass.id)"
-										aria-label="Открыть пропуск">
-										Открыть
+									<button mat-icon-button color="primary" class="action-btn btn-sm"
+										*ngIf="pass.isClosed && pass.closeReason !== 'Закрыто продлением'"
+										(click)="reopenPass(pass.id)" aria-label="Открыть пропуск">
+										<mat-icon>replay</mat-icon>
 									</button>
 								</td>
+							</ng-container>
+							<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+							<tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+							<tr class="mat-row" *matNoDataRow>
+								<td class="mat-cell" colspan="9">Пропуска отсутствуют</td>
 							</tr>
-							<tr *ngIf="!contractor.passes?.length">
-								<td colspan="9" class="text-center text-muted">Пропуска отсутствуют</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-			</div>
+						</table>
+					</div>
+				</mat-card-content>
+			</mat-card>
 		</div>
-	</div>
 
-	<!-- История изменений -->
-	<div class="section-card mt-4" *ngIf="contractor">
-		<button class="action-btn action-btn-primary mb-3" (click)="toggleHistory()"
-			[attr.aria-label]="showHistory ? 'Скрыть историю изменений' : 'Показать историю изменений'">
-			{{ showHistory ? 'Скрыть историю' : 'Показать историю' }}
-		</button>
-		<div *ngIf="showHistory">
-			<h2 class="section-title">История изменений</h2>
-			<div *ngIf="isLoadingHistory" class="text-center">
-				<div class="spinner-border" role="status">
-					<span class="visually-hidden">Загрузка...</span>
-				</div>
-			</div>
-			<table *ngIf="!isLoadingHistory && historyEntries.length > 0" class="data-table" role="grid"
-				aria-label="Таблица истории изменений контрагента">
-				<thead>
-					<tr>
-						<th scope="col">Дата и время</th>
-						<th scope="col">Действие</th>
-						<th scope="col">Пользователь</th>
-						<th scope="col">Подробности</th>
-						<th scope="col">Изменения</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr *ngFor="let entry of historyEntries">
-						<td>{{ entry.timestamp | date: 'dd.MM.yyyy HH:mm:ss' }}</td>
-						<td>{{ formatHistoryAction(entry.action) }}</td>
-						<td>{{ userMap[entry.user] || 'Неизвестно' }}</td>
-						<td>{{ entry.details || 'Нет подробностей' }}</td>
-						<td>{{ formatHistoryChanges(entry.changes) }}</td>
-					</tr>
-				</tbody>
-			</table>
-			<div *ngIf="!isLoadingHistory && historyEntries.length === 0" class="alert alert-info">
-				История изменений не найдена.
-			</div>
-		</div>
-	</div>
+		<div class="history-section">
+			<mat-card class="section-card">
+				<mat-card-content>
+					<button mat-tonal-button color="primary" class="action-btn" (click)="toggleHistory()"
+						[attr.aria-label]="showHistory ? 'Скрыть историю изменений' : 'Показать историю изменений'">
+						{{ showHistory ? 'Скрыть историю' : 'Показать историю' }}
+					</button>
+					<div *ngIf="showHistory">
+						<mat-card-title class="section-title">История изменений</mat-card-title>
+						<mat-spinner *ngIf="isLoadingHistory" diameter="40" aria-label="Загрузка..."></mat-spinner>
+						<table mat-table class="history-table" [dataSource]="historyEntries"
+							*ngIf="!isLoadingHistory && historyEntries.length > 0" role="grid"
+							aria-label="Таблица истории изменений контрагента">
+							<ng-container matColumnDef="timestamp">
+								<th mat-header-cell *matHeaderCellDef>Дата и время</th>
+								<td mat-cell *matCellDef="let entry">{{ entry.timestamp | date:'dd.MM.yyyy HH:mm:ss' }}
+								</td>
+							</ng-container>
+							<ng-container matColumnDef="action">
+								<th mat-header-cell *matHeaderCellDef>Действие</th>
+								<td mat-cell *matCellDef="let entry">{{ formatHistoryAction(entry.action) }}</td>
+							</ng-container>
+							<ng-container matColumnDef="user">
+								<th mat-header-cell *matHeaderCellDef>Пользователь</th>
+								<td mat-cell *matCellDef="let entry">{{ userMap[entry.user] || 'Неизвестно' }}</td>
+							</ng-container>
+							<ng-container matColumnDef="details">
+								<th mat-header-cell *matHeaderCellDef>Подробности</th>
+								<td mat-cell *matCellDef="let entry">{{ entry.details || 'Нет подробностей' }}</td>
+							</ng-container>
+							<ng-container matColumnDef="changes">
+								<th mat-header-cell *matHeaderCellDef>Изменения</th>
+								<td mat-cell *matCellDef="let entry">{{ formatHistoryChanges(entry.changes) }}</td>
+							</ng-container>
+							<tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
+							<tr mat-row *matRowDef="let row; columns: historyColumns;"></tr>
+						</table>
+						<mat-card *ngIf="!isLoadingHistory && historyEntries.length === 0" class="error-message">
+							История изменений не найдена.
+						</mat-card>
+					</div>
+				</mat-card-content>
+			</mat-card>
 
-	<!-- Панорамный просмотр -->
-	<div class="gallery-modal" *ngIf="isGalleryOpen" @modalFade>
-		<div class="gallery-content" (click)="$event.stopPropagation()">
-			<div class="gallery-header d-flex justify-content-between align-items-center mb-2">
-				<span class="gallery-counter">
-					{{ currentGalleryIndex + 1 }} / {{ documentPhotoUrls.length }}
-				</span>
-				<button class="action-btn action-btn-secondary close-btn" (click)="closeGallery()"
-					aria-label="Закрыть галерею">
-					Закрыть
-				</button>
-			</div>
-			<div class="gallery-body">
-				<button class="nav-btn prev-btn" (click)="navigateGallery('prev')"
-					[disabled]="currentGalleryIndex === 0" aria-label="Предыдущее фото">
-					< </button>
+			<div class="gallery-modal" *ngIf="isGalleryOpen" @modalFade (click)="closeGallery()">
+				<div class="gallery-content" (click)="$event.stopPropagation();">
+					<div class="gallery-header">
+						<span class="gallery-counter">{{ currentGalleryIndex + 1 }} / {{ documentPhotoUrls.length
+							}}</span>
+						<button mat-button color="warn" class="action-btn close-btn" (click)="closeGallery()"
+							aria-label="Закрыть галерею">
+							Закрыть
+						</button>
+					</div>
+					<div class="gallery-body">
+						<button mat-icon-button class="nav-btn prev-btn"
+							(click)="$event.stopPropagation(); navigateGallery('prev')"
+							[disabled]="currentGalleryIndex === 0" aria-label="Предыдущее фото">
+							<mat-icon>chevron_left</mat-icon>
+						</button>
 						<img [src]="documentPhotoUrls[currentGalleryIndex]" alt="Фото документа"
 							class="gallery-image" />
-						<button class="nav-btn next-btn" (click)="navigateGallery('next')"
+						<button mat-icon-button class="nav-btn next-btn"
+							(click)="$event.stopPropagation(); navigateGallery('next')"
 							[disabled]="currentGalleryIndex === documentPhotoUrls.length - 1"
 							aria-label="Следующее фото">
-							>
+							<mat-icon>chevron_right</mat-icon>
 						</button>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

@@ -43,5 +43,58 @@ mat-icon.mat-icon {
 	font-size: 20px;
 	width: 20px;
 	height: 20px;
-	vertical-align: middle;
+}
+
+.action-btn-primary {
+	background-color: #4b6cb7;
+	color: #ffffff;
+	border: none;
+}
+
+.action-btn-primary:hover {
+	background-color: #ffffff;
+	color: #4b6cb7;
+}
+
+.action-btn-secondary {
+	background-color: #6b7280;
+	color: #ffffff;
+	border: none;
+}
+
+.action-btn-secondary:hover {
+	background-color: #ffffff;
+	color: #6b7280;
+}
+
+.action-btn-danger {
+	background-color: #b91c1c;
+	color: #ffffff;
+	border: none;
+}
+
+.action-btn-danger:hover {
+	background-color: #ffffff;
+	color: #b91c1c;
+}
+
+.action-btn-success {
+	background-color: #15803d;
+	color: #ffffff;
+	border: none;
+}
+
+.action-btn-success:hover {
+	background-color: #ffffff;
+	color: #15803d;
+}
+
+.action-btn {
+	background-color: #4b6cb7;
+	color: #ffffff;
+	border: none;
+}
+
+.action-btn.white-bg:hover {
+	background-color: #6b7db8;
 }

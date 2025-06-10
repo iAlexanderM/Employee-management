@@ -3,6 +3,11 @@ import { PassType } from './pass-type.model';
 import { Store } from './store.model';
 import { Contractor, Photo } from './contractor.model';
 
+export interface User {
+	id: string;
+	userName: string;
+	email?: string;
+}
 export interface Pass {
 	id: number;
 	uniquePassId: string;
@@ -22,6 +27,9 @@ export interface Pass {
 	closeReason?: string;
 	closeDate?: Date;
 	closedBy?: string;
+	closedByUserId?: string;
+	closedByUser?: User;
+	passStatus?: string;
 	mainPhotoPath?: string;
 	position: string;
 	passTransaction?: PassTransaction;
@@ -31,5 +39,5 @@ export interface Pass {
 	building?: string;
 	floor?: string;
 	line?: string;
-	storeNumber?: number;
+	storeNumber?: string;
 }

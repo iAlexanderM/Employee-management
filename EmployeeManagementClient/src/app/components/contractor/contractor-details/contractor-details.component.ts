@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -12,8 +12,7 @@ import { UserService } from '../../../services/user.service';
 import { Contractor, ContractorDto } from '../../../models/contractor.model';
 import { Pass } from '../../../models/pass.model';
 import { HistoryEntry, ChangeValue } from '../../../models/history.model';
-import { Subscription, merge, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -21,6 +20,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { PassPrintQueueItem } from '../../../models/pass-print-queue.model';
 
 @Component({
 	selector: 'app-contractor-details',
@@ -35,10 +36,10 @@ import { MatIconModule } from '@angular/material/icon';
 		MatCardModule,
 		MatTableModule,
 		MatIconModule,
+		MatProgressSpinnerModule,
 	],
 	templateUrl: './contractor-details.component.html',
 	styleUrls: ['./contractor-details.component.css'],
-	changeDetection: ChangeDetectionStrategy.OnPush,
 	animations: [
 		trigger('modalFade', [
 			transition(':enter', [
@@ -51,7 +52,9 @@ import { MatIconModule } from '@angular/material/icon';
 		]),
 	],
 })
-export class ContractorDetailsComponent implements OnInit, OnDestroy {
+export class ContractorDetailsComponent implements OnInit, OnDestroy, AfterViewInit {
+	@ViewChild('noteTextarea') noteTextarea!: ElementRef<HTMLTextAreaElement>;
+
 	contractor: Contractor | null = null;
 	documentPhotoUrls: string[] = [];
 	visibleDocumentPhotoUrls: string[] = [];
@@ -65,6 +68,21 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 	userMap: { [key: string]: string } = {};
 	private readonly apiBaseUrl = 'http://localhost:8080';
 	private subscriptions: Subscription[] = [];
+	issuedPasses: PassPrintQueueItem[] = [];
+	totalPasses: number = 0;
+
+	displayedColumns: string[] = [
+		'passType',
+		'store',
+		'position',
+		'cost',
+		'transactionDate',
+		'startDate',
+		'endDate',
+		'status',
+		'actions',
+	];
+	historyColumns: string[] = ['timestamp', 'action', 'user', 'details', 'changes'];
 
 	constructor(
 		private route: ActivatedRoute,
@@ -76,7 +94,7 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 		private authService: AuthService,
 		private passService: PassService,
 		private fb: FormBuilder,
-		private cdr: ChangeDetectorRef
+		private cdr: ChangeDetectorRef,
 	) {
 		this.noteForm = this.fb.group({
 			note: ['', [Validators.maxLength(500)]],
@@ -95,6 +113,16 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 		}
 	}
 
+	ngAfterViewInit(): void {
+		const textarea = this.noteTextarea.nativeElement;
+		const adjustHeight = () => {
+			textarea.style.height = 'auto';
+			textarea.style.height = `${Math.min(textarea.scrollHeight, 300)}px`;
+		};
+		textarea.addEventListener('input', adjustHeight);
+		adjustHeight();
+	}
+
 	ngOnDestroy(): void {
 		this.subscriptions.forEach((sub) => sub.unsubscribe());
 	}
@@ -103,9 +131,6 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 		const user = this.userService.getCurrentUser();
 		if (user && user.id && user.userName) {
 			this.userMap[user.id] = user.userName;
-			console.debug('Current user added to userMap:', { id: user.id, name: user.userName });
-		} else {
-			console.warn('Не удалось загрузить текущего пользователя:', user);
 		}
 	}
 
@@ -117,7 +142,6 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 						this.userMap[t.userId] = t.user.userName;
 					}
 				});
-				console.debug('userMap после загрузки транзакций:', this.userMap);
 				this.cdr.markForCheck();
 			},
 			error: (err) => console.error('Ошибка загрузки пользователей из транзакций:', err),
@@ -128,17 +152,17 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 	private fetchContractorData(id: string): void {
 		const sub = this.contractorService.getContractor(id).subscribe({
 			next: (data: ContractorDto) => {
+				console.log('Contractor Passes from Backend:', JSON.stringify(data.passes, null, 2));
 				this.contractor = this.normalizeContractorData(data);
 				this.noteForm.patchValue({ note: this.contractor.note || '' });
 				this.loadDocumentPhotos();
-				console.debug('Пропуска для контрагента (после нормализации):', this.contractor.passes);
 				if (this.showHistory) {
 					this.loadHistory(id);
 				}
-				this.cdr.markForCheck();
+				this.cdr.detectChanges();
 			},
 			error: (err) => {
-				console.error('Ошибка загрузки контрагента:', err);
+				console.error('Error fetching contractor:', err);
 				this.errorMessage = 'Не удалось загрузить данные контрагента.';
 				this.cdr.markForCheck();
 			},
@@ -149,12 +173,14 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 	private normalizeContractorData(data: ContractorDto): Contractor {
 		const activePasses = this.normalizePasses(data.activePasses || []);
 		const closedPasses = this.normalizePasses(data.closedPasses || []);
-		const passes = activePasses.concat(closedPasses);
+		const additionalPasses = this.normalizePasses(data.passes || []);
+		const passes = [...activePasses, ...closedPasses, ...additionalPasses].filter(
+			(pass, index, self) => self.findIndex((p) => p.id === pass.id) === index
+		);
 		const photos = Array.isArray(data.photos) ? data.photos : [];
 		const documentPhotos = Array.isArray(data.documentPhotos) ? data.documentPhotos : [];
 
-		console.debug('Исходные данные контрагента:', data);
-		console.debug('Пропуска:', passes);
+		console.log('Normalized Passes:', passes);
 
 		return {
 			id: data.id,
@@ -165,9 +191,9 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 			documentType: data.documentType || '',
 			passportSerialNumber: data.passportSerialNumber || '',
 			passportIssuedBy: data.passportIssuedBy || '',
+			passportIssueDate: data.passportIssueDate ? new Date(data.passportIssueDate) : undefined,
 			citizenship: data.citizenship || '',
 			nationality: data.nationality || '',
-			passportIssueDate: data.passportIssueDate ? new Date(data.passportIssueDate) : undefined,
 			productType: data.productType || '',
 			phoneNumber: data.phoneNumber || '',
 			createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
@@ -176,65 +202,79 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 			documentPhotos,
 			isArchived: data.isArchived || false,
 			passes,
-			activePasses,
-			closedPasses,
+			activePasses: passes.filter((p) => !p.isClosed),
+			closedPasses: passes.filter((p) => p.isClosed),
 			note: data.note,
 		};
 	}
 
 	getFullStoreName(pass: Pass): string {
-		const parts = [];
-		if (pass.building) {
-			parts.push(pass.building);
-		}
-		if (pass.floor) {
-			parts.push(`${pass.floor}`);
-		}
-		if (pass.line) {
-			parts.push(`${pass.line}`);
-		}
-		if (pass.storeNumber) {
-			parts.push(`${pass.storeNumber}`);
-		}
+		const parts: string[] = [];
+		if (pass.building) parts.push(pass.building);
+		if (pass.floor) parts.push(`${pass.floor}`);
+		if (pass.line) parts.push(`${pass.line}`);
+		if (pass.storeNumber) parts.push(`${pass.storeNumber}`);
 
-		if (parts.length === 0) {
-			return 'Не указано';
-		}
-
-		return parts.join(', ');
+		return parts.length ? parts.join(', ') : 'Не указано';
 	}
 
 	private normalizePasses(passes: Pass[]): Pass[] {
-		if (!Array.isArray(passes)) return [];
-		return passes.map((p) => ({
-			id: p.id,
-			uniquePassId: p.uniquePassId || '',
-			passTypeId: p.passTypeId,
-			passType: p.passType,
-			passTypeName: p.passTypeName || 'Unknown',
-			contractorId: p.contractorId,
-			contractor: p.contractor,
-			cost: p.cost ?? 0,
-			storeId: p.storeId,
-			store: p.store,
-			building: p.building,
-			floor: p.floor,
-			line: p.line,
-			storeNumber: p.storeNumber,
-			startDate: p.startDate ? new Date(p.startDate) : new Date(),
-			endDate: p.endDate ? new Date(p.endDate) : new Date(),
-			transactionDate: p.transactionDate ? new Date(p.transactionDate) : new Date(),
-			isClosed: p.isClosed || false,
-			closeReason: p.closeReason || '',
-			closeDate: p.closeDate ? new Date(p.closeDate) : undefined,
-			closedBy: p.closedBy || '',
-			mainPhotoPath: p.mainPhotoPath || '',
-			position: p.position || '',
-			passTransaction: p.passTransaction,
-			printStatus: p.printStatus,
-			status: p.status || '',
-			note: p.note || '',
-		}));
+		if (!Array.isArray(passes)) {
+			console.warn('Passes is not an array:', passes);
+			return [];
+		}
+		return passes.map((p) => {
+			const closeDateRaw = p.closeDate || null;
+			const closeDate = closeDateRaw ? new Date(closeDateRaw) : p.isClosed ? new Date() : undefined;
+			const closedBy = p.closedByUserId || p.closedBy || '';
+			if (p.closedByUser?.userName && p.closedByUserId) {
+				this.userMap[p.closedByUserId] = p.closedByUser.userName;
+			}
+			console.log('Processing Pass:', {
+				id: p.id,
+				closeDateRaw: closeDateRaw,
+				parsedCloseDate: closeDate,
+				isClosed: p.isClosed,
+				closeReason: p.closeReason,
+				closedBy: closedBy,
+				closedByUserId: p.closedByUserId,
+				closedByUser: p.closedByUser,
+				passStatus: p.passStatus,
+				rawPass: p,
+			});
+			return {
+				id: p.id,
+				uniquePassId: p.uniquePassId || '',
+				passTypeId: p.passTypeId,
+				passType: p.passType,
+				passTypeName: p.passTypeName || 'Unknown',
+				contractorId: p.contractorId,
+				contractor: p.contractor,
+				cost: p.cost ?? 0,
+				storeId: p.storeId,
+				store: p.store,
+				building: p.building,
+				floor: p.floor,
+				line: p.line,
+				storeNumber: p.storeNumber,
+				startDate: p.startDate ? new Date(p.startDate) : new Date(),
+				endDate: p.endDate ? new Date(p.endDate) : new Date(),
+				transactionDate: p.transactionDate ? new Date(p.transactionDate) : new Date(),
+				isClosed: p.isClosed || p.passStatus === 'Closed' || false,
+				closeReason: p.closeReason || '',
+				closeDate,
+				closedBy,
+				closedByUserId: p.closedByUserId,
+				closedByUser: p.closedByUser,
+				passStatus: p.passStatus,
+				mainPhotoPath: p.mainPhotoPath || '',
+				position: p.position || '',
+				passTransaction: p.passTransaction,
+				printStatus: p.printStatus,
+				status: p.status || '',
+				note: p.note || '',
+			};
+		});
 	}
 
 	getFirstPhoto(): string | null {
@@ -265,13 +305,8 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 	}
 
 	getClosedByName(closedBy: string | undefined): string {
-		if (!closedBy) {
-			console.debug('closedBy отсутствует или пустой');
-			return 'Неизвестно';
-		}
-		const name = this.userMap[closedBy] || closedBy;
-		console.debug(`closedBy ${closedBy} mapped to name:`, name);
-		return name;
+		if (!closedBy) return 'Неизвестно';
+		return this.userMap[closedBy] || closedBy;
 	}
 
 	closePass(passId: number): void {
@@ -295,26 +330,18 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 		const user = this.userService.getCurrentUser();
 		const closedBy = user?.id;
 		if (!closedBy || !user?.userName) {
-			console.warn('Не удалось определить пользователя:', user);
 			this.errorMessage = 'Не удалось определить пользователя. Пожалуйста, войдите снова.';
 			this.cdr.markForCheck();
 			return;
 		}
 		const sub = this.passService.closePass(passId, reason, closedBy).subscribe({
 			next: () => {
-				console.debug('Пропуск успешно закрыт, closedBy:', closedBy, 'userName:', user.userName);
-				pass.isClosed = true;
-				pass.closeDate = new Date();
-				pass.closeReason = reason;
-				pass.closedBy = closedBy;
-				this.userMap[closedBy] = user.userName;
 				if (this.contractor) {
+					this.fetchContractorData(this.contractor.id.toString());
 					this.loadHistory(this.contractor.id.toString());
 				}
-				this.cdr.markForCheck();
 			},
 			error: (err) => {
-				console.error('Ошибка при закрытии пропуска:', err);
 				this.errorMessage = 'Не удалось закрыть пропуск: ' + (err.error?.message || 'Неизвестная ошибка');
 				this.cdr.markForCheck();
 			},
@@ -337,17 +364,12 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 		if (this.contractor) {
 			const sub = this.passService.reopenPass(passId).subscribe({
 				next: () => {
-					pass.isClosed = false;
-					pass.closeDate = undefined;
-					pass.closeReason = undefined;
-					pass.closedBy = undefined;
 					if (this.contractor) {
+						this.fetchContractorData(this.contractor.id.toString());
 						this.loadHistory(this.contractor.id.toString());
 					}
-					this.cdr.markForCheck();
 				},
 				error: (err) => {
-					console.error('Ошибка при открытии пропуска:', err);
 					this.errorMessage = 'Не удалось открыть пропуск: ' + (err.error?.message || 'Неизвестная ошибка');
 					this.cdr.markForCheck();
 				},
@@ -383,7 +405,6 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 				this.cdr.markForCheck();
 			},
 			error: (err) => {
-				console.error('Ошибка при архивировании контрагента:', err);
 				this.errorMessage =
 					'Не удалось заархивировать контрагента: ' + (err.error?.message || 'Неизвестная ошибка');
 				this.cdr.markForCheck();
@@ -412,7 +433,6 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 				this.cdr.markForCheck();
 			},
 			error: (err) => {
-				console.error('Ошибка при разархивировании контрагента:', err);
 				this.errorMessage =
 					'Не удалось разархивировать контрагента: ' + (err.error?.message || 'Неизвестная ошибка');
 				this.cdr.markForCheck();
@@ -447,9 +467,7 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 				this.cdr.markForCheck();
 			},
 			error: (err) => {
-				console.error('Ошибка при обновлении заметки:', err);
-				this.errorMessage =
-					'Не удалось обновить заметку: ' + (err.error?.message || 'Неизвестная ошибка');
+				this.errorMessage = 'Не удалось обновить заметку: ' + (err.error?.message || 'Неизвестная ошибка');
 				this.cdr.markForCheck();
 			},
 		});
@@ -461,17 +479,12 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 		this.errorMessage = null;
 		const sub = this.historyService.getHistory('contractor', contractorId).subscribe({
 			next: (historyEntries: HistoryEntry[]) => {
-				console.debug('Загружено записей истории:', historyEntries.length, historyEntries);
 				this.historyEntries = historyEntries;
 				this.isLoadingHistory = false;
-				if (historyEntries.length === 0) {
-					console.debug(`История для контрагента ${contractorId} пуста`);
-				}
 				this.cdr.markForCheck();
 			},
 			error: (err) => {
 				this.isLoadingHistory = false;
-				console.error('Ошибка при загрузке истории:', err);
 				this.errorMessage = err.message || 'Не удалось загрузить историю изменений.';
 				this.historyEntries = [];
 				this.cdr.markForCheck();
@@ -497,7 +510,6 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 	toggleHistory(): void {
 		this.showHistory = !this.showHistory;
 		if (this.showHistory && this.contractor && !this.historyEntries.length) {
-			console.debug('Запрашиваем историю при переключении');
 			this.loadHistory(this.contractor.id.toString());
 		}
 		this.cdr.markForCheck();
@@ -525,6 +537,16 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy {
 
 	getPassTypeName(pass: Pass): string {
 		return `[${pass.passTypeId}] ${pass.passTypeName || 'Unknown'}`;
+	}
+
+	watchAllPasses(): void {
+		if (!this.contractor || !this.contractor.id) {
+			this.errorMessage = 'Контрагент не найден или отсутствует ID.';
+			this.cdr.markForCheck();
+			return;
+		}
+		const contractorId = this.contractor.id;
+		this.router.navigate(['/passes/issued'], { queryParams: { contractorId } });
 	}
 
 	formatHistoryAction(action: string): string {
