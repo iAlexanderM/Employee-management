@@ -4,11 +4,32 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ContractorPointsService } from '../../../../services/contractor-points.service';
 import { Citizenship } from '../../../../models/contractor-points.model';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
 	selector: 'app-contractor-points-citizenship-edit',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatCheckboxModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule,
+	],
 	templateUrl: './contractor-points-citizenship-edit.component.html',
 	styleUrls: ['./contractor-points-citizenship-edit.component.css']
 })
@@ -63,5 +84,9 @@ export class ContractorPointsCitizenshipEditComponent implements OnInit {
 		} else {
 			this.errorMessage = 'Пожалуйста, заполните все обязательные поля корректно.';
 		}
+	}
+
+	cancel(): void {
+		this.router.navigate(['/citizenship']);
 	}
 }

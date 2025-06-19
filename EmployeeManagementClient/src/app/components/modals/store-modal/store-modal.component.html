@@ -1,111 +1,128 @@
 <div class="modal-overlay" (click)="closeModal()">
-	<div class="modal-content" (click)="stopPropagation($event)">
-		<header>
-			<h2>{{ mode === 'select' ? 'Выбрать' : 'Добавить' }} {{ fieldNameTranslated }}</h2>
-			<button type="button" class="close-button btn btn-secondary" (click)="closeModal()">×</button>
-		</header>
-
-		<!-- Режим добавления -->
-		<div *ngIf="mode === 'add'" class="add-form">
-			<form [formGroup]="addForm">
-				<label>Введите название:</label>
-				<input type="text" formControlName="newItemName" class="form-control" placeholder="Введите название" />
-
-				<div class="actions mt-3">
-					<button type="button" class="btn btn-primary" (click)="addItem()"
-						[disabled]="addForm.invalid">Добавить</button>
-					<button type="button" class="btn btn-secondary" (click)="closeModal()">Отмена</button>
-				</div>
-			</form>
-
-			<p *ngIf="errorMessage" class="error-message text-danger mt-2">{{ errorMessage }}</p>
-		</div>
-
-		<!-- Режим выбора -->
-		<div *ngIf="mode === 'select'">
-			<!-- Форма поиска -->
-			<div class="search-form mb-3">
-				<form [formGroup]="searchForm" (ngSubmit)="searchStores()">
-					<div class="row">
-						<div class="col-md-6 mb-3">
-							<label for="Building">Здание:</label>
-							<input id="Building" formControlName="Building" type="text" class="form-control"
-								placeholder="Введите здание" />
-						</div>
-						<div class="col-md-6 mb-3">
-							<label for="Floor">Этаж:</label>
-							<input id="Floor" formControlName="Floor" type="text" class="form-control"
-								placeholder="Введите этаж" />
-						</div>
-						<div class="col-md-6 mb-3">
-							<label for="Line">Линия:</label>
-							<input id="Line" formControlName="Line" type="text" class="form-control"
-								placeholder="Введите линию" />
-						</div>
-						<div class="col-md-6 mb-3">
-							<label for="StoreNumber">Торговая точка:</label>
-							<input id="StoreNumber" formControlName="StoreNumber" type="text" class="form-control"
-								placeholder="Введите номер торговой точки" />
-						</div>
-					</div>
-					<div class="mb-3">
-						<button type="submit" class="btn btn-primary me-2">Искать</button>
-						<button type="button" class="btn btn-secondary" (click)="resetFilters()">Сбросить
-							фильтры</button>
+	<mat-card class="modal-content" (click)="stopPropagation($event)">
+		<mat-card-header>
+			<mat-card-title class="section-title">
+				{{ mode === 'select' ? 'Выбрать' : 'Добавить' }} {{ fieldNameTranslated }}
+			</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<div *ngIf="mode === 'add'" class="add-form">
+				<form [formGroup]="addForm">
+					<mat-form-field appearance="fill" class="form-field">
+						<mat-label>Введите название</mat-label>
+						<input matInput formControlName="newItemName" placeholder="Введите название">
+						<mat-icon matSuffix>description</mat-icon>
+						<mat-error *ngIf="addForm.get('newItemName')?.invalid && addForm.get('newItemName')?.touched">
+							Название обязательно.
+						</mat-error>
+					</mat-form-field>
+					<div class="actions mt-2">
+						<button mat-raised-button color="primary" class="action-btn" (click)="addItem()"
+							[disabled]="addForm.invalid">Добавить</button>
+						<button mat-stroked-button color="primary" class="action-btn"
+							(click)="closeModal()">Отмена</button>
 					</div>
 				</form>
+				<p *ngIf="errorMessage" class="error-message text-danger">{{ errorMessage }}</p>
 			</div>
 
-			<div *ngIf="totalPages > 1" class="pagination-container">
-				<div class="pagination-squares">
-					<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-						[class.disabled]="page === '...'" (click)="onPageClick(page)">
-						{{ page }}
+			<div *ngIf="mode === 'select'" class="search-section">
+				<div class="search-form">
+					<form [formGroup]="searchForm" (ngSubmit)="searchStores()">
+						<div class="search-form-container">
+							<mat-form-field appearance="fill" class="form-field">
+								<mat-label>Здание</mat-label>
+								<input matInput formControlName="Building" type="text" placeholder="Введите здание">
+								<mat-icon matSuffix></mat-icon>
+							</mat-form-field>
+							<mat-form-field appearance="fill" class="form-field">
+								<mat-label>Этаж</mat-label>
+								<input matInput formControlName="Floor" type="text" placeholder="Введите этаж">
+								<mat-icon matSuffix></mat-icon>
+							</mat-form-field>
+							<mat-form-field appearance="fill" class="form-field">
+								<mat-label>Линия</mat-label>
+								<input matInput formControlName="Line" type="text" placeholder="Введите линию">
+								<mat-icon matSuffix></mat-icon>
+							</mat-form-field>
+							<mat-form-field appearance="fill" class="form-field">
+								<mat-label>Торговая точка</mat-label>
+								<input matInput formControlName="StoreNumber" type="text"
+									placeholder="Введите номер торговой точки">
+								<mat-icon matSuffix></mat-icon>
+							</mat-form-field>
+							<div class="actions mt-2">
+								<button mat-raised-button color="primary" class="action-btn"
+									type="submit">Искать</button>
+								<button mat-stroked-button color="primary" class="action-btn" type="button"
+									(click)="resetFilters()">Сбросить</button>
+							</div>
+						</div>
+					</form>
+				</div>
+
+				<div *ngIf="totalPages > 1" class="pagination-section">
+					<div class="pagination-container">
+						<div class="pagination-squares">
+							<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+								[class.disabled]="page === '...'" (click)="onPageClick(page)">
+								{{ page }}
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="table-section">
+					<mat-table [dataSource]="items" class="data-table">
+						<ng-container matColumnDef="id">
+							<mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
+							<mat-cell *matCellDef="let store">{{ store.id }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="sortOrder">
+							<mat-header-cell *matHeaderCellDef>Сортировка</mat-header-cell>
+							<mat-cell *matCellDef="let store">{{ store.sortOrder }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="building">
+							<mat-header-cell *matHeaderCellDef>Здание</mat-header-cell>
+							<mat-cell *matCellDef="let store">{{ store.building }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="floor">
+							<mat-header-cell *matHeaderCellDef>Этаж</mat-header-cell>
+							<mat-cell *matCellDef="let store">{{ store.floor }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="line">
+							<mat-header-cell *matHeaderCellDef>Линия</mat-header-cell>
+							<mat-cell *matCellDef="let store">{{ store.line }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="storeNumber">
+							<mat-header-cell *matHeaderCellDef>Номер точки</mat-header-cell>
+							<mat-cell *matCellDef="let store">{{ store.storeNumber }}</mat-cell>
+						</ng-container>
+						<mat-header-row
+							*matHeaderRowDef="['id', 'sortOrder', 'building', 'floor', 'line', 'storeNumber']"></mat-header-row>
+						<mat-row
+							*matRowDef="let row; columns: ['id', 'sortOrder', 'building', 'floor', 'line', 'storeNumber']"
+							(click)="selectStore(row)"></mat-row>
+					</mat-table>
+					<div *ngIf="items.length === 0 && !errorMessage" class="text-center mt-4">
+						<p class="text-muted">Нет торговых точек для отображения.</p>
+					</div>
+					<div *ngIf="errorMessage" class="text-danger">
+						{{ errorMessage }}
+					</div>
+				</div>
+
+				<div *ngIf="totalPages > 1" class="pagination-section">
+					<div class="pagination-container">
+						<div class="pagination-squares">
+							<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+								[class.disabled]="page === '...'" (click)="onPageClick(page)">
+								{{ page }}
+							</span>
+						</div>
 					</div>
 				</div>
 			</div>
-
-			<!-- Таблица -->
-			<div class="table-container">
-				<table class="table table-hover">
-					<thead>
-						<tr>
-							<th>ID</th>
-							<th>Сортировка</th>
-							<th>Здание</th>
-							<th>Этаж</th>
-							<th>Линия</th>
-							<th>Номер точки</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr *ngFor="let store of items" (click)="selectStore(store)" style="cursor: pointer;">
-							<td>{{ store.id }}</td>
-							<td>{{ store.sortOrder }}</td>
-							<td>{{ store.building }}</td>
-							<td>{{ store.floor }}</td>
-							<td>{{ store.line }}</td>
-							<td>{{ store.storeNumber }}</td>
-						</tr>
-					</tbody>
-				</table>
-				<div *ngIf="items.length === 0 && !errorMessage">
-					<p>Нет торговых точек для отображения.</p>
-				</div>
-				<div *ngIf="errorMessage" class="text-danger">
-					{{ errorMessage }}
-				</div>
-			</div>
-
-			<!-- Пагинация -->
-			<div *ngIf="totalPages > 1" class="pagination-container">
-				<div class="pagination-squares">
-					<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-						[class.disabled]="page === '...'" (click)="onPageClick(page)">
-						{{ page }}
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+		</mat-card-content>
+	</mat-card>
 </div>

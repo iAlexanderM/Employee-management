@@ -1,4 +1,14 @@
-/* Search Form */
+.main-content {
+	max-width: 1920px;
+	width: 100%;
+	margin: 0 auto;
+	padding: 2rem;
+	background-color: #fefaf6;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
 .search-form {
 	padding: 8px 0;
 	margin-bottom: 16px;
@@ -9,32 +19,24 @@ mat-grid-list {
 }
 
 mat-grid-tile {
-	display: flex;
 	align-items: flex-start;
 	padding-top: 6px;
-	/* Space for floating labels */
 }
 
-mat-form-field.full-width {
-	width: 100%;
+.form-group {
+	margin-bottom: 16px;
 }
 
-/* Table */
-mat-table {
-	width: 100%;
+.form-group label {
+	font-weight: 600;
+	color: #6b7280;
+	margin-bottom: 4px;
+	display: block;
 }
 
-.contractor-img {
-	width: 80px;
-	height: 80px;
-	object-fit: cover;
-	border-radius: 4px;
-}
-
-/* Pagination */
 .pagination-container {
 	display: flex;
-	justify-content: flex-start;
+	justify-content: flex-end;
 	margin-top: 16px;
 }
 
@@ -45,44 +47,65 @@ mat-table {
 
 .square {
 	padding: 8px 12px;
-	border: 1px solid #e0e0e0;
+	border: 1px solid #e5e7eb;
 	border-radius: 4px;
 	cursor: pointer;
 	user-select: none;
+	font-size: 14px;
+	color: #111827;
+	background-color: #ffffff;
+	transition: all 0.2s ease;
 }
 
 .square.active {
-	background-color: #3f51b5;
-	color: white;
-	border-color: #3f51b5;
+	background-color: #3786f3;
+	color: #ffffff;
+	border-color: #3786f3;
 }
 
 .square.disabled {
 	cursor: default;
-	color: #bdbdbd;
+	color: #6b7280;
+	background-color: #f3f4f6;
+	border-color: #e5e7eb;
 }
 
-/* Utilities */
-.d-flex {
+/* Contractor Image */
+.contractor-img {
+	width: 80px;
+	height: 80px;
+	object-fit: cover;
+	border-radius: 4px;
+	border: 1px solid #e5e7eb;
+}
+
+.page-size-container {
 	display: flex;
-}
-
-.gap-2 {
+	align-items: center;
 	gap: 8px;
+	justify-content: flex-end;
 }
 
-.mt-4 {
-	margin-top: 16px;
+.page-size-container span {
+	font-size: 14px;
+	color: #111827;
 }
 
-.mb-4 {
-	margin-bottom: 16px;
+.page-size-container mat-select {
+	width: 80px;
+	border: 1px solid #e5e7eb;
+	border-radius: 4px;
+	padding: 4px 8px;
+	font-size: 14px;
+	background-color: #ffffff;
 }
 
-.justify-content-start {
-	justify-content: flex-start;
-}
+@media (max-width: 768px) {
+	.main-content {
+		padding: 1rem;
+	}
 
-.text-center {
-	text-align: center;
+	.page-size-container {
+		justify-content: flex-start;
+	}
 }

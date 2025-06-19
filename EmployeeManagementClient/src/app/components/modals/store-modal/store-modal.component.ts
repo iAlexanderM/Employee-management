@@ -4,11 +4,24 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormControl }
 import { StoreService } from '../../../services/store.service';
 import { Store } from '../../../models/store.model';
 import { Subscription } from 'rxjs';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
 
 @Component({
 	selector: 'app-store-select-or-add-modal',
 	standalone: true,
-	imports: [CommonModule, FormsModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		FormsModule,
+		ReactiveFormsModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatTableModule,],
 	templateUrl: './store-modal.component.html',
 	styleUrls: ['./store-modal.component.css']
 })

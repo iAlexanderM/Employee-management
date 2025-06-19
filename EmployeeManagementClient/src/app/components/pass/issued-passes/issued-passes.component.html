@@ -1,61 +1,93 @@
-<div class="container mt-4">
-	<h2>Выданные пропуска</h2>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Выданные пропуска</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<form [formGroup]="searchForm" (ngSubmit)="onSearch()" class="search-form">
+				<div class="form-group">
+					<mat-form-field appearance="fill" class="full-width">
+						<mat-label>Поиск по ID контрагента</mat-label>
+						<input matInput formControlName="contractorId" type="number" placeholder="Введите ID"
+							inputmode="numeric" pattern="[0-9]*" />
+						<mat-icon matSuffix>search</mat-icon>
+						<mat-error *ngIf="searchForm.get('contractorId')?.hasError('pattern')">
+							Введите только цифры
+						</mat-error>
+					</mat-form-field>
+				</div>
+				<div class="d-flex justify-content-start gap-2">
+					<button mat-raised-button color="primary" class="action-btn" type="submit">Поиск</button>
+					<button mat-stroked-button color="primary" class="action-btn" type="button"
+						(click)="onReset()">Сброс</button>
+				</div>
+			</form>
 
-	<form [formGroup]="searchForm" (ngSubmit)="onSearch()">
-		<div>
-			<label for="contractorId" class="form-label">Поиск по ID контрагента:</label>
-			<input type="number" id="contractorId" class="form-control" formControlName="contractorId">
-			<button type="submit" class="btn btn-primary">Поиск</button>
-			<button type="button" class="btn btn-secondary" (click)="onReset()">Сброс</button>
-		</div>
-	</form>
-
-	<div class="d-flex justify-content-end align-items-center mb-2">
-		<label for="pageSize" class="me-2">Элементов на странице:</label>
-		<select id="pageSize" class="form-select" (change)="onPageSizeChange($event)">
-			<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
-		</select>
-	</div>
-	<br>
-
-	<table *ngIf="passes.length > 0; else noPasses">
-		<thead>
-			<tr>
-				<th>Менеджер</th>
-				<th>ID транзакции</th>
-				<th>Тип услуги</th>
-				<th>Количество пропусков</th>
-				<th>Типы пропусков</th>
-				<th>Действия</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr *ngFor="let pass of passes">
-				<td>{{ pass.manager }}</td>
-				<td>{{ pass.transactionId }}</td>
-				<td>{{ pass.serviceType }}</td>
-				<td>{{ pass.passCount }}</td>
-				<td>
-					<span *ngFor="let type of pass.passTypes" class="pass-type-circle"
-						[style.backgroundColor]="type.color"></span>
-				</td>
-				<td>
-					<button class="btn btn-success" (click)="printPass(pass.transactionId)">Печатать</button>
-				</td>
-			</tr>
-		</tbody>
-	</table>
-
-	<ng-template #noPasses>
-		<p>Нет выданных пропусков.</p>
-	</ng-template>
-
-	<div *ngIf="totalPages > 1" class="pagination-container">
-		<div class="pagination-squares">
-			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-				[class.disabled]="page === '...'" (click)="onPageClick(page)">
-				{{ page }}
+			<div class="d-flex align-items-center justify-content-end mb-4">
+				<div class="page-size-container">
+					<span>Элементов на странице:</span>
+					<mat-select [(value)]="pageSize" (selectionChange)="onPageSizeChange($event)">
+						<mat-option *ngFor="let size of pageSizeOptions" [value]="size">
+							{{ size }}
+						</mat-option>
+					</mat-select>
+				</div>
 			</div>
-		</div>
-	</div>
+
+			<div *ngIf="isLoading" class="text-center mt-4">
+				<mat-spinner></mat-spinner>
+				<p>Загрузка данных...</p>
+			</div>
+
+			<mat-table *ngIf="passes.length > 0 && !isLoading" [dataSource]="passes" class="data-table">
+				<ng-container matColumnDef="manager">
+					<mat-header-cell *matHeaderCellDef>Менеджер</mat-header-cell>
+					<mat-cell *matCellDef="let pass">{{ pass.manager }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="transactionId">
+					<mat-header-cell *matHeaderCellDef>ID транзакции</mat-header-cell>
+					<mat-cell *matCellDef="let pass">{{ pass.transactionId }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="serviceType">
+					<mat-header-cell *matHeaderCellDef>Тип услуги</mat-header-cell>
+					<mat-cell *matCellDef="let pass">{{ pass.serviceType }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="passCount">
+					<mat-header-cell *matHeaderCellDef>Количество пропусков</mat-header-cell>
+					<mat-cell *matCellDef="let pass">{{ pass.passCount }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="passTypes">
+					<mat-header-cell *matHeaderCellDef>Типы пропусков</mat-header-cell>
+					<mat-cell *matCellDef="let pass">
+						<span *ngFor="let type of pass.passTypes" class="pass-type-circle"
+							[style.backgroundColor]="type.color" [matTooltip]="type.name"></span>
+					</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="actions">
+					<mat-header-cell *matHeaderCellDef>Действия</mat-header-cell>
+					<mat-cell *matCellDef="let pass">
+						<button mat-raised-button color="primary" class="action-btn"
+							(click)="printPass(pass.transactionId)">Печатать</button>
+					</mat-cell>
+				</ng-container>
+				<mat-header-row
+					*matHeaderRowDef="['manager', 'transactionId', 'serviceType', 'passCount', 'passTypes', 'actions']"></mat-header-row>
+				<mat-row
+					*matRowDef="let row; columns: ['manager', 'transactionId', 'serviceType', 'passCount', 'passTypes', 'actions']"></mat-row>
+			</mat-table>
+
+			<div *ngIf="!isLoading && passes.length === 0" class="text-center mt-4">
+				<p class="text-muted">Нет выданных пропусков</p>
+			</div>
+
+			<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
+				<div class="pagination-squares">
+					<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" (click)="onPageClick(page)">
+						{{ page }}
+					</span>
+				</div>
+			</div>
+		</mat-card-content>
+	</mat-card>
 </div>

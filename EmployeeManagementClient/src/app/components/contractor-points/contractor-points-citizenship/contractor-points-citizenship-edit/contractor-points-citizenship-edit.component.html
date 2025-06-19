@@ -1,39 +1,53 @@
-<div *ngIf="citizenship" class="container mt-4">
-	<h2>Редактирование записи №{{ citizenship.id }}</h2>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Редактирование записи №{{ citizenship?.id }}</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<mat-card *ngIf="errorMessage" class="error-message mt-4" role="alert">
+				<mat-icon>error_outline</mat-icon>
+				{{ errorMessage }}
+			</mat-card>
 
-	<!-- Блок отображения ошибки -->
-	<div *ngIf="errorMessage" class="error-message">
-		<p>{{ errorMessage }}</p>
-	</div>
+			<form [formGroup]="citizenshipForm" (ngSubmit)="updateCitizenship()" class="edit-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="16px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Название *</mat-label>
+							<input matInput formControlName="citizenshipName"
+								placeholder="Введите название гражданства" />
+							<mat-icon matSuffix>search</mat-icon>
+							<mat-error
+								*ngIf="citizenshipForm.get('citizenshipName')?.invalid && citizenshipForm.get('citizenshipName')?.touched">
+								Название гражданства обязательно
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Сортировка *</mat-label>
+							<input matInput formControlName="sortOrder" type="number"
+								placeholder="Введите порядок сортировки" />
+							<mat-icon matSuffix>sort</mat-icon>
+							<mat-error
+								*ngIf="citizenshipForm.get('sortOrder')?.invalid && citizenshipForm.get('sortOrder')?.touched">
+								Порядок сортировки должен быть неотрицательным числом
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+				</mat-grid-list>
 
-	<!-- Форма редактирования -->
-	<form [formGroup]="citizenshipForm" (ngSubmit)="updateCitizenship()">
-		<div class="form-group">
-			<label for="citizenshipName">Название:</label>
-			<div class="input-container">
-				<input id="citizenshipName" type="text" placeholder="Введите название гражданства"
-					formControlName="citizenshipName" required />
-			</div>
-			<!-- Валидация поля -->
-			<div *ngIf="citizenshipForm.get('citizenshipName')?.invalid && citizenshipForm.get('citizenshipName')?.touched"
-				class="error">
-				Название гражданства обязательно.
-			</div>
-		</div>
-
-		<div class="form-group">
-			<label for="sortOrder">Сортировка:</label>
-			<div class="input-container">
-				<input id="sortOrder" type="number" placeholder="Введите порядок сортировки" formControlName="sortOrder"
-					required />
-			</div>
-			<!-- Валидация поля -->
-			<div *ngIf="citizenshipForm.get('sortOrder')?.invalid && citizenshipForm.get('sortOrder')?.touched"
-				class="error">
-				Порядок сортировки должен быть неотрицательным числом.
-			</div>
-		</div>
-
-		<button type="submit" class="btn btn-primary" [disabled]="citizenshipForm.invalid">Сохранить</button>
-	</form>
+				<div class="d-flex justify-content-between gap-2 mt-4">
+					<button mat-raised-button color="primary" class="action-btn" type="submit"
+						[disabled]="citizenshipForm.invalid" matTooltip="Сохранить изменения">
+						Сохранить
+					</button>
+					<button mat-stroked-button color="accent" class="action-btn" type="button" (click)="cancel()"
+						matTooltip="Отменить редактирование">
+						Отменить
+					</button>
+				</div>
+			</form>
+		</mat-card-content>
+	</mat-card>
 </div>

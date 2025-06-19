@@ -1,11 +1,28 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PassGroupTypeService } from '../../../services/pass-group-type.service'
+import { PassGroupTypeService } from '../../../services/pass-group-type.service';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
 	selector: 'app-pass-group-modal',
 	standalone: true,
-	imports: [CommonModule],
+	imports: [
+		CommonModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatSnackBarModule],
 	templateUrl: './pass-group-modal.component.html',
 	styleUrls: ['./pass-group-modal.component.css'],
 })

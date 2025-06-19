@@ -5,11 +5,29 @@ import { ContractorWatchService } from '../../../services/contractor-watch.servi
 import { Contractor } from '../../../models/contractor.model';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
 	selector: 'app-contractor-select-modal',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatSnackBarModule],
 	templateUrl: './contractor-modal.component.html',
 	styleUrls: ['./contractor-modal.component.css'],
 })

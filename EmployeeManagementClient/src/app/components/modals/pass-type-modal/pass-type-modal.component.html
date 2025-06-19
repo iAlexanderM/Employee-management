@@ -1,78 +1,139 @@
 <div class="modal-overlay" (click)="closeModal()">
-	<div class="modal-content" (click)="stopPropagation($event)">
-		<header>
-			<h2>Выбрать Тип Пропуска</h2>
-			<button type="button" class="close-button btn btn-secondary" (click)="closeModal()">×</button>
-		</header>
+	<mat-card class="modal-content" (click)="stopPropagation($event)">
+		<mat-card-header>
+			<mat-card-title class="section-title">Выбрать Тип Пропуска</mat-card-title>
+			<button mat-icon-button class="close-button" (click)="closeModal()" aria-label="Закрыть">
+				<mat-icon>close</mat-icon>
+			</button>
+		</mat-card-header>
+		<mat-card-content>
+			<!-- Индикатор загрузки -->
+			<mat-spinner *ngIf="isLoading" diameter="40" class="spinner"></mat-spinner>
 
-		<!-- Таблица групп -->
-		<div *ngIf="!selectedGroup" class="table-container">
-			<table class="table table-striped">
-				<thead>
-					<tr>
-						<th>ID</th>
-						<th>Название</th>
-						<th>Действия</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr *ngFor="let group of passGroups" (click)="selectPassGroup(group)" style="cursor: pointer;">
-						<td>{{ group.id }}</td>
-						<td>{{ group.name }}</td>
-						<td>
-							<button class="btn btn-info btn-sm btn-equal-one" (click)="selectPassGroup(group)">
-								Выбрать
-							</button>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-			<div *ngIf="passGroups.length === 0 && !errorMessage">
-				<p>Нет групп пропусков для отображения.</p>
+			<!-- Поисковая форма для типов (только если выбрана группа) -->
+			<div *ngIf="selectedGroup" class="search-section">
+				<div class="search-form">
+					<form [formGroup]="searchForm" (ngSubmit)="searchPassTypes()">
+						<div class="search-form-container">
+							<mat-form-field appearance="fill" class="form-field">
+								<mat-label>ID типа пропуска</mat-label>
+								<input matInput formControlName="id" type="text" placeholder="Введите ID"
+									inputmode="numeric" pattern="[0-9]*">
+								<mat-icon matSuffix>code</mat-icon>
+								<mat-error *ngIf="searchForm.get('id')?.invalid && searchForm.get('id')?.touched">
+									ID должно быть числом.
+								</mat-error>
+							</mat-form-field>
+							<mat-form-field appearance="fill" class="form-field">
+								<mat-label>Название типа</mat-label>
+								<input matInput formControlName="name" type="text" placeholder="Введите название типа">
+								<mat-icon matSuffix>search</mat-icon>
+							</mat-form-field>
+							<div class="actions mt-2">
+								<button mat-raised-button color="primary" class="action-btn"
+									type="submit">Искать</button>
+								<button mat-stroked-button color="primary" class="action-btn" type="button"
+									(click)="resetFilters()">Сбросить</button>
+							</div>
+						</div>
+					</form>
+				</div>
 			</div>
-			<div *ngIf="errorMessage" class="text-danger">
-				{{ errorMessage }}
-			</div>
-		</div>
 
-		<!-- Таблица типов пропусков -->
-		<div *ngIf="selectedGroup" class="table-container">
-			<h3>Типы пропусков группы "{{ selectedGroup.name }}"</h3>
-			<table class="table table-striped">
-				<thead>
-					<tr>
-						<th>ID</th>
-						<th>Название</th>
-						<th>Срок (мес.)</th>
-						<th>Стоимость</th>
-						<th>Цвет</th>
-						<th>Действия</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr *ngFor="let passType of displayedPassTypes" (click)="selectPassType(passType)"
-						style="cursor: pointer;">
-						<td>{{ passType.id }}</td>
-						<td>{{ passType.name }}</td>
-						<td>{{ passType.durationInMonths }}</td>
-						<td>{{ passType.cost }}</td>
-						<td>
-							<div class="color-preview" [style.background-color]="passType.color"></div>
-						</td>
-						<td>
-							<button class="btn btn-info btn-sm btn-equal-one" (click)="selectPassType(passType)">
-								Выбрать
-							</button>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-			<div *ngIf="displayedPassTypes.length === 0 && !errorMessage">
-				<p>Нет типов пропусков для отображения.</p>
+			<!-- Пагинация сверху -->
+			<div *ngIf="totalPages > 1" class="pagination-section">
+				<div class="pagination-container">
+					<div class="pagination-squares">
+						<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+							[class.disabled]="page === '...'" (click)="onPageClick(page)">
+							{{ page }}
+						</span>
+					</div>
+				</div>
 			</div>
-			<div *ngIf="errorMessage" class="text-danger">
-				{{ errorMessage }}
+
+			<!-- Таблица групп или типов -->
+			<div class="table-section">
+				<!-- Таблица групп -->
+				<div *ngIf="!selectedGroup">
+					<mat-table [dataSource]="passGroups" class="data-table">
+						<ng-container matColumnDef="id">
+							<mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
+							<mat-cell *matCellDef="let group">{{ group.id }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="name">
+							<mat-header-cell *matHeaderCellDef>Название</mat-header-cell>
+							<mat-cell *matCellDef="let group">{{ group.name }}</mat-cell>
+						</ng-container>
+						<mat-header-row *matHeaderRowDef="['id', 'name']"></mat-header-row>
+						<mat-row *matRowDef="let row; columns: ['id', 'name']"
+							[style.background-color]="row.color || '#ffffff'"
+							[ngClass]="{'dark-text': isDarkBackground(row.color)}" (click)="selectPassGroup(row)">
+						</mat-row>
+					</mat-table>
+					<div *ngIf="passGroups.length === 0 && !errorMessage" class="text-center mt-4">
+						<p class="text-muted">Нет групп пропусков для отображения.</p>
+					</div>
+					<div *ngIf="errorMessage" class="text-danger">
+						{{ errorMessage }}
+					</div>
+				</div>
+
+				<!-- Таблица типов -->
+				<div *ngIf="selectedGroup">
+					<div class="back-button-section">
+						<button mat-stroked-button color="primary" (click)="goBackToGroups()">Назад к группам</button>
+						<h3 class="section-subtitle">Типы пропусков группы "{{ selectedGroup.name }}"</h3>
+					</div>
+					<mat-table [dataSource]="displayedPassTypes" class="data-table">
+						<ng-container matColumnDef="id">
+							<mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
+							<mat-cell *matCellDef="let passType">{{ passType.id }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="name">
+							<mat-header-cell *matHeaderCellDef>Название</mat-header-cell>
+							<mat-cell *matCellDef="let passType">{{ passType.name }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="durationInMonths">
+							<mat-header-cell *matHeaderCellDef>Срок (мес.)</mat-header-cell>
+							<mat-cell *matCellDef="let passType">{{ passType.durationInMonths }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="cost">
+							<mat-header-cell *matHeaderCellDef>Стоимость</mat-header-cell>
+							<mat-cell *matCellDef="let passType">{{ passType.cost }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="color">
+							<mat-header-cell *matHeaderCellDef>Цвет</mat-header-cell>
+							<mat-cell *matCellDef="let passType">
+								<div class="color-preview" [style.background-color]="passType.color || '#ffffff'"></div>
+							</mat-cell>
+						</ng-container>
+						<mat-header-row
+							*matHeaderRowDef="['id', 'name', 'durationInMonths', 'cost', 'color']"></mat-header-row>
+						<mat-row *matRowDef="let row; columns: ['id', 'name', 'durationInMonths', 'cost', 'color']"
+							(click)="selectPassType(row)">
+						</mat-row>
+					</mat-table>
+					<div *ngIf="displayedPassTypes.length === 0 && !errorMessage" class="text-center mt-4">
+						<p class="text-muted">Нет типов пропусков для отображения.</p>
+					</div>
+					<div *ngIf="errorMessage" class="text-danger">
+						{{ errorMessage }}
+					</div>
+				</div>
 			</div>
-		</div>
-	</div>
+
+			<!-- Пагинация снизу -->
+			<div *ngIf="totalPages > 1" class="pagination-section">
+				<div class="pagination-container">
+					<div class="pagination-squares">
+						<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+							[class.disabled]="page === '...'" (click)="onPageClick(page)">
+							{{ page }}
+						</span>
+					</div>
+				</div>
+			</div>
+		</mat-card-content>
+	</mat-card>
 </div>

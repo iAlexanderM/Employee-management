@@ -30,7 +30,7 @@
 		"ng2-file-upload": "^7.0.1",
 		"ngx-dropzone": "^3.1.0",
 		"ngx-file-drop": "^16.0.0",
-		"ngx-mask": "^18.0.0",
+		"ngx-mask": "^19.0.7",
 		"ngx-toastr": "^19.0.0",
 		"ngx-uploader": "^17.0.1",
 		"rxjs": "~7.8.0",

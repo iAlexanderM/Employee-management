@@ -1,20 +1,26 @@
-<div class="container mt-4">
-	<h2>Детали записи № {{ nationality?.id }}</h2>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Детали записи №{{ nationality?.id }}</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<div class="details-container">
+				<div class="detail-item">
+					<span class="detail-label">Сортировка:</span>
+					<span class="detail-value">{{ nationality?.sortOrder }}</span>
+				</div>
+				<div class="detail-item">
+					<span class="detail-label">Название:</span>
+					<span class="detail-value">{{ nationality?.name }}</span>
+				</div>
+			</div>
 
-	<div class="form-group">
-		<p><strong>Сортировка:</strong> {{ nationality?.sortOrder }}</p>
-	</div>
-
-	<div class="form-group">
-		<p><strong>Название:</strong> {{ nationality?.name }}</p>
-	</div>
-
-	<div class="form-group">
-		<p><strong>Архивирован: </strong> {{ nationality?.isArchived ? 'Да' : 'Нет' }}
-		</p>
-	</div>
-
-	<div class="form-group">
-		<button class="btn btn-primary" (click)="editNationality()">Редактировать</button>
-	</div>
+			<div class="d-flex gap-2 mt-4">
+				<button mat-raised-button color="primary" class="action-btn" (click)="editNationality()"
+					matTooltip="Редактировать запись">
+					Редактировать
+				</button>
+			</div>
+		</mat-card-content>
+	</mat-card>
 </div>

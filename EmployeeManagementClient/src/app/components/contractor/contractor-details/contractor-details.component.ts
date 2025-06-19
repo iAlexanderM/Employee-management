@@ -22,6 +22,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PassPrintQueueItem } from '../../../models/pass-print-queue.model';
+import { Photo } from '../../../models/contractor.model';
 
 @Component({
 	selector: 'app-contractor-details',
@@ -57,9 +58,13 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy, AfterViewI
 
 	contractor: Contractor | null = null;
 	documentPhotoUrls: string[] = [];
+	nonDocumentPhotoUrls: string[] = [];
 	visibleDocumentPhotoUrls: string[] = [];
 	isGalleryOpen = false;
 	currentGalleryIndex = 0;
+	currentGalleryPhotos: string[] = [];
+	currentGalleryType: 'document' | 'nonDocument' | null = null;
+
 	noteForm: FormGroup;
 	historyEntries: HistoryEntry[] = [];
 	isLoadingHistory = false;
@@ -156,6 +161,7 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy, AfterViewI
 				this.contractor = this.normalizeContractorData(data);
 				this.noteForm.patchValue({ note: this.contractor.note || '' });
 				this.loadDocumentPhotos();
+				this.loadNonDocumentPhotos();
 				if (this.showHistory) {
 					this.loadHistory(id);
 				}
@@ -277,19 +283,52 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy, AfterViewI
 		});
 	}
 
-	getFirstPhoto(): string | null {
-		const photo = this.contractor?.photos.find((p) => !p.isDocumentPhoto);
-		return photo ? this.transformToUrl(photo.filePath) : null;
+	getMainDisplayPhoto(): { url: string; index: number } | null {
+		const nonDocumentPhotos = (this.contractor?.photos || [])
+			.filter((photo: Photo) => !photo.isDocumentPhoto);
+
+		if (nonDocumentPhotos.length > 0) {
+			const lastPhoto = nonDocumentPhotos[nonDocumentPhotos.length - 1];
+			const urlToFind = this.transformToUrl(lastPhoto.filePath);
+			const indexInSortedList = this.nonDocumentPhotoUrls.findIndex(url => url === urlToFind);
+
+			return {
+				url: urlToFind,
+				index: indexInSortedList !== -1 ? indexInSortedList : 0
+			};
+		}
+		return null;
 	}
 
 	private loadDocumentPhotos(): void {
-		this.documentPhotoUrls = this.contractor?.documentPhotos?.length
-			? this.contractor.documentPhotos.map((photo) => this.transformToUrl(photo.filePath))
-			: this.contractor?.photos
-				.filter((photo) => photo.isDocumentPhoto)
-				.map((photo) => this.transformToUrl(photo.filePath)) || [];
+		this.documentPhotoUrls = (this.contractor?.documentPhotos || this.contractor?.photos || [])
+			.filter((photo: Photo) => photo.isDocumentPhoto)
+			.map((photo: Photo) => this.transformToUrl(photo.filePath))
+			.sort((a, b) => {
+				const idA = this.getIdFromUrl(a);
+				const idB = this.getIdFromUrl(b);
+				return idA - idB;
+			});
+
 		this.visibleDocumentPhotoUrls = this.documentPhotoUrls.slice(-3);
 		this.cdr.markForCheck();
+	}
+
+	private loadNonDocumentPhotos(): void {
+		this.nonDocumentPhotoUrls = (this.contractor?.photos || [])
+			.filter((photo: Photo) => !photo.isDocumentPhoto)
+			.map((photo: Photo) => this.transformToUrl(photo.filePath))
+			.sort((a, b) => {
+				const idA = this.getIdFromUrl(a);
+				const idB = this.getIdFromUrl(b);
+				return idA - idB;
+			});
+		this.cdr.markForCheck();
+	}
+
+	private getIdFromUrl(url: string): number {
+		const match = url.match(/\/(\d+)\.(png|jpg|jpeg|gif)$/i);
+		return match ? parseInt(match[1], 10) : 0;
 	}
 
 	private transformToUrl(filePath: string): string {
@@ -515,10 +554,43 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy, AfterViewI
 		this.cdr.markForCheck();
 	}
 
-	openGallery(index: number): void {
-		this.currentGalleryIndex = index;
+	openGallery(index: number, type: 'document' | 'nonDocument'): void {
+		console.log('openGallery called with:', { index, type });
+		console.log('Current nonDocumentPhotoUrls:', this.nonDocumentPhotoUrls);
+		console.log('Current documentPhotoUrls:', this.documentPhotoUrls);
+
+		this.currentGalleryType = type;
+
+		if (type === 'document') {
+			this.currentGalleryPhotos = this.documentPhotoUrls;
+		} else { // type === 'nonDocument'
+			this.currentGalleryPhotos = this.nonDocumentPhotoUrls;
+		}
+
+		console.log('currentGalleryPhotos after assignment:', this.currentGalleryPhotos);
+
+		if (this.currentGalleryPhotos.length === 0) {
+			this.isGalleryOpen = false;
+			console.warn(`No photos available for gallery type: ${type}. Gallery will not open.`);
+			return;
+		}
+
+		if (index < 0 || index >= this.currentGalleryPhotos.length) {
+			console.warn(`Attempted to open gallery with invalid index: ${index} for type: ${type}. Max index: ${this.currentGalleryPhotos.length - 1}. Resetting to 0.`);
+			this.currentGalleryIndex = 0;
+		} else {
+			this.currentGalleryIndex = index;
+		}
+
 		this.isGalleryOpen = true;
 		this.cdr.markForCheck();
+
+		console.log('Gallery state after openGallery:', {
+			isGalleryOpen: this.isGalleryOpen,
+			currentGalleryIndex: this.currentGalleryIndex,
+			currentGalleryPhotosLength: this.currentGalleryPhotos.length
+		});
+		console.log('URL that should be displayed:', this.currentGalleryPhotos[this.currentGalleryIndex]);
 	}
 
 	closeGallery(): void {
@@ -529,7 +601,7 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy, AfterViewI
 	navigateGallery(direction: 'prev' | 'next'): void {
 		if (direction === 'prev' && this.currentGalleryIndex > 0) {
 			this.currentGalleryIndex--;
-		} else if (direction === 'next' && this.currentGalleryIndex < this.documentPhotoUrls.length - 1) {
+		} else if (direction === 'next' && this.currentGalleryIndex < this.currentGalleryPhotos.length - 1) {
 			this.currentGalleryIndex++;
 		}
 		this.cdr.markForCheck();
@@ -579,7 +651,7 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy, AfterViewI
 			phoneNumber: 'Номер телефона',
 			isArchived: 'Статус архивации',
 			sortOrder: 'Порядок сортировки',
-			note: 'Заметка',
+			note: 'Пометка',
 			photosRemoved: 'Удаленные фото',
 			photosAdded: 'Добавленные фото',
 			documentPhotosAdded: 'Добавленные фото документов',

@@ -1,85 +1,163 @@
-.container {
-	margin-top: 20px;
-	max-width: 50%;
-	background-color: #f9f9f9;
-	padding: 20px;
-	border: 1px solid #ddd;
-	border-radius: 8px;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-h2 {
-	text-align: left;
-	margin-bottom: 20px;
-	font-size: 24px;
-	color: #333;
-}
-
-.form-group {
-	margin-bottom: 20px;
+.main-content {
+	max-width: 1920px;
+	width: 100%;
+	margin: 0 auto;
+	padding: 2rem;
+	background-color: #fefaf6;
+	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
 }
 
-label {
-	font-weight: bold;
-	margin-bottom: 5px;
-	font-size: 16px;
+.create-form {
+	padding: 8px 0;
+	margin-bottom: 16px;
 }
 
-.form-control {
-	padding: 10px;
-	font-size: 16px;
-	border: 1px solid #ccc;
+mat-grid-list {
+	width: 50%;
+}
+
+mat-grid-tile {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: flex-start;
+	padding-top: 6px;
+	overflow: visible;
+}
+
+.note-textarea-field textarea.mat-input-element {
+	width: 100%;
+	box-sizing: border-box;
+	min-height: 50px;
+	max-height: 180px;
+	overflow-y: auto;
+	resize: vertical;
+	padding: 6px;
 	border-radius: 4px;
-	transition: border-color 0.3s, box-shadow 0.3s;
+	font-size: 14px;
+	line-height: 1.4;
 }
 
-/* Сбрасываем стили для input[type="color"] */
-input[type="color"].form-control {
-	padding: 0;
-	border: none;
-	width: 40px;
-	/* Задаем ширину, чтобы показать цветной квадратик */
-	height: 40px;
-	/* Аналогично с высотой */
+.note-container {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+}
+
+.form-group {
+	margin-bottom: 16px;
+	margin-top: 8px;
+}
+
+.form-group label {
+	font-weight: 600;
+	color: #6b7280;
+	margin-bottom: 4px;
+	display: block;
+}
+
+.form-control-file {
+	width: 100%;
+	padding: 8px;
+	border: 1px solid #e5e7eb;
+	border-radius: 4px;
+	background-color: #ffffff;
+}
+
+.hidden-file-input {
+	display: none;
+}
+
+.photo-previews,
+.document-photo-previews {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin-top: 8px;
+}
+
+.photo-thumbnail {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100px;
+	height: auto;
+	border: 1px solid #e5e7eb;
+	border-radius: 4px;
+	background-color: #ffffff;
+}
+
+.photo-thumbnail img {
+	width: 100px;
+	height: 100px;
+	object-fit: cover;
+}
+
+.photo-thumbnail.add-photo {
 	cursor: pointer;
-	/* Убираем стандартные переходы, чтобы не было лишнего мерцания */
-	transition: none;
+	background-color: #f3f4f6;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	transition: background-color 0.2s ease;
+	width: 100px;
+	height: 100px;
+}
+
+.photo-thumbnail.add-photo:hover {
+	background-color: #e5e7eb;
+}
+
+.add-icon {
+	font-size: 40px;
+	color: #6b7280;
+	font-weight: bold;
+}
+
+.button-container {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	margin-top: 0px;
+	min-height: 28px;
+	margin-bottom: 10px;
+}
+
+.action-btn.btn-sm {
+	display: block;
+	font-size: 12px;
+	padding: 4px 8px;
+	width: 80px;
+	background-color: #d32f2f;
+	color: #ffffff;
+	line-height: 20px;
+	text-align: center;
+	visibility: visible;
+	opacity: 1;
 	border-radius: 4px;
-	/* Можно оставить радиус, если нужно сделать округлый квадратик */
-}
-
-.form-control:focus {
-	border-color: #007bff;
-	box-shadow: 0 0 6px rgba(0, 123, 255, 0.5);
-}
-
-button {
-	font-size: 16px;
-	padding: 10px 20px;
-	border-radius: 4px;
-	margin-right: 10px;
-}
-
-button.btn-primary {
-	background-color: #007bff;
-	color: white;
 	border: none;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-button.btn-primary:hover {
-	background-color: #0056b3;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-}
+@media (max-width: 768px) {
 
-button.btn-secondary {
-	background-color: #6c757d;
-	color: white;
-	border: none;
-}
+	.photo-previews,
+	.document-photo-previews {
+		gap: 8px;
+	}
 
-button.btn-secondary:hover {
-	background-color: #545b62;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+	.photo-thumbnail,
+	.photo-thumbnail.add-photo,
+	.photo-thumbnail img {
+		width: 80px;
+		height: 80px;
+	}
+
+	.add-icon {
+		font-size: 32px;
+	}
 }

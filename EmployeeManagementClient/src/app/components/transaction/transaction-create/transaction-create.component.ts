@@ -321,7 +321,7 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 	}
 
 	private createFormGroup(): FormGroup {
-		return this.fb.group({
+		const form = this.fb.group({
 			token: [{ value: this.activeTokenData?.token || '', disabled: true }, Validators.required],
 			contractorId: [null, Validators.required],
 			storeId: [null, Validators.required],
@@ -335,6 +335,10 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 			showPositionModal: [false],
 			originalPassId: [null]
 		});
+		form.get('showPositionModal')?.valueChanges.subscribe(value => {
+			console.log('showPositionModal changed to:', value);
+		});
+		return form;
 	}
 
 	private initAutoEndDateCalc(form: FormGroup): void {
@@ -409,6 +413,7 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 					position: formPositionValue,
 					startDate: data.formValue.startDate || this.formatDateToYYYYMMDD(new Date()),
 					originalPassId: data.formValue.originalPassId || null,
+					showPositionModal: false
 				});
 				this.initAutoEndDateCalc(form);
 				return {

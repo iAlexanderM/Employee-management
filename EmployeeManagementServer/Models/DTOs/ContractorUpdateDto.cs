@@ -8,8 +8,6 @@ namespace EmployeeManagementServer.Models.DTOs
 {
     public class ContractorUpdateDto
     {
-        public int Id { get; set; }
-
         [Required(ErrorMessage = "First name is required")]
         public required string FirstName { get; set; }
         [Required(ErrorMessage = "Last name is required")]

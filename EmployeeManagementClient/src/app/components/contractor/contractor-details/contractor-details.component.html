@@ -9,62 +9,60 @@
 			<mat-card class="section-card">
 				<mat-card-title class="section-title">ID: {{ contractor.id }}</mat-card-title>
 				<mat-card-content>
+					<div class="archived-status" *ngIf="contractor.isArchived">Архивирован</div>
 					<div class="action-buttons">
-						<button mat-tonal-button color="primary" class="action-btn action-btn-primary"
+						<button mat-icon-button color="primary" class="action-btn icon-only"
 							[routerLink]="['/contractors/edit', contractor.id]" aria-label="Редактировать контрагента">
-							Редактировать
+							<i class="material-icons">edit</i>
 						</button>
-						<button mat-tonal-button color="accent" class="action-btn action-btn-secondary"
-							(click)="watchAllPasses()" aria-label="Посмотреть пропуска контрагента">
-							Пропуска
+						<button mat-icon-button color="accent" class="action-btn icon-only" (click)="watchAllPasses()"
+							aria-label="Посмотреть пропуска">
+							<i class="material-icons">content_paste_search</i>
 						</button>
-						<button mat-tonal-button color="warn" class="action-btn action-btn-danger"
-							*ngIf="!contractor.isArchived" (click)="archiveContractor()"
-							aria-label="Архивировать контрагента">
-							Архивировать
+						<button mat-icon-button color="warn" class="action-btn icon-only" *ngIf="!contractor.isArchived"
+							(click)="archiveContractor()" aria-label="Архивировать контрагента">
+							<i class="material-icons">archive</i>
 						</button>
-						<button mat-tonal-button color="primary" class="action-btn action-btn-success"
+						<button mat-icon-button color="primary" class="action-btn icon-only"
 							*ngIf="contractor.isArchived" (click)="unarchiveContractor()"
 							aria-label="Разархивировать контрагента">
-							Разархивировать
+							<i class="material-icons">unarchive</i>
 						</button>
 					</div>
 					<div class="photo-section">
 						<div class="photo-item">
-							<a *ngIf="getFirstPhoto()" [href]="getFirstPhoto()!" target="_blank"
-								aria-label="Открыть фото контрагента">
-								<img [src]="getFirstPhoto()!" alt="Фото контрагента" class="img-cont" />
-							</a>
-							<p *ngIf="!getFirstPhoto()" class="text-muted">Фото отсутствует</p>
+							<ng-container *ngIf="getMainDisplayPhoto() as photoData">
+								<a (click)="openGallery(photoData.index, 'nonDocument'); $event.preventDefault()"
+									aria-label="Открыть фото контрагента">
+									<img [src]="photoData.url" alt="Фото контрагента" class="img-cont" />
+								</a>
+							</ng-container>
+							<p *ngIf="!getMainDisplayPhoto()" class="text-muted">Фото отсутствует</p>
 						</div>
 						<div class="photo-item" *ngIf="documentPhotoUrls.length">
 							<div class="photo-gallery">
 								<a *ngIf="documentPhotoUrls.length"
-									[href]="documentPhotoUrls[documentPhotoUrls.length - 1]" target="_blank"
-									(click)="openGallery(documentPhotoUrls.length - 1); $event.preventDefault()"
+									(click)="openGallery(documentPhotoUrls.length - 1, 'document'); $event.preventDefault()"
 									aria-label="Открыть последнее фото документа">
 									<img [src]="documentPhotoUrls[documentPhotoUrls.length - 1]" alt="Фото документа"
 										class="document-photo-large" />
 								</a>
 								<div class="photo-gallery-bottom">
 									<a *ngIf="documentPhotoUrls.length > 1"
-										[href]="documentPhotoUrls[documentPhotoUrls.length - 2]" target="_blank"
-										(click)="openGallery(documentPhotoUrls.length - 2); $event.preventDefault()"
+										(click)="openGallery(documentPhotoUrls.length - 2, 'document'); $event.preventDefault()"
 										aria-label="Открыть предпоследнее фото документа">
 										<img [src]="documentPhotoUrls[documentPhotoUrls.length - 2]"
 											alt="Фото документа" class="document-photo" />
 									</a>
 									<a *ngIf="documentPhotoUrls.length > 2"
-										[href]="documentPhotoUrls[documentPhotoUrls.length - 3]" target="_blank"
-										(click)="openGallery(documentPhotoUrls.length - 3); $event.preventDefault()"
+										(click)="openGallery(documentPhotoUrls.length - 3, 'document'); $event.preventDefault()"
 										aria-label="Открыть третье с конца фото документа">
 										<img [src]="documentPhotoUrls[documentPhotoUrls.length - 3]"
 											alt="Фото документа" class="document-photo" />
 									</a>
-									<button mat-tonal-button color="primary" class="action-btn gallery-btn"
-										(click)="openGallery(0)" *ngIf="documentPhotoUrls.length > 0"
-										aria-label="Открыть галерею документов"
-										[ngClass]="{'gallery-btn-large': documentPhotoUrls.length <= 2}">
+									<button mat-raised-button color="primary" class="action-btn gallery-btn"
+										(click)="openGallery(0, 'document')" *ngIf="documentPhotoUrls.length > 0"
+										aria-label="Открыть галерею документов">
 										+
 									</button>
 								</div>
@@ -166,11 +164,11 @@
 								500 символов</mat-error>
 						</mat-form-field>
 						<div class="action-controls">
-							<button mat-tonal-button color="primary" type="submit" [disabled]="noteForm.pristine"
+							<button mat-raised-button color="primary" type="submit" [disabled]="noteForm.pristine"
 								aria-label="Сохранить заметку">
 								Сохранить
 							</button>
-							<button mat-tonal-button color="accent" type="button"
+							<button mat-raised-button color="accent" type="button"
 								(click)="noteForm.reset({ note: contractor.note })" [disabled]="noteForm.pristine"
 								aria-label="Отменить изменения заметки">
 								Отменить
@@ -258,11 +256,11 @@
 		<div class="history-section">
 			<mat-card class="section-card">
 				<mat-card-content>
-					<button mat-tonal-button color="primary" class="action-btn" (click)="toggleHistory()"
+					<button mat-raised-button color="primary" class="action-btn" (click)="toggleHistory()"
 						[attr.aria-label]="showHistory ? 'Скрыть историю изменений' : 'Показать историю изменений'">
 						{{ showHistory ? 'Скрыть историю' : 'Показать историю' }}
 					</button>
-					<div *ngIf="showHistory">
+					<div *ngIf="showHistory" class="history-content">
 						<mat-card-title class="section-title">История изменений</mat-card-title>
 						<mat-spinner *ngIf="isLoadingHistory" diameter="40" aria-label="Загрузка..."></mat-spinner>
 						<table mat-table class="history-table" [dataSource]="historyEntries"
@@ -302,7 +300,7 @@
 			<div class="gallery-modal" *ngIf="isGalleryOpen" @modalFade (click)="closeGallery()">
 				<div class="gallery-content" (click)="$event.stopPropagation();">
 					<div class="gallery-header">
-						<span class="gallery-counter">{{ currentGalleryIndex + 1 }} / {{ documentPhotoUrls.length
+						<span class="gallery-counter">{{ currentGalleryIndex + 1 }} / {{ currentGalleryPhotos.length
 							}}</span>
 						<button mat-button color="warn" class="action-btn close-btn" (click)="closeGallery()"
 							aria-label="Закрыть галерею">
@@ -315,11 +313,11 @@
 							[disabled]="currentGalleryIndex === 0" aria-label="Предыдущее фото">
 							<mat-icon>chevron_left</mat-icon>
 						</button>
-						<img [src]="documentPhotoUrls[currentGalleryIndex]" alt="Фото документа"
+						<img [src]="currentGalleryPhotos[currentGalleryIndex]" alt="Фото в галерее"
 							class="gallery-image" />
 						<button mat-icon-button class="nav-btn next-btn"
 							(click)="$event.stopPropagation(); navigateGallery('next')"
-							[disabled]="currentGalleryIndex === documentPhotoUrls.length - 1"
+							[disabled]="currentGalleryIndex === currentGalleryPhotos.length - 1"
 							aria-label="Следующее фото">
 							<mat-icon>chevron_right</mat-icon>
 						</button>

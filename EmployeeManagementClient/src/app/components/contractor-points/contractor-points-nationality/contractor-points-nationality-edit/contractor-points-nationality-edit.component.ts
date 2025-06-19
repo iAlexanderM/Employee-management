@@ -4,11 +4,32 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ContractorPointsService } from '../../../../services/contractor-points.service';
 import { Nationality } from '../../../../models/contractor-points.model';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
 	selector: 'app-contractor-points-nationality-edit',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatCheckboxModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule,
+	],
 	templateUrl: './contractor-points-nationality-edit.component.html',
 	styleUrls: ['./contractor-points-nationality-edit.component.css'] // Исправлено на styleUrls
 })
@@ -63,5 +84,9 @@ export class ContractorPointsNationalityEditComponent implements OnInit {
 		} else {
 			this.errorMessage = 'Пожалуйста, заполните все обязательные поля корректно.';
 		}
+	}
+
+	cancel(): void {
+		this.router.navigate(['/nationality']);
 	}
 }

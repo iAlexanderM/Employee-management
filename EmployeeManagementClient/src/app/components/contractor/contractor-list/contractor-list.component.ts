@@ -278,11 +278,14 @@ export class ContractorListComponent implements OnInit, OnDestroy {
 		return contractor;
 	}
 
-	getFirstPhoto(contractor: Contractor): string | null {
+	getLatestNonDocumentPhoto(contractor: Contractor): string | null {
 		if (contractor.photos && contractor.photos.length > 0) {
-			const photo = contractor.photos[0];
-			if (photo && photo.filePath) {
-				const filePath = photo.filePath.replace(/\\/g, '/').replace(/^.*wwwroot\//, '');
+			const nonDocumentPhotos = contractor.photos
+				.filter(photo => !photo.isDocumentPhoto)
+				.sort((a, b) => b.id - a.id);
+			const latestPhoto = nonDocumentPhotos[0];
+			if (latestPhoto && latestPhoto.filePath) {
+				const filePath = latestPhoto.filePath.replace(/\\/g, '/').replace(/^.*wwwroot\//, '');
 				const fullPath = `http://localhost:8080/${filePath}`;
 				return fullPath;
 			}

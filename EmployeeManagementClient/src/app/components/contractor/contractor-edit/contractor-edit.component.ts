@@ -4,12 +4,18 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ContractorEditService } from '../../../services/contractor-edit.service';
 import { ContractorWatchService } from '../../../services/contractor-watch.service';
-import { HistoryService } from '../../../services/history.service';
-import { AuthService } from '../../../services/auth.service';
 import { Contractor, ContractorDto, Photo } from '../../../models/contractor.model';
-import { HttpClientModule } from '@angular/common/http';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { CitizenshipAndNationalityModalComponent } from '../../modals/citizenship-and-nationality-modal/citizenship-and-nationality-modal.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
 	selector: 'app-contractor-edit',
@@ -19,8 +25,16 @@ import { CitizenshipAndNationalityModalComponent } from '../../modals/citizenshi
 		ReactiveFormsModule,
 		RouterModule,
 		NgxMaskDirective,
-		HttpClientModule,
 		CitizenshipAndNationalityModalComponent,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatCheckboxModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule,
 	],
 	providers: [provideNgxMask()],
 	templateUrl: './contractor-edit.component.html',
@@ -43,8 +57,6 @@ export class ContractorEditComponent implements OnInit {
 	private fb = inject(FormBuilder);
 	private contractorService = inject(ContractorEditService);
 	private contractorWatchService = inject(ContractorWatchService);
-	private historyService = inject(HistoryService);
-	private authService = inject(AuthService);
 	public route = inject(ActivatedRoute);
 	public router = inject(Router);
 
@@ -70,6 +82,7 @@ export class ContractorEditComponent implements OnInit {
 			PhoneNumber: ['', Validators.required],
 			IsArchived: [false],
 			SortOrder: [null],
+			Note: ['', [Validators.maxLength(500)]],
 		});
 
 		this.contractorForm.valueChanges.subscribe((value) => {
@@ -78,8 +91,8 @@ export class ContractorEditComponent implements OnInit {
 	}
 
 	private normalizeContractorData(data: ContractorDto): Contractor {
-		const activePasses = data.activePasses;
-		const closedPasses = data.closedPasses;
+		const activePasses = data.activePasses || [];
+		const closedPasses = data.closedPasses || [];
 		const passes = activePasses.concat(closedPasses);
 		const photos = Array.isArray(data.photos) ? data.photos : [];
 		const documentPhotos = Array.isArray(data.documentPhotos) ? data.documentPhotos : [];
@@ -106,7 +119,7 @@ export class ContractorEditComponent implements OnInit {
 			passes,
 			activePasses,
 			closedPasses,
-			note: data.note,
+			note: data.note || '',
 		};
 	}
 
@@ -136,6 +149,7 @@ export class ContractorEditComponent implements OnInit {
 					PhoneNumber: contractor.phoneNumber,
 					IsArchived: contractor.isArchived,
 					SortOrder: contractor.sortOrder,
+					Note: contractor.note,
 				});
 
 				const photos = contractor.photos || [];
@@ -155,7 +169,6 @@ export class ContractorEditComponent implements OnInit {
 				this.documentPhotoPreviews = this.existingDocumentPhotos.map((photo: Photo) => ({
 					file: null,
 					url: this.getFilePath(photo.filePath),
-					isDocumentPhoto: true,
 				}));
 			},
 			error: (err: any) => {
@@ -256,14 +269,13 @@ export class ContractorEditComponent implements OnInit {
 			contractorData.PassportIssueDate = new Date(contractorData.PassportIssueDate).toISOString();
 		}
 
-		// Добавляем текущее значение note из originalContractor
-		contractorData.note = this.originalContractor?.note || '';
+		contractorData.PhoneNumber = contractorData.PhoneNumber.replace(/\D/g, '');
 
 		this.contractorService
 			.updateContractor(this.contractorId, {
 				...contractorData,
-				Photos: this.photoPreviews.map((preview) => preview.file).filter(Boolean),
-				DocumentPhotos: this.documentPhotoPreviews.map((preview) => preview.file).filter(Boolean),
+				Photos: this.photoPreviews.map((preview) => preview.file).filter(Boolean) as File[],
+				DocumentPhotos: this.documentPhotoPreviews.map((preview) => preview.file).filter(Boolean) as File[],
 				PhotosToRemove: this.photosToRemove,
 			})
 			.subscribe({
@@ -283,5 +295,9 @@ export class ContractorEditComponent implements OnInit {
 					}
 				},
 			});
+	}
+
+	cancel(): void {
+		this.router.navigate(['/contractors']);
 	}
 }

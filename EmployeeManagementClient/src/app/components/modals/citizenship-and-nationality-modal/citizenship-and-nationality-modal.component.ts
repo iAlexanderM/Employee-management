@@ -4,11 +4,29 @@ import { CommonModule } from '@angular/common';
 import { Citizenship, Nationality } from '../../../models/contractor-points.model';
 import { ContractorPointsService } from '../../../services/contractor-points.service';
 import { Observable } from 'rxjs';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
 	selector: 'app-citizenship-and-nationality-modal',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatSnackBarModule],
 	templateUrl: './citizenship-and-nationality-modal.component.html',
 	styleUrls: ['./citizenship-and-nationality-modal.component.css']
 })
@@ -38,18 +56,15 @@ export class CitizenshipAndNationalityModalComponent implements OnInit {
 	isSearchMode: boolean = false;
 
 	constructor(private fb: FormBuilder, private contractorPointsService: ContractorPointsService) {
-		// Инициализация формы поиска с валидаторами
 		this.searchForm = this.fb.group({
 			Id: [''],
 			Name: ['']
 		});
 
-		// Инициализация формы добавления с валидаторами
 		this.addForm = this.fb.group({
 			newItemName: ['', Validators.required]
 		});
 
-		// Инициализация формы пагинации с валидаторами
 		this.paginationForm = this.fb.group({
 			pageSize: [this.pageSize, [Validators.required, Validators.min(1)]]
 		});
@@ -61,7 +76,6 @@ export class CitizenshipAndNationalityModalComponent implements OnInit {
 			this.loadItems();
 		}
 
-		// Подписка на изменения pageSize
 		this.paginationForm.get('pageSize')?.valueChanges.subscribe(value => {
 			this.pageSize = Number(value);
 			this.onPageSizeChange();
@@ -82,7 +96,7 @@ export class CitizenshipAndNationalityModalComponent implements OnInit {
 		loadMethod(this.currentPage, this.pageSize).subscribe(
 			(data: any) => {
 				this.items = data[fieldKey] || [];
-				this.filteredItems = this.items; // При серверной пагинации
+				this.filteredItems = this.items;
 				this.totalItems = data.total || this.items.length;
 				this.calculateTotalPages();
 				this.updateVisiblePages();
@@ -208,7 +222,7 @@ export class CitizenshipAndNationalityModalComponent implements OnInit {
 
 	searchItems(): void {
 		this.isSearchMode = true;
-		this.currentPage = 1; // Сброс на первую страницу при новом поиске
+		this.currentPage = 1;
 		const searchMethod = this.getSearchMethod();
 		const criteria = this.prepareSearchCriteria();
 		const fieldKey = this.getFieldKey();

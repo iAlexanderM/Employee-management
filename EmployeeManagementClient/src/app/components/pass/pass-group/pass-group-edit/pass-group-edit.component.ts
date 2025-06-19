@@ -3,13 +3,34 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { PassGroupTypeService } from '../../../../services/pass-group-type.service';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
 	selector: 'app-pass-group-edit',
 	templateUrl: './pass-group-edit.component.html',
 	styleUrls: ['./pass-group-edit.component.css'],
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule, RouterModule],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatCheckboxModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule,
+	],
 })
 export class PassGroupEditComponent implements OnInit {
 	groupForm: FormGroup;
@@ -63,5 +84,9 @@ export class PassGroupEditComponent implements OnInit {
 		} else {
 			this.errorMessage = 'Пожалуйста, заполните все обязательные поля.';
 		}
+	}
+
+	cancel(): void {
+		this.router.navigate(['/pass-groups']);
 	}
 }

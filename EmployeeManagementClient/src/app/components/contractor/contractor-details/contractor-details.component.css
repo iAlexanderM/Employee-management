@@ -69,6 +69,7 @@
 .history-section {
 	grid-column: 1 / -1;
 	width: 100%;
+	margin: 24px 0;
 }
 
 .section-card {
@@ -83,14 +84,14 @@
 	width: 100%;
 }
 
-::ng-deep .section-card .mat-mdc-card-content {
+.section-card .mat-mdc-card-content {
 	padding: 12px;
 	border: 1px solid #d6d3d1;
 	flex-grow: 1;
 }
 
-::ng-deep .section-card .mat-card-title {
-	font-family: 'Poppins', 'Roboto', sans-serif !important;
+.section-card .mat-mdc-card-title {
+	font-family: 'Poppins', 'Roboto', sans-serif;
 	font-weight: 700;
 	font-size: 18px;
 	color: #111827;
@@ -108,25 +109,136 @@
 	gap: 8px;
 	margin-top: 6px;
 	margin-bottom: 16px;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+}
+
+.archived-status {
+	background-color: #e0f2fe;
+	color: #1e40af;
+	padding: 8px 12px;
+	border-radius: 4px;
+	font-size: 14px;
+	font-weight: 500;
+	margin-bottom: 8px;
+	width: 100%;
+	text-align: center;
 }
 
 .action-buttons .action-btn {
-	flex: 1;
+	flex: 0 0 auto;
+	width: 40px;
+	height: 40px;
+	border-radius: 4px;
+	border: none;
+	outline: none;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	padding-left: 8px;
+}
+
+.action-buttons .action-btn:hover {
+	box-shadow: none;
+	outline: none;
+}
+
+.action-buttons .action-btn mat-icon,
+.action-buttons .action-btn i.material-icons {
+	font-size: 24px;
+	width: 24px;
+	height: 24px;
+	line-height: 24px;
+	margin: 0;
 }
 
 .action-controls {
 	display: flex;
-	gap: 8px;
-	margin-top: 6px;
+	gap: 6px;
+	padding: 0 12px;
+	margin-top: 16px;
 	margin-bottom: 16px;
+	justify-content: space-between;
+}
+
+.note-form .action-controls .mat-mdc-raised-button {
+	flex: 0 0 45%;
+	height: 40px;
+	border-radius: 20px;
+	font-size: 14px;
+	font-weight: 600;
+	text-transform: none;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+	transition: all 0.3s ease;
+	border: 1px solid transparent;
+}
+
+.note-form .action-controls .mat-mdc-raised-button[color="primary"] {
+	background-color: #3b82f6;
+	color: #ffffff;
+	border-color: #2563eb;
+}
+
+.note-form .action-controls .mat-mdc-raised-button[color="primary"]:hover:not(.mdc-button--disabled) {
+	background-color: #2563eb;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+	transform: translateY(-1px);
+}
+
+.note-form .action-controls .mat-mdc-raised-button[color="accent"] {
+	background-color: #f43f5e;
+	color: #ffffff;
+	border-color: #e11d48;
+}
+
+.note-form .action-controls .mat-mdc-raised-button[color="accent"]:hover:not(.mdc-button--disabled) {
+	background-color: #e11d48;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+	transform: translateY(-1px);
+}
+
+.note-form .action-controls .mat-mdc-raised-button.mdc-button--disabled {
+	background-color: #f3f4f6;
+	color: #6b7280;
+	box-shadow: none;
+	border-color: transparent;
+	cursor: not-allowed;
 }
 
 .action-btn {
-	font-family: 'Poppins', 'Roboto', sans-serif !important;
+	font-family: 'Poppins', 'Roboto', sans-serif;
 	font-weight: 500;
 	font-size: 14px;
 	height: 40px;
 	border-radius: 4px;
+	min-width: 40px;
+}
+
+.action-btn.mat-mdc-raised-button[color="primary"] {
+	background-color: #3b82f6;
+	color: #ffffff;
+	border-color: #2563eb;
+}
+
+.action-btn.mat-mdc-raised-button[color="primary"]:hover:not(.mdc-button--disabled) {
+	background-color: #2563eb;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+	transform: translateY(-1px);
+}
+
+.action-btn.mat-mdc-raised-button.mdc-button--disabled {
+	background-color: #f3f4f6;
+	color: #6b7280;
+	border-color: transparent;
+	cursor: not-allowed;
+}
+
+.action-btn.icon-only {
+	padding: 0;
+	width: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .action-btn.btn-sm {
@@ -148,12 +260,6 @@
 	height: 60px;
 	padding: 0;
 	font-size: 18px;
-	max-width: 80px;
-}
-
-.gallery-btn-large {
-	flex-grow: 2;
-	max-width: 160px;
 }
 
 .error-message {
@@ -165,10 +271,10 @@
 	color: #dc2626;
 	border-radius: 4px;
 	margin-bottom: 16px;
-	font-family: 'Poppins', sans-serif !important;
+	font-family: 'Poppins', sans-serif;
 }
 
-.error-message mat-icon {
+.error-message mat-icon-body {
 	font-size: 20px;
 	height: 20px;
 	width: 20px;
@@ -204,9 +310,17 @@
 	border-radius: 6px;
 	border: 1px solid #e5e7eb;
 	height: 190px;
+	overflow: hidden;
 }
 
-.img-cont,
+.img-cont {
+	width: 300px;
+	height: 200px;
+	object-fit: cover;
+	border-radius: 4px;
+	border: 1px solid #e5e7eb;
+}
+
 .document-photo-large {
 	width: 100%;
 	max-width: 100%;
@@ -235,8 +349,44 @@
 	display: flex;
 	gap: 6px;
 	flex-wrap: nowrap;
-	justify-content: flex-start;
+	justify-content: space-between;
 	width: 100%;
+}
+
+.photo-gallery-bottom a,
+.photo-gallery-bottom .gallery-btn {
+	flex: 1;
+	min-width: 0;
+	height: 60px;
+	border-radius: 4px;
+	border: 1px solid #e5e7eb;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.photo-gallery-bottom a img {
+	width: 133.844px;
+	height: 116px;
+	object-fit: cover;
+	border-radius: 4px;
+}
+
+.photo-gallery-bottom a:nth-child(1):last-child,
+.photo-gallery-bottom .gallery-btn:nth-child(1):last-child {
+	flex: 0 0 100%;
+}
+
+.photo-gallery-bottom a:nth-child(1):nth-last-child(2),
+.photo-gallery-bottom .gallery-btn:nth-child(2):last-child {
+	flex: 0 0 66.66%;
+}
+
+.photo-gallery-bottom a:nth-child(1):nth-last-child(3),
+.photo-gallery-bottom a:nth-child(2):nth-last-child(2),
+.photo-gallery-bottom .gallery-btn:nth-child(3):last-child {
+	flex: 0 0 32%;
 }
 
 .document-photo {
@@ -281,7 +431,8 @@
 	margin-top: 4px;
 }
 
-::ng-deep .mat-icon {
+.mat-icon,
+i.material-icons {
 	color: #1f2937;
 	font-size: 20px;
 	width: 20px;
@@ -332,7 +483,7 @@
 	flex-grow: 1;
 }
 
-::ng-deep .full-width-expand .mat-mdc-text-field-wrapper {
+.full-width-expand .mat-mdc-text-field-wrapper {
 	height: auto;
 }
 
@@ -359,7 +510,7 @@
 }
 
 .data-table th {
-	background: #4b6cb7;
+	background: #3786f3;
 	color: #ffffff;
 	font-weight: 600;
 }
@@ -418,10 +569,14 @@
 	width: 100px;
 }
 
+.history-section .history-content {
+	margin-top: 16px;
+}
+
 .history-table {
 	width: 100%;
 	max-width: 100%;
-	margin: 0 auto;
+	margin: 16px 0 0 0;
 	border-collapse: collapse;
 	border-spacing: 0;
 	background: #fefaf6;
@@ -439,7 +594,7 @@
 }
 
 .history-table th {
-	background: #4b6cb7;
+	background: #3786f3;
 	color: #ffffff;
 	font-weight: 600;
 	padding: 10px 12px;
@@ -561,6 +716,7 @@ mat-spinner {
 
 	.img-cont,
 	.document-photo-large {
+		width: 100%;
 		height: auto;
 		aspect-ratio: 4/3;
 	}
@@ -573,6 +729,10 @@ mat-spinner {
 	.action-controls {
 		flex-direction: column;
 		gap: 12px;
+	}
+
+	.note-form .action-controls .mat-mdc-raised-button {
+		flex: 0 0 100%;
 	}
 
 	.gallery-content {

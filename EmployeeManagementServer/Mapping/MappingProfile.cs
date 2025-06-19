@@ -59,24 +59,18 @@ namespace EmployeeManagementServer.Mappings
                 .ForMember(dest => dest.Photos, opt => opt.Ignore())
                 .ForMember(dest => dest.Passes, opt => opt.Ignore());
 
-            CreateMap<Contractor, ContractorResponseDto>()
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdateddAt))
-                .ForMember(dest => dest.Photos, opt => opt.MapFrom(src => src.Photos))
-                .ForMember(dest => dest.DocumentPhotos, opt => opt.MapFrom(src => src.Photos.Where(p => p.IsDocumentPhoto)))
-                .ForMember(dest => dest.ActivePasses, opt => opt.MapFrom(src => src.Passes.Where(p => !p.IsClosed)))
-                .ForMember(dest => dest.ClosedPasses, opt => opt.MapFrom(src => src.Passes.Where(p => p.IsClosed)));
-
             CreateMap<ContractorCreateDto, Contractor>()
                 .ForMember(dest => dest.Photos, opt => opt.Ignore())
                 .ForMember(dest => dest.Passes, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdateddAt, opt => opt.Ignore());
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
             CreateMap<ContractorUpdateDto, Contractor>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Photos, opt => opt.Ignore())
                 .ForMember(dest => dest.Passes, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdateddAt, opt => opt.Ignore());
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
             CreateMap<PassType, PassTypeDto>().ReverseMap();
 

@@ -1,187 +1,207 @@
-<div class="container mt-4">
-	<form [formGroup]="contractorForm" (ngSubmit)="saveChanges()">
-		<div *ngIf="errorMessage" class="alert alert-danger">
-			<p>{{ errorMessage }}</p>
-		</div>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Редактирование контрагента</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<mat-card *ngIf="errorMessage" class="error-message mt-4" role="alert">
+				<mat-icon>error_outline</mat-icon>
+				{{ errorMessage }}
+			</mat-card>
 
-		<div class="form-group">
-			<label for="firstName">Имя:</label>
-			<input id="firstName" formControlName="FirstName" class="form-control" type="text"
-				[ngClass]="{'is-invalid': contractorForm.get('FirstName')?.invalid && contractorForm.get('FirstName')?.touched}" />
-			<div *ngIf="contractorForm.get('FirstName')?.invalid && contractorForm.get('FirstName')?.touched"
-				class="invalid-feedback">
-				Имя обязательно.
-			</div>
-		</div>
+			<form [formGroup]="contractorForm" (ngSubmit)="saveChanges()" class="edit-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="16px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Имя *</mat-label>
+							<input matInput formControlName="FirstName" />
+							<mat-icon matSuffix>person</mat-icon>
+							<mat-error *ngIf="contractorForm.get('FirstName')?.hasError('required')">Имя
+								обязательно</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Фамилия *</mat-label>
+							<input matInput formControlName="LastName" />
+							<mat-icon matSuffix>person</mat-icon>
+							<mat-error *ngIf="contractorForm.get('LastName')?.hasError('required')">Фамилия
+								обязательна</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Отчество</mat-label>
+							<input matInput formControlName="MiddleName" />
+							<mat-icon matSuffix>person</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Дата рождения *</mat-label>
+							<input matInput formControlName="BirthDate" type="date" />
+							<mat-icon matSuffix>calendar_today</mat-icon>
+							<mat-error *ngIf="contractorForm.get('BirthDate')?.hasError('required')">Дата рождения
+								обязательна</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Тип документа *</mat-label>
+							<mat-select formControlName="DocumentType">
+								<mat-option value="Паспорт">Паспорт</mat-option>
+								<mat-option value="Водительское удостоверение">Водительское удостоверение</mat-option>
+								<mat-option value="Идентификационная карта">Идентификационная карта</mat-option>
+								<mat-option value="Вид на жительство">Вид на жительство</mat-option>
+							</mat-select>
+							<mat-icon matSuffix>description</mat-icon>
+							<mat-error *ngIf="contractorForm.get('DocumentType')?.hasError('required')">Тип документа
+								обязателен</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Серия и номер паспорта *</mat-label>
+							<input matInput formControlName="PassportSerialNumber" />
+							<mat-icon matSuffix>badge</mat-icon>
+							<mat-error *ngIf="contractorForm.get('PassportSerialNumber')?.hasError('required')">Серия и
+								номер паспорта обязательны</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Кем выдан *</mat-label>
+							<input matInput formControlName="PassportIssuedBy" />
+							<mat-icon matSuffix>business</mat-icon>
+							<mat-error *ngIf="contractorForm.get('PassportIssuedBy')?.hasError('required')">Поле "Кем
+								выдан" обязательно</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Дата выдачи *</mat-label>
+							<input matInput formControlName="PassportIssueDate" type="date" />
+							<mat-icon matSuffix>calendar_today</mat-icon>
+							<mat-error *ngIf="contractorForm.get('PassportIssueDate')?.hasError('required')">Дата выдачи
+								обязательна</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Тип продукции *</mat-label>
+							<input matInput formControlName="ProductType" />
+							<mat-icon matSuffix>category</mat-icon>
+							<mat-error *ngIf="contractorForm.get('ProductType')?.hasError('required')">Тип продукции
+								обязателен</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Номер телефона *</mat-label>
+							<input matInput formControlName="PhoneNumber" type="tel" mask="0 (000) 000-00-00"
+								placeholder="8 (___) ___-__-__" inputmode="tel" />
+							<mat-icon matSuffix>phone</mat-icon>
+							<mat-hint>Формат: 8 (999) 999-99-99</mat-hint>
+							<mat-error *ngIf="contractorForm.get('PhoneNumber')?.hasError('required')">Номер телефона
+								обязателен</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Гражданство *</mat-label>
+							<input matInput formControlName="Citizenship" readonly />
+							<mat-icon matSuffix (click)="openModal('Citizenship', 'select')" class="action-icon"
+								matTooltip="Выбрать гражданство">search</mat-icon>
+							<mat-icon matSuffix (click)="openModal('Citizenship', 'add')" class="action-icon"
+								matTooltip="Добавить гражданство">add</mat-icon>
+							<mat-error *ngIf="contractorForm.get('Citizenship')?.hasError('required')">Гражданство
+								обязательно</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Национальность *</mat-label>
+							<input matInput formControlName="Nationality" readonly />
+							<mat-icon matSuffix (click)="openModal('Nationality', 'select')" class="action-icon"
+								matTooltip="Выбрать национальность">search</mat-icon>
+							<mat-icon matSuffix (click)="openModal('Nationality', 'add')" class="action-icon"
+								matTooltip="Добавить национальность">add</mat-icon>
+							<mat-error *ngIf="contractorForm.get('Citizenship')?.hasError('required')">Национальность
+								обязательна</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
 
-		<div class="form-group">
-			<label for="lastName">Фамилия:</label>
-			<input id="lastName" formControlName="LastName" class="form-control" type="text"
-				[ngClass]="{'is-invalid': contractorForm.get('LastName')?.invalid && contractorForm.get('LastName')?.touched}" />
-			<div *ngIf="contractorForm.get('LastName')?.invalid && contractorForm.get('LastName')?.touched"
-				class="invalid-feedback">
-				Фамилия обязательна.
-			</div>
-		</div>
 
-		<div class="form-group">
-			<label for="middleName">Отчество:</label>
-			<input id="middleName" formControlName="MiddleName" class="form-control" type="text" />
-		</div>
+					<mat-grid-tile [colspan]="2" [rowspan]="2">
+						<div class="note-container">
+							<mat-form-field appearance="fill" class="full-width note-textarea-field" floatLabel="auto">
+								<mat-label>Пометка</mat-label>
+								<textarea matInput formControlName="Note" maxlength="500" placeholder="Введите пометку"
+									aria-label="Заметка контрагента" cdkTextareaAutosize [cdkAutosizeMinRows]="7"
+									[cdkAutosizeMaxRows]="7"></textarea>
+							</mat-form-field>
+						</div>
+					</mat-grid-tile>
+				</mat-grid-list>
 
-		<div class="form-group">
-			<label for="birthDate">Дата рождения:</label>
-			<input id="birthDate" formControlName="BirthDate" class="form-control" type="date"
-				[ngClass]="{'is-invalid': contractorForm.get('BirthDate')?.invalid && contractorForm.get('BirthDate')?.touched}" />
-			<div *ngIf="contractorForm.get('BirthDate')?.invalid && contractorForm.get('BirthDate')?.touched"
-				class="invalid-feedback">
-				Дата рождения обязательна.
-			</div>
-		</div>
-
-		<div class="form-group">
-			<label for="documentType">Тип документа:</label>
-			<select id="documentType" formControlName="DocumentType" class="form-control"
-				[ngClass]="{'is-invalid': contractorForm.get('DocumentType')?.invalid && contractorForm.get('DocumentType')?.touched}">
-				<option value="" disabled selected>Выберите тип документа</option>
-				<option value="Паспорт">Паспорт</option>
-				<option value="Водительское удостоверение">Водительское удостоверение</option>
-				<option value="Идентификационная карта">Идентификационная карта</option>
-				<option value="Вид на жительство">Вид на жительство</option>
-			</select>
-			<div *ngIf="contractorForm.get('DocumentType')?.invalid && contractorForm.get('DocumentType')?.touched"
-				class="invalid-feedback">
-				Тип документа обязателен.
-			</div>
-		</div>
-
-		<div class="form-group">
-			<label for="passportSerialNumber">Серия и номер паспорта:</label>
-			<input id="passportSerialNumber" formControlName="PassportSerialNumber" class="form-control" type="text"
-				[ngClass]="{'is-invalid': contractorForm.get('PassportSerialNumber')?.invalid && contractorForm.get('PassportSerialNumber')?.touched}" />
-			<div *ngIf="contractorForm.get('PassportSerialNumber')?.invalid && contractorForm.get('PassportSerialNumber')?.touched"
-				class="invalid-feedback">
-				Серия и номер паспорта обязательны.
-			</div>
-		</div>
-
-		<div class="form-group">
-			<label for="passportIssuedBy">Кем выдан:</label>
-			<input id="passportIssuedBy" formControlName="PassportIssuedBy" class="form-control" type="text"
-				[ngClass]="{'is-invalid': contractorForm.get('PassportIssuedBy')?.invalid && contractorForm.get('PassportIssuedBy')?.touched}" />
-			<div *ngIf="contractorForm.get('PassportIssuedBy')?.invalid && contractorForm.get('PassportIssuedBy')?.touched"
-				class="invalid-feedback">
-				Поле "Кем выдан" обязательно.
-			</div>
-		</div>
-
-		<div class="form-group">
-			<label for="passportIssueDate">Дата выдачи:</label>
-			<input id="passportIssueDate" formControlName="PassportIssueDate" class="form-control" type="date"
-				[ngClass]="{'is-invalid': contractorForm.get('PassportIssueDate')?.invalid && contractorForm.get('PassportIssueDate')?.touched}" />
-			<div *ngIf="contractorForm.get('PassportIssueDate')?.invalid && contractorForm.get('PassportIssueDate')?.touched"
-				class="invalid-feedback">
-				Дата выдачи обязательна.
-			</div>
-		</div>
-
-		<div class="form-group">
-			<label for="citizenship">Гражданство:</label>
-			<div>
-				<button type="button" class="btn btn-primary"
-					(click)="openModal('Citizenship', 'select')">Выбрать</button>
-				<button type="button" class="btn btn-secondary"
-					(click)="openModal('Citizenship', 'add')">Добавить</button>
-			</div>
-			<input id="citizenship" formControlName="Citizenship" class="form-control" type="text" readonly
-				[ngClass]="{'is-invalid': contractorForm.get('Citizenship')?.invalid && contractorForm.get('Citizenship')?.touched}" />
-			<div *ngIf="contractorForm.get('Citizenship')?.invalid && contractorForm.get('Citizenship')?.touched"
-				class="invalid-feedback">
-				Гражданство обязательно.
-			</div>
-		</div>
-
-		<div class="form-group">
-			<label for="nationality">Национальность:</label>
-			<div>
-				<button type="button" class="btn btn-primary"
-					(click)="openModal('Nationality', 'select')">Выбрать</button>
-				<button type="button" class="btn btn-secondary"
-					(click)="openModal('Nationality', 'add')">Добавить</button>
-			</div>
-			<input id="nationality" formControlName="Nationality" class="form-control" type="text" readonly
-				[ngClass]="{'is-invalid': contractorForm.get('Nationality')?.invalid && contractorForm.get('Nationality')?.touched}" />
-			<div *ngIf="contractorForm.get('Nationality')?.invalid && contractorForm.get('Nationality')?.touched"
-				class="invalid-feedback">
-				Национальность обязательна.
-			</div>
-		</div>
-
-		<!-- Модальный компонент -->
-		<app-citizenship-and-nationality-modal *ngIf="isModalOpen" [fieldName]="modalField" [mode]="modalMode"
-			[type]="modalField === 'Citizenship' ? 'citizenship' : 'nationality'" (modalClose)="closeModal()"
-			(itemSelected)="selectItem($event)" (itemAdded)="addItem($event)"></app-citizenship-and-nationality-modal>
-
-		<div class="form-group">
-			<label for="productType">Тип продукции:</label>
-			<input id="productType" formControlName="ProductType" class="form-control" type="text"
-				[ngClass]="{'is-invalid': contractorForm.get('ProductType')?.invalid && contractorForm.get('ProductType')?.touched}" />
-			<div *ngIf="contractorForm.get('ProductType')?.invalid && contractorForm.get('ProductType')?.touched"
-				class="invalid-feedback">
-				Тип продукции обязателен.
-			</div>
-		</div>
-
-		<div class="form-group">
-			<label for="phoneNumber">Номер телефона:</label>
-			<input id="phoneNumber" formControlName="PhoneNumber" class="form-control" type="text"
-				mask="0 (000) 000-00-00" placeholder="8 (___) ___-__-__"
-				[ngClass]="{'is-invalid': contractorForm.get('PhoneNumber')?.invalid && contractorForm.get('PhoneNumber')?.touched}" />
-			<div *ngIf="contractorForm.get('PhoneNumber')?.invalid && contractorForm.get('PhoneNumber')?.touched"
-				class="invalid-feedback">
-				Номер телефона обязателен.
-			</div>
-		</div>
-
-		<div class="form-group">
-			<label for="sortOrder">Порядок сортировки:</label>
-			<input id="sortOrder" formControlName="SortOrder" class="form-control" type="number" />
-		</div>
-
-		<div class="form-group">
-			<label for="Photos">Фотографии:</label>
-			<input id="Photos" type="file" (change)="onPhotoChange($event, false)" multiple class="form-control" />
-			<div class="photo-previews mt-2">
-				<ng-container *ngFor="let preview of photoPreviews; let i = index">
-					<div class="photo-thumbnail" *ngIf="preview.url && preview.url.trim() !== ''">
-						<img [src]="preview.url" alt="Миниатюра фото" class="img-thumbnail"
-							style="width: 100px; height: 100px;" /> <br>
-						<button type="button" class="btn btn-danger btn-sm mt-1"
-							(click)="removePhoto(i, false)">Удалить</button>
+				<div class="form-group mt-4">
+					<label>Фотографии:</label>
+					<input type="file" id="Photos" class="hidden-file-input" (change)="onPhotoChange($event, false)"
+						multiple accept="image/*" #photoInput />
+					<div class="photo-previews">
+						<div class="photo-thumbnail add-photo" (click)="photoInput.click()" matTooltip="Добавить фото"
+							aria-label="Добавить фото">
+							<div class="add-icon">+</div>
+						</div>
+						<div *ngFor="let preview of photoPreviews; let i = index" class="photo-thumbnail">
+							<img [src]="preview.url" alt="Миниатюра фото" />
+							<div class="button-container">
+								<button mat-raised-button color="warn" class="action-btn btn-sm"
+									(click)="removePhoto(i, false)" matTooltip="Удалить фото">
+									Удалить
+								</button>
+							</div>
+						</div>
 					</div>
-				</ng-container>
-			</div>
-		</div>
+				</div>
 
-		<div class="form-group mt-4">
-			<label for="DocumentPhotos">Документальные фото:</label>
-			<input id="DocumentPhotos" type="file" (change)="onPhotoChange($event, true)" multiple
-				class="form-control" />
-			<div class="document-photo-previews mt-2">
-				<ng-container *ngFor="let preview of documentPhotoPreviews; let i = index">
-					<div class="photo-thumbnail" *ngIf="preview.url && preview.url.trim() !== ''">
-						<img [src]="preview.url" alt="Миниатюра документального фото" class="img-thumbnail"
-							style="width: 100px; height: 100px;" /> <br>
-						<button type="button" class="btn btn-danger btn-sm mt-1"
-							(click)="removePhoto(i, true)">Удалить</button>
+				<div class="form-group mt-4">
+					<label>Документы:</label>
+					<input type="file" id="DocumentPhotos" class="hidden-file-input"
+						(change)="onPhotoChange($event, true)" multiple accept="image/*" #documentPhotoInput />
+					<div class="document-photo-previews">
+						<div class="photo-thumbnail add-photo" (click)="documentPhotoInput.click()"
+							matTooltip="Добавить документальное фото" aria-label="Добавить документальное фото">
+							<div class="add-icon">+</div>
+						</div>
+						<div *ngFor="let preview of documentPhotoPreviews; let i = index" class="photo-thumbnail">
+							<img [src]="preview.url" alt="Миниатюра документального фото" />
+							<div class="button-container">
+								<button mat-raised-button color="warn" class="action-btn btn-sm"
+									(click)="removePhoto(i, true)" matTooltip="Удалить фото">
+									Удалить
+								</button>
+							</div>
+						</div>
 					</div>
-				</ng-container>
-			</div>
-		</div>
+				</div>
 
-		<div class="form-group mt-4">
-			<button type="submit" class="btn btn-primary" [disabled]="contractorForm.invalid">Сохранить</button>
-			<button type="button" class="btn btn-secondary" (click)="router.navigate(['/contractors'])">Отмена</button>
-		</div>
-	</form>
+				<div class="d-flex justify-content-between gap-2 mt-4">
+					<button mat-raised-button color="primary" class="action-btn" type="submit"
+						[disabled]="contractorForm.invalid" matTooltip="Сохранить изменения">
+						Сохранить
+					</button>
+					<button mat-stroked-button color="accent" class="action-btn" type="button" (click)="cancel()"
+						matTooltip="Отменить редактирование">
+						Отменить
+					</button>
+				</div>
+			</form>
+
+			<app-citizenship-and-nationality-modal *ngIf="isModalOpen" [fieldName]="modalField" [mode]="modalMode"
+				[type]="modalField === 'Citizenship' ? 'citizenship' : 'nationality'" (modalClose)="closeModal()"
+				(itemSelected)="selectItem($event)"
+				(itemAdded)="addItem($event)"></app-citizenship-and-nationality-modal>
+		</mat-card-content>
+	</mat-card>
 </div>

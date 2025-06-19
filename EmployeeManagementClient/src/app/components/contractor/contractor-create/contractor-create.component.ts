@@ -1,20 +1,42 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ContractorCreateService } from '../../../services/contractor-create.service';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { CitizenshipAndNationalityModalComponent } from '../../modals/citizenship-and-nationality-modal/citizenship-and-nationality-modal.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { TextFieldModule } from '@angular/cdk/text-field';
 
 @Component({
 	selector: 'app-contractor-form',
 	standalone: true,
 	imports: [
-		ReactiveFormsModule,
 		CommonModule,
+		ReactiveFormsModule,
 		RouterModule,
 		NgxMaskDirective,
 		CitizenshipAndNationalityModalComponent,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatCheckboxModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule,
+		TextFieldModule,
 	],
 	providers: [provideNgxMask()],
 	templateUrl: './contractor-create.component.html',
@@ -50,14 +72,20 @@ export class ContractorCreateComponent implements OnInit {
 			ProductType: ['', Validators.required],
 			Citizenship: ['', Validators.required],
 			Nationality: ['', Validators.required],
-			PhoneNumber: ['', [Validators.required]],
+			PhoneNumber: ['', Validators.required],
 			IsArchived: [false],
+			Note: [''],
 			Photos: [''],
 			DocumentPhotos: [''],
 		});
 	}
 
 	ngOnInit(): void { }
+
+	ngOnDestroy(): void {
+		this.photoPreviews.forEach(url => URL.revokeObjectURL(url));
+		this.documentPhotoPreviews.forEach(url => URL.revokeObjectURL(url));
+	}
 
 	openModal(field: 'Citizenship' | 'Nationality', mode: 'select' | 'add'): void {
 		this.modalField = field;
@@ -79,25 +107,25 @@ export class ContractorCreateComponent implements OnInit {
 		this.closeModal();
 	}
 
-	onPhotoChange(event: any): void {
-		const input = event.target;
+	onPhotoChange(event: Event): void {
+		const input = event.target as HTMLInputElement;
 		const files = input.files;
 		if (files && files.length > 0) {
-			this.Photos = this.Photos.concat(Array.from(files as FileList));
+			this.Photos = this.Photos.concat(Array.from(files));
 			this.photoPreviews = this.photoPreviews.concat(
-				Array.from(files as FileList).map((file) => URL.createObjectURL(file))
+				Array.from(files).map(file => URL.createObjectURL(file))
 			);
 		}
 		input.value = '';
 	}
 
-	onDocumentPhotosChange(event: any): void {
-		const input = event.target;
+	onDocumentPhotosChange(event: Event): void {
+		const input = event.target as HTMLInputElement;
 		const files = input.files;
 		if (files && files.length > 0) {
-			this.DocumentPhotos = this.DocumentPhotos.concat(Array.from(files as FileList));
+			this.DocumentPhotos = this.DocumentPhotos.concat(Array.from(files));
 			this.documentPhotoPreviews = this.documentPhotoPreviews.concat(
-				Array.from(files as FileList).map((file) => URL.createObjectURL(file))
+				Array.from(files).map(file => URL.createObjectURL(file))
 			);
 		}
 		input.value = '';
@@ -125,7 +153,7 @@ export class ContractorCreateComponent implements OnInit {
 			contractorData.PhoneNumber = contractorData.PhoneNumber.replace(/\D/g, '');
 
 			this.contractorService.addContractor(contractorData).subscribe({
-				next: (response: any) => {
+				next: () => {
 					this.router.navigate(['/contractors']);
 				},
 				error: (err) => {
@@ -136,5 +164,14 @@ export class ContractorCreateComponent implements OnInit {
 		} else {
 			this.errorMessage = 'Пожалуйста, заполните все обязательные поля.';
 		}
+	}
+
+	cancel(): void {
+		this.contractorForm.reset();
+		this.Photos = [];
+		this.DocumentPhotos = [];
+		this.photoPreviews = [];
+		this.documentPhotoPreviews = [];
+		this.router.navigate(['/contractors']);
 	}
 }

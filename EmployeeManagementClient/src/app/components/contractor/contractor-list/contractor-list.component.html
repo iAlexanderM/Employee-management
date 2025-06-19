@@ -1,22 +1,21 @@
 <div class="main-content">
-	<mat-card>
+	<mat-card class="section-card">
 		<mat-card-header>
-			<mat-card-title>Поиск контрагентов</mat-card-title>
+			<mat-card-title class="section-title">Поиск контрагентов</mat-card-title>
 		</mat-card-header>
-		<br />
 		<mat-card-content>
 			<div class="d-flex gap-2 mb-4">
-				<button mat-stroked-button (click)="toggleSearchForm()">
+				<button mat-stroked-button color="primary" class="action-btn" (click)="toggleSearchForm()">
 					{{ isExpanded ? 'Свернуть' : 'Развернуть' }}
 				</button>
-				<button mat-stroked-button (click)="toggleArchived()">
+				<button mat-stroked-button color="primary" class="action-btn" (click)="toggleArchived()">
 					{{ showArchived ? 'Показать активных' : 'Показать архивных' }}
 				</button>
 			</div>
 
 			<!-- Форма поиска -->
 			<form *ngIf="isExpanded" [formGroup]="searchForm" (ngSubmit)="searchContractors()" class="search-form">
-				<mat-grid-list cols="3" rowHeight="68px" gutterSize="16px">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="16px">
 					<mat-grid-tile>
 						<mat-form-field appearance="fill" class="full-width">
 							<mat-label>Код контрагента</mat-label>
@@ -98,18 +97,31 @@
 					</mat-grid-tile>
 				</mat-grid-list>
 				<div class="d-flex justify-content-start gap-2 mt-4">
-					<button mat-raised-button color="primary" type="submit">Найти</button>
-					<button mat-stroked-button color="primary" type="button" (click)="resetFilters()">
+					<button mat-raised-button color="primary" class="action-btn" type="submit">Найти</button>
+					<button mat-stroked-button color="primary" class="action-btn" type="button"
+						(click)="resetFilters()">
 						Сбросить
 					</button>
 				</div>
 			</form>
 
-			<div class="d-flex align-items-center justify-content-between mb-4">
-				<button mat-flat-button color="accent" routerLink="/contractors/new">
-					Добавить нового контрагента
-				</button>
-				<div class="d-flex align-items-center gap-2">
+			<div class="top-controls mb-4">
+				<div class="action-btn"> <button mat-raised-button color="primary" class="action-btn"
+						routerLink="/contractors/new">
+						Добавить нового контрагента
+					</button>
+				</div>
+			</div>
+			<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
+				<div class="pagination-squares">
+					<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" (click)="onPageClick(page)">
+						{{ page }}
+					</span>
+				</div>
+			</div>
+			<div class="d-flex align-items-center justify-content-between">
+				<div class="page-size-container">
 					<span>Элементов на странице:</span>
 					<mat-select [(value)]="pageSize" (selectionChange)="onPageSizeChange($event)">
 						<mat-option *ngFor="let size of pageSizeOptions" [value]="size">
@@ -119,14 +131,6 @@
 				</div>
 			</div>
 
-			<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
-				<div class="pagination-squares">
-					<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-						[class.disabled]="page === '...'" (click)="onPageClick(page)">
-						{{ page }}
-					</span>
-				</div>
-			</div>
 
 			<div *ngIf="isLoading" class="text-center mt-4">
 				<mat-spinner></mat-spinner>
@@ -134,12 +138,14 @@
 			</div>
 			<br>
 			<div *ngIf="!isLoading && displayedContractors.length > 0">
-				<mat-table [dataSource]="displayedContractors" class="mat-elevation-z2">
+				<mat-table [dataSource]="displayedContractors" class="data-table">
 					<ng-container matColumnDef="photo">
 						<mat-header-cell *matHeaderCellDef>Фото</mat-header-cell>
 						<mat-cell *matCellDef="let contractor">
-							<img *ngIf="getFirstPhoto(contractor)" [src]="getFirstPhoto(contractor)"
-								alt="Фото контрагента" class="contractor-img" />
+							<img *ngIf="getLatestNonDocumentPhoto(contractor)"
+								[src]="getLatestNonDocumentPhoto(contractor)" alt="Фото контрагента"
+								class="contractor-img" />
+							<span *ngIf="!getLatestNonDocumentPhoto(contractor)" class="text-muted">Нет фото</span>
 						</mat-cell>
 					</ng-container>
 					<ng-container matColumnDef="sortOrder">
@@ -170,20 +176,22 @@
 					<ng-container matColumnDef="actions">
 						<mat-header-cell *matHeaderCellDef>Действия</mat-header-cell>
 						<mat-cell *matCellDef="let contractor">
-							<button mat-icon-button color="primary" (click)="navigateToDetails(contractor.id)"
-								matTooltip="Просмотреть">
+							<button mat-icon-button color="primary" class="action-btn icon-only"
+								(click)="navigateToDetails(contractor.id)" matTooltip="Просмотреть">
 								<mat-icon>person</mat-icon>
 							</button>
-							<button mat-icon-button color="accent" (click)="navigateToEdit(contractor.id)"
-								matTooltip="Редактировать">
+							<button mat-icon-button color="accent" class="action-btn icon-only"
+								(click)="navigateToEdit(contractor.id)" matTooltip="Редактировать">
 								<mat-icon>mode_edit_outline</mat-icon>
 							</button>
-							<button mat-icon-button color="warn" (click)="toggleArchiveStatus(contractor)"
-								*ngIf="!contractor.isArchived" matTooltip="Архивировать">
+							<button mat-icon-button color="warn" class="action-btn icon-only"
+								(click)="toggleArchiveStatus(contractor)" *ngIf="!contractor.isArchived"
+								matTooltip="Архивировать">
 								<mat-icon>warning</mat-icon>
 							</button>
-							<button mat-icon-button color="warn" (click)="toggleArchiveStatus(contractor)"
-								*ngIf="contractor.isArchived" matTooltip="Разархивировать">
+							<button mat-icon-button color="warn" class="action-btn icon-only"
+								(click)="toggleArchiveStatus(contractor)" *ngIf="contractor.isArchived"
+								matTooltip="Разархивировать">
 								<mat-icon>upload</mat-icon>
 							</button>
 						</mat-cell>
@@ -196,7 +204,7 @@
 			</div>
 
 			<div *ngIf="!isLoading && displayedContractors.length === 0" class="text-center mt-4">
-				<p>Нет данных для отображения</p>
+				<p class="text-muted">Нет данных для отображения</p>
 			</div>
 
 			<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">

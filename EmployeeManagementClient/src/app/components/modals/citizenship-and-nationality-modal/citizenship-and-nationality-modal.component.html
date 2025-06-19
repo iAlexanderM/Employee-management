@@ -1,120 +1,123 @@
 <div class="modal-overlay" (click)="closeModal()">
-	<div class="modal-content" (click)="stopPropagation($event)">
-		<header>
-			<h2>{{ mode === 'select' ? 'Выбрать' : 'Добавить' }} {{ type === 'citizenship' ? 'Гражданство' :
-				'Национальность' }}</h2>
-		</header>
-
-		<!-- Режим добавления -->
-		<div *ngIf="mode === 'add'" class="add-form">
-			<form [formGroup]="addForm">
-				<label>Введите название:</label>
-				<input type="text" formControlName="newItemName" placeholder="Введите название"
-					[ngClass]="{'is-invalid': addForm.get('newItemName')?.invalid && addForm.get('newItemName')?.touched}" />
-				<!-- Сообщение об ошибке для поля названия -->
-				<div *ngIf="addForm.get('newItemName')?.invalid && addForm.get('newItemName')?.touched"
-					class="invalid-feedback">
-					Название обязательно.
-				</div>
-				<div class="actions">
-					<button class="btn btn-primary" (click)="addItem()" [disabled]="addForm.invalid">Добавить</button>
-					<button class="btn btn-secondary" (click)="closeModal()">Отмена</button>
-				</div>
-			</form>
-			<p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
-		</div>
-
-		<!-- Режим выбора -->
-		<div *ngIf="mode === 'select'">
-			<!-- Форма поиска -->
-			<div class="search-form">
-				<form [formGroup]="searchForm" (ngSubmit)="searchItems()">
-					<div>
-						<label>ID:</label>
-						<input formControlName="Id" type="text" placeholder="Введите ID"
-							[ngClass]="{'is-invalid': searchForm.get('Id')?.invalid && searchForm.get('Id')?.touched}" />
-						<!-- Сообщение об ошибке для поля ID -->
-						<div *ngIf="searchForm.get('Id')?.invalid && searchForm.get('Id')?.touched"
-							class="invalid-feedback">
-							ID должно быть числом.
-						</div>
-					</div>
-					<div>
-						<label>Название:</label>
-						<input formControlName="Name" type="text" placeholder="Введите название"
-							[ngClass]="{'is-invalid': searchForm.get('Name')?.invalid && searchForm.get('Name')?.touched}" />
-						<!-- Сообщение об ошибке для поля Название -->
-						<div *ngIf="searchForm.get('Name')?.invalid && searchForm.get('Name')?.touched"
-							class="invalid-feedback">
-							Название должно содержать текст.
-						</div>
-					</div>
-					<div>
-						<button type="submit" class="btn btn-primary">Искать</button>
-						<button type="button" class="btn btn-secondary" (click)="resetFilters()">Сбросить</button>
+	<mat-card class="modal-content" (click)="stopPropagation($event)">
+		<mat-card-header>
+			<mat-card-title class="section-title">
+				{{ mode === 'select' ? 'Выбрать' : 'Добавить' }} {{ type === 'citizenship' ? 'Гражданство' :
+				'Национальность' }}
+			</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<div *ngIf="mode === 'add'" class="add-form">
+				<form [formGroup]="addForm">
+					<mat-form-field appearance="fill" class="form-field">
+						<mat-label>Введите название</mat-label>
+						<input matInput formControlName="newItemName" placeholder="Введите название">
+						<mat-icon matSuffix>description</mat-icon>
+						<mat-error *ngIf="addForm.get('newItemName')?.invalid && addForm.get('newItemName')?.touched">
+							Название обязательно.
+						</mat-error>
+					</mat-form-field>
+					<div class="actions mt-2">
+						<button mat-raised-button color="primary" class="action-btn" (click)="addItem()"
+							[disabled]="addForm.invalid">Добавить</button>
+						<button mat-stroked-button color="primary" class="action-btn"
+							(click)="closeModal()">Отмена</button>
 					</div>
 				</form>
+				<p *ngIf="errorMessage" class="error-message text-danger">{{ errorMessage }}</p>
 			</div>
 
-			<!-- Выбор размера страницы -->
-			<div class="page-size-selector">
-				<label for="pageSize">Элементов на странице:</label>
-				<form [formGroup]="paginationForm" class="d-inline-block ms-2">
-					<select id="pageSize" formControlName="pageSize" class="form-control w-auto d-inline-block">
-						<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
-					</select>
-					<!-- Сообщение об ошибке для выбора размера страницы -->
-					<div *ngIf="paginationForm.get('pageSize')?.invalid && paginationForm.get('pageSize')?.touched"
-						class="invalid-feedback">
-						Выберите допустимое количество элементов.
+			<!-- Режим выбора -->
+			<div *ngIf="mode === 'select'" class="search-section">
+				<div class="search-form">
+					<form [formGroup]="searchForm" (ngSubmit)="searchItems()">
+						<div class="search-form-container">
+							<mat-form-field appearance="fill" class="form-field">
+								<mat-label>ID</mat-label>
+								<input matInput formControlName="Id" type="text" placeholder="Введите ID"
+									inputmode="numeric" pattern="[0-9]*">
+								<mat-icon matSuffix>code</mat-icon>
+								<mat-error *ngIf="searchForm.get('Id')?.invalid && searchForm.get('Id')?.touched">
+									ID должно быть числом.
+								</mat-error>
+							</mat-form-field>
+							<mat-form-field appearance="fill" class="form-field">
+								<mat-label>Название</mat-label>
+								<input matInput formControlName="Name" type="text" placeholder="Введите название">
+								<mat-icon matSuffix>description</mat-icon>
+								<mat-error *ngIf="searchForm.get('Name')?.invalid && searchForm.get('Name')?.touched">
+									Название должно содержать текст.
+								</mat-error>
+							</mat-form-field>
+							<div class="actions mt-2">
+								<button mat-raised-button color="primary" class="action-btn"
+									type="submit">Искать</button>
+								<button mat-stroked-button color="primary" class="action-btn" type="button"
+									(click)="resetFilters()">Сбросить</button>
+							</div>
+						</div>
+					</form>
+				</div>
+
+				<!-- Выбор размера страницы -->
+				<div class="page-size-section">
+					<div class="page-size-container">
+						<span>Элементов на странице:</span>
+						<mat-select [(value)]="pageSize"
+							(selectionChange)="paginationForm.get('pageSize')?.setValue($event.value); onPageSizeChange()">
+							<mat-option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</mat-option>
+						</mat-select>
 					</div>
-				</form>
-			</div>
+				</div>
 
-			<!-- Пагинация сверху -->
-			<div class="pagination-container">
-				<div class="pagination-squares">
-					<div *ngFor="let page of visiblePages" [class.active]="page === currentPage"
-						[class.disabled]="page === '...'" class="square" (click)="onPageClick(page)">
-						{{ page }}
+				<!-- Пагинация сверху -->
+				<div *ngIf="totalPages > 1" class="pagination-section">
+					<div class="pagination-container">
+						<div class="pagination-squares">
+							<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+								[class.disabled]="page === '...'" (click)="onPageClick(page)">
+								{{ page }}
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Таблица -->
+				<div class="table-section">
+					<mat-table [dataSource]="filteredItems" class="data-table">
+						<ng-container matColumnDef="sortOrder">
+							<mat-header-cell *matHeaderCellDef>Сортировка</mat-header-cell>
+							<mat-cell *matCellDef="let item">{{ item.sortOrder || '-' }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="id">
+							<mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
+							<mat-cell *matCellDef="let item">{{ item.id }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="name">
+							<mat-header-cell *matHeaderCellDef>Название</mat-header-cell>
+							<mat-cell *matCellDef="let item">{{ item.name }}</mat-cell>
+						</ng-container>
+						<mat-header-row *matHeaderRowDef="['sortOrder', 'id', 'name']"></mat-header-row>
+						<mat-row *matRowDef="let row; columns: ['sortOrder', 'id', 'name']"
+							(click)="selectItem(row)"></mat-row>
+					</mat-table>
+					<div *ngIf="filteredItems.length === 0" class="text-center mt-4">
+						<p class="text-muted">Нет элементов для отображения.</p>
+					</div>
+				</div>
+
+				<!-- Пагинация снизу -->
+				<div *ngIf="totalPages > 1" class="pagination-section">
+					<div class="pagination-container">
+						<div class="pagination-squares">
+							<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+								[class.disabled]="page === '...'" (click)="onPageClick(page)">
+								{{ page }}
+							</span>
+						</div>
 					</div>
 				</div>
 			</div>
-			<br>
-
-			<!-- Таблица -->
-			<div class="table-container">
-				<table>
-					<thead>
-						<tr>
-							<th>Сортировка</th>
-							<th>ID</th>
-							<th>Название</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr *ngFor="let item of filteredItems" (click)="selectItem(item)">
-							<td>{{ item.sortOrder || '-' }}</td>
-							<td>{{ item.id }}</td>
-							<td>{{ item.name }}</td>
-						</tr>
-					</tbody>
-				</table>
-				<!-- Сообщение об отсутствии данных -->
-				<div *ngIf="filteredItems.length === 0">
-					<p>Нет элементов для отображения.</p>
-				</div>
-			</div>
-
-			<!-- Пагинация снизу -->
-			<div class="pagination-container">
-				<div class="pagination-squares">
-					<div *ngFor="let page of visiblePages" [class.active]="page === currentPage"
-						[class.disabled]="page === '...'" class="square" (click)="onPageClick(page)">
-						{{ page }}
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+		</mat-card-content>
+	</mat-card>
 </div>

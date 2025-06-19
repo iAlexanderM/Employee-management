@@ -10,6 +10,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using EmployeeManagementServer.Models.DTOs;
+using AutoMapper;
 
 namespace EmployeeManagementServer.Services
 {
@@ -18,6 +19,7 @@ namespace EmployeeManagementServer.Services
         private readonly ApplicationDbContext _context;
         private readonly IHistoryService _historyService;
         private readonly ILogger<ContractorService> _logger;
+        private readonly IMapper _mapper;
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -26,11 +28,13 @@ namespace EmployeeManagementServer.Services
         public ContractorService(
             ApplicationDbContext context,
             IHistoryService historyService,
-            ILogger<ContractorService> logger)
+            ILogger<ContractorService> logger,
+            IMapper mapper)
         {
             _context = context;
             _historyService = historyService;
             _logger = logger;
+            _mapper = mapper;
         }
 
         public async Task SaveChangesAsync()
@@ -258,16 +262,17 @@ namespace EmployeeManagementServer.Services
                 .ToListAsync();
         }
 
-        public async Task<Contractor> GetContractorByIdAsync(int id)
+        public async Task<ContractorDto> GetContractorByIdAsync(int id) 
         {
             var contractor = await _context.Contractors
-                .Include(c => c.Photos)
+                .Include(c => c.Photos) 
                 .Include(c => c.Passes)
                     .ThenInclude(p => p.PassType)
                 .Include(c => c.Passes)
                     .ThenInclude(p => p.ClosedByUser)
                 .Include(c => c.Passes)
-                    .ThenInclude(p => p.Store) 
+                    .ThenInclude(p => p.Store)
+                .AsNoTracking() 
                 .SingleOrDefaultAsync(c => c.Id == id);
 
             if (contractor == null)
@@ -276,7 +281,16 @@ namespace EmployeeManagementServer.Services
                 throw new KeyNotFoundException($"Контрагент с ID {id} не найден.");
             }
 
-            return contractor;
+            var contractorDto = _mapper.Map<ContractorDto>(contractor);
+
+            return contractorDto;
+        }
+
+        public async Task<Contractor?> GetContractorEntityForUpdateAsync(int id)
+        {
+            return await _context.Contractors
+                .Include(c => c.Photos)                                         
+                .FirstOrDefaultAsync(c => c.Id == id); 
         }
 
         public async Task CreateContractorAsync(Contractor contractor, string? createdBy = null)
@@ -352,20 +366,18 @@ namespace EmployeeManagementServer.Services
             return await query.CountAsync();
         }
 
-        public async Task<List<Contractor>> GetContractorsAsync(int skip, int take, bool? isArchived = false)
+        public async Task<List<ContractorDto>> GetContractorsAsync(int skip, int take, bool? isArchived = false)
         {
             var query = _context.Contractors
                 .Include(c => c.Photos)
                 .Include(c => c.Passes)
                     .ThenInclude(p => p.PassType)
                 .Include(c => c.Passes)
-                    .ThenInclude(p => p.Store) 
+                    .ThenInclude(p => p.Store)
                 .AsNoTracking()
                 .AsQueryable();
 
-            if (isArchived
-
-        .HasValue)
+            if (isArchived.HasValue)
             {
                 query = query.Where(c => c.IsArchived == isArchived.Value);
             }
@@ -376,8 +388,11 @@ namespace EmployeeManagementServer.Services
                 .Take(take)
                 .ToListAsync();
 
-            return contractors;
+            var contractorDtos = _mapper.Map<List<ContractorDto>>(contractors);
+
+            return contractorDtos;
         }
+
 
         public async Task<string?> GetLastNonDocumentPhotoAsync(int contractorId)
         {
@@ -480,9 +495,9 @@ namespace EmployeeManagementServer.Services
             await SaveChangesAsync();
 
             var changes = new Dictionary<string, ChangeValueDto>
-    {
-        { "note", new ChangeValueDto { OldValue = oldNote ?? "не указано", NewValue = note ?? "не указано" } }
-    };
+            {
+                { "note", new ChangeValueDto { OldValue = oldNote ?? "не указано", NewValue = note ?? "не указано" } }
+            };
 
             var historyEntry = new History
             {

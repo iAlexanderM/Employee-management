@@ -1,124 +1,177 @@
-<div class="container mt-4">
-	<form [formGroup]="contractorForm" (ngSubmit)="onSubmit()" class="p-4 shadow rounded bg-light">
-		<h3 class="text-center mb-4">Создание контрагента</h3>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Создание контрагента</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<mat-card *ngIf="errorMessage" class="error-message mt-4" role="alert">
+				<mat-icon>error_outline</mat-icon>
+			</mat-card>
 
-		<div class="form-group">
-			<label for="FirstName" class="form-label">Имя:</label>
-			<input id="FirstName" formControlName="FirstName" class="form-control" type="text" />
-		</div>
+			<form [formGroup]="contractorForm" (ngSubmit)="onSubmit()" class="create-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="8px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Имя *</mat-label>
+							<input matInput formControlName="FirstName" />
+							<mat-icon matSuffix>person</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Фамилия *</mat-label>
+							<input matInput formControlName="LastName" />
+							<mat-icon matSuffix>person</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Отчество</mat-label>
+							<input matInput formControlName="MiddleName" />
+							<mat-icon matSuffix>person</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Дата рождения *</mat-label>
+							<input matInput formControlName="BirthDate" type="date" />
+							<mat-icon matSuffix>calendar_today</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Тип документа *</mat-label>
+							<mat-select formControlName="DocumentType">
+								<mat-option value="Паспорт">Паспорт</mat-option>
+								<mat-option value="Водительское удостоверение">Водительское удостоверение</mat-option>
+								<mat-option value="Идентификационная карта">Идентификационная карта</mat-option>
+								<mat-option value="Вид на жительство">Вид на жительство</mat-option>
+							</mat-select>
+							<mat-icon matSuffix>description</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Серия и номер паспорта *</mat-label>
+							<input matInput formControlName="PassportSerialNumber" />
+							<mat-icon matSuffix>badge</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Кем выдан *</mat-label>
+							<input matInput formControlName="PassportIssuedBy" />
+							<mat-icon matSuffix>business</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Дата выдачи *</mat-label>
+							<input matInput formControlName="PassportIssueDate" type="date" />
+							<mat-icon matSuffix>calendar_today</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Тип продукции *</mat-label>
+							<input matInput formControlName="ProductType" />
+							<mat-icon matSuffix>category</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Номер телефона</mat-label>
+							<input matInput formControlName="PhoneNumber" type="tel" mask="0 (000) 000-00-00"
+								placeholder="8 (___) ___-__-__" inputmode="tel" />
+							<mat-icon matSuffix>phone</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Гражданство *</mat-label>
+							<input matInput formControlName="Citizenship" readonly />
+							<mat-icon matSuffix (click)="openModal('Citizenship', 'select')" class="action-icon"
+								matTooltip="Выбрать гражданство">search</mat-icon>
+							<mat-icon matSuffix (click)="openModal('Citizenship', 'add')" class="action-icon"
+								matTooltip="Добавить гражданство">add</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Национальность *</mat-label>
+							<input matInput formControlName="Nationality" readonly />
+							<mat-icon matSuffix (click)="openModal('Nationality', 'select')" class="action-icon"
+								matTooltip="Выбрать национальность">search</mat-icon>
+							<mat-icon matSuffix (click)="openModal('Nationality', 'add')" class="action-icon"
+								matTooltip="Добавить национальность">add</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile [colspan]="2" [rowspan]="2">
+						<div class="note-container">
+							<mat-form-field appearance="fill" class="full-width note-textarea-field" floatLabel="auto">
+								<mat-label>Пометка</mat-label>
+								<textarea matInput formControlName="Note" maxlength="500" placeholder="Введите пометку"
+									aria-label="Заметка контрагента" cdkTextareaAutosize [cdkAutosizeMinRows]="7"
+									[cdkAutosizeMaxRows]="7"></textarea>
+							</mat-form-field>
+						</div>
+					</mat-grid-tile>
+				</mat-grid-list>
 
-		<div class="form-group">
-			<label for="LastName" class="form-label">Фамилия:</label>
-			<input id="LastName" formControlName="LastName" class="form-control" type="text" />
-		</div>
-
-		<div class="form-group">
-			<label for="MiddleName" class="form-label">Отчество:</label>
-			<input id="MiddleName" formControlName="MiddleName" class="form-control" type="text" />
-		</div>
-
-		<div class="form-group">
-			<label for="BirthDate" class="form-label">Дата рождения:</label>
-			<input id="BirthDate" formControlName="BirthDate" class="form-control" type="date" />
-		</div>
-
-		<div class="form-group">
-			<label for="DocumentType" class="form-label">Тип документа:</label>
-			<select id="DocumentType" formControlName="DocumentType" class="form-control">
-				<option value="" disabled selected>Выберите тип документа</option>
-				<option value="Паспорт">Паспорт</option>
-				<option value="Водительское удостоверение">Водительское удостоверение</option>
-				<option value="Идентификационная карта">Идентификационная карта</option>
-				<option value="Вид на жительство">Вид на жительство</option>
-			</select>
-		</div>
-
-		<div class="form-group">
-			<label for="PassportSerialNumber" class="form-label">Серия и номер паспорта:</label>
-			<input id="PassportSerialNumber" formControlName="PassportSerialNumber" class="form-control" type="text" />
-		</div>
-
-		<div class="form-group">
-			<label for="PassportIssuedBy" class="form-label">Кем выдан:</label>
-			<input id="PassportIssuedBy" formControlName="PassportIssuedBy" class="form-control" type="text" />
-		</div>
-
-		<div class="form-group">
-			<label for="PassportIssueDate" class="form-label">Дата выдачи:</label>
-			<input id="PassportIssueDate" formControlName="PassportIssueDate" class="form-control" type="date" />
-		</div>
-
-		<div class="form-group">
-			<label for="ProductType" class="form-label">Тип продукции:</label>
-			<input id="ProductType" formControlName="ProductType" class="form-control" type="text" />
-		</div>
-
-		<!-- Гражданство -->
-		<div class="form-group">
-			<label for="citizenship">Гражданство:</label>
-			<div>
-				<button type="button" class="btn btn-primary"
-					(click)="openModal('Citizenship', 'select')">Выбрать</button>
-				<button type="button" class="btn btn-secondary"
-					(click)="openModal('Citizenship', 'add')">Добавить</button>
-			</div>
-			<input id="citizenship" formControlName="Citizenship" class="form-control" type="text" readonly />
-		</div>
-
-		<!-- Национальность -->
-		<div class="form-group">
-			<label for="nationality">Национальность:</label>
-			<div>
-				<button type="button" class="btn btn-primary"
-					(click)="openModal('Nationality', 'select')">Выбрать</button>
-				<button type="button" class="btn btn-secondary"
-					(click)="openModal('Nationality', 'add')">Добавить</button>
-			</div>
-			<input id="nationality" formControlName="Nationality" class="form-control" type="text" readonly />
-		</div>
-
-		<app-citizenship-and-nationality-modal *ngIf="isModalOpen" [fieldName]="modalField" [mode]="modalMode"
-			[type]="modalField === 'Citizenship' ? 'citizenship' : 'nationality'" (modalClose)="closeModal()"
-			(itemSelected)="selectItem($event)" (itemAdded)="addItem($event)"></app-citizenship-and-nationality-modal>
-
-		<div class="form-group">
-			<label for="PhoneNumber" class="form-label">Номер телефона:</label>
-			<input id="PhoneNumber" formControlName="PhoneNumber" class="form-control" type="text"
-				mask="0 (000) 000-00-00" placeholder="8 (___) ___-__-__" />
-		</div>
-
-		<div class="form-group">
-			<label for="IsArchived" class="form-label">Архивировать:</label>
-			<div class="form-check">
-				<input id="IsArchived" formControlName="IsArchived" type="checkbox" class="form-check-input" />
-			</div>
-		</div>
-
-		<!-- Фотографии -->
-		<div class="form-group">
-			<label for="Photos">Фотографии:</label>
-			<input id="Photos" type="file" (change)="onPhotoChange($event)" multiple />
-			<div class="photo-previews">
-				<div *ngFor="let photo of photoPreviews; let i = index" class="photo-thumbnail">
-					<img [src]="photo" alt="Миниатюра фото" /><br>
-					<button type="button" class="btn btn-danger btn-sm mt-1" (click)="removePhoto(i)">Удалить</button>
+				<div class="form-group">
+					<label>Фотографии:</label>
+					<input type="file" id="Photos" class="hidden-file-input" (change)="onPhotoChange($event)" multiple
+						accept="image/*" #photoInput />
+					<div class="photo-previews">
+						<div class="photo-thumbnail add-photo" (click)="photoInput.click()" matTooltip="Добавить фото"
+							aria-label="Добавить фото">
+							<div class="add-icon">+</div>
+						</div>
+						<div *ngFor="let photo of photoPreviews; let i = index" class="photo-thumbnail">
+							<img [src]="photo" alt="Миниатюра фото" />
+							<div class="button-container">
+								<button mat-raised-button color="warn" class="action-btn btn-sm"
+									(click)="removePhoto(i)" matTooltip="Удалить фото">
+									Удалить
+								</button>
+							</div>
+						</div>
+					</div>
 				</div>
-			</div>
-		</div>
-		<div class="form-group">
-			<label for="DocumentPhotos">Документальные фото:</label>
-			<input id="DocumentPhotos" type="file" (change)="onDocumentPhotosChange($event)" multiple />
-			<div class="document-photo-previews">
-				<div *ngFor="let photo of documentPhotoPreviews; let i = index" class="photo-thumbnail">
-					<img [src]="photo" alt="Миниатюра документального фото" /><br>
-					<button type="button" class="btn btn-danger btn-sm mt-1" (click)="removePhoto(i)">Удалить</button>
-				</div>
-			</div>
-		</div>
 
-		<!-- Кнопки -->
-		<div class="form-group mt-4 d-flex justify-content-between">
-			<button type="submit" class="btn btn-primary" [disabled]="contractorForm.invalid">Сохранить</button>
-		</div>
-	</form>
+				<div class="form-group">
+					<label>Документы:</label>
+					<input type="file" id="DocumentPhotos" class="hidden-file-input"
+						(change)="onDocumentPhotosChange($event)" multiple accept="image/*" #documentPhotoInput />
+					<div class="document-photo-previews">
+						<div class="photo-thumbnail add-photo" (click)="documentPhotoInput.click()"
+							matTooltip="Добавить документальное фото" aria-label="Добавить документальное фото">
+							<div class="add-icon">+</div>
+						</div>
+						<div *ngFor="let photo of documentPhotoPreviews; let i = index" class="photo-thumbnail">
+							<img [src]="photo" alt="Миниатюра документального фото" />
+							<div class="button-container">
+								<button mat-raised-button color="warn" class="action-btn btn-sm"
+									(click)="removeDocumentPhoto(i)" matTooltip="Удалить фото">
+									Удалить
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="d-flex justify-content-between gap-2 mt-4">
+					<button mat-raised-button color="primary" class="action-btn" type="submit"
+						[disabled]="contractorForm.invalid" matTooltip="Сохранить контрагента">Сохранить</button>
+					<button mat-stroked-button color="accent" class="action-btn" type="button" (click)="cancel()"
+						matTooltip="Отменить создание">Отменить</button>
+				</div>
+			</form>
+
+			<app-citizenship-and-nationality-modal *ngIf="isModalOpen" [fieldName]="modalField" [mode]="modalMode"
+				[type]="modalField === 'Citizenship' ? 'citizenship' : 'nationality'" (modalClose)="closeModal()"
+				(itemSelected)="selectItem($event)"
+				(itemAdded)="addItem($event)"></app-citizenship-and-nationality-modal>
+		</mat-card-content>
+	</mat-card>
 </div>

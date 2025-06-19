@@ -1,26 +1,46 @@
-<div class="container mt-4">
-	<h2>Группы пропусков</h2>
-	<button class="btn btn-primary mb-3" [routerLink]="'/pass-groups/create'">Создать группу</button>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Группы пропусков</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<div class="d-flex gap-2 mb-4">
+				<button mat-raised-button color="primary" class="action-btn" [routerLink]="['/pass-groups/create']"
+					matTooltip="Создать группу">
+					Создать группу
+				</button>
+			</div>
 
-	<table class="table table-striped">
-		<thead>
-			<tr>
-				<th>ID</th>
-				<th>Название</th>
-				<th>Действия</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr *ngFor="let group of passGroups" (dblclick)="openPassTypes(group.id, group.name)"
-				[style.background-color]="group.color">
-				<td>{{ group.id }}</td>
-				<td>{{ group.name }}</td>
-				<td>
-					<button class="btn btn-warning btn-sm" [routerLink]="'/pass-groups/' + group.id + '/edit'">
-						Редактировать
-					</button>
-				</td>
-			</tr>
-		</tbody>
-	</table>
+			<!-- Таблица -->
+			<div *ngIf="passGroups.length > 0">
+				<mat-table [dataSource]="passGroups" class="data-table">
+					<ng-container matColumnDef="id">
+						<mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
+						<mat-cell *matCellDef="let group">{{ group.id }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="name">
+						<mat-header-cell *matHeaderCellDef>Название</mat-header-cell>
+						<mat-cell *matCellDef="let group">{{ group.name }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="actions">
+						<mat-header-cell *matHeaderCellDef>Действия</mat-header-cell>
+						<mat-cell *matCellDef="let group">
+							<button mat-icon-button color="accent" class="action-btn icon-only"
+								[routerLink]="['/pass-groups', group.id, 'edit']" matTooltip="Редактировать">
+								<mat-icon>mode_edit_outline</mat-icon>
+							</button>
+						</mat-cell>
+					</ng-container>
+					<mat-header-row *matHeaderRowDef="['id', 'name', 'actions']"></mat-header-row>
+					<mat-row *matRowDef="let group; columns: ['id', 'name', 'actions']"
+						(dblclick)="openPassTypes(group.id, group.name)"
+						[style.background-color]="group.color"></mat-row>
+				</mat-table>
+			</div>
+
+			<div *ngIf="passGroups.length === 0" class="text-center mt-4">
+				<p class="text-muted">Нет групп пропусков для отображения</p>
+			</div>
+		</mat-card-content>
+	</mat-card>
 </div>

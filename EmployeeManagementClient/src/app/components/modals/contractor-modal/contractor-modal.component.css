@@ -1,4 +1,3 @@
-/* Модальное окно */
 .modal-overlay {
 	position: fixed;
 	top: 0;
@@ -13,289 +12,184 @@
 }
 
 .modal-content {
-	background: white;
-	border-radius: 8px;
-	padding: 20px;
-	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+	max-width: 1920px;
 	width: 90%;
-	max-width: 1000px;
-	max-height: 90%;
+	max-height: 90vh;
 	overflow-y: auto;
-	animation: fadeIn 0.3s ease-out;
+	background-color: #fefaf6;
+	padding: 2rem;
 }
 
-/* Анимация появления */
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(-20px);
-	}
-
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+.section-title {
+	font-size: 1.5rem;
+	font-weight: 600;
+	color: #111827;
 }
 
-/* Форма поиска */
-.search-form {
-	margin-bottom: 20px;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 15px;
+.search-section,
+.pagination-section,
+.table-section {
+	margin-bottom: 40px;
 }
 
-.search-form label {
-	font-size: 14px;
-	margin-right: 5px;
-}
-
-.search-form input {
-	padding: 5px;
-	font-size: 14px;
-	width: 200px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-}
-
-.search-form button {
-	padding: 5px 10px;
-	font-size: 14px;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-}
-
-.search-form .btn-primary {
-	background-color: #007bff;
-	color: #fff;
-}
-
-.search-form .btn-secondary {
-	background-color: #6c757d;
-	color: #fff;
-}
-
-/* Таблица */
-.table-container {
+.search-form-container {
 	display: flex;
 	flex-direction: column;
-	width: 100%;
+	gap: 8px;
 }
 
-.contractor-table {
-	width: 100%;
-	border-collapse: collapse;
-	margin: 20px 0;
-	table-layout: fixed;
-	/* Фиксированная компоновка */
+.form-field {
+	width: 50%;
 }
 
-.contractor-table thead th,
-.contractor-table tbody td {
-	padding: 10px;
-	text-align: left;
-	border: 1px solid #ddd;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+.actions {
+	display: flex;
+	gap: 8px;
 }
 
-/* Определение ширин для 9 столбцов */
-.contractor-table thead th:nth-child(1),
-.contractor-table tbody td:nth-child(1) {
-	width: 10%;
-}
-
-.contractor-table thead th:nth-child(2),
-.contractor-table tbody td:nth-child(2) {
-	width: 10%;
-}
-
-.contractor-table thead th:nth-child(3),
-.contractor-table tbody td:nth-child(3) {
-	width: 10%;
-	/* Фото */
-}
-
-.contractor-table thead th:nth-child(4),
-.contractor-table tbody td:nth-child(4) {
-	width: 10%;
-}
-
-.contractor-table thead th:nth-child(5),
-.contractor-table tbody td:nth-child(5) {
-	width: 10%;
-}
-
-.contractor-table thead th:nth-child(6),
-.contractor-table tbody td:nth-child(6) {
-	width: 10%;
-}
-
-.contractor-table thead th:nth-child(7),
-.contractor-table tbody td:nth-child(7) {
-	width: 15%;
-}
-
-.contractor-table thead th:nth-child(8),
-.contractor-table tbody td:nth-child(8) {
-	width: 15%;
-}
-
-.contractor-table thead th:nth-child(9),
-.contractor-table tbody td:nth-child(9) {
-	width: 10%;
-	/* Действия */
-}
-
-/* Стилизация изображений */
-.contractor-img {
-	width: 50px;
-	height: 50px;
-	object-fit: cover;
-	border-radius: 4px;
-}
-
-/* Пагинация */
 .pagination-container {
 	display: flex;
-	justify-content: center;
-	/* Центрирование пагинации */
-	margin-top: 10px;
-	margin-bottom: 10px;
+	justify-content: flex-end;
+	margin-top: 16px;
 }
 
 .pagination-squares {
 	display: flex;
 	gap: 8px;
-	/* Увеличение промежутка между вкладками */
-	flex-wrap: wrap;
-	/* Позволяет вкладкам переноситься на новую строку при малом размере экрана */
-	justify-content: center;
-	/* Равномерное распределение вкладок */
 }
 
 .square {
-	width: 35px;
-	/* Увеличение ширины вкладок */
-	height: 35px;
-	/* Увеличение высоты вкладок */
-	background-color: #e0e0e0;
-	color: #000;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	border-radius: 5px;
+	padding: 8px 12px;
+	border: 1px solid #e5e7eb;
+	border-radius: 4px;
 	cursor: pointer;
+	user-select: none;
 	font-size: 14px;
-	font-weight: bold;
-	transition: background-color 0.2s, transform 0.2s;
-}
-
-.square:hover {
-	background-color: #c0c0c0;
-	transform: scale(1.05);
-	/* Добавление эффекта увеличения при наведении */
+	color: #111827;
+	background-color: #ffffff;
+	transition: all 0.2s ease;
 }
 
 .square.active {
-	background-color: #007bff;
-	color: #fff;
+	background-color: #3786f3;
+	color: #ffffff;
+	border-color: #3786f3;
 }
 
 .square.disabled {
 	cursor: default;
-	background-color: #f0f0f0;
+	color: #6b7280;
+	background-color: #f3f4f6;
+	border-color: #e5e7eb;
 }
 
-.table-container .pagination-container:first-child {
-	margin-top: 0;
+.table-container {
+	width: 100%;
 }
 
-/* Кнопки */
-.btn {
-	padding: 5px 10px;
-	font-size: 12px;
+.page-size-container {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	justify-content: flex-end;
+}
+
+.page-size-container span {
+	font-size: 14px;
+	color: #111827;
+}
+
+.page-size-container mat-select {
+	width: 80px;
+	border: 1px solid #e5e7eb;
 	border-radius: 4px;
-	cursor: pointer;
-	transition: background-color 0.3s, box-shadow 0.3s;
-	margin-right: 5px;
+	padding: 4px 8px;
+	font-size: 14px;
+	background-color: #ffffff;
 }
 
-.btn-primary {
-	background-color: #007bff;
-	color: white;
-	border: none;
+.data-table {
+	width: 100%;
 }
 
-.btn-primary:hover {
-	background-color: #0056b3;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+.data-table mat-header-row,
+.data-table mat-row {
+	height: 80px;
 }
 
-.btn-secondary {
-	background-color: #6c757d;
-	color: white;
-	border: none;
-}
-
-.btn-secondary:hover {
-	background-color: #545b62;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-}
-
-.btn-danger {
-	background-color: #dc3545;
-	color: white;
-	border: none;
-}
-
-.btn-danger:hover {
-	background-color: #c82333;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-}
-
-.contractor-table tbody td:nth-child(9) .btn {
-	width: 70px;
-	/* Фиксированная ширина кнопок */
-	padding: 5px 10px;
-	font-size: 7px;
+.contractor-img {
+	width: 100px;
+	height: 100px;
+	object-fit: cover;
 	border-radius: 4px;
-	cursor: pointer;
-	transition: background-color 0.3s, box-shadow 0.3s;
-	margin-bottom: 5px;
+	border: 1px solid #e5e7eb;
 }
 
-.contractor-table tbody td:nth-child(9) .btn-primary {
-	background-color: #007bff;
-	color: white;
-	border: none;
+.data-table .mat-column-id,
+.data-table .mat-column-sortOrder {
+	width: 6.67%;
+	max-width: 6.67%;
+	min-width: 6.67%;
 }
 
-.contractor-table tbody td:nth-child(9) .btn-primary:hover {
-	background-color: #0056b3;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+.data-table .mat-column-photo {
+	width: 10%;
 }
 
-.contractor-table tbody td:nth-child(9) .btn-secondary {
-	background-color: #6c757d;
-	color: white;
-	border: none;
+.data-table .mat-column-lastName {
+	width: 12%;
 }
 
-.contractor-table tbody td:nth-child(9) .btn-secondary:hover {
-	background-color: #545b62;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+.data-table .mat-column-firstName {
+	width: 12%;
 }
 
-.contractor-table tbody td:nth-child(9) .btn-danger {
-	background-color: #dc3545;
-	color: white;
-	border: none;
+.data-table .mat-column-middleName {
+	width: 12%;
 }
 
-.contractor-table tbody td:nth-child(9) .btn-danger:hover {
-	background-color: #c82333;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+.data-table .mat-column-birthDate {
+	width: 15%;
+}
+
+.data-table .mat-column-passportSerialNumber {
+	width: 15%;
+}
+
+.data-table .mat-column-actions {
+	width: 10%;
+}
+
+
+.text-muted {
+	color: #6b7280;
+}
+
+.text-danger {
+	color: #dc3545;
+	margin-top: 8px;
+}
+
+.action-btn {
+	font-size: 14px;
+}
+
+.mat-mdc-card-content {
+	padding: 12px;
+	border: 1px solid #d6d3d1;
+	flex-grow: 1;
+}
+
+@media (max-width: 768px) {
+	.modal-content {
+		padding: 1rem;
+	}
+
+	.form-field {
+		width: 100%;
+	}
+
+	.page-size-container {
+		justify-content: flex-start;
+	}
 }

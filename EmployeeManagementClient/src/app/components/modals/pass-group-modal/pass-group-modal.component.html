@@ -1,28 +1,39 @@
 <div class="modal-overlay" (click)="closeModal()">
-	<div class="modal-content" (click)="stopPropagation($event)">
-		<header>
-			<h2>Выберите группу пропусков</h2>
-		</header>
-
-		<table class="table table-striped">
-			<thead>
-				<tr>
-					<th>ID</th>
-					<th>Название</th>
-					<th>Цвет</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr *ngFor="let group of groups" (click)="selectGroup(group)">
-					<td>{{ group.id }}</td>
-					<td>{{ group.name }}</td>
-					<td>
-						<div [style.background]="group.color" style="width: 20px; height: 20px; border-radius: 50%;">
-						</div>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		<p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
-	</div>
+	<mat-card class="modal-content section-card" (click)="stopPropagation($event)">
+		<mat-card-header>
+			<mat-card-title class="section-title">Выберите группу пропусков</mat-card-title>
+			<button mat-icon-button class="close-button" (click)="closeModal()" aria-label="Закрыть">
+				<mat-icon>close</mat-icon>
+			</button>
+		</mat-card-header>
+		<mat-card-content>
+			<div class="table-section">
+				<mat-table [dataSource]="groups" class="data-table">
+					<ng-container matColumnDef="id">
+						<mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
+						<mat-cell *matCellDef="let group">{{ group.id }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="name">
+						<mat-header-cell *matHeaderCellDef>Название</mat-header-cell>
+						<mat-cell *matCellDef="let group">{{ group.name }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="color">
+						<mat-header-cell *matHeaderCellDef>Цвет</mat-header-cell>
+						<mat-cell *matCellDef="let group">
+							<div class="color-preview" [style.background-color]="group.color"></div>
+						</mat-cell>
+					</ng-container>
+					<mat-header-row *matHeaderRowDef="['id', 'name', 'color']"></mat-header-row>
+					<mat-row *matRowDef="let row; columns: ['id', 'name', 'color']"
+						(click)="selectGroup(row)"></mat-row>
+				</mat-table>
+				<div *ngIf="groups.length === 0 && !errorMessage" class="text-center mt-4">
+					<p class="text-muted">Нет групп пропусков для отображения.</p>
+				</div>
+				<div *ngIf="errorMessage" class="text-danger mt-2">
+					{{ errorMessage }}
+				</div>
+			</div>
+		</mat-card-content>
+	</mat-card>
 </div>

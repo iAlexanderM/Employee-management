@@ -1,28 +1,46 @@
-<div class="container mt-4">
-	<h2>Создание новой группы пропусков</h2>
-	<!-- Отображение сообщения об ошибке -->
-	<div *ngIf="errorMessage" class="alert alert-danger">
-		{{ errorMessage }}
-	</div>
-	<form [formGroup]="groupForm" (ngSubmit)="createGroup()">
-		<div class="form-group">
-			<label for="name">Название</label>
-			<input id="name" type="text" class="form-control" formControlName="name"
-				placeholder="Введите название группы"
-				[ngClass]="{'is-invalid': groupForm.get('name')?.invalid && groupForm.get('name')?.touched}" />
-			<!-- Сообщение об ошибке для поля названия -->
-			<div *ngIf="groupForm.get('name')?.invalid && groupForm.get('name')?.touched" class="invalid-feedback">
-				Название обязательно.
-			</div>
-		</div>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Создание новой группы пропусков</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<mat-card *ngIf="errorMessage" class="error-message mt-4" role="alert">
+				<mat-icon>error_outline</mat-icon>
+				<span>{{ errorMessage }}</span>
+			</mat-card>
 
-		<div class="form-group">
-			<label for="color">Цвет</label>
-			<input id="color" type="color" class="form-control form-control-color" formControlName="color"
-				title="Выберите цвет" />
-		</div>
+			<form [formGroup]="groupForm" (ngSubmit)="createGroup()" class="create-form">
+				<mat-grid-list cols="1" rowHeight="80px" gutterSize="8px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Название *</mat-label>
+							<input matInput formControlName="name" placeholder="Введите название группы" />
+							<mat-icon matSuffix>label</mat-icon>
+							<mat-error *ngIf="groupForm.get('name')?.invalid && groupForm.get('name')?.touched">
+								Название обязательно
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Цвет *</mat-label>
+							<input matInput type="color" formControlName="color" class="color-input" />
+							<mat-icon matSuffix>palette</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+				</mat-grid-list>
 
-		<button type="submit" class="btn btn-primary" [disabled]="groupForm.invalid">Создать</button>
-		<button type="button" class="btn btn-secondary" routerLink="/pass-groups">Отмена</button>
-	</form>
+				<div class="d-flex justify-content-start gap-2 mt-4">
+					<button mat-raised-button color="primary" class="action-btn" type="submit"
+						[disabled]="groupForm.invalid" matTooltip="Создать группу">
+						Создать
+					</button>
+					<button mat-stroked-button color="accent" class="action-btn" type="button" routerLink="/pass-groups"
+						matTooltip="Отменить">
+						Отмена
+					</button>
+				</div>
+			</form>
+		</mat-card-content>
+	</mat-card>
 </div>

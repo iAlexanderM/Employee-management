@@ -50,7 +50,7 @@ namespace EmployeeManagementServer.Controllers
 
                 var contractors = await _contractorService.GetContractorsAsync(skip, pageSize, isArchived);
 
-                var contractorDtos = _mapper.Map<List<ContractorResponseDto>>(contractors);
+                var contractorDtos = _mapper.Map<List<ContractorDto>>(contractors);
 
                 var response = new
                 {
@@ -70,7 +70,7 @@ namespace EmployeeManagementServer.Controllers
         public async Task<IActionResult> GetContractor(int id)
         {
             var contractor = await _contractorService.GetContractorByIdAsync(id);
-            var contractorResponseDto = _mapper.Map<ContractorResponseDto>(contractor);
+            var contractorResponseDto = _mapper.Map<ContractorDto>(contractor);
             return Ok(contractorResponseDto);
         }
 
@@ -121,7 +121,7 @@ namespace EmployeeManagementServer.Controllers
             await _contractorService.CreateContractorAsync(contractor, User.Identity?.Name ?? "Unknown");
             _logger.LogInformation($"Контрагент с ID {contractor.Id} успешно создан.");
 
-            var createdContractorResponseDto = _mapper.Map<ContractorResponseDto>(contractor);
+            var createdContractorResponseDto = _mapper.Map<ContractorDto>(contractor);
             return Ok(createdContractorResponseDto);
         }
 
@@ -130,20 +130,24 @@ namespace EmployeeManagementServer.Controllers
         {
             try
             {
-                var existingContractor = await _contractorService.GetContractorByIdAsync(id);
-                if (existingContractor == null)
+                var contractorEntity = await _contractorService.GetContractorEntityForUpdateAsync(id);
+
+                if (contractorEntity == null)
                 {
                     return NotFound($"Контрагент с ID {id} не найден.");
                 }
 
-                _mapper.Map(contractorUpdateDto, existingContractor);
+                _mapper.Map(contractorUpdateDto, contractorEntity);
 
                 await _contractorService.UpdateContractorAsync(
-                    existingContractor, 
+                    contractorEntity,
                     contractorUpdateDto.Photos,
                     contractorUpdateDto.DocumentPhotos,
-                    contractorUpdateDto.PhotosToRemove.Concat(contractorUpdateDto.DocumentPhotosToRemove ?? new List<int>()).ToList(),
+                    (contractorUpdateDto.PhotosToRemove ?? new List<int>())
+                        .Concat(contractorUpdateDto.DocumentPhotosToRemove ?? new List<int>())
+                        .ToList(),
                     User.Identity?.Name ?? "Unknown");
+
                 return Ok();
             }
             catch (Exception ex)
