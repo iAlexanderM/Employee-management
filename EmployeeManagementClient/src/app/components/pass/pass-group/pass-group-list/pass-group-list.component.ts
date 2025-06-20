@@ -37,14 +37,11 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 })
 export class PassGroupListComponent {
 	passGroups: any[] = [];
-
 	isSearchMode = false;
 	isExpanded = false;
-
 	currentPage: number = 1;
 	pageSizeOptions: number[] = [25, 50, 100];
 	pageSize: number = 25;
-
 	totalItems: number = 0;
 	totalPages: number = 0;
 	visiblePages: (number | string)[] = [];

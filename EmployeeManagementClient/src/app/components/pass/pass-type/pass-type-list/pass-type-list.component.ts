@@ -9,35 +9,52 @@ import {
 	FormGroup,
 	FormControl
 } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTableModule } from '@angular/material/table';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
 	selector: 'app-pass-type-list',
 	standalone: true,
-	imports: [CommonModule, RouterModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		RouterModule,
+		ReactiveFormsModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatGridListModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatTooltipModule,
+		MatProgressSpinnerModule,
+		MatSnackBarModule,
+	],
 	templateUrl: './pass-type-list.component.html',
 	styleUrls: ['./pass-type-list.component.css'],
 })
 export class PassTypeListComponent implements OnInit {
 	passTypes: PassType[] = [];
 	displayedPassTypes: PassType[] = [];
-
+	isLoading = false;
+	isExpanded = false;
 	groupId!: number;
 	groupName!: string;
-
-	// Форма для поиска (reactive)
 	searchForm: FormGroup;
-
-	// Параметры пагинации
 	currentPage = 1;
 	pageSizeOptions = [25, 50, 100];
-
-	// Изначально задаём 25
 	pageSize = 25;
-
-	// FormControl для pageSize (с nonNullable=true, чтобы не было null)
 	pageSizeControl: FormControl<number>;
-
-	// Массив страниц для отображения
 	visiblePages: (number | string)[] = [];
 
 	constructor(
@@ -45,26 +62,20 @@ export class PassTypeListComponent implements OnInit {
 		private route: ActivatedRoute,
 		private fb: FormBuilder
 	) {
-		// Создаём FormGroup для поиска
 		this.searchForm = this.fb.group({
-			// Можно задать строгие типы, но для краткости оставим [null], ['']
 			id: [null],
 			name: ['']
 		});
 
-		// Создаём FormControl для pageSize с nonNullable
 		this.pageSizeControl = this.fb.control<number>(this.pageSize, { nonNullable: true });
 	}
 
 	ngOnInit(): void {
-		// Подписка на изменения размера страницы
 		this.pageSizeControl.valueChanges.subscribe((newValue) => {
-			// newValue уже number, thanks to nonNullable
 			this.pageSize = newValue;
 			this.onPageSizeChange();
 		});
 
-		// Читаем queryParams (groupId, groupName)
 		this.route.queryParams.subscribe((params) => {
 			this.groupId = +params['groupId'];
 			this.groupName = params['groupName'];
@@ -83,13 +94,9 @@ export class PassTypeListComponent implements OnInit {
 		});
 	}
 
-	// Вызывается при нажатии кнопки "Поиск" (submit формы)
 	searchPassTypes(): void {
-		// Считываем значения из формы
 		const formValue = this.searchForm.value;
-		// Если id = null, не передаем id (undefined), а если есть число, передаем его
 		const id = formValue.id !== null ? formValue.id : undefined;
-		// То же самое с name
 		const name = formValue.name ? formValue.name.trim() : undefined;
 
 		this.passGroupTypeService.searchPassTypes(id, name).subscribe({
@@ -102,13 +109,11 @@ export class PassTypeListComponent implements OnInit {
 	}
 
 	resetFilters(): void {
-		// Сброс формы
 		this.searchForm.reset({ id: null, name: '' });
 		this.currentPage = 1;
 		this.loadPassTypes();
 	}
 
-	// Пересчитать текущий набор отображаемых данных
 	updateDisplayedPassTypes(): void {
 		const startIndex = (this.currentPage - 1) * this.pageSize;
 		const endIndex = startIndex + this.pageSize;
@@ -120,7 +125,6 @@ export class PassTypeListComponent implements OnInit {
 		this.updatePagination();
 	}
 
-	// Централизованная логика пересчёта
 	updatePagination(): void {
 		this.updateDisplayedPassTypes();
 		this.calculateVisiblePages();
@@ -168,6 +172,10 @@ export class PassTypeListComponent implements OnInit {
 			this.updateDisplayedPassTypes();
 			this.calculateVisiblePages();
 		}
+	}
+
+	toggleSearchForm(): void {
+		this.isExpanded = !this.isExpanded;
 	}
 
 	totalPages(): number {

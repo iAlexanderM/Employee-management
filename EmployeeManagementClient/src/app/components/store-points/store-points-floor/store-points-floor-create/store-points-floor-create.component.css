@@ -60,13 +60,3 @@ label {
 .btn-primary:hover {
 	background-color: #0056b3;
 }
-
-.error-message {
-	background-color: #f8d7da;
-	color: #721c24;
-	padding: 10px;
-	border: 1px solid #f5c6cb;
-	border-radius: 4px;
-	margin-top: 10px;
-	font-size: 14px;
-}

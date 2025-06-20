@@ -60,16 +60,6 @@ label {
 	background-color: #0056b3;
 }
 
-.error-message {
-	background-color: #f8d7da;
-	color: #721c24;
-	padding: 8px;
-	border: 1px solid #f5c6cb;
-	border-radius: 4px;
-	margin-bottom: 15px;
-	font-size: 12px;
-}
-
 .btn-primary {
 	width: 100%;
 	/* Кнопка "Создать" растягивается на всю ширину */

@@ -1,100 +1,111 @@
-<div class="container mt-4">
-	<h2>Создание типа пропуска</h2>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Создание нового типа пропуска</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<mat-card *ngIf="errorMessage" class="error-message mt-2" role="alert">
+				<span>{{ errorMessage }}</span>
+			</mat-card>
 
-	<!-- Отображение сообщения об ошибке -->
-	<div *ngIf="errorMessage" class="alert alert-danger">
-		{{ errorMessage }}
-	</div>
+			<form [formGroup]="passTypeForm" (ngSubmit)="createPassType()" class="create-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="8px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Название *</mat-label>
+							<input matInput formControlName="name" placeholder="Введите название типа" />
+							<mat-icon matSuffix>label</mat-icon>
+							<mat-error *ngIf="passTypeForm.get('name')?.invalid && passTypeForm.get('name')?.touched">
+								Название обязательно
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Срок (в месяцах) *</mat-label>
+							<input matInput formControlName="durationInMonths" type="number" placeholder="Введите срок"
+								min="1" />
+							<mat-icon matSuffix>calendar_month</mat-icon>
+							<mat-error
+								*ngIf="passTypeForm.get('durationInMonths')?.invalid && passTypeForm.get('durationInMonths')?.touched">
+								Срок должен быть минимум 1 месяц
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Стоимость *</mat-label>
+							<input matInput formControlName="cost" type="number" placeholder="Введите стоимость"
+								min="0" />
+							<mat-icon matSuffix>attach_money</mat-icon>
+							<mat-error *ngIf="passTypeForm.get('cost')?.invalid && passTypeForm.get('cost')?.touched">
+								Стоимость должна быть неотрицательной
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Цвет *</mat-label>
+							<input matInput type="color" formControlName="color" class="color-input" />
+							<mat-icon matSuffix>palette</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile [colspan]="1">
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Номер сортировки *</mat-label>
+							<input matInput formControlName="sortOrder" type="number"
+								placeholder="Введите порядок сортировки" min="0" />
+							<mat-icon matSuffix>sort</mat-icon>
+							<mat-error
+								*ngIf="passTypeForm.get('sortOrder')?.invalid && passTypeForm.get('sortOrder')?.touched">
+								Номер сортировки должен быть неотрицательным
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile [colspan]="2">
+						<div class="form-group full-width">
+							<label>Группа *</label>
+							<div class="d-flex align-items-center">
+								<button mat-stroked-button color="primary" class="action-btn" (click)="openGroupModal()"
+									matTooltip="Выбрать группу">
+									Выбрать группу
+								</button>
+								<p *ngIf="passGroupName" class="selected-group">Выбрана группа: {{ passGroupName }}</p>
+							</div>
+							<mat-error
+								*ngIf="passTypeForm.get('passGroupId')?.invalid && passTypeForm.get('passGroupId')?.touched">
+								Выберите группу
+							</mat-error>
+						</div>
+					</mat-grid-tile>
+				</mat-grid-list>
 
-	<form [formGroup]="passTypeForm" (ngSubmit)="createPassType()">
-		<div class="form-group">
-			<label for="name">Название:</label>
-			<input id="name" type="text" class="form-control" formControlName="name"
-				placeholder="Введите название типа пропуска"
-				[ngClass]="{'is-invalid': passTypeForm.get('name')?.invalid && passTypeForm.get('name')?.touched}"
-				required />
-			<!-- Сообщение об ошибке для поля названия -->
-			<div *ngIf="passTypeForm.get('name')?.invalid && passTypeForm.get('name')?.touched"
-				class="invalid-feedback">
-				Название обязательно.
-			</div>
-		</div>
+				<div class="form-group full-width mt-3"> <mat-form-field appearance="fill"
+						class="full-width note-textarea-field" floatLabel="auto">
+						<mat-label>Шаблон для печати *</mat-label>
+						<textarea matInput formControlName="printTemplate" placeholder="Введите шаблон для печати"
+							rows="5"></textarea> <mat-icon matSuffix>print</mat-icon>
+						<mat-error
+							*ngIf="passTypeForm.get('printTemplate')?.invalid && passTypeForm.get('printTemplate')?.touched">
+							Шаблон для печати обязателен
+						</mat-error>
+					</mat-form-field>
+				</div>
 
-		<div class="form-group">
-			<label for="duration">Срок (в месяцах):</label>
-			<input id="duration" type="number" class="form-control" formControlName="durationInMonths" name="duration"
-				min="1"
-				[ngClass]="{'is-invalid': passTypeForm.get('durationInMonths')?.invalid && passTypeForm.get('durationInMonths')?.touched}"
-				required />
-			<!-- Сообщение об ошибке для поля срока -->
-			<div *ngIf="passTypeForm.get('durationInMonths')?.invalid && passTypeForm.get('durationInMonths')?.touched"
-				class="invalid-feedback">
-				Срок должен быть минимум 1 месяц.
-			</div>
-		</div>
+				<div class="d-flex justify-content-start gap-2 mt-4">
+					<button mat-raised-button color="primary" class="action-btn" type="submit"
+						[disabled]="passTypeForm.invalid" matTooltip="Создать тип пропуска">
+						Создать
+					</button>
+					<button mat-stroked-button color="accent" class="action-btn" type="button" (click)="cancel()"
+						matTooltip="Отменить">
+						Отмена
+					</button>
+				</div>
+			</form>
 
-		<div class="form-group">
-			<label for="cost">Стоимость:</label>
-			<input id="cost" type="number" class="form-control" formControlName="cost" name="cost"
-				placeholder="Введите стоимость" min="0"
-				[ngClass]="{'is-invalid': passTypeForm.get('cost')?.invalid && passTypeForm.get('cost')?.touched}"
-				required />
-			<!-- Сообщение об ошибке для поля стоимости -->
-			<div *ngIf="passTypeForm.get('cost')?.invalid && passTypeForm.get('cost')?.touched"
-				class="invalid-feedback">
-				Стоимость должна быть неотрицательной.
-			</div>
-		</div>
-
-		<div class="form-group">
-			<label for="color">Цвет:</label>
-			<input id="color" type="color" class="form-control form-control-color" formControlName="color"
-				title="Выберите цвет" />
-		</div>
-
-		<div class="form-group">
-			<label>Группа:</label>
-			<button type="button" class="btn btn-secondary" (click)="openGroupModal()">Выбрать группу</button>
-			<p *ngIf="passGroupName">Выбрана группа: {{ passGroupName }}</p>
-			<!-- Сообщение об ошибке для группы -->
-			<div *ngIf="passTypeForm.get('passGroupId')?.invalid && passTypeForm.get('passGroupId')?.touched"
-				class="invalid-feedback d-block">
-				Выберите группу.
-			</div>
-		</div>
-
-		<div class="form-group">
-			<label for="printTemplate">Шаблон для печати:</label>
-			<textarea id="printTemplate" class="form-control" formControlName="printTemplate" name="printTemplate"
-				placeholder="Введите шаблон для печати" rows="5"
-				[ngClass]="{'is-invalid': passTypeForm.get('printTemplate')?.invalid && passTypeForm.get('printTemplate')?.touched}"
-				required></textarea>
-			<!-- Сообщение об ошибке для поля шаблона -->
-			<div *ngIf="passTypeForm.get('printTemplate')?.invalid && passTypeForm.get('printTemplate')?.touched"
-				class="invalid-feedback">
-				Шаблон для печати обязателен.
-			</div>
-		</div>
-
-		<div class="form-group">
-			<label for="sortOrder">Номер сортировки:</label>
-			<input id="sortOrder" type="number" class="form-control" formControlName="sortOrder" name="sortOrder"
-				min="0"
-				[ngClass]="{'is-invalid': passTypeForm.get('sortOrder')?.invalid && passTypeForm.get('sortOrder')?.touched}"
-				required />
-			<!-- Сообщение об ошибке для поля номера сортировки -->
-			<div *ngIf="passTypeForm.get('sortOrder')?.invalid && passTypeForm.get('sortOrder')?.touched"
-				class="invalid-feedback">
-				Номер сортировки должен быть неотрицательным.
-			</div>
-		</div>
-
-		<div class="form-group mt-4">
-			<button type="submit" class="btn btn-primary" [disabled]="passTypeForm.invalid">Создать</button>
-		</div>
-	</form>
-
-	<!-- Модальное окно -->
-	<app-pass-group-modal *ngIf="isModalOpen" (modalClose)="closeGroupModal()"
-		(groupSelected)="onGroupSelected($event)"></app-pass-group-modal>
+			<app-pass-group-modal *ngIf="isModalOpen" (modalClose)="closeGroupModal()"
+				(groupSelected)="onGroupSelected($event)"></app-pass-group-modal>
+		</mat-card-content>
+	</mat-card>
 </div>

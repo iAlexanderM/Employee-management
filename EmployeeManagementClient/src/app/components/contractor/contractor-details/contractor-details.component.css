@@ -262,24 +262,6 @@
 	font-size: 18px;
 }
 
-.error-message {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 12px;
-	background-color: #fee2e2;
-	color: #dc2626;
-	border-radius: 4px;
-	margin-bottom: 16px;
-	font-family: 'Poppins', sans-serif;
-}
-
-.error-message mat-icon-body {
-	font-size: 20px;
-	height: 20px;
-	width: 20px;
-}
-
 .photo-section {
 	display: flex;
 	flex-direction: column;

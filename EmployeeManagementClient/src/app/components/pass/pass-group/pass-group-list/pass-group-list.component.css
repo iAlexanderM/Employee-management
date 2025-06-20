@@ -1,64 +1,106 @@
-.container {
-	margin-top: 20px;
-}
-
-.table {
-	margin-top: 10px;
-	border-collapse: collapse;
+.main-content {
+	max-width: 1920px;
 	width: 100%;
+	margin: 0 auto;
+	padding: 2rem;
+	background-color: #fefaf6;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
 }
 
-button {
-	margin-right: 5px;
+mat-grid-list {
+	width: 40%;
 }
 
-tr {
-	transition: all 0.3s ease-in-out;
-	/* Плавный переход */
+mat-grid-tile {
+	align-items: flex-start;
+	padding-top: 6px;
 }
 
-tr:hover {
-	background-color: #f2f2f2;
-	/* Легкий серый оттенок при наведении */
+.form-group {
+	margin-bottom: 16px;
+}
+
+.form-group label {
+	font-weight: 600;
+	color: #6b7280;
+	margin-bottom: 4px;
+	display: block;
+}
+
+.pagination-container {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 16px;
+}
+
+.pagination-squares {
+	display: flex;
+	gap: 8px;
+}
+
+.square {
+	padding: 8px 12px;
+	border: 1px solid #e5e7eb;
+	border-radius: 4px;
 	cursor: pointer;
+	user-select: none;
+	font-size: 14px;
+	color: #111827;
+	background-color: #ffffff;
+	transition: all 0.2s ease;
 }
 
-td {
-	vertical-align: middle;
-	/* Выравнивание текста по вертикали */
-	word-wrap: break-word;
-	/* Перенос слов, если текст слишком длинный */
-	padding: 8px;
-	/* Отступы внутри ячеек */
+.square.active {
+	background-color: #3786f3;
+	color: #ffffff;
+	border-color: #3786f3;
 }
 
-th {
-	text-align: left;
-	padding: 8px;
-	background-color: #007bff;
-	color: #fff;
-	/* Белый текст на синем фоне для заголовков */
+.square.disabled {
+	cursor: default;
+	color: #6b7280;
+	background-color: #f3f4f6;
+	border-color: #e5e7eb;
 }
 
-th,
-td {
-	width: auto;
-	/* Адаптивная ширина */
-	border: 1px solid #ddd;
-	/* Тонкая граница между ячейками */
+/* Contractor Image */
+.contractor-img {
+	width: 80px;
+	height: 80px;
+	object-fit: cover;
+	border-radius: 4px;
+	border: 1px solid #e5e7eb;
 }
 
-tr.expanded-row {
-	height: 40px;
-	/* Увеличенная высота строки */
+.page-size-container {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	justify-content: flex-end;
 }
 
-.color-preview {
-	width: 20px;
-	height: 20px;
-	border-radius: 50%;
-	display: inline-block;
-	border: 1px solid #ccc;
-	/* Для отображения цветного круга */
-	vertical-align: middle;
+.page-size-container span {
+	font-size: 14px;
+	color: #111827;
+}
+
+.page-size-container mat-select {
+	width: 80px;
+	border: 1px solid #e5e7eb;
+	border-radius: 4px;
+	padding: 4px 8px;
+	font-size: 14px;
+	background-color: #ffffff;
+}
+
+@media (max-width: 768px) {
+	.main-content {
+		padding: 1rem;
+	}
+
+	.page-size-container {
+		justify-content: flex-start;
+	}
 }

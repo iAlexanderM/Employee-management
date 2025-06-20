@@ -60,10 +60,6 @@ label {
 	font-size: 14px;
 }
 
-.error-message {
-	background-color: #f8d7da;
-}
-
 .btn-primary {
 	width: 100%;
 	/* Кнопка "Сохранить" растягивается на всю ширину */
