@@ -3,7 +3,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { PassTransaction, CreateTransactionDto, ContractorDto, Store, PassType } from '../models/transaction.model';
+import { PassTransaction, CreateTransactionDto, ContractorDto } from '../models/transaction.model';
+import { Store } from '../models/store.model';
+import { PassType } from '../models/pass-type.model';
 
 @Injectable({
 	providedIn: 'root'

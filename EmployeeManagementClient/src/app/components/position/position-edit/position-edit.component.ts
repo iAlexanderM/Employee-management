@@ -4,11 +4,32 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PositionService } from '../../../services/position.service';
 import { Position } from '../../../models/position.model';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
 	selector: 'app-position-edit',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatCheckboxModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule,
+	],
 	templateUrl: './position-edit.component.html',
 	styleUrls: ['./position-edit.component.css']
 })
@@ -63,5 +84,9 @@ export class PositionEditComponent implements OnInit {
 		} else {
 			this.errorMessage = 'Пожалуйста, заполните все обязательные поля корректно.';
 		}
+	}
+
+	cancel(): void {
+		this.router.navigate(['/positions']);
 	}
 }

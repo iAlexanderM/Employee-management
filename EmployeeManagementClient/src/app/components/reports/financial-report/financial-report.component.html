@@ -1,47 +1,72 @@
-<div class="container mt-4">
-	<h2>Полный финансовый отчёт</h2>
-	<form [formGroup]="reportForm">
-		<mat-form-field appearance="fill">
-			<mat-label>Дата начала</mat-label>
-			<mat-datepicker-toggle matPrefix [for]="pickerStart"></mat-datepicker-toggle>
-			<input matInput [matDatepicker]="pickerStart" formControlName="startDate" placeholder="ДД.ММ.ГГГГ" readonly
-				(click)="pickerStart.open()">
-			<mat-datepicker #pickerStart></mat-datepicker>
-			<mat-error *ngIf="reportForm.get('startDate')?.hasError('required')">Дата начала обязательна</mat-error>
-		</mat-form-field>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Полный финансовый отчёт</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<form [formGroup]="reportForm" class="search-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="16px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Дата начала</mat-label>
+							<input matInput [matDatepicker]="pickerStart" formControlName="startDate"
+								placeholder="ДД.ММ.ГГГГ" readonly (click)="pickerStart.open()" />
+							<mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+							<mat-datepicker #pickerStart></mat-datepicker>
+							<mat-error *ngIf="reportForm.get('startDate')?.hasError('required')">
+								Дата начала обязательна
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Дата окончания</mat-label>
+							<input matInput [matDatepicker]="pickerEnd" formControlName="endDate"
+								placeholder="ДД.ММ.ГГГГ" readonly (click)="pickerEnd.open()" />
+							<mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+							<mat-datepicker #pickerEnd></mat-datepicker>
+							<mat-error *ngIf="reportForm.get('endDate')?.hasError('required')">
+								Дата окончания обязательна
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+				</mat-grid-list>
+				<div class="d-flex justify-content-start gap-2 mt-4">
+					<button mat-raised-button color="primary" class="action-btn" (click)="generateReport()"
+						[disabled]="reportForm.invalid" matTooltip="Сформировать отчет">
+						Сформировать
+					</button>
+					<button mat-stroked-button color="primary" class="action-btn" (click)="resetForm()"
+						matTooltip="Сбросить форму">
+						Сбросить
+					</button>
+					<button mat-raised-button color="accent" class="action-btn" (click)="downloadReport()"
+						[disabled]="dataSource.length === 0 || reportForm.invalid" matTooltip="Сохранить в Excel">
+						Сохранить в Excel
+					</button>
+				</div>
+			</form>
 
-		<mat-form-field appearance="fill">
-			<mat-label>Дата окончания</mat-label>
-			<mat-datepicker-toggle matPrefix [for]="pickerEnd"></mat-datepicker-toggle>
-			<input matInput [matDatepicker]="pickerEnd" formControlName="endDate" placeholder="ДД.ММ.ГГГГ" readonly
-				(click)="pickerEnd.open()">
-			<mat-datepicker #pickerEnd></mat-datepicker>
-			<mat-error *ngIf="reportForm.get('endDate')?.hasError('required')">Дата окончания обязательна</mat-error>
-		</mat-form-field>
+			<div *ngIf="!isLoading && dataSource.length === 0" class="text-center mt-4">
+				<p class="text-muted">Нет данных для отображения</p>
+			</div>
 
-		<div class="buttons">
-			<button mat-raised-button color="primary" (click)="generateReport()"
-				[disabled]="reportForm.invalid">Сформировать</button>
-			<button mat-raised-button (click)="resetForm()">Сбросить</button>
-			<button mat-raised-button color="accent" (click)="downloadReport()"
-				[disabled]="dataSource.length === 0 || reportForm.invalid">Сохранить в Excel</button>
-		</div>
-	</form>
-
-	<mat-table [dataSource]="dataSource" class="mat-elevation-z8" *ngIf="dataSource.length > 0">
-		<ng-container matColumnDef="tokenType">
-			<mat-header-cell *matHeaderCellDef>Тип оплаты</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.tokenType }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="paidAmount">
-			<mat-header-cell *matHeaderCellDef>Оплачено на сумму</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.paidAmount | number }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="transactionCount">
-			<mat-header-cell *matHeaderCellDef>Создано транзакций</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.transactionCount }}</mat-cell>
-		</ng-container>
-		<mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-		<mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-	</mat-table>
+			<mat-table [dataSource]="dataSource" class="data-table" *ngIf="dataSource.length > 0">
+				<ng-container matColumnDef="tokenType">
+					<mat-header-cell *matHeaderCellDef>Тип оплаты</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.tokenType }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="paidAmount">
+					<mat-header-cell *matHeaderCellDef>Оплачено на сумму</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.paidAmount | number }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="transactionCount">
+					<mat-header-cell *matHeaderCellDef>Создано транзакций</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.transactionCount }}</mat-cell>
+				</ng-container>
+				<mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+				<mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+			</mat-table>
+		</mat-card-content>
+	</mat-card>
 </div>

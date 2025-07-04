@@ -1,38 +1,53 @@
-<div *ngIf="position" class="container mt-4">
-	<h2>Редактирование записи №{{ position.id }}</h2>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Редактирование записи №{{ position?.id }}</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<mat-card *ngIf="errorMessage" class="error-message" role="alert">
+				<mat-icon>error_outline</mat-icon>
+				{{ errorMessage }}
+			</mat-card>
 
-	<!-- Блок отображения ошибки -->
-	<div *ngIf="errorMessage" class="error-message">
-		<p>{{ errorMessage }}</p>
-	</div>
+			<form [formGroup]="positionForm" (ngSubmit)="updatePosition()" class="edit-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="16px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Название *</mat-label>
+							<input matInput formControlName="positionName" placeholder="Введите название должности"
+								required />
+							<mat-icon matSuffix>search</mat-icon>
+							<mat-error
+								*ngIf="positionForm.get('positionName')?.invalid && positionForm.get('positionName')?.touched">
+								Название должности обязательно
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Сортировка *</mat-label>
+							<input matInput formControlName="sortOrder" type="number"
+								placeholder="Введите порядок сортировки" required />
+							<mat-icon matSuffix>sort</mat-icon>
+							<mat-error
+								*ngIf="positionForm.get('sortOrder')?.invalid && positionForm.get('sortOrder')?.touched">
+								Порядок сортировки должен быть неотрицательным числом
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+				</mat-grid-list>
 
-	<!-- Форма редактирования -->
-	<form [formGroup]="positionForm" (ngSubmit)="updatePosition()">
-		<div class="form-group">
-			<label for="positionName">Название:</label>
-			<div class="input-container">
-				<input id="positionName" type="text" placeholder="Введите название должности"
-					formControlName="positionName" required />
-			</div>
-			<!-- Валидация поля -->
-			<div *ngIf="positionForm.get('positionName')?.invalid && positionForm.get('positionName')?.touched"
-				class="error">
-				Название должности обязательно.
-			</div>
-		</div>
-
-		<div class="form-group">
-			<label for="sortOrder">Сортировка:</label>
-			<div class="input-container">
-				<input id="sortOrder" type="number" placeholder="Введите порядок сортировки" formControlName="sortOrder"
-					required />
-			</div>
-			<!-- Валидация поля -->
-			<div *ngIf="positionForm.get('sortOrder')?.invalid && positionForm.get('sortOrder')?.touched" class="error">
-				Порядок сортировки должен быть неотрицательным числом.
-			</div>
-		</div>
-
-		<button type="submit" class="btn btn-primary" [disabled]="positionForm.invalid">Сохранить</button>
-	</form>
+				<div class="action-buttons">
+					<button mat-raised-button color="primary" class="action-btn" type="submit"
+						[disabled]="positionForm.invalid" matTooltip="Сохранить изменения">
+						Сохранить
+					</button>
+					<button mat-stroked-button color="accent" class="action-btn" type="button" (click)="cancel()"
+						matTooltip="Отменить редактирование">
+						Отменить
+					</button>
+				</div>
+			</form>
+		</mat-card-content>
+	</mat-card>
 </div>

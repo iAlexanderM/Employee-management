@@ -107,6 +107,10 @@
 					<ng-container matColumnDef="actions">
 						<mat-header-cell *matHeaderCellDef>Действия</mat-header-cell>
 						<mat-cell *matCellDef="let type">
+							<button mat-icon-button color="primary" class="action-btn icon-only"
+								[routerLink]="['/pass-types', type.id, 'details']" matTooltip="Просмотреть детали">
+								<mat-icon>visibility</mat-icon>
+							</button>
 							<button mat-icon-button color="accent" class="action-btn icon-only"
 								[routerLink]="['/pass-types', type.id, 'edit']" matTooltip="Редактировать">
 								<mat-icon>mode_edit_outline</mat-icon>

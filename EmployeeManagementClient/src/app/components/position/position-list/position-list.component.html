@@ -1,94 +1,117 @@
-<div class="container mt-4">
-	<h2>Список должностей</h2>
-	<button (click)="addPosition()" class="btn btn-info btn-sm btn-equal">
-		Добавить новую должность
-	</button>
-	<br />
-	<button type="button" class="btn btn-link mb-3" (click)="toggleSearchForm()">
-		{{ isExpanded ? 'Свернуть' : 'Развернуть' }} форму поиска
-	</button>
-
-	<!-- Форма поиска -->
-	<form *ngIf="isExpanded" [formGroup]="searchForm" (ngSubmit)="searchPositions()" class="mb-4">
-		<div class="row">
-			<div class="col-md-4">
-				<label for="Id">ID должности</label>
-				<input id="Id" formControlName="Id" type="text" class="form-control" />
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Список должностей</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<div class="d-flex gap-2 mb-4">
+				<button mat-stroked-button color="primary" class="action-btn" (click)="toggleSearchForm()"
+					matTooltip="{{ isExpanded ? 'Свернуть форму поиска' : 'Развернуть форму поиска' }}">
+					{{ isExpanded ? 'Свернуть' : 'Развернуть' }}
+				</button>
+				<button mat-raised-button color="primary" class="action-btn" (click)="addPosition()"
+					matTooltip="Добавить новую должность">
+					Добавить новую должность
+				</button>
 			</div>
-			<div class="col-md-4">
-				<label for="Name">Название:</label>
-				<input id="Name" formControlName="Name" type="text" class="form-control" />
-			</div>
-		</div>
 
-		<div class="row mt-4">
-			<div class="col-md-12 text-end">
-				<button type="submit" class="btn btn-primary">Найти</button>
-				<button type="button" class="btn btn-secondary" (click)="resetFilters()">Сбросить</button>
-			</div>
-		</div>
-	</form>
-
-	<!-- Выбор размера страницы (Reactive FormControl) -->
-	<div class="d-flex justify-content-between align-items-center mb-3">
-		<div>
-			<label for="pageSize">Элементов на странице:</label>
-			<select id="pageSize" class="form-control w-auto d-inline-block" [formControl]="pageSizeControl">
-				<option *ngFor="let size of pageSizeOptions" [value]="size">
-					{{ size }}
-				</option>
-			</select>
-		</div>
-		<p>Всего страниц: {{ totalPages }}</p>
-	</div>
-
-	<!-- Пагинация (верхняя) -->
-	<div *ngIf="totalPages > 1" class="pagination-container">
-		<div class="pagination-squares">
-			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-				[class.disabled]="page === '...'" (click)="onPageClick(page)">
-				{{ page }}
-			</div>
-		</div>
-	</div>
-	<br />
-
-	<!-- Таблица -->
-	<table class="table table-bordered table-hover" *ngIf="displayedPositions.length > 0">
-		<thead>
-			<tr>
-				<th>Сортировка</th>
-				<th>ID</th>
-				<th>Название</th>
-				<th>Действия</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr *ngFor="let position of displayedPositions">
-				<td>{{ position.sortOrder }}</td>
-				<td>{{ position.id }}</td>
-				<td>{{ position.name }}</td>
-				<td>
-					<button class="btn btn-info btn-sm btn-equal" (click)="viewPositionDetailsInNewTab(position.id)">
-						Просмотреть
+			<!-- Форма поиска -->
+			<form *ngIf="isExpanded" [formGroup]="searchForm" (ngSubmit)="searchPositions()" class="search-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="16px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>ID должности</mat-label>
+							<input matInput formControlName="Id" type="text" placeholder="Введите ID"
+								inputmode="numeric" pattern="[0-9]*" />
+							<mat-icon matSuffix>code</mat-icon>
+							<mat-error *ngIf="searchForm.get('Id')?.hasError('pattern')">
+								Введите только цифры
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Название</mat-label>
+							<input matInput formControlName="Name" type="text"
+								placeholder="Введите название должности" />
+							<mat-icon matSuffix>search</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+				</mat-grid-list>
+				<div class="action-buttons">
+					<button mat-raised-button color="primary" class="action-btn" type="submit"
+						matTooltip="Найти должности">
+						Найти
 					</button>
-					<button class="btn btn-secondary btn-sm btn-equal" (click)="editPosition(position.id)">
-						Редактировать
+					<button mat-stroked-button color="primary" class="action-btn" type="button" (click)="resetFilters()"
+						matTooltip="Сбросить фильтры">
+						Сбросить
 					</button>
-				</td>
-			</tr>
-		</tbody>
-	</table>
+				</div>
+			</form>
 
-	<p *ngIf="displayedPositions.length === 0">Нет записей для отображения.</p>
-
-	<!-- Пагинация (нижняя) -->
-	<div *ngIf="totalPages > 1" class="pagination-container">
-		<div class="pagination-squares">
-			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-				[class.disabled]="page === '...'" (click)="onPageClick(page)">
-				{{ page }}
+			<div class="page-size-container">
+				<span>Элементов на странице:</span>
+				<mat-select [formControl]="pageSizeControl" class="page-size-select">
+					<mat-option *ngFor="let size of pageSizeOptions" [value]="size">
+						{{ size }}
+					</mat-option>
+				</mat-select>
+				<p *ngIf="totalPages > 0">Всего страниц: {{ totalPages }}</p>
 			</div>
-		</div>
-	</div>
+
+			<!-- Пагинация (верхняя) -->
+			<div *ngIf="totalPages > 1" class="pagination-container">
+				<div class="pagination-squares">
+					<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" (click)="onPageClick(page)">
+						{{ page }}
+					</span>
+				</div>
+			</div>
+
+			<!-- Таблица -->
+			<div *ngIf="displayedPositions.length > 0">
+				<mat-table [dataSource]="displayedPositions" class="data-table">
+					<ng-container matColumnDef="sortOrder">
+						<mat-header-cell *matHeaderCellDef>Сортировка</mat-header-cell>
+						<mat-cell *matCellDef="let position">{{ position.sortOrder }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="id">
+						<mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
+						<mat-cell *matCellDef="let position">{{ position.id }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="name">
+						<mat-header-cell *matHeaderCellDef>Название</mat-header-cell>
+						<mat-cell *matCellDef="let position">{{ position.name }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="actions">
+						<mat-header-cell *matHeaderCellDef>Действия</mat-header-cell>
+						<mat-cell *matCellDef="let position">
+							<button mat-icon-button color="accent" class="action-btn icon-only"
+								(click)="editPosition(position.id)" matTooltip="Редактировать">
+								<mat-icon>mode_edit_outline</mat-icon>
+							</button>
+						</mat-cell>
+					</ng-container>
+					<mat-header-row *matHeaderRowDef="['sortOrder', 'id', 'name', 'actions']"></mat-header-row>
+					<mat-row *matRowDef="let row; columns: ['sortOrder', 'id', 'name', 'actions']"></mat-row>
+				</mat-table>
+			</div>
+
+			<div *ngIf="displayedPositions.length === 0" class="text-center">
+				<p class="text-muted">Нет записей для отображения</p>
+			</div>
+
+			<!-- Пагинация (нижняя) -->
+			<div *ngIf="totalPages > 1" class="pagination-container">
+				<div class="pagination-squares">
+					<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" (click)="onPageClick(page)">
+						{{ page }}
+					</span>
+				</div>
+			</div>
+		</mat-card-content>
+	</mat-card>
 </div>

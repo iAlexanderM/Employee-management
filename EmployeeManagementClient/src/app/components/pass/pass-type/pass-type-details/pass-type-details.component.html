@@ -1,1 +1,55 @@
-test
+<div class="main-content">
+	<mat-card *ngIf="errorMessage" class="error-message" role="alert">
+		<mat-icon>error_outline</mat-icon>
+		{{ errorMessage }}
+	</mat-card>
+
+	<mat-card *ngIf="passType" class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Тип пропуска ID: {{ passType.id }}</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<div class="archived-status" *ngIf="passType.isArchived">Архивирован</div>
+			<div class="action-buttons">
+				<button mat-raised-button color="primary" class="action-btn" (click)="goBack()"
+					matTooltip="Вернуться к списку" aria-label="Вернуться к списку">
+					Назад
+				</button>
+			</div>
+
+			<dl class="info-list">
+				<div class="info-item">
+					<dt class="info-label">Название</dt>
+					<dd class="info-value">{{ passType.name || 'Не указано' }}</dd>
+				</div>
+				<div class="info-item">
+					<dt class="info-label">Срок (месяцев)</dt>
+					<dd class="info-value">{{ passType.durationInMonths || 'Не указано' }}</dd>
+				</div>
+				<div class="info-item">
+					<dt class="info-label">Стоимость</dt>
+					<dd class="info-value">{{ passType.cost || 'Не указано' }}</dd>
+				</div>
+				<div class="info-item">
+					<dt class="info-label">Группа</dt>
+					<dd class="info-value">{{ passGroupName || 'Не выбрана' }}</dd>
+				</div>
+				<div class="info-item">
+					<dt class="info-label">Номер сортировки</dt>
+					<dd class="info-value">{{ passType.sortOrder || 'Не указано' }}</dd>
+				</div>
+				<div class="info-item">
+					<dt class="info-label">Цвет</dt>
+					<dd class="info-value">
+						<span class="pass-type-circle" [style.background-color]="passType.color"></span>
+					</dd>
+				</div>
+			</dl>
+
+			<div class="print-section">
+				<h3 class="section-title">Шаблон для печати</h3>
+				<div class="print-preview" [innerHTML]="printContent"></div>
+			</div>
+		</mat-card-content>
+	</mat-card>
+</div>

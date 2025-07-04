@@ -1,96 +1,113 @@
-<div class="container mt-4">
-	<h2>Сумма и количество пропусков</h2>
-	<form [formGroup]="reportForm">
-		<mat-form-field appearance="fill">
-			<mat-label>Дата начала</mat-label>
-			<mat-datepicker-toggle matPrefix [for]="pickerStart"></mat-datepicker-toggle>
-			<input matInput [matDatepicker]="pickerStart" formControlName="startDate" placeholder="ДД.ММ.ГГГГ" readonly
-				(click)="pickerStart.open()">
-			<mat-datepicker #pickerStart></mat-datepicker>
-			<mat-error *ngIf="reportForm.get('startDate')?.hasError('required')">Дата начала обязательна</mat-error>
-		</mat-form-field>
-		<mat-form-field appearance="fill">
-			<mat-label>Дата окончания</mat-label>
-			<mat-datepicker-toggle matPrefix [for]="pickerEnd"></mat-datepicker-toggle>
-			<input matInput [matDatepicker]="pickerEnd" formControlName="endDate" placeholder="ДД.ММ.ГГГГ" readonly
-				(click)="pickerEnd.open()">
-			<mat-datepicker #pickerEnd></mat-datepicker>
-			<mat-error *ngIf="reportForm.get('endDate')?.hasError('required')">Дата окончания обязательна</mat-error>
-		</mat-form-field>
-		<div class="buttons">
-			<button mat-raised-button color="primary" (click)="generateReport()"
-				[disabled]="reportForm.invalid">Сформировать</button>
-			<button mat-raised-button (click)="resetForm()">Сбросить</button>
-		</div>
-	</form>
-
-	<table mat-table [dataSource]="dataSource" multiTemplateDataRows class="mat-elevation-z8 summary-table"
-		*ngIf="dataSource.length > 0">
-
-		<ng-container matColumnDef="queueType">
-			<th mat-header-cell *matHeaderCellDef> Тип очереди </th>
-			<td mat-cell *matCellDef="let element">
-				{{element.queueType}}
-			</td>
-		</ng-container>
-
-		<ng-container matColumnDef="totalAmount">
-			<th mat-header-cell *matHeaderCellDef> Сумма по типу очереди </th>
-			<td mat-cell *matCellDef="let element"> {{element.totalAmount | number}} </td>
-		</ng-container>
-		<ng-container matColumnDef="passCount">
-			<th mat-header-cell *matHeaderCellDef> Количество пропусков </th>
-			<td mat-cell *matCellDef="let element"> {{element.passCount}} </td>
-		</ng-container>
-
-		<ng-container matColumnDef="actions">
-			<th mat-header-cell *matHeaderCellDef> Действия </th>
-			<td mat-cell *matCellDef="let element">
-				<button mat-button color="primary" (click)="$event.stopPropagation(); toggleDetails(element)">
-					Подробнее
-				</button>
-			</td>
-		</ng-container>
-
-		<ng-container matColumnDef="expandedDetail">
-			<td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
-				<div class="element-detail" [@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed'">
-					<div *ngIf="element.isLoadingDetails" class="details-loading">
-						Загрузка деталей...
-					</div>
-					<div *ngIf="!element.isLoadingDetails && element.passTypeDetails && element.passTypeDetails.length > 0"
-						class="detail-content">
-						<h4>Детализация по типам пропусков: {{element.queueType}}</h4>
-						<table mat-table [dataSource]="element.passTypeDetails" class="detail-table">
-							<ng-container matColumnDef="passType">
-								<th mat-header-cell *matHeaderCellDef> Тип пропуска </th>
-								<td mat-cell *matCellDef="let detail"> {{detail.passType}} </td>
-							</ng-container>
-							<ng-container matColumnDef="amount">
-								<th mat-header-cell *matHeaderCellDef> Сумма </th>
-								<td mat-cell *matCellDef="let detail"> {{detail.amount | number}} </td>
-							</ng-container>
-							<ng-container matColumnDef="count">
-								<th mat-header-cell *matHeaderCellDef> Количество </th>
-								<td mat-cell *matCellDef="let detail"> {{detail.count}} </td>
-							</ng-container>
-							<tr mat-header-row *matHeaderRowDef="detailColumns"></tr>
-							<tr mat-row *matRowDef="let detailRow; columns: detailColumns;"></tr>
-						</table>
-					</div>
-					<div *ngIf="!element.isLoadingDetails && element.passTypeDetails && element.passTypeDetails.length === 0"
-						class="detail-content no-details">
-						Детали для данного типа очереди отсутствуют.
-					</div>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Сумма и количество пропусков</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<form [formGroup]="reportForm" class="search-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="16px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Дата начала</mat-label>
+							<input matInput [matDatepicker]="pickerStart" formControlName="startDate"
+								placeholder="ДД.ММ.ГГГГ" readonly (click)="pickerStart.open()" />
+							<mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+							<mat-datepicker #pickerStart></mat-datepicker>
+							<mat-error *ngIf="reportForm.get('startDate')?.hasError('required')">
+								Дата начала обязательна
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Дата окончания</mat-label>
+							<input matInput [matDatepicker]="pickerEnd" formControlName="endDate"
+								placeholder="ДД.ММ.ГГГГ" readonly (click)="pickerEnd.open()" />
+							<mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+							<mat-datepicker #pickerEnd></mat-datepicker>
+							<mat-error *ngIf="reportForm.get('endDate')?.hasError('required')">
+								Дата окончания обязательна
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+				</mat-grid-list>
+				<div class="d-flex justify-content-start gap-2 mt-4">
+					<button mat-raised-button color="primary" class="action-btn" (click)="generateReport()"
+						[disabled]="reportForm.invalid" matTooltip="Сформировать отчет">
+						Сформировать
+					</button>
+					<button mat-stroked-button color="primary" class="action-btn" (click)="resetForm()"
+						matTooltip="Сбросить форму">
+						Сбросить
+					</button>
 				</div>
-			</td>
-		</ng-container>
+			</form>
 
-		<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-		<tr mat-row *matRowDef="let element; columns: displayedColumns;" class="element-row"
-			[class.expanded-row]="expandedElement === element">
-		</tr>
-		<tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
-
-	</table>
+			<div *ngIf="dataSource.length === 0 && !isLoading" class="text-center mt-4">
+				<p class="text-muted">Нет данных для отображения</p>
+			</div>
+			<mat-table [dataSource]="dataSource" multiTemplateDataRows class="data-table" *ngIf="dataSource.length > 0">
+				<ng-container matColumnDef="queueType">
+					<mat-header-cell *matHeaderCellDef>Тип очереди</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.queueType }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="totalAmount">
+					<mat-header-cell *matHeaderCellDef>Сумма по типу очереди</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.totalAmount | number }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="passCount">
+					<mat-header-cell *matHeaderCellDef>Количество пропусков</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.passCount }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="actions">
+					<mat-header-cell *matHeaderCellDef>Действия</mat-header-cell>
+					<mat-cell *matCellDef="let element">
+						<button mat-icon-button color="primary" class="action-btn icon-only"
+							(click)="$event.stopPropagation(); toggleDetails(element)" matTooltip="Подробнее">
+							<mat-icon>expand_more</mat-icon>
+						</button>
+					</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="expandedDetail">
+					<mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
+						<div class="element-detail"
+							[@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed'">
+							<div *ngIf="element.isLoadingDetails" class="details-loading">
+								<mat-spinner diameter="20"></mat-spinner>
+								<p>Загрузка деталей...</p>
+							</div>
+							<div *ngIf="!element.isLoadingDetails && element.passTypeDetails && element.passTypeDetails.length > 0"
+								class="detail-content">
+								<h4>Детализация по типам пропусков: {{ element.queueType }}</h4>
+								<mat-table [dataSource]="element.passTypeDetails" class="data-table">
+									<ng-container matColumnDef="passType">
+										<mat-header-cell *matHeaderCellDef>Тип пропуска</mat-header-cell>
+										<mat-cell *matCellDef="let detail">{{ detail.passType }}</mat-cell>
+									</ng-container>
+									<ng-container matColumnDef="amount">
+										<mat-header-cell *matHeaderCellDef>Сумма</mat-header-cell>
+										<mat-cell *matCellDef="let detail">{{ detail.amount | number }}</mat-cell>
+									</ng-container>
+									<ng-container matColumnDef="count">
+										<mat-header-cell *matHeaderCellDef>Количество</mat-header-cell>
+										<mat-cell *matCellDef="let detail">{{ detail.count }}</mat-cell>
+									</ng-container>
+									<mat-header-row *matHeaderRowDef="detailColumns"></mat-header-row>
+									<mat-row *matRowDef="let detailRow; columns: detailColumns;"></mat-row>
+								</mat-table>
+							</div>
+							<div *ngIf="!element.isLoadingDetails && element.passTypeDetails && element.passTypeDetails.length === 0"
+								class="detail-content no-details">
+								<p class="text-muted">Детали для данного типа очереди отсутствуют.</p>
+							</div>
+						</div>
+					</mat-cell>
+				</ng-container>
+				<mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+				<mat-row *matRowDef="let element; columns: displayedColumns;" class="element-row"
+					[class.expanded-row]="expandedElement === element"></mat-row>
+				<mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></mat-row>
+			</mat-table>
+		</mat-card-content>
+	</mat-card>
 </div>

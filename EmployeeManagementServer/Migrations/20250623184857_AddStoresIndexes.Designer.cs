@@ -3,6 +3,7 @@ using System;
 using EmployeeManagementServer.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EmployeeManagementServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250623184857_AddStoresIndexes")]
+    partial class AddStoresIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -225,8 +228,7 @@ namespace EmployeeManagementServer.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PassportSerialNumber")
-                        .IsUnique()
-                        .HasDatabaseName("idx_contractors_passport_serial_number");
+                        .IsUnique();
 
                     b.ToTable("Contractors", "public");
                 });
@@ -250,8 +252,7 @@ namespace EmployeeManagementServer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ContractorId")
-                        .HasDatabaseName("idx_contractor_photos_contractor_id");
+                    b.HasIndex("ContractorId");
 
                     b.ToTable("ContractorPhotos", "public");
                 });
@@ -285,16 +286,13 @@ namespace EmployeeManagementServer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ContractorId")
-                        .HasDatabaseName("idx_contractor_store_passes_contractor_id");
+                    b.HasIndex("ContractorId");
 
-                    b.HasIndex("PassTransactionId")
-                        .HasDatabaseName("idx_contractor_store_passes_pass_transaction_id");
+                    b.HasIndex("PassTransactionId");
 
                     b.HasIndex("PassTypeId");
 
-                    b.HasIndex("StoreId")
-                        .HasDatabaseName("idx_contractor_store_passes_store_id");
+                    b.HasIndex("StoreId");
 
                     b.ToTable("ContractorStorePasses", "public");
                 });
@@ -387,8 +385,7 @@ namespace EmployeeManagementServer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EntityType", "EntityId", "ChangedAt")
-                        .HasDatabaseName("idx_history_entity_type_id_changed_at");
+                    b.HasIndex("EntityType", "EntityId", "ChangedAt");
 
                     b.ToTable("History", "public");
                 });
@@ -508,20 +505,15 @@ namespace EmployeeManagementServer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClosedByUserId")
-                        .HasDatabaseName("idx_passes_closed_by_user_id");
+                    b.HasIndex("ClosedByUserId");
 
-                    b.HasIndex("ContractorId")
-                        .HasDatabaseName("idx_passes_contractor_id");
+                    b.HasIndex("ContractorId");
 
                     b.HasIndex("EndDate")
                         .HasDatabaseName("idx_passes_end_date");
 
                     b.HasIndex("IsClosed")
                         .HasDatabaseName("idx_passes_is_closed");
-
-                    b.HasIndex("PassStatus")
-                        .HasDatabaseName("idx_passes_pass_status");
 
                     b.HasIndex("PassTransactionId")
                         .HasDatabaseName("idx_passes_pass_transaction_id");
@@ -532,8 +524,7 @@ namespace EmployeeManagementServer.Migrations
                         .HasDatabaseName("idx_passes_store_id");
 
                     b.HasIndex("UniquePassId")
-                        .IsUnique()
-                        .HasDatabaseName("idx_passes_unique_pass_id");
+                        .IsUnique();
 
                     b.ToTable("Passes", "public");
                 });
@@ -732,12 +723,10 @@ namespace EmployeeManagementServer.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Token")
-                        .HasName("pk_refresh_tokens");
+                    b.HasKey("Token");
 
                     b.HasIndex("Token")
-                        .IsUnique()
-                        .HasDatabaseName("idx_refresh_tokens_token");
+                        .IsUnique();
 
                     b.ToTable("RefreshTokens", "public");
                 });
@@ -797,9 +786,6 @@ namespace EmployeeManagementServer.Migrations
 
                     b.HasIndex("StoreNumber")
                         .HasDatabaseName("idx_stores_store_number");
-
-                    b.HasIndex("Building", "Floor", "Line", "StoreNumber")
-                        .HasDatabaseName("idx_stores_location");
 
                     b.ToTable("Stores", "public");
                 });

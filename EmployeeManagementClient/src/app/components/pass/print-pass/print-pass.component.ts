@@ -2,17 +2,26 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PassService } from '../../../services/pass.service';
 import { ContractorWatchService } from '../../../services/contractor-watch.service';
-import { Pass } from '../../../models/pass.model'; // Import Pass directly
+import { Pass } from '../../../models/pass.model';
 import { Contractor, ContractorDto } from '../../../models/contractor.model';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser'; // Correct import
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
 	selector: 'app-print-pass',
 	standalone: true,
-	imports: [CommonModule, HttpClientModule],
+	imports: [
+		CommonModule,
+		HttpClientModule,
+		MatCardModule,
+		MatButtonModule,
+		MatIconModule,
+	],
 	templateUrl: './print-pass.component.html',
 	styleUrls: ['./print-pass.component.css'],
 })
@@ -27,7 +36,7 @@ export class PrintPassComponent implements OnInit {
 		private passService: PassService,
 		private contractorService: ContractorWatchService,
 		private router: Router,
-		private sanitizer: DomSanitizer // Properly injected
+		private sanitizer: DomSanitizer
 	) { }
 
 	ngOnInit(): void {
@@ -54,7 +63,7 @@ export class PrintPassComponent implements OnInit {
 	private normalizeContractor(data: ContractorDto): Contractor {
 		const activePasses = data.activePasses || [];
 		const closedPasses = data.closedPasses || [];
-		const passes = data.passes || []; // Use provided passes
+		const passes = data.passes || [];
 		const photos = Array.isArray(data.photos) ? data.photos : [];
 		const documentPhotos = Array.isArray(data.documentPhotos) ? data.documentPhotos : [];
 
@@ -99,10 +108,10 @@ export class PrintPassComponent implements OnInit {
 				}
 			});
 			console.debug('Loaded contractors:', contractorMap);
-			this.preparePrintContents(contractorMap);
+			this.preparePrintContent(contractorMap);
 		} catch (error) {
 			console.error('Error loading contractor data:', error);
-			this.preparePrintContents(new Map());
+			this.preparePrintContent(new Map());
 		}
 	}
 
@@ -128,12 +137,12 @@ export class PrintPassComponent implements OnInit {
 				.replace('[+PLACE_ETAJH+]', store.floor || '')
 				.replace('[+PLACE_LINIA+]', store.line || '')
 				.replace('[+PLACE_TOCHKA+]', store.storeNumber || 'N/A')
-				.replace('[+PLACE_ZONA+]', '');
+				.replace('[+PLACEHOLDER+]', '');
 		}
 		return 'Unknown store';
 	}
 
-	preparePrintContents(contractorMap: Map<number, Contractor>): void {
+	preparePrintContent(contractorMap: Map<number, Contractor>): void {
 		this.printContents = this.passes.map((pass) => {
 			const contractor = contractorMap.get(pass.contractorId) || null;
 			if (!pass.passType?.printTemplate) {
@@ -179,25 +188,25 @@ export class PrintPassComponent implements OnInit {
 		if (printWindow) {
 			const content = this.printContents[index];
 			printWindow.document.write(`
-                <html>
-                  <head>
-                    <title>Print Pass #${this.passes[index].uniquePassId}</title>
-                    <style>
-                      @page { margin: 0; }
-                      body { margin: 0; padding: 0; }
-                      img { max-width: 100%; height: auto; display: block; }
-                      @media print {
-                        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                      }
-                    </style>
-                  </head>
-                  <body onload="window.print()">
-                    <div style="margin: 40px 0;">
-                      ${(content as any).changingThisBreaksApplicationSecurity || content}
-                    </div>
-                  </body>
-                </html>
-            `);
+        <html>
+          <head>
+            <title>Print Pass #${this.passes[index].uniquePassId}</title>
+            <style>
+              @page { margin: 0; }
+              body { margin: 0; padding: 0; }
+              img { max-width: 100%; height: auto; display: block; }
+              @media print {
+                body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              }
+            </style>
+          </head>
+          <body onload="window.print()">
+            <div style="margin: 40px 0;">
+              ${(content as any).changingThisBreaksApplicationSecurity || content}
+            </div>
+          </body>
+        </html>
+      `);
 			printWindow.document.close();
 
 			printWindow.onafterprint = () => {

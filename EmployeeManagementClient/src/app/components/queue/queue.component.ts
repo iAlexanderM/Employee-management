@@ -9,9 +9,19 @@ import { Router } from '@angular/router';
 import { TransactionService } from '../../services/transaction.service';
 import { SearchFilterResetService } from '../../services/search-filter-reset.service';
 import { QueueSyncService } from '../../services/queue-sync.service';
-import { jwtDecode } from 'jwt-decode'; // <<<--- Импортируем библиотеку для декодирования
+import { jwtDecode } from 'jwt-decode';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTableModule } from '@angular/material/table';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-// Определим интерфейс для декодированного токена (свойства могут отличаться у вас)
 interface DecodedToken {
 	sub?: string; // Обычно Subject ID (используется как User ID)
 	nameid?: string; // Иногда User ID в этом claim
@@ -25,7 +35,21 @@ interface DecodedToken {
 @Component({
 	selector: 'app-queue',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
+	imports: [
+		ReactiveFormsModule,
+		CommonModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatGridListModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatTooltipModule,
+		MatProgressSpinnerModule,
+		MatSnackBarModule,
+	],
 	templateUrl: './queue.component.html',
 	styleUrls: ['./queue.component.css']
 })

@@ -1,41 +1,111 @@
-form {
+.main-content {
+	max-width: 1920px;
+	width: 100%;
+	margin: 0 auto;
+	padding: 2rem;
+	background-color: #fefaf6;
+	min-height: 100vh;
 	display: flex;
-	flex-wrap: wrap;
-	gap: 1px;
-	margin-bottom: 20px;
+	flex-direction: column;
 }
 
-mat-form-field {
-	width: 50%;
-	margin-bottom: 5px;
+.search-form {
+	padding: 8px 0;
+	margin-bottom: 16px;
+}
+
+mat-grid-list {
+	width: 100%;
+}
+
+mat-grid-tile {
+	align-items: flex-start;
+	padding-top: 6px;
+}
+
+.form-group {
+	margin-bottom: 16px;
+}
+
+.form-group label {
+	font-weight: 600;
+	color: #6b7280;
+	margin-bottom: 4px;
 	display: block;
 }
 
-mat-form-field .mat-icon {
-	margin-right: 8px;
-}
-
-.buttons {
+.pagination-container {
 	display: flex;
-	gap: 10px;
-	margin-top: 10px;
-	flex-basis: 100%;
-	flex-wrap: wrap;
+	justify-content: flex-end;
+	margin-top: 16px;
 }
 
-mat-table {
-	width: 100%;
-	margin-top: 20px;
+.pagination-squares {
+	display: flex;
+	gap: 8px;
 }
 
-@media (max-width: 992px) {
-	mat-form-field {
-		flex: 1 1 calc(50% - 15px);
+.square {
+	padding: 8px 12px;
+	border: 1px solid #e5e7eb;
+	border-radius: 4px;
+	cursor: pointer;
+	user-select: none;
+	font-size: 14px;
+	color: #111827;
+	background-color: #ffffff;
+	transition: all 0.2s ease;
+}
+
+.square.active {
+	background-color: #3786f3;
+	color: #ffffff;
+	border-color: #3786f3;
+}
+
+.square.disabled {
+	cursor: default;
+	color: #6b7280;
+	background-color: #f3f4f6;
+	border-color: #e5e7eb;
+}
+
+/* Contractor Image */
+.contractor-img {
+	width: 80px;
+	height: 80px;
+	object-fit: cover;
+	border-radius: 4px;
+	border: 1px solid #e5e7eb;
+}
+
+.page-size-container {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	justify-content: flex-end;
+}
+
+.page-size-container span {
+	font-size: 14px;
+	color: #111827;
+}
+
+.page-size-container mat-select {
+	width: 80px;
+	border: 1px solid #e5e7eb;
+	border-radius: 4px;
+	padding: 4px 8px;
+	font-size: 14px;
+	background-color: #ffffff;
+}
+
+@media (max-width: 768px) {
+	.main-content {
+		padding: 1rem;
 	}
-}
 
-@media (max-width: 576px) {
-	mat-form-field {
-		flex: 1 1 100%;
+	.page-size-container {
+		justify-content: flex-start;
 	}
 }

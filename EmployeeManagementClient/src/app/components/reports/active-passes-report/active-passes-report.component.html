@@ -1,177 +1,213 @@
-<!-- src/app/components/reports/active-passes-report/active-passes-report.component.html -->
-<div class="container mt-4">
-	<h2>Список действующих пропусков</h2>
-	<form [formGroup]="reportForm">
-		<mat-form-field appearance="fill">
-			<mat-label>Тип пропуска</mat-label>
-			<input matInput formControlName="passType" placeholder="Введите тип (необязательно)"
-				[matAutocomplete]="autoPassType">
-			<mat-autocomplete #autoPassType="matAutocomplete">
-				<mat-option *ngFor="let suggestion of passTypeSuggestions$ | async" [value]="suggestion">
-					{{suggestion}}
-				</mat-option>
-				<mat-option *ngIf="(passTypeSuggestions$ | async)?.length === 0 && reportForm.get('passType')?.value"
-					disabled>
-					Нет совпадений
-				</mat-option>
-			</mat-autocomplete>
-		</mat-form-field>
-		<mat-form-field appearance="fill">
-			<mat-label>Здание</mat-label>
-			<input matInput formControlName="building" placeholder="Введите здание (необязательно)"
-				[matAutocomplete]="autoBuilding">
-			<mat-autocomplete #autoBuilding="matAutocomplete">
-				<mat-option *ngFor="let suggestion of buildingSuggestions$ | async" [value]="suggestion">
-					{{suggestion}}
-				</mat-option>
-				<mat-option *ngIf="(buildingSuggestions$ | async)?.length === 0 && reportForm.get('building')?.value"
-					disabled>
-					Нет совпадений
-				</mat-option>
-			</mat-autocomplete>
-		</mat-form-field>
-		<mat-form-field appearance="fill">
-			<mat-label>Этаж</mat-label>
-			<input matInput formControlName="floor" placeholder="Введите этаж (необязательно)"
-				[matAutocomplete]="autoFloor">
-			<mat-autocomplete #autoFloor="matAutocomplete">
-				<mat-option *ngFor="let suggestion of floorSuggestions$ | async" [value]="suggestion">
-					{{suggestion}}
-				</mat-option>
-				<mat-option *ngIf="(floorSuggestions$ | async)?.length === 0 && reportForm.get('floor')?.value"
-					disabled>
-					Нет совпадений
-				</mat-option>
-			</mat-autocomplete>
-		</mat-form-field>
-		<mat-form-field appearance="fill">
-			<mat-label>Линия</mat-label>
-			<input matInput formControlName="line" placeholder="Введите линию (необязательно)"
-				[matAutocomplete]="autoLine">
-			<mat-autocomplete #autoLine="matAutocomplete">
-				<mat-option *ngFor="let suggestion of lineSuggestions$ | async" [value]="suggestion">
-					{{suggestion}}
-				</mat-option>
-				<mat-option *ngIf="(lineSuggestions$ | async)?.length === 0 && reportForm.get('line')?.value" disabled>
-					Нет совпадений
-				</mat-option>
-			</mat-autocomplete>
-		</mat-form-field>
-		<div class="checkbox-group">
-			<mat-checkbox formControlName="citizenship">Гражданство</mat-checkbox>
-			<mat-checkbox formControlName="nationality">Национальность</mat-checkbox>
-			<mat-checkbox formControlName="phone">Телефон</mat-checkbox>
-			<mat-checkbox formControlName="documentType">Тип документа</mat-checkbox>
-			<mat-checkbox formControlName="passportSerialNumber">Серия и номер паспорта</mat-checkbox>
-			<mat-checkbox formControlName="passportIssuedBy">Кем выдан</mat-checkbox>
-			<mat-checkbox formControlName="passportIssueDate">Дата выдачи паспорта</mat-checkbox>
-			<mat-checkbox formControlName="productType">Тип продукции</mat-checkbox>
-			<mat-checkbox formControlName="birthDate">Дата рождения</mat-checkbox>
-		</div>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Список действующих пропусков</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<form [formGroup]="reportForm" class="search-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="16px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Тип пропуска</mat-label>
+							<input matInput formControlName="passType" placeholder="Введите тип (необязательно)"
+								[matAutocomplete]="autoPassType" />
+							<mat-icon matSuffix>badge</mat-icon>
+							<mat-autocomplete #autoPassType="matAutocomplete">
+								<mat-option *ngFor="let suggestion of passTypeSuggestions$ | async"
+									[value]="suggestion">
+									{{ suggestion }}
+								</mat-option>
+								<mat-option
+									*ngIf="(passTypeSuggestions$ | async)?.length === 0 && reportForm.get('passType')?.value"
+									disabled>
+									Нет совпадений
+								</mat-option>
+							</mat-autocomplete>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Здание</mat-label>
+							<input matInput formControlName="building" placeholder="Введите здание (необязательно)"
+								[matAutocomplete]="autoBuilding" />
+							<mat-icon matSuffix>business</mat-icon>
+							<mat-autocomplete #autoBuilding="matAutocomplete">
+								<mat-option *ngFor="let suggestion of buildingSuggestions$ | async"
+									[value]="suggestion">
+									{{ suggestion }}
+								</mat-option>
+								<mat-option
+									*ngIf="(buildingSuggestions$ | async)?.length === 0 && reportForm.get('building')?.value"
+									disabled>
+									Нет совпадений
+								</mat-option>
+							</mat-autocomplete>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Этаж</mat-label>
+							<input matInput formControlName="floor" placeholder="Введите этаж (необязательно)"
+								[matAutocomplete]="autoFloor" />
+							<mat-icon matSuffix>stairs</mat-icon>
+							<mat-autocomplete #autoFloor="matAutocomplete">
+								<mat-option *ngFor="let suggestion of floorSuggestions$ | async" [value]="suggestion">
+									{{ suggestion }}
+								</mat-option>
+								<mat-option
+									*ngIf="(floorSuggestions$ | async)?.length === 0 && reportForm.get('floor')?.value"
+									disabled>
+									Нет совпадений
+								</mat-option>
+							</mat-autocomplete>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Линия</mat-label>
+							<input matInput formControlName="line" placeholder="Введите линию (необязательно)"
+								[matAutocomplete]="autoLine" />
+							<mat-icon matSuffix>store</mat-icon>
+							<mat-autocomplete #autoLine="matAutocomplete">
+								<mat-option *ngFor="let suggestion of lineSuggestions$ | async" [value]="suggestion">
+									{{ suggestion }}
+								</mat-option>
+								<mat-option
+									*ngIf="(lineSuggestions$ | async)?.length === 0 && reportForm.get('line')?.value"
+									disabled>
+									Нет совпадений
+								</mat-option>
+							</mat-autocomplete>
+						</mat-form-field>
+					</mat-grid-tile>
+				</mat-grid-list>
+				<div class="checkbox-group">
+					<mat-checkbox formControlName="citizenship">Гражданство</mat-checkbox>
+					<mat-checkbox formControlName="nationality">Национальность</mat-checkbox>
+					<mat-checkbox formControlName="phone">Телефон</mat-checkbox>
+					<mat-checkbox formControlName="documentType">Тип документа</mat-checkbox>
+					<mat-checkbox formControlName="passportSerialNumber">Серия и номер паспорта</mat-checkbox>
+					<mat-checkbox formControlName="passportIssuedBy">Кем выдан</mat-checkbox>
+					<mat-checkbox formControlName="passportIssueDate">Дата выдачи паспорта</mat-checkbox>
+					<mat-checkbox formControlName="productType">Тип продукции</mat-checkbox>
+					<mat-checkbox formControlName="birthDate">Дата рождения</mat-checkbox>
+				</div>
+				<div class="d-flex justify-content-start gap-2 mt-4">
+					<button mat-raised-button color="primary" class="action-btn" (click)="generateReport()"
+						matTooltip="Сформировать отчет">
+						Сформировать
+					</button>
+					<button mat-stroked-button color="primary" class="action-btn" (click)="resetForm()"
+						matTooltip="Сбросить форму">
+						Сбросить
+					</button>
+					<button mat-raised-button color="accent" class="action-btn" (click)="downloadReport()"
+						[disabled]="dataSource.length === 0" matTooltip="Сохранить в Excel">
+						Сохранить в Excel
+					</button>
+				</div>
+			</form>
 
-		<div class="buttons">
-			<button mat-raised-button color="primary" (click)="generateReport()">Сформировать</button>
-			<button mat-raised-button (click)="resetForm()">Сбросить</button>
-			<button mat-raised-button color="accent" (click)="downloadReport()"
-				[disabled]="dataSource.length === 0">Сохранить в Excel</button>
-		</div>
-	</form>
+			<mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageIndex]="pageIndex"
+				[pageSizeOptions]="[10, 25, 50, 100]" (page)="onPageChange($event)" showFirstLastButtons
+				class="pagination-container"></mat-paginator>
 
-	<mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="[50]"
-		(page)="onPageChange($event)" showFirstLastButtons>
-	</mat-paginator>
+			<div *ngIf="!isLoading && dataSource.length === 0" class="text-center mt-4">
+				<p class="text-muted">Нет данных для отображения</p>
+			</div>
 
-	<mat-table [dataSource]="dataSource" class="mat-elevation-z8" *ngIf="dataSource.length > 0">
-		<ng-container matColumnDef="index">
-			<mat-header-cell *matHeaderCellDef>№ п/п</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.index }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="passType">
-			<mat-header-cell *matHeaderCellDef>Тип пропуска</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.passType }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="building">
-			<mat-header-cell *matHeaderCellDef>Здание</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.building }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="floor">
-			<mat-header-cell *matHeaderCellDef>Этаж</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.floor }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="line">
-			<mat-header-cell *matHeaderCellDef>Линия</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.line }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="storeNumber">
-			<mat-header-cell *matHeaderCellDef>Торговая точка</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.storeNumber }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="contractorId">
-			<mat-header-cell *matHeaderCellDef>Код контрагента</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.contractorId }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="fullName">
-			<mat-header-cell *matHeaderCellDef>ФИО</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.fullName }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="position">
-			<mat-header-cell *matHeaderCellDef>Должность</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.position }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="startDate">
-			<mat-header-cell *matHeaderCellDef>Дата начала</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.startDate | date:'dd.MM.yyyy' }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="endDate">
-			<mat-header-cell *matHeaderCellDef>Дата окончания</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.endDate | date:'dd.MM.yyyy' }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="passNumber">
-			<mat-header-cell *matHeaderCellDef>Номер пропуска</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.passNumber }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="citizenship">
-			<mat-header-cell *matHeaderCellDef>Гражданство</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.citizenship }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="nationality">
-			<mat-header-cell *matHeaderCellDef>Национальность</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.nationality }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="phone">
-			<mat-header-cell *matHeaderCellDef>Телефон</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.phone }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="documentType">
-			<mat-header-cell *matHeaderCellDef>Тип документа</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.documentType }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="passportSerialNumber">
-			<mat-header-cell *matHeaderCellDef>Серия и номер паспорта</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.passportSerialNumber }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="passportIssuedBy">
-			<mat-header-cell *matHeaderCellDef>Кем выдан</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.passportIssuedBy }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="passportIssueDate">
-			<mat-header-cell *matHeaderCellDef>Дата выдачи паспорта</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.passportIssueDate | date:'dd.MM.yyyy' }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="productType">
-			<mat-header-cell *matHeaderCellDef>Тип продукции</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.productType }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="birthDate">
-			<mat-header-cell *matHeaderCellDef>Дата рождения</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.birthDate | date:'dd.MM.yyyy' }}</mat-cell>
-		</ng-container>
+			<mat-table [dataSource]="dataSource" class="data-table" *ngIf="dataSource.length > 0">
+				<ng-container matColumnDef="index">
+					<mat-header-cell *matHeaderCellDef>№ п/п</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.index }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="passType">
+					<mat-header-cell *matHeaderCellDef>Тип пропуска</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.passType }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="building">
+					<mat-header-cell *matHeaderCellDef>Здание</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.building }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="floor">
+					<mat-header-cell *matHeaderCellDef>Этаж</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.floor }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="line">
+					<mat-header-cell *matHeaderCellDef>Линия</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.line }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="storeNumber">
+					<mat-header-cell *matHeaderCellDef>Торговая точка</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.storeNumber }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="contractorId">
+					<mat-header-cell *matHeaderCellDef>Код контрагента</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.contractorId }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="fullName">
+					<mat-header-cell *matHeaderCellDef>ФИО</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.fullName }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="position">
+					<mat-header-cell *matHeaderCellDef>Должность</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.position }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="startDate">
+					<mat-header-cell *matHeaderCellDef>Дата начала</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.startDate | date:'dd.MM.yyyy' }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="endDate">
+					<mat-header-cell *matHeaderCellDef>Дата окончания</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.endDate | date:'dd.MM.yyyy' }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="passNumber">
+					<mat-header-cell *matHeaderCellDef>Номер пропуска</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.passNumber }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="citizenship">
+					<mat-header-cell *matHeaderCellDef>Гражданство</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.citizenship }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="nationality">
+					<mat-header-cell *matHeaderCellDef>Национальность</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.nationality }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="phone">
+					<mat-header-cell *matHeaderCellDef>Телефон</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.phone }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="documentType">
+					<mat-header-cell *matHeaderCellDef>Тип документа</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.documentType }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="passportSerialNumber">
+					<mat-header-cell *matHeaderCellDef>Серия и номер паспорта</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.passportSerialNumber }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="passportIssuedBy">
+					<mat-header-cell *matHeaderCellDef>Кем выдан</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.passportIssuedBy }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="passportIssueDate">
+					<mat-header-cell *matHeaderCellDef>Дата выдачи паспорта</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.passportIssueDate | date:'dd.MM.yyyy' }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="productType">
+					<mat-header-cell *matHeaderCellDef>Тип продукции</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.productType }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="birthDate">
+					<mat-header-cell *matHeaderCellDef>Дата рождения</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.birthDate | date:'dd.MM.yyyy' }}</mat-cell>
+				</ng-container>
+				<mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+				<mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+			</mat-table>
 
-		<mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-		<mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-	</mat-table>
-
-	<mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="[50]"
-		(page)="onPageChange($event)" showFirstLastButtons>
-	</mat-paginator>
+			<mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageIndex]="pageIndex"
+				[pageSizeOptions]="[10, 25, 50, 100]" (page)="onPageChange($event)" showFirstLastButtons
+				class="pagination-container"></mat-paginator>
+		</mat-card-content>
+	</mat-card>
 </div>

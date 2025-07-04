@@ -14,6 +14,9 @@ import { IssuedPassesReportData } from '../../../models/report.models';
 import { MatIconModule } from '@angular/material/icon';
 import { Observable, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, takeUntil, startWith } from 'rxjs/operators';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCardModule } from '@angular/material/card';
 
 export const MY_DATE_FORMATS = {
 	parse: { dateInput: 'DD.MM.YYYY' },
@@ -31,7 +34,8 @@ export const MY_DATE_FORMATS = {
 	imports: [
 		CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
 		MatButtonModule, MatDatepickerModule, MatNativeDateModule, MatTableModule,
-		MatIconModule, MatAutocompleteModule, MatPaginatorModule
+		MatIconModule, MatAutocompleteModule, MatPaginatorModule, MatGridListModule,
+		MatCheckboxModule, MatCardModule
 	],
 	templateUrl: './issued-passes-report.component.html',
 	styleUrls: ['./issued-passes-report.component.css'],

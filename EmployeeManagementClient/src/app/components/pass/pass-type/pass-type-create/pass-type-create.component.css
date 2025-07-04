@@ -9,6 +9,28 @@
 	flex-direction: column;
 }
 
+.section-card {
+	background-color: #ffffff;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	padding: 16px;
+}
+
+.section-title {
+	font-size: 24px;
+	font-weight: 600;
+	color: #1f2937;
+	margin-bottom: 16px;
+}
+
+.error-message {
+	background-color: #fee2e2;
+	color: #dc2626;
+	padding: 12px;
+	border-radius: 4px;
+	margin-bottom: 16px;
+}
+
 .create-form {
 	padding: 8px 0;
 	margin-bottom: 16px;
@@ -27,12 +49,20 @@ mat-grid-tile {
 	overflow: visible;
 }
 
-.form-group.full-width {
+.full-width {
 	width: 100%;
 }
 
-textarea {
-	resize: both;
+.form-group {
+	margin-bottom: 16px;
+	margin-top: 8px;
+}
+
+.form-group label {
+	font-weight: 600;
+	color: #6b7280;
+	margin-bottom: 4px;
+	display: block;
 }
 
 .note-textarea-field textarea.mat-input-element {
@@ -48,71 +78,65 @@ textarea {
 	line-height: 1.4;
 }
 
-.note-container {
-	width: 100%;
-	height: 100%;
+.color-input {
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	border: none;
+	cursor: pointer;
+	border-radius: 4px;
+}
+
+.action-btn {
+	font-size: 14px;
+	padding: 8px 16px;
+	border-radius: 4px;
+}
+
+.selected-group {
+	margin-left: 16px;
+	color: #4b5563;
+}
+
+.d-flex {
 	display: flex;
-	flex-direction: column;
+}
+
+.align-items-center {
+	align-items: center;
+}
+
+.justify-content-start {
 	justify-content: flex-start;
 }
 
-.form-group {
-	margin-bottom: 16px;
+.gap-2 {
+	gap: 8px;
+}
+
+.mt-2 {
 	margin-top: 8px;
 }
 
-.form-group label {
-	font-weight: 600;
-	color: #6b7280;
-	margin-bottom: 4px;
-	display: block;
+.mt-3 {
+	margin-top: 12px;
 }
 
-.form-control-file {
-	width: 100%;
-	padding: 8px;
-	border: 1px solid #e5e7eb;
-	border-radius: 4px;
-	background-color: #ffffff;
-}
-
-.hidden-file-input {
-	display: none;
-}
-
-.add-icon {
-	font-size: 40px;
-	color: #6b7280;
-	font-weight: bold;
-}
-
-.button-container {
-	width: 100%;
-	display: flex;
-	justify-content: center;
-	margin-top: 0px;
-	min-height: 28px;
-	margin-bottom: 10px;
-}
-
-.action-btn.btn-sm {
-	display: block;
-	font-size: 12px;
-	padding: 4px 8px;
-	width: 80px;
-	background-color: #d32f2f;
-	color: #ffffff;
-	line-height: 20px;
-	text-align: center;
-	visibility: visible;
-	opacity: 1;
-	border-radius: 4px;
-	border: none;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+.mt-4 {
+	margin-top: 16px;
 }
 
 @media (max-width: 768px) {
-	.add-icon {
-		font-size: 32px;
+	.main-content {
+		padding: 1rem;
+	}
+
+	.section-title {
+		font-size: 20px;
+	}
+
+	.action-btn {
+		font-size: 12px;
+		padding: 6px 12px;
 	}
 }

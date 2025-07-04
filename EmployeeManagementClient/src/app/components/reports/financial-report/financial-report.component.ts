@@ -10,6 +10,8 @@ import { MatTableModule } from '@angular/material/table';
 import { ReportService } from '../../../services/report.service';
 import { FinancialReportData } from '../../../models/report.models';
 import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatCardModule } from '@angular/material/card';
 
 export const MY_DATE_FORMATS = {
 	parse: { dateInput: 'LL' },
@@ -27,7 +29,7 @@ export const MY_DATE_FORMATS = {
 	imports: [
 		CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
 		MatButtonModule, MatDatepickerModule, MatNativeDateModule, MatTableModule,
-		MatIconModule
+		MatIconModule, MatGridListModule, MatCardModule,
 	],
 	templateUrl: './financial-report.component.html',
 	styleUrls: ['./financial-report.component.css'],

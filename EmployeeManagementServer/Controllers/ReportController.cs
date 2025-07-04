@@ -38,26 +38,30 @@ namespace EmployeeManagementServer.Controllers
         [Authorize(Roles = "Admin, Cashier")]
         public async Task<IActionResult> GetFinancialReportData(DateTime startDate, DateTime endDate)
         {
-            endDate = endDate.Date.AddDays(1).AddTicks(-1);
-            var searchDto = new PassTransactionSearchDto { CreatedAfter = startDate, CreatedBefore = endDate };
-            var (totalCount, transactions) = await _passTransactionSearchService.SearchPassTransactionsAsync(searchDto, 0, int.MaxValue);
-
-            Console.WriteLine($"Transactions found: {transactions.Count}");
-            foreach (var t in transactions)
+            try
             {
-                Console.WriteLine($"Id: {t.Id}, TokenType: {t.TokenType}, Status: '{t.Status}', Amount: {t.Amount}, Created: {t.CreatedAt}");
+                endDate = endDate.Date.AddDays(1).AddTicks(-1);
+                var searchDto = new PassTransactionSearchDto { CreatedAfter = startDate, CreatedBefore = endDate };
+                var (totalCount, transactions) = await _passTransactionSearchService.SearchPassTransactionsAsync(searchDto, 0, 10000); 
+
+                Console.WriteLine($"Transactions found: {transactions.Count}");
+                var groupedData = transactions
+                    .GroupBy(t => t.TokenType == "P" ? "Пропуск" : t.TokenType)
+                    .Select(g => new
+                    {
+                        TokenType = g.Key,
+                        PaidAmount = g.Where(t => t.Status?.Trim() == "Оплачено").Sum(t => t.Amount),
+                        TransactionCount = g.Count()
+                    })
+                    .ToList(); // Explicit ToList to avoid multiple enumerations
+
+                return Ok(groupedData);
             }
-
-            var groupedData = transactions
-                .GroupBy(t => t.TokenType == "P" ? "Пропуск" : t.TokenType)
-                .Select(g => new
-                {
-                    TokenType = g.Key,
-                    PaidAmount = g.Where(t => t.Status?.Trim() == "Оплачено").Sum(t => t.Amount),
-                    TransactionCount = g.Count()
-                });
-
-            return Ok(groupedData);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetFinancialReportData: {ex.Message}");
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
 
         [HttpGet("financial")]
@@ -72,35 +76,32 @@ namespace EmployeeManagementServer.Controllers
         [Authorize(Roles = "Admin, Cashier")]
         public async Task<IActionResult> GetPassesSummaryReportData(DateTime startDate, DateTime endDate)
         {
-            endDate = endDate.Date.AddDays(1).AddTicks(-1);
-            var query = from pt in _context.PassTransactions
-                        join qt in _context.QueueTokens on pt.Token equals qt.Token into queueTokens
-                        from qt in queueTokens.DefaultIfEmpty()
-                        where pt.CreatedAt >= startDate && pt.CreatedAt <= endDate
-                        select new { PassTransaction = pt, QueueToken = qt };
+            try
+            {
+                endDate = endDate.Date.AddDays(1).AddTicks(-1);
 
-            var passTransactionsWithQueue = await query.ToListAsync();
-            Console.WriteLine($"Pass transactions found: {passTransactionsWithQueue.Count}");
+                var query = from p in _context.Passes.AsNoTracking()
+                            join pt in _context.PassTransactions.AsNoTracking() on p.PassTransactionId equals pt.Id
+                            join qt in _context.QueueTokens.AsNoTracking() on pt.Token equals qt.Token into queueTokens
+                            from qt in queueTokens.DefaultIfEmpty()
+                            where pt.CreatedAt >= startDate && pt.CreatedAt <= endDate
+                            group new { p.PassType.Cost, QueueTokenType = qt != null ? qt.TokenType : "Неизвестно" } by qt != null ? qt.TokenType : "Неизвестно" into g
+                            select new
+                            {
+                                QueueType = g.Key == "P" ? "Пропуск" : g.Key,
+                                TotalAmount = g.Sum(x => x.Cost),
+                                PassCount = g.Count()
+                            };
 
-            var transactionIds = passTransactionsWithQueue.Select(ptq => ptq.PassTransaction.Id).ToList();
-            var passes = await _context.Passes
-                .Include(p => p.PassType)
-                .Where(p => transactionIds.Contains(p.PassTransactionId))
-                .ToListAsync();
-
-            Console.WriteLine($"Passes found: {passes.Count}");
-
-            var groupedData = passes
-                .GroupBy(p => passTransactionsWithQueue.FirstOrDefault(ptq => ptq.PassTransaction.Id == p.PassTransactionId)?.QueueToken?.TokenType ?? "Неизвестно")
-                .Select(g => new
-                {
-                    QueueType = g.Key == "P" ? "Пропуск" : g.Key,
-                    TotalAmount = g.Sum(p => p.PassType.Cost),
-                    PassCount = g.Count()
-                })
-                .ToList();
-
-            return Ok(groupedData);
+                var groupedData = await query.ToListAsync();
+                Console.WriteLine($"Passes summary data: {groupedData.Count} groups");
+                return Ok(groupedData);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPassesSummaryReportData: {ex.Message}");
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
 
         [HttpGet("passes-summary")]
@@ -115,35 +116,39 @@ namespace EmployeeManagementServer.Controllers
         [Authorize(Roles = "Admin, Cashier")]
         public async Task<IActionResult> GetPassesSummaryDetails(string queueType, DateTime startDate, DateTime endDate)
         {
-            endDate = endDate.Date.AddDays(1).AddTicks(-1);
-            var query = from pt in _context.PassTransactions
-                        join qt in _context.QueueTokens on pt.Token equals qt.Token into queueTokens
-                        from qt in queueTokens.DefaultIfEmpty()
-                        where pt.CreatedAt >= startDate && pt.CreatedAt <= endDate
-                        select new { PassTransaction = pt, QueueToken = qt };
+            try
+            {
+                endDate = endDate.Date.AddDays(1).AddTicks(-1);
+                var effectiveQueueType = queueType == "Пропуск" ? "P" : queueType;
 
-            var passTransactionsWithQueue = await query.ToListAsync();
-            var transactionIds = passTransactionsWithQueue.Select(ptq => ptq.PassTransaction.Id).ToList();
+                var detailsQuery = from p in _context.Passes.AsNoTracking()
+                                   join pt in _context.PassTransactions.AsNoTracking() on p.PassTransactionId equals pt.Id
+                                   join qt in _context.QueueTokens.AsNoTracking() on pt.Token equals qt.Token into queueTokens
+                                   from qt in queueTokens.DefaultIfEmpty()
+                                   where pt.CreatedAt >= startDate && pt.CreatedAt <= endDate
+                                   && (qt != null ? qt.TokenType : "Неизвестно") == effectiveQueueType
+                                   group new { p.PassType.Name, p.PassType.Cost } by p.PassType.Name into g
+                                   select new
+                                   {
+                                       PassType = g.Key,
+                                       Amount = g.Sum(x => x.Cost),
+                                       Count = g.Count()
+                                   };
 
-            var passes = await _context.Passes
-                .Include(p => p.PassType)
-                .Where(p => transactionIds.Contains(p.PassTransactionId))
-                .ToListAsync();
-
-            var effectiveQueueType = queueType == "Пропуск" ? "P" : queueType;
-            var details = passes
-                .Where(p => (passTransactionsWithQueue.FirstOrDefault(ptq => ptq.PassTransaction.Id == p.PassTransactionId)?.QueueToken?.TokenType ?? "Неизвестно") == effectiveQueueType)
-                .GroupBy(p => p.PassType.Name)
-                .Select(g => new
-                {
-                    PassType = g.Key,
-                    Amount = g.Sum(p => p.PassType.Cost),
-                    Count = g.Count()
-                })
-                .ToList();
-
-            Console.WriteLine($"Details for {queueType}: {details.Count}");
-            return Ok(details);
+                var details = await detailsQuery.ToListAsync();
+                Console.WriteLine($"Details for {queueType}: {details.Count}");
+                return Ok(details);
+            }
+            catch (TimeoutException ex)
+            {
+                Console.WriteLine($"Timeout error in GetPassesSummaryDetails: {ex.Message}");
+                return StatusCode(500, "Database query timed out. Please try again later.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPassesSummaryDetails: {ex.Message}");
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
 
         [HttpGet("active-passes-data")]
@@ -157,60 +162,66 @@ namespace EmployeeManagementServer.Controllers
     int pageSize = 50,
     bool disablePagination = false)
         {
-            if (!disablePagination)
+            try
             {
-                if (page < 1) page = 1;
-                if (pageSize < 1) pageSize = 50;
-            }
-
-            var query = _context.Passes
-                .Include(p => p.PassType)
-                .Include(p => p.Store)
-                .Include(p => p.Contractor)
-                .Where(p => !p.IsClosed); 
-
-            if (!string.IsNullOrEmpty(passType)) query = query.Where(p => p.PassType.Name == passType);
-            if (!string.IsNullOrEmpty(building)) query = query.Where(p => p.Store.Building == building);
-            if (!string.IsNullOrEmpty(floor)) query = query.Where(p => p.Store.Floor == floor);
-            if (!string.IsNullOrEmpty(line)) query = query.Where(p => p.Store.Line == line);
-
-            var totalCount = await query.CountAsync();
-
-            var passesQuery = query
-                .OrderBy(p => p.StartDate)
-                .Select(p => new
+                if (!disablePagination)
                 {
-                    PassType = p.PassType.Name,
-                    Building = p.Store.Building,
-                    Floor = p.Store.Floor,
-                    Line = p.Store.Line,
-                    StoreNumber = p.Store.StoreNumber,
-                    ContractorId = p.ContractorId,
-                    FullName = $"{p.Contractor.LastName} {p.Contractor.FirstName} {p.Contractor.MiddleName}",
-                    Position = p.Position,
-                    StartDate = p.StartDate,
-                    EndDate = p.EndDate,
-                    PassNumber = $"{p.StoreId}-{p.ContractorId}",
-                    Citizenship = p.Contractor.Citizenship,
-                    Nationality = p.Contractor.Nationality,
-                    Phone = p.Contractor.PhoneNumber,
-                    DocumentType = p.Contractor.DocumentType,
-                    PassportSerialNumber = p.Contractor.PassportSerialNumber,
-                    PassportIssuedBy = p.Contractor.PassportIssuedBy,
-                    PassportIssueDate = p.Contractor.PassportIssueDate,
-                    ProductType = p.Contractor.ProductType,
-                    BirthDate = p.Contractor.BirthDate
-                });
+                    if (page < 1) page = 1;
+                    if (pageSize < 1) pageSize = 50;
+                }
 
-            var passes = disablePagination
-                ? await passesQuery.ToListAsync()
-                : await passesQuery
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
+                var query = _context.Passes
+                    .AsNoTracking()
+                    .Where(p => !p.IsClosed);
 
-            Console.WriteLine($"Active passes found: {passes.Count} (Page: {page}, PageSize: {pageSize}, Total: {totalCount})");
-            return Ok(new { TotalCount = totalCount, Data = passes });
+                if (!string.IsNullOrEmpty(passType)) query = query.Where(p => p.PassType.Name == passType);
+                if (!string.IsNullOrEmpty(building)) query = query.Where(p => p.Store.Building == building);
+                if (!string.IsNullOrEmpty(floor)) query = query.Where(p => p.Store.Floor == floor);
+                if (!string.IsNullOrEmpty(line)) query = query.Where(p => p.Store.Line == line);
+
+                var totalCount = await query.CountAsync();
+
+                var passesQuery = query
+                    .OrderBy(p => p.StartDate)
+                    .Select(p => new
+                    {
+                        PassType = p.PassType.Name,
+                        Building = p.Store.Building,
+                        Floor = p.Store.Floor,
+                        Line = p.Store.Line,
+                        StoreNumber = p.Store.StoreNumber,
+                        ContractorId = p.ContractorId,
+                        FullName = $"{p.Contractor.LastName} {p.Contractor.FirstName} {p.Contractor.MiddleName}".Trim(),
+                        Position = p.Position ?? "",
+                        StartDate = p.StartDate,
+                        EndDate = p.EndDate,
+                        PassNumber = $"{p.StoreId}-{p.ContractorId}",
+                        Citizenship = p.Contractor.Citizenship ?? "",
+                        Nationality = p.Contractor.Nationality ?? "",
+                        Phone = p.Contractor.PhoneNumber ?? "",
+                        DocumentType = p.Contractor.DocumentType ?? "",
+                        PassportSerialNumber = p.Contractor.PassportSerialNumber ?? "",
+                        PassportIssuedBy = p.Contractor.PassportIssuedBy ?? "",
+                        PassportIssueDate = p.Contractor.PassportIssueDate,
+                        ProductType = p.Contractor.ProductType ?? "",
+                        BirthDate = p.Contractor.BirthDate
+                    });
+
+                var passes = disablePagination
+                    ? await passesQuery.ToListAsync()
+                    : await passesQuery
+                        .Skip((page - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToListAsync();
+
+                Console.WriteLine($"Active passes found: {passes.Count} (Page: {page}, PageSize: {pageSize}, Total: {totalCount})");
+                return Ok(new { TotalCount = totalCount, Data = passes });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetActivePassesReportData: {ex.Message}");
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
 
         [HttpGet("active-passes")]
@@ -237,54 +248,60 @@ namespace EmployeeManagementServer.Controllers
     int pageSize = 50,
     bool disablePagination = false)
         {
-            if (page < 1) page = 1;
-            if (pageSize < 1) pageSize = 50;
+            try
+            {
+                if (page < 1) page = 1;
+                if (pageSize < 1) pageSize = 50;
+                endDate = endDate.Date.AddDays(1).AddTicks(-1);
 
-            endDate = endDate.Date.AddDays(1).AddTicks(-1);
-            var query = _context.Passes
-                .Include(p => p.PassType)
-                .Include(p => p.Store)
-                .Include(p => p.Contractor)
-                .Where(p => p.StartDate >= startDate && p.StartDate <= endDate);
+                var query = _context.Passes
+                    .AsNoTracking()
+                    .Where(p => p.StartDate >= startDate && p.StartDate <= endDate);
 
-            if (!string.IsNullOrEmpty(building)) query = query.Where(p => p.Store != null && p.Store.Building == building);
-            if (!string.IsNullOrEmpty(floor)) query = query.Where(p => p.Store != null && p.Store.Floor == floor);
-            if (!string.IsNullOrEmpty(line)) query = query.Where(p => p.Store != null && p.Store.Line == line);
-            if (!string.IsNullOrEmpty(passType)) query = query.Where(p => p.PassType != null && p.PassType.Name == passType);
+                if (!string.IsNullOrEmpty(building)) query = query.Where(p => p.Store.Building == building);
+                if (!string.IsNullOrEmpty(floor)) query = query.Where(p => p.Store.Floor == floor);
+                if (!string.IsNullOrEmpty(line)) query = query.Where(p => p.Store.Line == line);
+                if (!string.IsNullOrEmpty(passType)) query = query.Where(p => p.PassType.Name == passType);
 
-            var totalCount = await query.CountAsync();
-            Console.WriteLine($"Total issued passes count: {totalCount}");
+                var totalCount = await query.CountAsync();
+                Console.WriteLine($"Total issued passes count: {totalCount}");
 
-            var passesQuery = query
-        .OrderBy(p => p.StartDate)
-        .Select(p => new
-        {
-            PassType = p.PassType != null ? p.PassType.Name : "",
-            Building = p.Store != null ? p.Store.Building : "",
-            Floor = p.Store != null ? p.Store.Floor : "",
-            Line = p.Store != null ? p.Store.Line : "",
-            StoreNumber = p.Store != null ? p.Store.StoreNumber : "",
-            ContractorId = p.ContractorId,
-            FullName = p.Contractor != null ? $"{p.Contractor.LastName} {p.Contractor.FirstName} {p.Contractor.MiddleName}".Trim() : "",
-            Position = p.Position ?? "",
-            Citizenship = p.Contractor != null ? p.Contractor.Citizenship : "",
-            Nationality = p.Contractor != null ? p.Contractor.Nationality : "",
-            StartDate = p.StartDate,
-            EndDate = p.EndDate,
-            Status = p.IsClosed ? "Closed" : "Active",
-            Phone = p.Contractor != null ? p.Contractor.PhoneNumber : "",
-            ProductType = p.Contractor != null ? p.Contractor.ProductType : ""
-        });
+                var passesQuery = query
+                    .OrderBy(p => p.StartDate)
+                    .Select(p => new
+                    {
+                        PassType = p.PassType.Name ?? "",
+                        Building = p.Store.Building ?? "",
+                        Floor = p.Store.Floor ?? "",
+                        Line = p.Store.Line ?? "",
+                        StoreNumber = p.Store.StoreNumber ?? "",
+                        ContractorId = p.ContractorId,
+                        FullName = $"{p.Contractor.LastName} {p.Contractor.FirstName} {p.Contractor.MiddleName}".Trim(),
+                        Position = p.Position ?? "",
+                        Citizenship = p.Contractor.Citizenship ?? "",
+                        Nationality = p.Contractor.Nationality ?? "",
+                        StartDate = p.StartDate,
+                        EndDate = p.EndDate,
+                        Status = p.IsClosed ? "Closed" : "Active",
+                        Phone = p.Contractor.PhoneNumber ?? "",
+                        ProductType = p.Contractor.ProductType ?? ""
+                    });
 
-            var passes = disablePagination
-                ? await passesQuery.ToListAsync()
-                : await passesQuery
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
+                var passes = disablePagination
+                    ? await passesQuery.ToListAsync()
+                    : await passesQuery
+                        .Skip((page - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToListAsync();
 
-            Console.WriteLine($"Issued passes found: {passes.Count} (Page: {page}, PageSize: {pageSize}, Total: {totalCount})");
-            return Ok(new { TotalCount = totalCount, Data = passes });
+                Console.WriteLine($"Issued passes found: {passes.Count} (Page: {page}, PageSize: {pageSize}, Total: {totalCount})");
+                return Ok(new { TotalCount = totalCount, Data = passes });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetIssuedPassesReportData: {ex.Message}");
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
 
         [HttpGet("issued-passes")]
@@ -310,46 +327,52 @@ namespace EmployeeManagementServer.Controllers
     int pageSize = 50,
     bool disablePagination = false)
         {
-            if (!disablePagination)
+            try
             {
-                if (page < 1) page = 1;
-                if (pageSize < 1) pageSize = 50;
-            }
-
-            endDate = endDate.Date.AddDays(1).AddTicks(-1);
-            var query = _context.Passes
-                .Include(p => p.PassType)
-                .Include(p => p.Store)
-                .Include(p => p.Contractor)
-                .Where(p => !p.IsClosed && p.EndDate >= startDate && p.EndDate <= endDate);
-
-            var totalCount = await query.CountAsync();
-
-            var passesQuery = query
-                .OrderBy(p => p.EndDate)
-                .Select(p => new
+                if (!disablePagination)
                 {
-                    PassType = p.PassType.Name,
-                    EndDate = p.EndDate,
-                    Building = p.Store.Building,
-                    Floor = p.Store.Floor,
-                    Line = p.Store.Line,
-                    StoreNumber = p.Store.StoreNumber,
-                    ContractorId = p.ContractorId,
-                    FullName = $"{p.Contractor.LastName} {p.Contractor.FirstName} {p.Contractor.MiddleName}",
-                    Position = p.Position,
-                    Note = p.Contractor.Note
-                });
+                    if (page < 1) page = 1;
+                    if (pageSize < 1) pageSize = 50;
+                }
+                endDate = endDate.Date.AddDays(1).AddTicks(-1);
 
-            var passes = disablePagination
-                ? await passesQuery.ToListAsync()
-                : await passesQuery
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
+                var query = _context.Passes
+                    .AsNoTracking()
+                    .Where(p => !p.IsClosed && p.EndDate >= startDate && p.EndDate <= endDate);
 
-            Console.WriteLine($"Expiring passes found: {passes.Count} (Page: {page}, PageSize: {pageSize}, Total: {totalCount})");
-            return Ok(new { TotalCount = totalCount, Data = passes });
+                var totalCount = await query.CountAsync();
+
+                var passesQuery = query
+                    .OrderBy(p => p.EndDate)
+                    .Select(p => new
+                    {
+                        PassType = p.PassType.Name ?? "",
+                        EndDate = p.EndDate,
+                        Building = p.Store.Building ?? "",
+                        Floor = p.Store.Floor ?? "",
+                        Line = p.Store.Line ?? "",
+                        StoreNumber = p.Store.StoreNumber ?? "",
+                        ContractorId = p.ContractorId,
+                        FullName = $"{p.Contractor.LastName} {p.Contractor.FirstName} {p.Contractor.MiddleName}".Trim(),
+                        Position = p.Position ?? "",
+                        Note = p.Contractor.Note ?? ""
+                    });
+
+                var passes = disablePagination
+                    ? await passesQuery.ToListAsync()
+                    : await passesQuery
+                        .Skip((page - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToListAsync();
+
+                Console.WriteLine($"Expiring passes found: {passes.Count} (Page: {page}, PageSize: {pageSize}, Total: {totalCount})");
+                return Ok(new { TotalCount = totalCount, Data = passes });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetExpiringPassesReportData: {ex.Message}");
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
 
         [HttpGet("expiring-passes")]

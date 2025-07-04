@@ -1,892 +1,795 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, AfterViewInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { BehaviorSubject, Subscription, Observable, of, forkJoin, Subject } from 'rxjs';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { BehaviorSubject, Subscription, Observable, of, Subject, forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError, takeUntil } from 'rxjs/operators';
-import { Router } from '@angular/router';
-import { NgZone } from '@angular/core';
 import { PassService } from '../../services/pass.service';
 import { TransactionService } from '../../services/transaction.service';
-import { StoreService } from '../../services/store.service';
 import { UserService } from '../../services/user.service';
-import { HistoryService } from '../../services/history.service';
 import { SearchFilterResetService } from '../../services/search-filter-reset.service';
-import { PassByStoreResponseDto, ContractorPassesDto, PassDetailsDto } from '../../models/store-pass-search.model';
-import { HistoryEntry, ChangeValue } from '../../models/history.model';
-import { ApplicationUser } from '../../models/application-user.model';
-import { environment } from '../../../environments/environment';
-import { ContractorDto, PassType, Store as TransactionStore } from '../../models/transaction.model';
-import { Store } from '../../models/store.model';
+import { QueueSyncService } from '../../services/queue-sync.service';
+import { Router } from '@angular/router';
+import { PassByStoreResponseDto, ContractorPassesDto, PassDetailsDto, SearchCriteria } from '../../models/store-pass-search.model';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { CommonModule } from '@angular/common';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
 	selector: 'app-store-pass-search',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatAutocompleteModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatButtonModule,
+		MatExpansionModule,
+		MatIconModule,
+		MatProgressSpinnerModule,
+		MatCheckboxModule,
+		MatCardModule,
+		MatDividerModule
+	],
 	templateUrl: './store-pass-search.component.html',
 	styleUrls: ['./store-pass-search.component.css'],
-	providers: [DatePipe],
+	animations: [
+		trigger('fadeIn', [
+			transition(':enter', [
+				style({ opacity: 0, transform: 'translateY(20px)' }),
+				animate('300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+			])
+		])
+	]
 })
-export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewInit {
+export class StorePassSearchComponent implements OnInit, OnDestroy {
+	@ViewChild('loadMoreTrigger') loadMoreTrigger!: ElementRef;
+
+	private readonly PAGE_SIZE = 100;
+	private readonly DEBOUNCE_TIME_MS = 300;
+	private readonly INTERSECTION_THRESHOLD = 0.1;
+	private readonly ROOT_MARGIN = '1000px';
+	private readonly API_BASE_URL = 'http://localhost:8080';
+	private readonly DEFAULT_PHOTO_URL = '/assets/images/default-photo.jpg';
+
 	searchForm: FormGroup;
-	results: PassByStoreResponseDto[] = [];
+	flattenedContractors: { store: PassByStoreResponseDto; contractor: ContractorPassesDto; isActive: boolean }[] = [];
 	isLoading = false;
 	errorMessage: string | null = null;
-	successMessage: string | null = null;
-	showAddTransactionButton = false;
-	private readonly apiBaseUrl = 'http://localhost:8080';
-	private destroy$ = new Subject<void>();
-
-	noteForms: { [resultIndex: number]: FormGroup } = {};
-	historyEntries: { [resultIndex: number]: HistoryEntry[] } = {};
-	showHistory: { [resultIndex: number]: boolean } = {};
-	isLoadingHistory: { [resultIndex: number]: boolean } = {};
-	userMap: { [key: string]: string } = {};
-
+	page = 1;
+	totalCount = 0;
+	hasMoreResults = true;
 	buildingSuggestions$ = new BehaviorSubject<string[]>([]);
 	floorSuggestions$ = new BehaviorSubject<string[]>([]);
 	lineSuggestions$ = new BehaviorSubject<string[]>([]);
 	storeNumberSuggestions$ = new BehaviorSubject<string[]>([]);
-
-	private resetSubscription: Subscription | undefined;
 	private subscriptions: Subscription[] = [];
 	private confirmedFields: { [key: string]: string | null } = {
 		Building: null,
 		Floor: null,
 		Line: null,
-		StoreNumber: null,
+		StoreNumber: null
 	};
-	private panelStates: { [key: string]: boolean } = {};
-
-	private allContractors: { resultIndex: number; contractor: ContractorPassesDto; isActive: boolean }[] = [];
-	public windows: { [resultIndex: number]: { start: number; end: number } } = {};
-	private windowSize = 100;
-	private windowStep = 50;
-	private observer: IntersectionObserver | null = null;
-
-	activeDropdown: string | null = null;
+	private pageCache: { [key: string]: PassByStoreResponseDto[] } = {};
+	private panelStates = new Map<string, boolean>();
+	private intersectionObserver: IntersectionObserver;
+	private scrollSubject = new Subject<void>();
+	private destroy$ = new Subject<void>();
 
 	constructor(
 		private fb: FormBuilder,
 		private passService: PassService,
 		private transactionService: TransactionService,
-		private storeService: StoreService,
-		private router: Router,
-		private searchFilterResetService: SearchFilterResetService,
-		private cdr: ChangeDetectorRef,
-		private zone: NgZone,
-		private datePipe: DatePipe,
 		private userService: UserService,
-		private historyService: HistoryService
+		private searchFilterResetService: SearchFilterResetService,
+		private queueSyncService: QueueSyncService,
+		private router: Router,
+		private cdr: ChangeDetectorRef
 	) {
 		this.searchForm = this.fb.group({
 			Building: [''],
 			Floor: [''],
 			Line: [''],
 			StoreNumber: [''],
+			showActive: [true],
+			showClosed: [false]
 		});
+
+		this.intersectionObserver = new IntersectionObserver(
+			(entries) => this.handleIntersection(entries),
+			{ threshold: this.INTERSECTION_THRESHOLD, rootMargin: this.ROOT_MARGIN }
+		);
 	}
 
 	ngOnInit(): void {
-		this.resetSubscription = this.searchFilterResetService.resetTrigger$
-			.pipe(takeUntil(this.destroy$))
-			.subscribe((needsReset) => {
-				if (needsReset) {
-					this.resetFilters();
-					this.searchFilterResetService.consumeReset();
-				}
-			});
 		this.loadStoredSearchCriteria();
 		this.initializeAutocompleteHandlers();
+		this.initializeFormSubscriptions();
+		this.initializeScrollDebounce();
+		this.initializeResetSubscription();
 	}
 
 	ngAfterViewInit(): void {
-		this.setupIntersectionObserver();
+		if (this.loadMoreTrigger?.nativeElement) {
+			console.log('Observing loadMoreTrigger');
+			this.intersectionObserver.observe(this.loadMoreTrigger.nativeElement);
+		} else {
+			console.error('loadMoreTrigger is not available in ngAfterViewInit');
+		}
+		this.restoreScrollPosition();
 	}
 
 	ngOnDestroy(): void {
-		this.subscriptions.forEach((sub) => sub.unsubscribe());
-		this.resetSubscription?.unsubscribe();
-		this.observer?.disconnect();
+		this.subscriptions.forEach(sub => sub.unsubscribe());
+		this.intersectionObserver.disconnect();
 		this.destroy$.next();
 		this.destroy$.complete();
 	}
 
-	private setupIntersectionObserver(): void {
-		this.observer = new IntersectionObserver(
-			(entries) => {
-				this.zone.run(() => {
-					entries.forEach((entry) => {
-						const resultIndex = parseInt(entry.target.getAttribute('data-result-index') || '0', 10);
-						const contractorIndex = parseInt(entry.target.getAttribute('data-contractor-index') || '0', 10);
-						const window = this.windows[resultIndex] || { start: 0, end: this.windowSize };
-						const totalContractors = this.allContractors.filter((c) => c.resultIndex === resultIndex).length;
-
-						if (entry.isIntersecting) {
-							if (contractorIndex >= window.end - 10 && totalContractors > window.end) {
-								window.start = window.start + this.windowStep;
-								window.end = Math.min(window.start + this.windowSize, totalContractors);
-								this.windows[resultIndex] = window;
-								this.cdr.detectChanges();
-								this.updateObservers();
-							} else if (contractorIndex <= window.start + 10 && window.start > 0) {
-								window.start = Math.max(window.start - this.windowStep, 0);
-								window.end = window.start + this.windowSize;
-								this.windows[resultIndex] = window;
-								this.cdr.detectChanges();
-								this.updateObservers();
-							}
-						}
-					});
-				});
-			},
-			{ root: null, threshold: 0.1, rootMargin: '200px' }
-		);
-
-		this.updateObservers();
-	}
-
-	private updateObservers(): void {
-		if (!this.observer) return;
-		this.observer.disconnect();
-		this.results.forEach((_, resultIndex) => {
-			const contractors = this.getContractorsWindowedFor(resultIndex);
-			contractors.forEach((_, contractorIndex) => {
-				const table = document.querySelector(
-					`[data-result-index="${resultIndex}"][data-contractor-index="${contractorIndex + this.windows[resultIndex].start}"]`
-				);
-				if (table) {
-					this.observer!.observe(table);
+	private initializeResetSubscription(): void {
+		this.subscriptions.push(
+			this.searchFilterResetService.resetTrigger$.subscribe((reset) => {
+				if (reset) {
+					this.resetFilters();
+					this.searchFilterResetService.consumeReset();
 				}
-			});
-		});
+			})
+		);
 	}
 
-	private resetVirtualScrollState(): void {
-		this.allContractors = [];
-		this.windows = {};
-		this.observer?.disconnect();
-	}
-
-	private prepareContractorsForVirtualScroll(): void {
-		this.allContractors = [];
-		this.windows = {};
-		this.results.forEach((result, resultIndex) => {
-			const activeContractors = this.getActiveContractors(result).map((contractor) => ({
-				resultIndex,
-				contractor,
-				isActive: true,
-			}));
-			this.allContractors.push(...activeContractors);
-			this.windows[resultIndex] = { start: 0, end: this.windowSize };
-			if (environment.debug) {
-				console.log(`[PrepareContractors] Total contractors: ${this.allContractors.length}`);
-				const count = this.allContractors.filter((c) => c.resultIndex === resultIndex).length;
-				console.log(`[PrepareContractors][${resultIndex}] Contractors: ${count}`);
+	private handleIntersection(entries: IntersectionObserverEntry[]): void {
+		entries.forEach(entry => {
+			if (entry.isIntersecting && !this.isLoading && this.hasMoreResults) {
+				console.log('IntersectionObserver triggered: Loading more results');
+				this.scrollSubject.next();
 			}
 		});
 	}
 
-	public getContractorsWindowedFor(resultIndex: number): { contractor: ContractorPassesDto; isActive: boolean }[] {
-		const window = this.windows[resultIndex] || { start: 0, end: this.windowSize };
-		const contractors = this.allContractors
-			.filter((c) => c.resultIndex === resultIndex)
-			.slice(window.start, window.end)
-			.map((c) => ({ contractor: c.contractor, isActive: c.isActive }));
-		if (environment.debug) {
-			console.log(`[GetContractors][${resultIndex}] Window=[${window.start},${window.end}], Count=${contractors.length}`);
-		}
-		return contractors;
+	private initializeScrollDebounce(): void {
+		this.subscriptions.push(
+			this.scrollSubject.pipe(
+				debounceTime(this.DEBOUNCE_TIME_MS),
+				takeUntil(this.destroy$)
+			).subscribe(() => {
+				console.log('Scroll debounce triggered: isLoading=', this.isLoading, 'hasMoreResults=', this.hasMoreResults);
+				if (!this.isLoading && this.hasMoreResults) {
+					this.loadMoreResults();
+				}
+			})
+		);
+	}
+
+	private initializeFormSubscriptions(): void {
+		this.subscriptions.push(
+			this.searchForm.valueChanges.pipe(
+				debounceTime(this.DEBOUNCE_TIME_MS),
+				distinctUntilChanged(),
+				takeUntil(this.destroy$)
+			).subscribe(() => {
+				if (this.areAllFieldsConfirmed()) {
+					console.log('Form value changed, triggering search');
+					this.searchPasses(true);
+				}
+			})
+		);
 	}
 
 	private loadStoredSearchCriteria(): void {
 		const storedCriteria = localStorage.getItem('storeSearchCriteria');
 		if (storedCriteria) {
-			try {
-				const criteria = JSON.parse(storedCriteria);
-				const valueToPatch: any = {};
-				if (criteria.building) valueToPatch.Building = criteria.building;
-				if (criteria.floor) valueToPatch.Floor = criteria.floor;
-				if (criteria.line) valueToPatch.Line = criteria.line;
-				if (criteria.storeNumber) valueToPatch.StoreNumber = criteria.storeNumber;
-				this.searchForm.patchValue(valueToPatch);
-				this.confirmedFields = {
-					Building: criteria.building || null,
-					Floor: criteria.floor || null,
-					Line: criteria.line || null,
-					StoreNumber: criteria.storeNumber || null,
-				};
-				this.searchPasses();
-			} catch (e) {
-				localStorage.removeItem('storeSearchCriteria');
-			}
+			const criteria = JSON.parse(storedCriteria);
+			this.searchForm.patchValue({
+				Building: criteria.building || '',
+				Floor: criteria.floor || '',
+				Line: criteria.line || '',
+				StoreNumber: criteria.storeNumber || '',
+				showActive: criteria.showActive ?? true,
+				showClosed: criteria.showClosed ?? false
+			});
+			this.confirmedFields = {
+				Building: criteria.building || null,
+				Floor: criteria.floor || null,
+				Line: criteria.line || null,
+				StoreNumber: criteria.storeNumber || null
+			};
+			this.searchPasses(true);
 		}
 	}
 
 	private saveSearchCriteria(): void {
-		const criteria = this.prepareSearchCriteria();
-		localStorage.setItem('storeSearchCriteria', JSON.stringify(criteria));
-	}
-
-	searchPasses(): void {
-		this.errorMessage = null;
-		this.successMessage = null;
-		this.showAddTransactionButton = false;
-		this.results = [];
-		this.noteForms = {};
-		this.historyEntries = {};
-		this.showHistory = {};
-		this.isLoadingHistory = {};
-		this.userMap = {};
-
-		const allFieldsConfirmed = Object.values(this.confirmedFields).every((value) => value !== null && value.trim() !== '');
-		if (!allFieldsConfirmed) {
-			this.errorMessage = 'Выберите значения для всех полей из списка';
-			this.cdr.markForCheck();
-			return;
-		}
-
-		this.isLoading = true;
-		const criteria = this.prepareSearchCriteria();
-
-		this.passService
-			.searchPassesByStore(criteria)
-			.pipe(
-				takeUntil(this.destroy$),
-				catchError((error) => {
-					this.errorMessage = error?.status === 404 ? 'Торговая точка не найдена или не существует.' : error?.message || 'Ошибка при выполнении поиска.';
-					this.isLoading = false;
-					this.resetVirtualScrollState();
-					this.cdr.markForCheck();
-					return of([]);
-				})
-			)
-			.subscribe((response: PassByStoreResponseDto[]) => {
-				const filteredResults = response.filter(result => !result.isArchived);
-				if (filteredResults.length === 0) {
-					this.errorMessage = 'Торговая точка не найдена или не существует.';
-					this.isLoading = false;
-					this.cdr.markForCheck();
-					return;
-				}
-
-				// Подготавливаем результаты
-				const tempResults = filteredResults.map((result) => ({
-					...result,
-					contractors: (result.contractors || []).filter(c => c.activePasses && c.activePasses.length > 0).map((contractor) => ({
-						...contractor,
-						activePasses: this.getSortedPasses(contractor.allActivePasses, result),
-						closedPasses: [],
-					})),
-				}));
-
-				// Загружаем заметки для каждого магазина
-				const storeObservables = tempResults.map((result, index) =>
-					this.storeService.getStoreById(result.storeId).pipe(
-						catchError((err) => {
-							console.error(`[searchPasses][${index}] Error fetching store:`, err);
-							return of({ note: null } as Store); // Fallback
-						})
-					)
-				);
-
-				forkJoin(storeObservables).subscribe((stores: Store[]) => {
-					// Присваиваем results и создаём формы только после загрузки всех данных
-					this.results = tempResults.map((result, index) => ({
-						...result,
-						note: stores[index].note ?? null, // Преобразуем undefined в null
-					}));
-
-					this.results.forEach((result, index) => {
-						console.debug(`[searchPasses][${index}] Loading note from store:`, stores[index].note);
-						this.noteForms[index] = this.fb.group({
-							note: [stores[index].note || '', [Validators.maxLength(500)]], // Как в StoreDetailsComponent
-						});
-						console.debug(`[searchPasses][${index}] noteForm value:`, this.noteForms[index].value);
-						this.showHistory[index] = false;
-						this.isLoadingHistory[index] = false;
-						this.historyEntries[index] = [];
-					});
-
-					this.isLoading = false;
-					this.saveSearchCriteria();
-					this.panelStates = {};
-					this.showAddTransactionButton = this.results.length > 0;
-					this.prepareContractorsForVirtualScroll();
-					setTimeout(() => this.updateObservers(), 100);
-					this.cdr.detectChanges();
-					this.loadUsersForHistory();
-				});
-			});
-	}
-
-	saveNote(resultIndex: number): void {
-		const result = this.results[resultIndex];
-		if (!result.storeId || !this.noteForms[resultIndex].valid) {
-			console.debug(`[saveNote][${resultIndex}] Invalid: storeId=${result.storeId}, formValid=${this.noteForms[resultIndex].valid}`);
-			this.setMessage('ID торговой точки не определён или заметка недействительна', 'error');
-			return;
-		}
-
-		const note = this.noteForms[resultIndex].get('note')?.value?.trim() || null;
-		console.debug(`[saveNote][${resultIndex}] Saving note:`, note, `Current note:`, result.note);
-		if (note === result.note) {
-			console.debug(`[saveNote][${resultIndex}] Note unchanged`);
-			return;
-		}
-
-		this.isLoading = true;
-		// Запрашиваем текущий Store, чтобы получить sortOrder
-		this.storeService.getStoreById(result.storeId).subscribe({
-			next: (store: Store) => {
-				const storeUpdate: Partial<Store> = {
-					building: result.building,
-					floor: result.floor,
-					line: result.line,
-					storeNumber: result.storeNumber,
-					note: note,
-					isArchived: result.isArchived,
-					sortOrder: store.sortOrder || 0, // Берём sortOrder из Store или 0
-				};
-				console.debug(`[saveNote][${resultIndex}] Sending update:`, storeUpdate);
-				this.storeService.updateStore(result.storeId, storeUpdate).subscribe({
-					next: () => {
-						console.debug(`[saveNote][${resultIndex}] Note saved successfully`);
-						this.results[resultIndex].note = note;
-						this.noteForms[resultIndex].patchValue({ note: note || '' });
-						this.noteForms[resultIndex].markAsPristine();
-						this.setMessage('Заметка успешно сохранена', 'success');
-						if (this.showHistory[resultIndex]) {
-							this.loadHistory(resultIndex);
-						}
-						this.isLoading = false;
-						this.cdr.markForCheck();
-					},
-					error: (err) => {
-						console.error(`[saveNote][${resultIndex}] Error:`, err);
-						this.setMessage('Ошибка при сохранении заметки: ' + (err.message || 'Неизвестная ошибка'), 'error');
-						this.isLoading = false;
-						this.cdr.markForCheck();
-					},
-				});
-			},
-			error: (err) => {
-				console.error(`[saveNote][${resultIndex}] Error fetching store:`, err);
-				this.setMessage('Ошибка при получении данных магазина', 'error');
-				this.isLoading = false;
-				this.cdr.markForCheck();
-			},
-		});
-	}
-
-	private setMessage(message: string, type: 'success' | 'error', timeout: number = 5000): void {
-		if (type === 'success') {
-			this.successMessage = message;
-			this.errorMessage = null;
-		} else {
-			this.errorMessage = message;
-			this.successMessage = null;
-		}
-		setTimeout(() => {
-			if (type === 'success') this.successMessage = null;
-			else this.errorMessage = null;
-			this.cdr.markForCheck();
-		}, timeout);
-	}
-
-	toggleHistory(resultIndex: number): void {
-		this.showHistory[resultIndex] = !this.showHistory[resultIndex];
-		if (this.showHistory[resultIndex] && this.results[resultIndex]) {
-			this.loadHistory(resultIndex);
-		} else {
-			this.historyEntries[resultIndex] = [];
-		}
-		this.cdr.markForCheck();
-	}
-
-	loadHistory(resultIndex: number): void {
-		const result = this.results[resultIndex];
-		if (!result.storeId) {
-			this.setMessage('ID торговой точки не определён', 'error');
-			return;
-		}
-		this.isLoadingHistory[resultIndex] = true;
-		this.historyService.getHistory('store', result.storeId.toString()).subscribe({
-			next: (historyEntries: HistoryEntry[]) => {
-				console.debug(`[LoadHistory][${resultIndex}] Загружено записей: ${historyEntries.length}`, historyEntries);
-				this.historyEntries[resultIndex] = historyEntries;
-				this.isLoadingHistory[resultIndex] = false;
-				if (historyEntries.length === 0) {
-					console.debug(`История для торговой точки ${result.storeId} пуста`);
-				}
-				this.loadUsersForHistory();
-				this.cdr.markForCheck();
-			},
-			error: (err) => {
-				console.error(`[LoadHistory][${resultIndex}] Ошибка:`, err);
-				this.setMessage(err.message || 'Не удалось загрузить историю изменений.', 'error');
-				this.isLoadingHistory[resultIndex] = false;
-				this.historyEntries[resultIndex] = [];
-				this.cdr.markForCheck();
-			},
-		});
-	}
-
-	private loadUsersForHistory(): void {
-		this.userService.getAllUsers().subscribe({
-			next: (users: ApplicationUser[]) => {
-				this.userMap = users.reduce((map, user) => {
-					map[user.id] = user.userName;
-					return map;
-				}, {} as { [key: string]: string });
-				console.debug('Обновлён userMap:', this.userMap);
-				this.cdr.markForCheck();
-			},
-			error: (err) => {
-				console.error('Ошибка при загрузке пользователей:', err);
-				this.setMessage('Не удалось загрузить данные пользователей для истории.', 'error');
-				this.cdr.markForCheck();
-			},
-		});
-	}
-
-	formatHistoryAction(action: string): string {
-		const actionMap: { [key: string]: string } = {
-			create: 'Создание',
-			update: 'Обновление',
-			archive: 'Архивирование',
-			unarchive: 'Разархивирование',
-			update_note: 'Изменение заметки',
-		};
-		return actionMap[action.toLowerCase()] || action;
-	}
-
-	formatHistoryChanges(changes: { [key: string]: ChangeValue } | undefined): string {
-		if (!changes || !Object.keys(changes).length) {
-			return 'Изменения отсутствуют';
-		}
-		return Object.entries(changes)
-			.map(([key, value]) => {
-				const fieldName = this.translateFieldName(key);
-				const oldValue = value.oldValue ?? 'не указано';
-				const newValue = value.newValue ?? 'не указано';
-				return `${fieldName}: с "${oldValue}" на "${newValue}"`;
-			})
-			.join('; ');
-	}
-
-	private translateFieldName(field: string): string {
-		const fieldTranslations: { [key: string]: string } = {
-			building: 'Здание',
-			floor: 'Этаж',
-			line: 'Линия',
-			storeNumber: 'Номер магазина',
-			sortOrder: 'Порядок сортировки',
-			note: 'Заметка',
-			isArchived: 'Статус архивации',
-		};
-		return fieldTranslations[field] || field;
-	}
-
-	resetFilters(): void {
-		this.searchForm.reset({ Building: '', Floor: '', Line: '', StoreNumber: '' });
-		this.confirmedFields = { Building: null, Floor: null, Line: null, StoreNumber: null };
-		localStorage.removeItem('storeSearchCriteria');
-		this.results = [];
-		this.errorMessage = null;
-		this.successMessage = null;
-		this.noteForms = {};
-		this.historyEntries = {};
-		this.showHistory = {};
-		this.isLoadingHistory = {};
-		this.userMap = {};
-		this.buildingSuggestions$.next([]);
-		this.floorSuggestions$.next([]);
-		this.lineSuggestions$.next([]);
-		this.storeNumberSuggestions$.next([]);
-		this.panelStates = {};
-		this.resetVirtualScrollState();
-		this.activeDropdown = null;
-		this.cdr.detectChanges();
-	}
-
-	prepareSearchCriteria(): any {
-		return {
+		const criteria = {
 			building: this.confirmedFields['Building'] || '',
 			floor: this.confirmedFields['Floor'] || '',
 			line: this.confirmedFields['Line'] || '',
 			storeNumber: this.confirmedFields['StoreNumber'] || '',
-			showActive: true,
-			showClosed: false,
-			isArchived: false
+			showActive: this.searchForm.get('showActive')?.value ?? true,
+			showClosed: this.searchForm.get('showClosed')?.value ?? false
 		};
+		localStorage.setItem('storeSearchCriteria', JSON.stringify(criteria));
 	}
 
-	initializeAutocompleteHandlers(): void {
-		this.setupAutocomplete('Building', (query: string) => this.storeService.getBuildingSuggestions(query, false));
-		this.setupAutocomplete('Floor', (query: string) => this.storeService.getFloorSuggestions(query, false));
-		this.setupAutocomplete('Line', (query: string) => this.storeService.getLineSuggestions(query, false));
-		this.setupAutocomplete('StoreNumber', (query: string) => this.storeService.getStoreNumberSuggestions(query, false));
+	private flattenResults(results: PassByStoreResponseDto[], showActive: boolean, showClosed: boolean): { store: PassByStoreResponseDto; contractor: ContractorPassesDto; isActive: boolean }[] {
+		const flattened: { store: PassByStoreResponseDto; contractor: ContractorPassesDto; isActive: boolean }[] = [];
+		const contractorIds = new Set<number>();
+
+		results.forEach(store => {
+			const contractors = store.contractors ?? [];
+			contractors.forEach(contractor => {
+				const activePassesForStore = (contractor.activePasses ?? []).filter(pass =>
+					pass.building === store.building &&
+					pass.floor === store.floor &&
+					pass.line === store.line &&
+					pass.storeNumber === store.storeNumber
+				);
+				const closedPassesForStore = (contractor.closedPasses ?? []).filter(pass =>
+					pass.building === store.building &&
+					pass.floor === store.floor &&
+					pass.line === store.line &&
+					pass.storeNumber === store.storeNumber
+				);
+
+				const hasActivePassesForStore = activePassesForStore.length > 0;
+				const hasClosedPassesForStore = closedPassesForStore.length > 0;
+
+				if (showActive && hasActivePassesForStore && !contractorIds.has(contractor.contractorId)) {
+					flattened.push({ store, contractor, isActive: true });
+					contractorIds.add(contractor.contractorId);
+				}
+				else if (showClosed && hasClosedPassesForStore && !hasActivePassesForStore && !contractorIds.has(contractor.contractorId)) {
+					flattened.push({ store, contractor, isActive: false });
+					contractorIds.add(contractor.contractorId);
+				}
+			});
+		});
+
+		// Убрана сортировка по contractorId, чтобы сохранить порядок бэкенда по MaxPassId
+		console.log('Flattened results:', flattened.map(item => ({ contractorId: item.contractor.contractorId, isActive: item.isActive })));
+		return flattened;
 	}
 
-	setupAutocomplete(controlName: string, suggestionServiceMethod: (query: string) => Observable<string[]>): void {
+	public areAllFieldsConfirmed(): boolean {
+		return Object.values(this.confirmedFields).every(value => value !== null && value.trim() !== '');
+	}
+
+	private searchPasses(isInitialSearch: boolean): void {
+		if (!this.areAllFieldsConfirmed()) {
+			this.errorMessage = 'Выберите значения для всех полей';
+			this.flattenedContractors = [];
+			this.cdr.markForCheck();
+			return;
+		}
+
+		if (this.isLoading) {
+			console.log('Search blocked: isLoading is true');
+			return;
+		}
+
+		this.isLoading = true;
+		this.errorMessage = null;
+		const criteria = this.prepareSearchCriteria(isInitialSearch);
+
+		console.log('Searching with criteria:', criteria);
+
+		if (isInitialSearch) {
+			this.pageCache = {};
+			this.flattenedContractors = [];
+			this.page = 1;
+			this.hasMoreResults = true;
+			sessionStorage.removeItem('storePassScrollPosition');
+			sessionStorage.removeItem('storePassContractorId');
+		}
+
+		const cacheKey = this.getCacheKey(criteria);
+		if (this.pageCache[cacheKey]) {
+			console.log('Using cached data for key:', cacheKey);
+			this.handleSearchResponse(this.pageCache[cacheKey], isInitialSearch);
+			return;
+		}
+
+		this.passService.searchPassesByStore(criteria).subscribe({
+			next: (response: PassByStoreResponseDto[]) => {
+				console.log('Search response:', response);
+				if (!response || response.every(r => !r.contractors || r.contractors.length === 0)) {
+					this.errorMessage = null;
+					this.flattenedContractors = [];
+					this.totalCount = response[0]?.totalCount || 0;
+					this.hasMoreResults = false;
+					this.isLoading = false;
+					this.cdr.markForCheck();
+					console.log('No contractors found, stopping infinite scroll');
+					return;
+				}
+				this.pageCache[cacheKey] = response;
+				this.handleSearchResponse(response, isInitialSearch);
+			},
+			error: (error) => {
+				console.error('Search error:', error);
+				this.errorMessage = 'Ошибка сервера';
+				this.isLoading = false;
+				this.flattenedContractors = [];
+				this.totalCount = -1;
+				this.cdr.markForCheck();
+			}
+		});
+	}
+
+	private getCacheKey(criteria: SearchCriteria): string {
+		return `${criteria.building}_${criteria.floor}_${criteria.line}_${criteria.storeNumber}_${criteria.showActive}_${criteria.showClosed}_${criteria.page}`;
+	}
+
+	private handleSearchResponse(response: PassByStoreResponseDto[], isInitialSearch: boolean): void {
+		const showActive = this.searchForm.get('showActive')?.value;
+		const showClosed = this.searchForm.get('showClosed')?.value;
+		const newFlattened = this.flattenResults(response, showActive, showClosed);
+
+		console.log('handleSearchResponse:', {
+			responseLength: response.length,
+			totalCount: response[0]?.totalCount,
+			newFlattenedLength: newFlattened.length,
+			flattenedContractorsLength: this.flattenedContractors.length,
+			hasMoreResults: this.hasMoreResults,
+			page: this.page
+		});
+
+		if (isInitialSearch) {
+			this.flattenedContractors = newFlattened;
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		} else {
+			const existingIds = new Set(this.flattenedContractors.map(c => c.contractor.contractorId));
+			const filteredNewFlattened = newFlattened.filter(c => !existingIds.has(c.contractor.contractorId));
+			this.flattenedContractors = [...this.flattenedContractors, ...filteredNewFlattened];
+		}
+
+		this.totalCount = response[0]?.totalCount || 0;
+		this.hasMoreResults = this.flattenedContractors.length < this.totalCount && response.length > 0;
+		this.page = isInitialSearch ? 1 : this.page + 1;
+
+		console.log('After update:', {
+			totalCount: this.totalCount,
+			flattenedContractorsLength: this.flattenedContractors.length,
+			hasMoreResults: this.hasMoreResults,
+			page: this.page
+		});
+
+		this.isLoading = false;
+		this.cdr.markForCheck();
+	}
+
+	private loadMoreResults(): void {
+		console.log('loadMoreResults called');
+		this.searchPasses(false);
+	}
+
+	private prepareSearchCriteria(isInitialSearch: boolean): SearchCriteria {
+		const targetPage = isInitialSearch ? 1 : this.page + 1;
+		const criteria: SearchCriteria = {
+			building: this.confirmedFields['Building'] || '',
+			floor: this.confirmedFields['Floor'] || '',
+			line: this.confirmedFields['Line'] || '',
+			storeNumber: this.confirmedFields['StoreNumber'] || '',
+			showActive: this.searchForm.get('showActive')?.value ?? true,
+			showClosed: this.searchForm.get('showClosed')?.value ?? false,
+			page: targetPage,
+			pageSize: this.PAGE_SIZE
+		};
+		if (isInitialSearch) {
+			this.saveSearchCriteria();
+		}
+		return criteria;
+	}
+
+	private restoreScrollPosition(): void {
+		const scrollPosition = sessionStorage.getItem('storePassScrollPosition');
+		const storedPanelStates = sessionStorage.getItem('storePassPanelStates');
+		if (scrollPosition) {
+			window.scrollTo({ top: +scrollPosition, behavior: 'smooth' });
+			sessionStorage.removeItem('storePassScrollPosition');
+		}
+		if (storedPanelStates) {
+			this.panelStates = new Map(JSON.parse(storedPanelStates));
+			sessionStorage.removeItem('storePassPanelStates');
+		}
+		this.cdr.markForCheck();
+	}
+
+	public resetFilters(): void {
+		this.searchForm.reset({ showActive: true, showClosed: false });
+		this.confirmedFields = { Building: null, Floor: null, Line: null, StoreNumber: null };
+		localStorage.removeItem('storeSearchCriteria');
+		this.flattenedContractors = [];
+		this.errorMessage = null;
+		this.page = 1;
+		this.hasMoreResults = true;
+		this.pageCache = {};
+		this.totalCount = -1;
+		this.cdr.markForCheck();
+	}
+
+	public initializeAutocompleteHandlers(): void {
+		this.setupAutocomplete('Building', this.passService.getBuildingSuggestions.bind(this.passService));
+		this.setupAutocomplete('Floor', this.passService.getFloorSuggestions.bind(this.passService));
+		this.setupAutocomplete('Line', this.passService.getLineSuggestions.bind(this.passService));
+		this.setupAutocomplete('StoreNumber', this.passService.getStoreNumberSuggestions.bind(this.passService));
+	}
+
+	public setupAutocomplete(controlName: string, suggestionServiceMethod: (query: string) => Observable<string[]>): void {
 		const control = this.searchForm.get(controlName);
 		if (control) {
 			this.subscriptions.push(
-				control.valueChanges
-					.pipe(
-						takeUntil(this.destroy$),
-						debounceTime(300),
-						distinctUntilChanged(),
-						switchMap((query) => {
-							const trimmedQuery = query?.trim() || '';
-							if (this.confirmedFields[controlName] === trimmedQuery) return of([]);
-							if (!trimmedQuery) {
-								this.confirmedFields[controlName] = null;
-								return of([]);
-							}
-							return suggestionServiceMethod(trimmedQuery).pipe(catchError(() => of([])));
-						})
-					)
-					.subscribe((suggestions) => {
-						this.getSuggestionSubject(controlName).next(suggestions);
-						if (suggestions.length > 0) {
-							this.activeDropdown = controlName;
-						} else {
-							this.activeDropdown = null;
+				control.valueChanges.pipe(
+					debounceTime(this.DEBOUNCE_TIME_MS),
+					distinctUntilChanged(),
+					takeUntil(this.destroy$),
+					switchMap(query => {
+						const trimmedQuery = query?.trim() || '';
+						if (this.confirmedFields[controlName] === trimmedQuery) return of([]);
+						if (!trimmedQuery) {
+							this.confirmedFields[controlName] = null;
+							return of([]);
 						}
-						this.cdr.detectChanges();
+						return suggestionServiceMethod(trimmedQuery).pipe(catchError(() => of([])));
 					})
+				).subscribe(suggestions => this.getSuggestionSubject(controlName).next(suggestions))
 			);
 		}
 	}
 
-	selectSuggestion(controlName: string, value: string): void {
-		this.searchForm.get(controlName)?.setValue(value, { emitEvent: false });
-		this.confirmedFields[controlName] = value;
-		this.getSuggestionSubject(controlName).next([]);
-		this.activeDropdown = null;
-		this.cdr.detectChanges();
-	}
-
-	onInput(controlName: string, event: Event): void {
+	public onInput(controlName: string, event: Event): void {
 		const value = (event.target as HTMLInputElement).value.trim();
 		if (!this.confirmedFields[controlName] || this.confirmedFields[controlName] !== value) {
 			this.confirmedFields[controlName] = null;
 		}
 	}
 
-	toggleDropdown(controlName: string): void {
-		if (this.activeDropdown === controlName) {
-			this.activeDropdown = null;
-		} else {
-			this.activeDropdown = controlName;
-			const query = this.searchForm.get(controlName)?.value?.trim() || '';
-			if (query) {
-				this.getSuggestionSubject(controlName).next([]);
-				const suggestionMethod = {
-					Building: () => this.storeService.getBuildingSuggestions(query, false),
-					Floor: () => this.storeService.getFloorSuggestions(query, false),
-					Line: () => this.storeService.getLineSuggestions(query, false),
-					StoreNumber: () => this.storeService.getStoreNumberSuggestions(query, false),
-				}[controlName as 'Building' | 'Floor' | 'Line' | 'StoreNumber'];
-				suggestionMethod().subscribe((suggestions) => {
-					this.getSuggestionSubject(controlName).next(suggestions);
-					this.cdr.detectChanges();
-				});
-			}
-		}
+	public selectSuggestion(controlName: string, value: string): void {
+		this.searchForm.get(controlName)?.setValue(value);
+		this.confirmedFields[controlName] = value;
+		this.getSuggestionSubject(controlName).next([]);
+		this.searchPasses(true);
 	}
 
-	isFieldConfirmed(controlName: string): boolean {
+	public isFieldConfirmed(controlName: string): boolean {
 		const currentValue = this.searchForm.get(controlName)?.value?.trim() || '';
 		return this.confirmedFields[controlName] === currentValue && currentValue !== '';
 	}
 
-	getSuggestionSubject(controlName: string): BehaviorSubject<string[]> {
-		return {
+	public getSuggestionSubject(controlName: string): BehaviorSubject<string[]> {
+		const subjects: { [key: string]: BehaviorSubject<string[]> } = {
 			Building: this.buildingSuggestions$,
 			Floor: this.floorSuggestions$,
 			Line: this.lineSuggestions$,
-			StoreNumber: this.storeNumberSuggestions$,
-		}[controlName as 'Building' | 'Floor' | 'Line' | 'StoreNumber'];
+			StoreNumber: this.storeNumberSuggestions$
+		};
+		return subjects[controlName] || new BehaviorSubject<string[]>([]);
 	}
 
-	formatStore(store: PassByStoreResponseDto): string {
+	public formatStore(store: PassByStoreResponseDto): string {
 		return `${store.building} ${store.floor} ${store.line} ${store.storeNumber}`.trim();
 	}
 
-	getFirstPhotoUrl(pass: ContractorPassesDto): string {
-		if (!pass.contractorPhotoPath) return '/assets/images/default-photo.jpg';
-		const filePath = pass.contractorPhotoPath.replace(/\\/g, '/').replace(/^.*wwwroot\//, '');
-		return `${this.apiBaseUrl}/${filePath}`;
+	public formatPassStore(pass: PassDetailsDto): string {
+		return `${pass.building} ${pass.floor} ${pass.line} ${pass.storeNumber}`.trim();
 	}
 
-	getLastDocumentPhotoUrl(contractor: ContractorPassesDto): string | null {
-		if (!contractor.documentPhotos) return null;
-		const photos = contractor.documentPhotos.split(',');
-		const lastPhoto = photos[photos.length - 1];
-		const filePath = lastPhoto.replace(/\\/g, '/').replace(/^.*wwwroot\//, '');
-		return `${this.apiBaseUrl}/${filePath}`;
+	public getAbsolutePhotoUrl(relativePath: string | null): string | null {
+		if (!relativePath) {
+			return null;
+		}
+		const cleanedPath = relativePath.replace(/\\/g, '/').replace(/^.*wwwroot\//, '');
+		return `${this.API_BASE_URL}/${cleanedPath}`;
 	}
 
-	getLatestPass(passes: PassDetailsDto[]): PassDetailsDto | undefined {
+	public getLatestPass(passes: PassDetailsDto[] | undefined): PassDetailsDto | undefined {
 		if (!passes || passes.length === 0) return undefined;
 		return passes.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())[0];
 	}
 
-	getSortedPasses(passes: PassDetailsDto[], currentStore?: PassByStoreResponseDto): PassDetailsDto[] {
-		if (!passes || passes.length === 0) return [];
-		if (environment.debug) {
-			passes.forEach((pass, index) => {
-				if (!pass.passTypeColor) {
-					console.warn(`[GetSortedPasses] Pass ${index} missing passTypeColor for ${pass.passTypeName}`);
-				}
-			});
-		}
-		if (!currentStore) {
-			return passes.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-		}
-		return passes.sort((a, b) => {
-			const aMatchesCurrentStore =
-				a.building === currentStore.building &&
-				a.floor === currentStore.floor &&
-				a.line === currentStore.line &&
-				a.storeNumber === currentStore.storeNumber;
-			const bMatchesCurrentStore =
-				b.building === currentStore.building &&
-				b.floor === currentStore.floor &&
-				b.line === currentStore.line &&
-				b.storeNumber === currentStore.storeNumber;
+	public getSortedPasses(contractor: ContractorPassesDto, store: PassByStoreResponseDto): PassDetailsDto[] {
+		const showActive = this.searchForm.get('showActive')?.value ?? true;
+		const showClosed = this.searchForm.get('showClosed')?.value ?? false;
 
-			if (aMatchesCurrentStore && !bMatchesCurrentStore) return -1;
-			if (!aMatchesCurrentStore && bMatchesCurrentStore) return 1;
+		let passes: PassDetailsDto[] = [];
+
+		if (showActive && !showClosed) {
+			passes = (contractor.activePasses ?? []);
+		} else if (showClosed) {
+			const closedPassesForStore = (contractor.closedPasses ?? []).filter(pass =>
+				pass.building === store.building &&
+				pass.floor === store.floor &&
+				pass.line === store.line &&
+				pass.storeNumber === store.storeNumber
+			);
+			passes = [
+				...(contractor.activePasses ?? []),
+				...closedPassesForStore
+			];
+		}
+
+		return passes.sort((a, b) => {
 			return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
 		});
 	}
 
-	getActiveContractors(result: PassByStoreResponseDto): ContractorPassesDto[] {
-		return result.contractors.filter((contractor) => contractor.activePasses && contractor.activePasses.length > 0);
+	public getActiveContractors(result: PassByStoreResponseDto): ContractorPassesDto[] {
+		return (result.contractors ?? []).filter(contractor => (contractor.activePasses ?? []).length > 0);
 	}
 
-	viewContractor(contractorId: number): void {
-		const url = this.router.serializeUrl(this.router.createUrlTree(['/contractors/details', contractorId]));
-		window.open(url, '_blank');
+	public getClosedContractors(result: PassByStoreResponseDto): ContractorPassesDto[] {
+		return (result.contractors ?? []).filter(contractor =>
+			(contractor.closedPasses ?? []).some(pass =>
+				pass.building === result.building &&
+				pass.floor === result.floor &&
+				pass.line === result.line &&
+				pass.storeNumber === result.storeNumber
+			) &&
+			!(contractor.activePasses ?? []).some(pass =>
+				pass.building === result.building &&
+				pass.floor === result.floor &&
+				pass.line === result.line &&
+				pass.storeNumber === result.storeNumber
+			)
+		);
 	}
 
-	editContractor(contractorId: number): void {
-		const url = this.router.serializeUrl(this.router.createUrlTree(['/contractors/edit', contractorId]));
-		window.open(url, '_blank');
+	private addMonths(date: Date, months: number): Date {
+		const newDate = new Date(date);
+		newDate.setMonth(newDate.getMonth() + months);
+		return newDate;
 	}
 
-	extendPass(pass: PassDetailsDto, result: PassByStoreResponseDto): void {
+	private formatDateToYYYYMMDD(date: Date): string {
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		return `${year}-${month}-${day}`;
+	}
+
+	public viewContractor(contractorId: number): void {
+		sessionStorage.setItem('storePassScrollPosition', window.scrollY.toString());
+		sessionStorage.setItem('storePassPanelStates', JSON.stringify(Array.from(this.panelStates.entries())));
+		this.router.navigate(['/contractors/details', contractorId]);
+	}
+
+	public editContractor(contractorId: number): void {
+		sessionStorage.setItem('storePassScrollPosition', window.scrollY.toString());
+		sessionStorage.setItem('storePassPanelStates', JSON.stringify(Array.from(this.panelStates.entries())));
+		this.router.navigate(['/contractors/edit', contractorId]);
+	}
+
+	public extendPass(pass: PassDetailsDto, store: PassByStoreResponseDto): void {
 		let newStartDate: Date;
 		try {
 			const previousEndDate = new Date(pass.endDate);
-			if (isNaN(previousEndDate.getTime())) throw new Error(`Invalid date: ${pass.endDate}`);
+			if (isNaN(previousEndDate.getTime())) {
+				throw new Error(`Invalid pass end date format: ${pass.endDate}`);
+			}
 			newStartDate = new Date(previousEndDate);
 			newStartDate.setDate(newStartDate.getDate() + 1);
-		} catch (error: any) {
-			console.error('Date parse error:', error);
-			this.setMessage(`Ошибка даты: ${error.message}`, 'error');
+		} catch (error) {
+			console.error("Ошибка парсинга даты окончания пропуска:", error);
+			this.errorMessage = "Неверный формат даты окончания предыдущего пропуска.";
 			this.cdr.markForCheck();
 			return;
 		}
+
 		this.isLoading = true;
-		this.cdr.markForCheck();
+		this.errorMessage = null;
+
 		forkJoin({
 			contractor: this.transactionService.getContractorById(pass.contractorId),
 			store: this.transactionService.getStoreByDetails(pass.building, pass.floor, pass.line, pass.storeNumber),
-			passType: this.transactionService.getPassTypeById(pass.passTypeId),
-		})
-			.pipe(
-				takeUntil(this.destroy$),
-				catchError((err) => {
-					console.error('Extend forkJoin error:', err);
-					this.setMessage(`Ошибка продления: ${err?.error?.message || err?.message || 'Ошибка сервера'}`, 'error');
+			passType: this.transactionService.getPassTypeById(pass.passTypeId)
+		}).subscribe({
+			next: ({ contractor, store, passType }) => {
+				if (!contractor || !store || !passType) {
+					console.error("Не удалось получить полные данные для продления:", { contractor, store, passType });
+					this.errorMessage = "Не удалось получить все данные (контрагент, магазин или тип пропуска) для продления.";
 					this.isLoading = false;
 					this.cdr.markForCheck();
-					return of(null);
-				})
-			)
-			.subscribe({
-				next: (data) => {
-					if (!data || !data.contractor || !data.store || !data.passType) {
-						this.isLoading = false;
-						if (!this.errorMessage) this.setMessage('Неполные данные для продления.', 'error');
-						console.error('Incomplete extend data:', data);
-						this.cdr.markForCheck();
-						return;
-					}
-					const { contractor, store, passType } = data;
-					const formattedStartDate = this.datePipe.transform(newStartDate, 'yyyy-MM-dd')!;
-					const extendData = {
-						contractorId: contractor.id,
-						passTypeId: passType.id,
-						store: {
-							id: store.id,
-							building: store.building || '',
-							floor: store.floor || '',
-							line: store.line || '',
-							storeNumber: store.storeNumber || '',
-						} as TransactionStore,
-						startDate: formattedStartDate,
-						position: pass.position || 'Employee',
-						contractorDetails: {
-							id: contractor.id,
-							lastName: contractor.lastName || '',
-							firstName: contractor.firstName || '',
-							middleName: contractor.middleName || '',
-							passportSerialNumber: contractor.passportSerialNumber || '',
-						} as ContractorDto,
-						passType: {
-							id: passType.id,
-							name: passType.name || '',
-							durationInMonths: passType.durationInMonths || 0,
-							cost: passType.cost || 0,
-						} as PassType,
-						originalPassId: pass.id,
-					};
-					this.isLoading = false;
-					this.cdr.markForCheck();
-					this.router.navigate(['/transactions/create'], { state: extendData });
-				},
-			});
-	}
-
-	closePass(passId: number): void {
-		let pass: PassDetailsDto | undefined;
-		for (const result of this.results) {
-			for (const contractor of result.contractors) {
-				pass = contractor.activePasses.find((p) => p.id === passId);
-				if (pass) break;
-			}
-			if (pass) break;
-		}
-
-		if (!pass) {
-			this.setMessage(`Пропуск с ID ${passId} не найден.`, 'error');
-			this.cdr.markForCheck();
-			return;
-		}
-
-		if (pass.isClosed) {
-			this.setMessage(`Пропуск с ID ${passId} уже закрыт.`, 'error');
-			this.cdr.markForCheck();
-			return;
-		}
-
-		const closeReason = prompt('Укажите причину закрытия пропуска:');
-		if (!closeReason) return;
-
-		this.isLoading = true;
-		this.cdr.markForCheck();
-
-		const user = this.userService.getCurrentUser();
-		const closedBy = user?.userName || 'Неизвестно';
-		if (closedBy === 'Неизвестно') {
-			console.warn('closedBy установлен как Неизвестно, пользователь:', user);
-			this.setMessage('Не удалось определить пользователя. Пожалуйста, войдите снова.', 'error');
-			this.isLoading = false;
-			this.cdr.markForCheck();
-			return;
-		}
-
-		this.passService.closePass(passId, closeReason, closedBy).subscribe({
-			next: () => {
-				console.debug('Пропуск успешно закрыт, closedBy:', closedBy);
-				this.setMessage(`Пропуск закрыт. Закрыл: ${closedBy}, Когда: ${new Date().toLocaleString()}`, 'success');
-				this.searchPasses();
-				this.isLoading = false;
-				this.cdr.markForCheck();
-			},
-			error: (err: any) => {
-				console.error('Ошибка при закрытии пропуска:', err);
-				this.isLoading = false;
-				if (err.status === 400) {
-					this.setMessage(`Пропуск закрыт (400). Закрыл: ${closedBy}, Когда: ${new Date().toLocaleString()}`, 'success');
-					this.searchPasses();
-				} else {
-					this.setMessage('Ошибка закрытия пропуска: ' + (err.error?.message || 'Неизвестная ошибка'), 'error');
+					return;
 				}
-				this.cdr.markForCheck();
+
+				const extendData = {
+					contractorId: contractor.id,
+					passTypeId: passType.id,
+					store: {
+						id: store.id,
+						building: store.building,
+						floor: store.floor,
+						line: store.line,
+						storeNumber: store.storeNumber
+					},
+					startDate: newStartDate.toISOString(),
+					position: pass.position || 'Наёмный работник',
+					contractorDetails: {
+						id: contractor.id,
+						lastName: contractor.lastName || '',
+						firstName: contractor.firstName || '',
+						middleName: contractor.middleName || '',
+						passportSerialNumber: contractor.passportSerialNumber || ''
+					},
+					passType: {
+						id: passType.id,
+						name: passType.name,
+						durationInMonths: passType.durationInMonths,
+						cost: passType.cost
+					}
+				};
+
+				console.log("Подготовлены данные для передачи в state:", extendData);
+
+				this.isLoading = false;
+				this.router.navigate(['/transactions/create'], { state: extendData });
 			},
+			error: (err) => {
+				console.error('Ошибка при загрузке данных для продления через forkJoin:', err);
+				const message = err?.error?.message || err?.message || 'Неизвестная ошибка сервера';
+				this.errorMessage = `Ошибка при загрузке данных для продления: ${message}`;
+				this.isLoading = false;
+				this.cdr.markForCheck();
+			}
 		});
 	}
 
-	toggleExpansionPanel(resultIndex: number, contractorIndex: number): void {
-		const key = `${resultIndex}-${contractorIndex}`;
-		this.panelStates[key] = !this.panelStates[key];
-		this.cdr.markForCheck();
-	}
+	public closePass(passId: number): void {
+		let pass: PassDetailsDto | undefined;
+		let contractorIndex: number | undefined;
+		let contractor: ContractorPassesDto | undefined;
+		let store: PassByStoreResponseDto | undefined;
 
-	isExpanded(resultIndex: number, contractorIndex: number): boolean {
-		const key = `${resultIndex}-${contractorIndex}`;
-		return !!this.panelStates[key];
-	}
-
-	openImage(url: string | null): void {
-		if (url) {
-			window.open(url, '_blank');
+		for (let i = 0; i < this.flattenedContractors.length; i++) {
+			const item = this.flattenedContractors[i];
+			pass = [
+				...(item.contractor.activePasses ?? []),
+				...(item.contractor.closedPasses ?? [])
+			].find(p => p.id === passId);
+			if (pass) {
+				contractorIndex = i;
+				contractor = item.contractor;
+				store = item.store;
+				break;
+			}
 		}
-	}
 
-	trackByFn(index: number, item: { contractor: ContractorPassesDto; isActive: boolean }): number {
-		return item.contractor.contractorId;
-	}
-
-	goToCreateTransaction(): void {
-		if (!this.isFieldConfirmed('Building') || !this.isFieldConfirmed('Floor') || !this.isFieldConfirmed('Line') || !this.isFieldConfirmed('StoreNumber')) {
-			this.setMessage('Все поля должны быть заполнены и подтверждены.', 'error');
+		if (!pass || !contractor || contractorIndex === undefined || !store) {
+			this.errorMessage = `Пропуск с ID ${passId} не найден.`;
 			this.cdr.markForCheck();
 			return;
 		}
+		if (pass.isClosed) {
+			this.errorMessage = `Пропуск с ID ${passId} уже закрыт.`;
+			this.cdr.markForCheck();
+			return;
+		}
+
+		const reason = prompt('Укажите причину закрытия пропуска:');
+		if (!reason) {
+			this.errorMessage = 'Причина закрытия не указана.';
+			this.cdr.markForCheck();
+			return;
+		}
+
+		const user = this.userService.getCurrentUser();
+		const closedBy = user?.id;
+		if (!closedBy || !user?.userName) {
+			this.errorMessage = 'Не удалось определить пользователя. Пожалуйста, войдите снова.';
+			this.cdr.markForCheck();
+			return;
+		}
+
 		this.isLoading = true;
-		this.cdr.markForCheck();
-		const building = this.confirmedFields['Building']!;
-		const floor = this.confirmedFields['Floor']!;
-		const line = this.confirmedFields['Line']!;
-		const storeNumber = this.confirmedFields['StoreNumber']!;
-		this.transactionService
-			.getStoreByDetails(building, floor, line, storeNumber)
-			.pipe(
-				takeUntil(this.destroy$),
-				catchError((err) => {
-					console.error('getStoreByDetails error:', err);
-					this.setMessage(
-						err.status === 404
-							? `Торговая точка ${building}-${floor}-${line}-${storeNumber} не найдена.`
-							: `Ошибка получения данных торговой точки: ${err.message || 'Ошибка'}`,
-						'error'
-					);
-					this.isLoading = false;
-					this.cdr.markForCheck();
-					return of(null);
-				})
-			)
-			.subscribe({
-				next: (store: TransactionStore | null) => {
-					this.isLoading = false;
-					if (!store) {
-						if (!this.errorMessage) this.setMessage('Торговая точка не найдена.', 'error');
-						this.cdr.markForCheck();
-						return;
+		const sub = this.passService.closePass(passId, reason, closedBy).subscribe({
+			next: () => {
+				const updatedActivePasses = (contractor.activePasses ?? []).filter(p => p.id !== passId);
+				const updatedClosedPasses = [
+					...(contractor.closedPasses ?? []),
+					{ ...pass, isClosed: true }
+				];
+
+				this.flattenedContractors[contractorIndex] = {
+					...this.flattenedContractors[contractorIndex],
+					contractor: {
+						...contractor,
+						activePasses: updatedActivePasses,
+						closedPasses: updatedClosedPasses
 					}
-					const storeData: TransactionStore = {
-						id: store.id,
-						building: store.building || '',
-						floor: store.floor || '',
-						line: store.line || '',
-						storeNumber: store.storeNumber || '',
-					};
-					this.router.navigate(['/transactions/create'], { state: { store: storeData } });
-					this.cdr.markForCheck();
-				},
-			});
+				};
+
+				if (!this.searchForm.get('showClosed')?.value && updatedActivePasses.length === 0) {
+					this.flattenedContractors = this.flattenedContractors.filter(
+						item => item.contractor.contractorId !== contractor.contractorId
+					);
+				}
+
+				this.pageCache = {};
+
+				this.isLoading = false;
+				this.cdr.markForCheck();
+
+				this.searchPasses(true);
+			},
+			error: (err) => {
+				this.errorMessage = 'Не удалось закрыть пропуск: ' + (err.error?.message || 'Неизвестная ошибка');
+				this.isLoading = false;
+				this.cdr.markForCheck();
+			}
+		});
+		this.subscriptions.push(sub);
 	}
 
-	getNameParts(fullName: string): string[] {
-		if (!fullName) return ['', '', ''];
-		const parts = fullName.trim().split(' ');
-		return [parts[0] || '', parts[1] || '', parts.slice(2).join(' ') || ''];
+	public addPass(): void {
+		if (!this.areAllFieldsConfirmed()) {
+			this.errorMessage = 'Выберите значения для всех полей';
+			this.cdr.markForCheck();
+			return;
+		}
+
+		this.isLoading = true;
+		this.errorMessage = null;
+
+		this.transactionService.getStoreByDetails(
+			this.confirmedFields['Building'] || '',
+			this.confirmedFields['Floor'] || '',
+			this.confirmedFields['Line'] || '',
+			this.confirmedFields['StoreNumber'] || ''
+		).subscribe({
+			next: (store) => {
+				if (!store) {
+					this.errorMessage = 'Не удалось найти магазин для создания пропуска.';
+					this.isLoading = false;
+					this.cdr.markForCheck();
+					return;
+				}
+
+				const addData = {
+					store: {
+						id: store.id,
+						building: store.building,
+						floor: store.floor,
+						line: store.line,
+						storeNumber: store.storeNumber
+					}
+				};
+
+				this.isLoading = false;
+				this.router.navigate(['/transactions/create'], { state: addData });
+			},
+			error: (err) => {
+				const message = err?.error?.message || err?.message || 'Неизвестная ошибка сервера';
+				this.errorMessage = `Ошибка при загрузке данных магазина: ${message}`;
+				this.isLoading = false;
+				this.cdr.markForCheck();
+			}
+		});
+	}
+
+	public togglePanel(contractorId: number, type: 'active' | 'closed'): void {
+		const key = `${contractorId}-${type}`;
+		const currentState = this.panelStates.get(key) || false;
+		this.panelStates.set(key, !currentState);
+		this.cdr.markForCheck();
+	}
+
+	public isPanelExpanded(contractorId: number, type: 'active' | 'closed'): boolean {
+		const key = `${contractorId}-${type}`;
+		return this.panelStates.get(key) || false;
+	}
+
+	public openImageInNewWindow(url: string | null): void {
+		if (url) window.open(url, '_blank');
+	}
+
+	public trackByContractor(index: number, item: { contractor: ContractorPassesDto }): number {
+		return item.contractor.contractorId;
 	}
 }

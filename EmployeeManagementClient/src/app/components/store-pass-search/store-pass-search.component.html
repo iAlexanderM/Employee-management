@@ -1,295 +1,210 @@
-<div class="panel-header panel-header-sm"></div>
 <div class="main-content">
-	<div class="row">
-		<div class="col-md-12">
-			<div class="card">
-				<div class="card-header">
-					<h4 class="card-title">Поиск пропусков по торговой точке</h4>
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Поиск пропусков по торговой точке</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<form [formGroup]="searchForm" class="search-form">
+				<div class="search-fields">
+					<mat-form-field appearance="fill" class="full-width">
+						<mat-label>Здание</mat-label>
+						<input matInput formControlName="Building" [matAutocomplete]="autoBuilding"
+							(input)="onInput('Building', $event)">
+						<mat-icon matSuffix>business</mat-icon>
+						<mat-autocomplete #autoBuilding="matAutocomplete"
+							(optionSelected)="selectSuggestion('Building', $event.option.value)">
+							<mat-option *ngFor="let suggestion of (buildingSuggestions$ | async)"
+								[value]="suggestion">{{ suggestion }}</mat-option>
+							<mat-option
+								*ngIf="(buildingSuggestions$ | async)?.length === 0 && searchForm.get('Building')?.value && !isFieldConfirmed('Building')"
+								disabled>Нет результатов</mat-option>
+						</mat-autocomplete>
+					</mat-form-field>
+
+					<mat-form-field appearance="fill" class="full-width">
+						<mat-label>Этаж</mat-label>
+						<input matInput formControlName="Floor" [matAutocomplete]="autoFloor"
+							(input)="onInput('Floor', $event)">
+						<mat-icon matSuffix>stairs</mat-icon>
+						<mat-autocomplete #autoFloor="matAutocomplete"
+							(optionSelected)="selectSuggestion('Floor', $event.option.value)">
+							<mat-option *ngFor="let suggestion of (floorSuggestions$ | async)" [value]="suggestion">{{
+								suggestion }}</mat-option>
+							<mat-option
+								*ngIf="(floorSuggestions$ | async)?.length === 0 && searchForm.get('Floor')?.value && !isFieldConfirmed('Floor')"
+								disabled>Нет результатов</mat-option>
+						</mat-autocomplete>
+					</mat-form-field>
+
+					<mat-form-field appearance="fill" class="full-width">
+						<mat-label>Линия</mat-label>
+						<input matInput formControlName="Line" [matAutocomplete]="autoLine"
+							(input)="onInput('Line', $event)">
+						<mat-icon matSuffix>store</mat-icon>
+						<mat-autocomplete #autoLine="matAutocomplete"
+							(optionSelected)="selectSuggestion('Line', $event.option.value)">
+							<mat-option *ngFor="let suggestion of (lineSuggestions$ | async)" [value]="suggestion">{{
+								suggestion }}</mat-option>
+							<mat-option
+								*ngIf="(lineSuggestions$ | async)?.length === 0 && searchForm.get('Line')?.value && !isFieldConfirmed('Line')"
+								disabled>Нет результатов</mat-option>
+						</mat-autocomplete>
+					</mat-form-field>
+
+					<mat-form-field appearance="fill" class="full-width">
+						<mat-label>Торговая точка</mat-label>
+						<input matInput formControlName="StoreNumber" [matAutocomplete]="autoStoreNumber"
+							(input)="onInput('StoreNumber', $event)">
+						<mat-icon matSuffix>storefront</mat-icon>
+						<mat-autocomplete #autoStoreNumber="matAutocomplete"
+							(optionSelected)="selectSuggestion('StoreNumber', $event.option.value)">
+							<mat-option *ngFor="let suggestion of (storeNumberSuggestions$ | async)"
+								[value]="suggestion">{{ suggestion }}</mat-option>
+							<mat-option
+								*ngIf="(storeNumberSuggestions$ | async)?.length === 0 && searchForm.get('StoreNumber')?.value && !isFieldConfirmed('StoreNumber')"
+								disabled>Нет результатов</mat-option>
+						</mat-autocomplete>
+					</mat-form-field>
 				</div>
-				<div class="card-body">
-					<!-- Search Form -->
-					<form [formGroup]="searchForm" (ngSubmit)="searchPasses()" class="mb-4">
-						<div class="row mb-2">
-							<div class="col-md-3">
-								<div class="form-group">
-									<label for="Building">Здание</label>
-									<input id="Building" class="form-control" formControlName="Building"
-										(input)="onInput('Building', $event)" (click)="toggleDropdown('Building')" />
-									<ul class="dropdown-menu"
-										*ngIf="activeDropdown === 'Building' && (buildingSuggestions$ | async)?.length">
-										<li *ngFor="let suggestion of buildingSuggestions$ | async"
-											class="dropdown-item" (click)="selectSuggestion('Building', suggestion)">
-											{{ suggestion }}
-										</li>
-										<li *ngIf="(buildingSuggestions$ | async)?.length === 0 && searchForm.get('Building')?.value && !isFieldConfirmed('Building')"
-											class="dropdown-item disabled">
-											Нет совпадений
-										</li>
-									</ul>
-								</div>
-							</div>
-							<div class="col-md-3">
-								<div class="form-group">
-									<label for="Floor">Этаж</label>
-									<input id="Floor" class="form-control" formControlName="Floor"
-										(input)="onInput('Floor', $event)" (click)="toggleDropdown('Floor')" />
-									<ul class="dropdown-menu"
-										*ngIf="activeDropdown === 'Floor' && (floorSuggestions$ | async)?.length">
-										<li *ngFor="let suggestion of floorSuggestions$ | async" class="dropdown-item"
-											(click)="selectSuggestion('Floor', suggestion)">
-											{{ suggestion }}
-										</li>
-										<li *ngIf="(floorSuggestions$ | async)?.length === 0 && searchForm.get('Floor')?.value && !isFieldConfirmed('Floor')"
-											class="dropdown-item disabled">
-											Нет совпадений
-										</li>
-									</ul>
-								</div>
-							</div>
-							<div class="col-md-3">
-								<div class="form-group">
-									<label for="Line">Линия</label>
-									<input id="Line" class="form-control" formControlName="Line"
-										(input)="onInput('Line', $event)" (click)="toggleDropdown('Line')" />
-									<ul class="dropdown-menu"
-										*ngIf="activeDropdown === 'Line' && (lineSuggestions$ | async)?.length">
-										<li *ngFor="let suggestion of lineSuggestions$ | async" class="dropdown-item"
-											(click)="selectSuggestion('Line', suggestion)">
-											{{ suggestion }}
-										</li>
-										<li *ngIf="(lineSuggestions$ | async)?.length === 0 && searchForm.get('Line')?.value && !isFieldConfirmed('Line')"
-											class="dropdown-item disabled">
-											Нет совпадений
-										</li>
-									</ul>
-								</div>
-							</div>
-							<div class="col-md-3">
-								<div class="form-group">
-									<label for="StoreNumber">Торговая точка</label>
-									<input id="StoreNumber" class="form-control" formControlName="StoreNumber"
-										(input)="onInput('StoreNumber', $event)"
-										(click)="toggleDropdown('StoreNumber')" />
-									<ul class="dropdown-menu"
-										*ngIf="activeDropdown === 'StoreNumber' && (storeNumberSuggestions$ | async)?.length">
-										<li *ngFor="let suggestion of storeNumberSuggestions$ | async"
-											class="dropdown-item" (click)="selectSuggestion('StoreNumber', suggestion)">
-											{{ suggestion }}
-										</li>
-										<li *ngIf="(storeNumberSuggestions$ | async)?.length === 0 && searchForm.get('StoreNumber')?.value && !isFieldConfirmed('StoreNumber')"
-											class="dropdown-item disabled">
-											Нет совпадений
-										</li>
-									</ul>
-								</div>
-							</div>
-						</div>
-						<div class="d-flex justify-content-between align-items-center mt-3">
-							<div class="d-flex gap-2">
-								<button type="submit" class="btn btn-primary" [disabled]="isLoading">Поиск</button>
-								<button type="button" class="btn btn-outline-secondary" (click)="resetFilters()"
-									[disabled]="isLoading">Сбросить</button>
-								<button type="button" class="btn btn-success" (click)="goToCreateTransaction()"
-									[disabled]="isLoading || !showAddTransactionButton"
-									title="Заполните и подтвердите все поля, чтобы добавить транзакцию">
-									Добавить
-								</button>
-							</div>
-							<div *ngIf="errorMessage" class="text-danger error-message ms-3">
-								{{ errorMessage }}
-							</div>
-							<div *ngIf="successMessage" class="text-success success-message ms-3">
-								{{ successMessage }}
-							</div>
-						</div>
-					</form>
-
-					<!-- Results -->
-					<div class="table-responsive" *ngIf="results.length > 0">
-						<div *ngFor="let result of results; let resultIndex = index">
-							<h5>{{ formatStore(result) }}</h5>
-							<div class="mt-3" *ngIf="noteForms[resultIndex]">
-								<form [formGroup]="noteForms[resultIndex]">
-									<div class="form-group">
-										<label for="note-{{resultIndex}}">Заметка:</label>
-										<textarea id="note-{{resultIndex}}" formControlName="note" class="form-control"
-											rows="4" placeholder="Введите заметку"></textarea>
-										<div *ngIf="noteForms[resultIndex].get('note')?.hasError('maxlength')"
-											class="text-danger">
-											Заметка не должна превышать 500 символов.
-										</div>
-									</div>
-									<div class="mt-2">
-										<button class="btn btn-primary btn-equal" (click)="saveNote(resultIndex)"
-											[disabled]="!noteForms[resultIndex].valid || noteForms[resultIndex].pristine || isLoading">
-											Сохранить заметку
-										</button>
-									</div>
-								</form>
-							</div>
-
-							<div class="mt-2">
-								<button class="btn btn-info btn-equal" (click)="toggleHistory(resultIndex)">
-									{{ showHistory[resultIndex] ? 'Скрыть историю' : 'Показать историю' }}
-								</button>
-								<div *ngIf="showHistory[resultIndex]" class="mt-3">
-									<h6>История изменений</h6>
-									<div *ngIf="isLoadingHistory[resultIndex]" class="text-center">
-										<div class="spinner-border" role="status">
-											<span class="visually-hidden">Загрузка...</span>
-										</div>
-									</div>
-									<table class="table table-bordered"
-										*ngIf="historyEntries[resultIndex].length > 0 && !isLoadingHistory[resultIndex]">
-										<thead>
-											<tr>
-												<th>Дата</th>
-												<th>Действие</th>
-												<th>Детали</th>
-												<th>Пользователь</th>
-												<th>Изменения</th>
-											</tr>
-										</thead>
-										<tbody>
-											<tr *ngFor="let entry of historyEntries[resultIndex]">
-												<td>{{ entry.timestamp | date: 'dd.MM.yyyy HH:mm' }}</td>
-												<td>{{ formatHistoryAction(entry.action) }}</td>
-												<td>{{ entry.details || '-' }}</td>
-												<td>{{ userMap[entry.user] || 'Неизвестно' }}</td>
-												<td>{{ formatHistoryChanges(entry.changes) }}</td>
-											</tr>
-										</tbody>
-									</table>
-									<p *ngIf="historyEntries[resultIndex]?.length === 0 && !isLoadingHistory[resultIndex]"
-										class="text-muted">
-										Нет записей в истории.
-									</p>
-								</div>
-							</div>
-
-							<table class="table">
-								<thead>
-									<tr>
-										<th>Магазин</th>
-										<th>Статус</th>
-										<th>ID</th>
-										<th>Сканы</th>
-										<th>ФИО</th>
-										<th>Должность</th>
-										<th>Телефон</th>
-										<th>Гражданство</th>
-										<th>Тип продукции</th>
-										<th>Начало</th>
-										<th>Окончание</th>
-										<th>Действия</th>
-									</tr>
-								</thead>
-								<tbody>
-									<ng-container
-										*ngFor="let item of getContractorsWindowedFor(resultIndex); let contractorIndex = index">
-										<tr [attr.data-result-index]="resultIndex"
-											[attr.data-contractor-index]="contractorIndex + windows[resultIndex].start">
-											<td>{{ formatStore(result) }}</td>
-											<td>Активный</td>
-											<td>
-												<img [src]="getFirstPhotoUrl(item.contractor)" class="contractor-img"
-													alt="Фото" (click)="openImage(getFirstPhotoUrl(item.contractor))"
-													onerror="this.src='/assets/images/default-photo.jpg'" />
-												{{ item.contractor.contractorId }}
-											</td>
-											<td>
-												<img *ngIf="getLastDocumentPhotoUrl(item.contractor) as photoUrl"
-													[src]="photoUrl" class="document-img" alt="Скан"
-													(click)="openImage(photoUrl)"
-													onerror="this.src='/assets/images/default-doc.png'" />
-												<span *ngIf="!getLastDocumentPhotoUrl(item.contractor)">-</span>
-											</td>
-											<td>{{ item.contractor.contractorName || '-' }}</td>
-											<td>{{ getLatestPass(item.contractor.activePasses)?.position || '-' }}</td>
-											<td>{{ item.contractor.phoneNumber || '-' }}</td>
-											<td>{{ item.contractor.citizenship || '-' }}</td>
-											<td>{{ item.contractor.productType || '-' }}</td>
-											<td>{{ getLatestPass(item.contractor.activePasses)?.startDate | date:
-												'dd.MM.yyyy' }}</td>
-											<td>{{ getLatestPass(item.contractor.activePasses)?.endDate | date:
-												'dd.MM.yyyy' }}</td>
-											<td>
-												<div class="action-buttons">
-													<button class="btn btn-primary btn-sm"
-														(click)="viewContractor(item.contractor.contractorId)">Просмотр</button>
-													<button class="btn btn-warning btn-sm"
-														(click)="editContractor(item.contractor.contractorId)">Редактировать</button>
-													<button class="btn btn-info btn-sm"
-														(click)="toggleExpansionPanel(resultIndex, contractorIndex)">Пропуска</button>
-												</div>
-											</td>
-										</tr>
-										<tr class="detail-row" *ngIf="isExpanded(resultIndex, contractorIndex)">
-											<td colspan="12">
-												<div class="pass-list-container">
-													<table class="inner-table">
-														<thead>
-															<tr>
-																<th>Цвет</th>
-																<th>Тип</th>
-																<th>Срок</th>
-																<th>Стоимость</th>
-																<th>Дата выдачи</th>
-																<th>Начало</th>
-																<th>Окончание</th>
-																<th>Место</th>
-																<th>Должность</th>
-																<th>Действия</th>
-															</tr>
-														</thead>
-														<tbody>
-															<tr *ngFor="let pass of item.contractor.activePasses">
-																<td>
-																	<span class="color-circle"
-																		[style.backgroundColor]="pass.passTypeColor || '#000'"></span>
-																	{{ pass.passTypeName || '-' }}
-																	<span
-																		*ngIf="pass.building === result.building && pass.floor === result.floor && pass.line === result.line && pass.storeNumber === result.storeNumber"
-																		class="badge badge-primary ms-1">Текущая
-																		точка</span>
-																</td>
-																<td>{{ pass.passTypeName || '-' }}</td>
-																<td>{{ (pass.passTypeDurationInMonths || 0) + ' мес.' }}
-																</td>
-																<td>{{ pass.cost | number: '1.0-0' }}</td>
-																<td>{{ pass.transactionDate | date: 'dd.MM.yyyy' }}</td>
-																<td>{{ pass.startDate | date: 'dd.MM.yyyy' }}</td>
-																<td>{{ pass.endDate | date: 'dd.MM.yyyy' }}</td>
-																<td>{{ pass.building }} {{ pass.floor }} {{ pass.line }}
-																	{{ pass.storeNumber }}</td>
-																<td>{{ pass.position || '-' }}</td>
-																<td>
-																	<div class="action-buttons-inline">
-																		<button class="btn btn-primary btn-sm"
-																			(click)="extendPass(pass, result)"
-																			[disabled]="isLoading">Продлить</button>
-																		<button class="btn btn-danger btn-sm"
-																			(click)="closePass(pass.id)"
-																			[disabled]="isLoading">Закрыть</button>
-																	</div>
-																</td>
-															</tr>
-															<tr *ngIf="!item.contractor.activePasses?.length">
-																<td colspan="10" class="text-center text-muted">Нет
-																	активных пропусков</td>
-															</tr>
-														</tbody>
-													</table>
-												</div>
-											</td>
-										</tr>
-									</ng-container>
-								</tbody>
-							</table>
-						</div>
-					</div>
+				<div class="d-flex justify-content-start gap-2 mt-4">
+					<mat-checkbox formControlName="showActive">Активные</mat-checkbox>
+					<mat-checkbox formControlName="showClosed">Закрытые</mat-checkbox>
+					<button mat-stroked-button color="primary" class="action-btn"
+						(click)="resetFilters()">Сбросить</button>
+					<button mat-raised-button color="primary" class="action-btn" (click)="addPass()"
+						[disabled]="!areAllFieldsConfirmed() || totalCount < 0">Добавить</button>
 				</div>
+				<div *ngIf="errorMessage" class="alert mt-4">{{ errorMessage }}</div>
+			</form>
+
+			<div class="loading-indicator top" *ngIf="isLoading">
+				<mat-spinner diameter="40"></mat-spinner>
+				<span>Загрузка...</span>
 			</div>
-		</div>
-	</div>
+
+			<ng-container *ngFor="let item of flattenedContractors; let i = index; trackBy: trackByContractor">
+				<div class="results-section" @fadeIn [attr.data-contractor-id]="item.contractor.contractorId">
+					<table class="data-table contractor-table">
+						<thead>
+							<tr>
+								<th>ID / Магазин</th>
+								<th>Фото</th>
+								<th>ФИО</th>
+								<th>Должность</th>
+								<th>Телефон</th>
+								<th>Гражданство</th>
+								<th>Тип продукции</th>
+								<th>Начало</th>
+								<th>Окончание</th>
+								<th>Действия</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>{{ item.contractor.contractorId }} {{ formatStore(item.store) }}</td>
+								<td>
+									<img *ngIf="item.contractor?.contractorPhotoPath"
+										[src]="getAbsolutePhotoUrl(item.contractor.contractorPhotoPath)"
+										class="contractor-img"
+										(click)="openImageInNewWindow(getAbsolutePhotoUrl(item.contractor.contractorPhotoPath))">
+								</td>
+								<td>{{ item.contractor.contractorName }}</td>
+								<td>{{ getLatestPass(item.isActive ? item.contractor.activePasses :
+									getSortedPasses(item.contractor, item.store))?.position || '-' }}</td>
+								<td>{{ item.contractor.phoneNumber || '-' }}</td>
+								<td>{{ item.contractor.citizenship || '-' }}</td>
+								<td>{{ item.contractor.productType || '-' }}</td>
+								<td>{{ getLatestPass(item.isActive ? item.contractor.activePasses :
+									getSortedPasses(item.contractor, item.store))?.startDate | date:'dd.MM.yyyy' }}</td>
+								<td>{{ getLatestPass(item.isActive ? item.contractor.activePasses :
+									getSortedPasses(item.contractor, item.store))?.endDate | date:'dd.MM.yyyy' }}</td>
+								<td>
+									<button mat-icon-button color="primary" class="action-btn icon-only"
+										(click)="viewContractor(item.contractor.contractorId)" matTooltip="Просмотреть">
+										<mat-icon>person</mat-icon>
+									</button>
+									<button mat-icon-button color="accent" class="action-btn icon-only"
+										(click)="editContractor(item.contractor.contractorId)"
+										matTooltip="Редактировать">
+										<mat-icon>mode_edit_outline</mat-icon>
+									</button>
+									<button mat-icon-button class="action-btn icon-only"
+										(click)="togglePanel(item.contractor.contractorId, item.isActive ? 'active' : 'closed')"
+										matTooltip="Пропуска">
+										<mat-icon>list_alt</mat-icon>
+									</button>
+								</td>
+							</tr>
+							<tr
+								*ngIf="isPanelExpanded(item.contractor.contractorId, item.isActive ? 'active' : 'closed')">
+								<td colspan="10">
+									<mat-expansion-panel [expanded]="true">
+										<table class="data-table">
+											<thead>
+												<tr>
+													<th>Цвет</th>
+													<th>Тип</th>
+													<th>Срок</th>
+													<th>Стоимость</th>
+													<th>Дата выдачи</th>
+													<th>Дата начала</th>
+													<th>Дата окончания</th>
+													<th>Место</th>
+													<th>Должность</th>
+													<th>Статус</th>
+													<th>Действия</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr *ngFor="let pass of getSortedPasses(item.contractor, item.store)">
+													<td><span class="color-circle"
+															[style.backgroundColor]="pass.passTypeColor"></span></td>
+													<td>[{{ pass.passTypeId }}] {{ pass.passTypeName }}</td>
+													<td>{{ pass.passTypeDurationInMonths }} мес.</td>
+													<td>{{ pass.cost | number:'1.0-0' }}</td>
+													<td>{{ pass.transactionDate | date:'dd.MM.yyyy' }}</td>
+													<td>{{ pass.startDate | date:'dd.MM.yyyy' }}</td>
+													<td>{{ pass.endDate | date:'dd.MM.yyyy' }}</td>
+													<td>{{ formatStore(pass) }}</td>
+													<td>{{ pass.position || 'Не указана' }}</td>
+													<td>{{ pass.isClosed ? 'Закрыт' : 'Активен' }}</td>
+													<td>
+														<button mat-icon-button color="primary"
+															class="action-btn icon-only"
+															(click)="extendPass(pass, item.store)"
+															matTooltip="Продлить">
+															<mat-icon>refresh</mat-icon>
+														</button>
+														<button mat-icon-button color="warn"
+															class="action-btn icon-only" *ngIf="!pass.isClosed"
+															(click)="closePass(pass.id)" matTooltip="Закрыть">
+															<mat-icon>close</mat-icon>
+														</button>
+													</td>
+												</tr>
+												<tr *ngIf="getSortedPasses(item.contractor, item.store).length === 0">
+													<td colspan="11">Нет пропусков</td>
+												</tr>
+											</tbody>
+										</table>
+									</mat-expansion-panel>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</ng-container>
+
+			<div #loadMoreTrigger class="load-more-trigger" *ngIf="hasMoreResults"></div>
+
+			<div class="loading-indicator bottom" *ngIf="isLoading && !flattenedContractors.length">
+				<mat-spinner diameter="40"></mat-spinner>
+				<span>Загрузка...</span>
+			</div>
+
+			<div *ngIf="flattenedContractors.length === 0 && !isLoading" class="text-center mt-4">
+				<p class="text-muted">Нет данных для отображения</p>
+			</div>
+		</mat-card-content>
+	</mat-card>
 </div>

@@ -1,21 +1,22 @@
-<div class="active-token-floating-container">
-	<div class="active-token-floating-header">
-		<h5>Активный талон {{ tokenData?.token }}</h5>
-		<button type="button" class="btn-close" (click)="onCloseClick()"></button>
-	</div>
-
-	<div class="active-token-floating-body">
+<mat-card class="floating-token-content">
+	<mat-card-header>
+		<mat-card-title class="section-title">Активный талон {{ tokenData?.token }}</mat-card-title>
+		<button mat-icon-button class="close-btn" (click)="onCloseClick()" matTooltip="Закрыть окно">
+			<mat-icon>close</mat-icon>
+		</button>
+	</mat-card-header>
+	<mat-card-content>
 		<ng-container *ngIf="tokenData; else noData">
-			<button class="btn btn-danger" (click)="onCloseTokenOnServer()">
-				Закрыть талон
-			</button>
+			<div class="actions">
+				<button mat-raised-button color="warn" class="action-btn" (click)="onCloseTokenOnServer()"
+					matTooltip="Закрыть талон">
+					Закрыть талон
+				</button>
+			</div>
 		</ng-container>
 		<ng-template #noData>
-			<p>Нет данных о талоне.</p>
+			<p class="text-muted">Нет данных о талоне.</p>
 		</ng-template>
-	</div>
-
-	<div class="text-danger mt-2" *ngIf="errorMessage">
-		{{ errorMessage }}
-	</div>
-</div>
+		<p *ngIf="errorMessage" class="error-message text-danger">{{ errorMessage }}</p>
+	</mat-card-content>
+</mat-card>

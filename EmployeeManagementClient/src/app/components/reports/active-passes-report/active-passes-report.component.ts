@@ -13,6 +13,8 @@ import { ActivePassesReportData } from '../../../models/report.models';
 import { MatIconModule } from '@angular/material/icon';
 import { Observable, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, takeUntil, startWith } from 'rxjs/operators';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
 	selector: 'app-active-passes-report',
@@ -20,7 +22,7 @@ import { debounceTime, distinctUntilChanged, switchMap, takeUntil, startWith } f
 	imports: [
 		CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
 		MatButtonModule, MatTableModule, MatIconModule, MatAutocompleteModule,
-		MatCheckboxModule, MatPaginatorModule
+		MatCheckboxModule, MatPaginatorModule, MatGridListModule, MatCardModule
 	],
 	templateUrl: './active-passes-report.component.html',
 	styleUrls: ['./active-passes-report.component.css']

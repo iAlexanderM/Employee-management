@@ -3,6 +3,7 @@ using System;
 using EmployeeManagementServer.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EmployeeManagementServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250623192708_UpdateIndexes")]
+    partial class UpdateIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -519,9 +522,6 @@ namespace EmployeeManagementServer.Migrations
 
                     b.HasIndex("IsClosed")
                         .HasDatabaseName("idx_passes_is_closed");
-
-                    b.HasIndex("PassStatus")
-                        .HasDatabaseName("idx_passes_pass_status");
 
                     b.HasIndex("PassTransactionId")
                         .HasDatabaseName("idx_passes_pass_transaction_id");

@@ -26,8 +26,7 @@ export class UserService {
 	}
 
 	getToken(): string | null {
-		const token = this.authService.getToken(); // Используем AuthService
-		console.debug('Получение токена в UserService:', token ? token.substring(0, 50) + '...' : 'Токен отсутствует');
+		const token = this.authService.getToken();
 		return token;
 	}
 

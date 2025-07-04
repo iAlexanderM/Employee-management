@@ -11,6 +11,8 @@ import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/p
 import { ReportService } from '../../../services/report.service';
 import { ExpiringPassesReportData } from '../../../models/report.models';
 import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatCardModule } from '@angular/material/card';
 
 export const MY_DATE_FORMATS = {
 	parse: { dateInput: 'DD.MM.YYYY' },
@@ -23,7 +25,7 @@ export const MY_DATE_FORMATS = {
 	imports: [
 		CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
 		MatButtonModule, MatDatepickerModule, MatNativeDateModule, MatTableModule,
-		MatIconModule, MatPaginatorModule
+		MatIconModule, MatPaginatorModule, MatGridListModule, MatCardModule
 	],
 	templateUrl: './expiring-passes-report.component.html',
 	styleUrls: ['./expiring-passes-report.component.css'],

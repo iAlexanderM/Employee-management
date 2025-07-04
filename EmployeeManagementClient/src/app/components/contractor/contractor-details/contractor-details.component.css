@@ -73,7 +73,6 @@
 }
 
 .section-card {
-	background: #fefaf6;
 	border-radius: 8px;
 	box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
 	padding: 10px;
@@ -480,7 +479,6 @@ i.material-icons {
 	border-spacing: 0;
 	border-radius: 6px;
 	overflow: hidden;
-	background: #fefaf6;
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -561,7 +559,6 @@ i.material-icons {
 	margin: 16px 0 0 0;
 	border-collapse: collapse;
 	border-spacing: 0;
-	background: #fefaf6;
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 

@@ -1,20 +1,28 @@
-<div style="margin: 150px 150px 200px 0; width: 377px; text-align: left;">
-	<div *ngFor="let content of printContents; let i = index" style="margin-bottom: 40px;">
-		<div style="position: relative; height: 259px;" [innerHTML]="content"></div>
-		<div style="margin-top: 120px;">
-			<button
-				style="display: inline-block; font-size: 14px; font-weight: 500; padding: 8px 12px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; background-color: #3CB371; color: #fff; margin: 0 10px;"
-				(click)="printPass(i)">Печатать</button>
-			<span *ngIf="isIssued(i)" style="color: #3CB371; font-weight: bold; margin-left: 10px;">Этот пропуск
-				напечатан</span>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card *ngIf="passes.length === 0 || printContents.length === 0" class="error-message" role="alert">
+			<mat-icon>error_outline</mat-icon>
+			Пропуска не найдены или шаблон недоступен.
+		</mat-card>
+
+		<div class="print-pass-container">
+			<div *ngFor="let content of printContents; let i = index" class="print-pass-item">
+				<div class="print-preview" [innerHTML]="content"></div>
+				<div class="action-buttons">
+					<button mat-raised-button color="print" class="action-btn" (click)="printPass(i)"
+						aria-label="Печатать пропуск">
+						Печатать
+					</button>
+					<span *ngIf="isIssued(i)" class="issued-status">Этот пропуск напечатан</span>
+				</div>
+			</div>
 		</div>
-	</div>
-	<div *ngIf="passes.length === 0 || printContents.length === 0" style="color: red; margin: 20px 0;">
-		<p>Пропуска не найдены или шаблон недоступен.</p>
-	</div>
-	<div style="margin-top: 20px; padding-top: 20px;">
-		<button
-			style="display: inline-block; font-size: 14px; font-weight: 500; padding: 8px 12px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; background-color: #6c757d; color: #fff; margin: 0 10px;"
-			(click)="goBack()">Назад</button>
-	</div>
+
+		<div class="actions">
+			<button mat-raised-button color="primary" class="action-btn" (click)="goBack()"
+				aria-label="Вернуться назад">
+				Назад
+			</button>
+		</div>
+	</mat-card>
 </div>

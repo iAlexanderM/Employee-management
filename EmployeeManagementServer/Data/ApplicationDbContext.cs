@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using EmployeeManagementServer.Models;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using EmployeeManagementServer.Models.EmployeeManagementServer.Models;
 using System.Linq;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using EmployeeManagementServer.Models.EmployeeManagementServer.Models;
 
 namespace EmployeeManagementServer.Data
 {
@@ -98,13 +98,17 @@ namespace EmployeeManagementServer.Data
         {
             base.OnModelCreating(builder);
 
+            // Set default schema
             builder.HasDefaultSchema("public");
 
+            // Contractor configuration
             builder.Entity<Contractor>()
                 .ToTable("Contractors")
                 .HasIndex(c => c.PassportSerialNumber)
-                .IsUnique();
+                .IsUnique()
+                .HasDatabaseName("idx_contractors_passport_serial_number");
 
+            // ContractorPhoto configuration
             builder.Entity<ContractorPhoto>()
                 .ToTable("ContractorPhotos")
                 .HasOne(cp => cp.Contractor)
@@ -112,25 +116,75 @@ namespace EmployeeManagementServer.Data
                 .HasForeignKey(cp => cp.ContractorId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<Store>()
-                .ToTable("Stores");
+            builder.Entity<ContractorPhoto>()
+                .HasIndex(cp => cp.ContractorId)
+                .HasDatabaseName("idx_contractor_photos_contractor_id");
 
+            // Store configuration
+            builder.Entity<Store>()
+                .ToTable("Stores")
+                .HasIndex(s => s.Building)
+                .HasDatabaseName("idx_stores_building");
+
+            builder.Entity<Store>()
+                .HasIndex(s => s.Floor)
+                .HasDatabaseName("idx_stores_floor");
+
+            builder.Entity<Store>()
+                .HasIndex(s => s.Line)
+                .HasDatabaseName("idx_stores_line");
+
+            builder.Entity<Store>()
+                .HasIndex(s => s.StoreNumber)
+                .HasDatabaseName("idx_stores_store_number");
+
+            builder.Entity<Store>()
+                .HasIndex(s => s.IsArchived)
+                .HasDatabaseName("idx_stores_is_archived");
+
+            builder.Entity<Store>()
+                .HasIndex(s => new { s.Building, s.Floor, s.Line, s.StoreNumber })
+                .HasDatabaseName("idx_stores_location");
+
+            // History configuration
             builder.Entity<History>()
                 .ToTable("History")
-                .HasIndex(h => new { h.EntityType, h.EntityId, h.ChangedAt });
+                .HasIndex(h => new { h.EntityType, h.EntityId, h.ChangedAt })
+                .HasDatabaseName("idx_history_entity_type_id_changed_at");
 
-            builder.Entity<RefreshToken>(entity =>
-            {
-                entity.ToTable("RefreshTokens");
-                entity.HasKey(rt => rt.Token);
-                entity.Property(rt => rt.Token).IsRequired();
-                entity.Property(rt => rt.UserId).IsRequired();
-                entity.Property(rt => rt.Expires).IsRequired();
-                entity.Property(rt => rt.LastActive).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-                entity.Property(rt => rt.IsRevoked).HasDefaultValue(false);
-                entity.HasIndex(rt => rt.Token).IsUnique();
-            });
+            // RefreshToken configuration
+            builder.Entity<RefreshToken>()
+                .ToTable("RefreshTokens")
+                .HasKey(rt => rt.Token)
+                .HasName("pk_refresh_tokens");
 
+            builder.Entity<RefreshToken>()
+                .Property(rt => rt.Token)
+                .IsRequired();
+
+            builder.Entity<RefreshToken>()
+                .Property(rt => rt.UserId)
+                .IsRequired();
+
+            builder.Entity<RefreshToken>()
+                .Property(rt => rt.Expires)
+                .IsRequired();
+
+            builder.Entity<RefreshToken>()
+                .Property(rt => rt.LastActive)
+                .IsRequired()
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            builder.Entity<RefreshToken>()
+                .Property(rt => rt.IsRevoked)
+                .HasDefaultValue(false);
+
+            builder.Entity<RefreshToken>()
+                .HasIndex(rt => rt.Token)
+                .IsUnique()
+                .HasDatabaseName("idx_refresh_tokens_token");
+
+            // PassTransaction configuration
             builder.Entity<PassTransaction>()
                 .ToTable("PassTransactions")
                 .HasMany(pt => pt.Passes)
@@ -138,10 +192,54 @@ namespace EmployeeManagementServer.Data
                 .HasForeignKey(p => p.PassTransactionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<PassTransaction>()
+                .HasIndex(pt => pt.CreatedAt)
+                .HasDatabaseName("idx_pass_transactions_created_at");
+
+            builder.Entity<PassTransaction>()
+                .HasIndex(pt => pt.Token)
+                .HasDatabaseName("idx_pass_transactions_token");
+
+            builder.Entity<PassTransaction>()
+                .HasOne(t => t.User)
+                .WithMany(u => u.PassTransactions)
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Pass configuration
             builder.Entity<Pass>()
                 .ToTable("Passes")
                 .HasIndex(p => p.UniquePassId)
-                .IsUnique();
+                .IsUnique()
+                .HasDatabaseName("idx_passes_unique_pass_id");
+
+            builder.Entity<Pass>()
+                .HasIndex(p => p.StoreId)
+                .HasDatabaseName("idx_passes_store_id");
+
+            builder.Entity<Pass>()
+                .HasIndex(p => p.IsClosed)
+                .HasDatabaseName("idx_passes_is_closed");
+
+            builder.Entity<Pass>()
+                .HasIndex(p => p.PassTransactionId)
+                .HasDatabaseName("idx_passes_pass_transaction_id");
+
+            builder.Entity<Pass>()
+                .HasIndex(p => p.EndDate)
+                .HasDatabaseName("idx_passes_end_date");
+
+            builder.Entity<Pass>()
+                .HasIndex(p => p.ContractorId)
+                .HasDatabaseName("idx_passes_contractor_id");
+
+            builder.Entity<Pass>()
+                .HasIndex(p => p.ClosedByUserId)
+                .HasDatabaseName("idx_passes_closed_by_user_id");
+
+            builder.Entity<Pass>()
+                .HasIndex(p => p.PassStatus)
+                .HasDatabaseName("idx_passes_pass_status"); // Новый индекс
 
             builder.Entity<Pass>()
                 .HasOne(p => p.Contractor)
@@ -156,25 +254,25 @@ namespace EmployeeManagementServer.Data
                 .HasForeignKey(p => p.StoreId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<PassType>()
-                .ToTable("PassTypes")
-                .HasOne(pt => pt.PassGroup)
-                .WithMany(pg => pg.PassTypes)
-                .HasForeignKey(pt => pt.PassGroupId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             builder.Entity<Pass>()
                 .HasOne(p => p.PassType)
                 .WithMany()
                 .HasForeignKey(p => p.PassTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<PassTransaction>()
-                .HasOne(t => t.User)
-                .WithMany(u => u.PassTransactions)
-                .HasForeignKey(t => t.UserId)
+            // PassType configuration
+            builder.Entity<PassType>()
+                .ToTable("PassTypes")
+                .HasIndex(pt => pt.Name)
+                .HasDatabaseName("idx_pass_types_name");
+
+            builder.Entity<PassType>()
+                .HasOne(pt => pt.PassGroup)
+                .WithMany(pg => pg.PassTypes)
+                .HasForeignKey(pt => pt.PassGroupId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // ContractorStorePass configuration
             builder.Entity<ContractorStorePass>()
                 .ToTable("ContractorStorePasses")
                 .HasOne(csp => csp.PassTransaction)
@@ -200,23 +298,63 @@ namespace EmployeeManagementServer.Data
                 .HasForeignKey(csp => csp.PassTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<ContractorStorePass>()
+                .HasIndex(csp => csp.PassTransactionId)
+                .HasDatabaseName("idx_contractor_store_passes_pass_transaction_id");
+
+            builder.Entity<ContractorStorePass>()
+                .HasIndex(csp => csp.StoreId)
+                .HasDatabaseName("idx_contractor_store_passes_store_id");
+
+            builder.Entity<ContractorStorePass>()
+                .HasIndex(csp => csp.ContractorId)
+                .HasDatabaseName("idx_contractor_store_passes_contractor_id");
+
+            // QueueToken configuration
             builder.Entity<QueueToken>()
                 .ToTable("QueueTokens")
+                .HasIndex(qt => qt.Token)
+                .HasDatabaseName("idx_queue_tokens_token");
+
+            builder.Entity<QueueToken>()
+                .HasIndex(qt => qt.TokenType)
+                .HasDatabaseName("idx_queue_tokens_token_type");
+
+            builder.Entity<QueueToken>()
                 .HasOne(qt => qt.User)
                 .WithMany(u => u.QueueTokens)
                 .HasForeignKey(qt => qt.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<Building>().ToTable("Buildings");
-            builder.Entity<Floor>().ToTable("Floors");
-            builder.Entity<Line>().ToTable("Lines");
-            builder.Entity<StoreNumber>().ToTable("StoreNumbers");
-            builder.Entity<Nationality>().ToTable("Nationalities");
-            builder.Entity<Citizenship>().ToTable("Citizenships");
-            builder.Entity<PassGroup>().ToTable("PassGroups");
-            builder.Entity<CloseReason>().ToTable("CloseReasons");
-            builder.Entity<DataProtectionKey>().ToTable("DataProtectionKeys");
+            // Other entity configurations
+            builder.Entity<Building>()
+                .ToTable("Buildings");
 
+            builder.Entity<Floor>()
+                .ToTable("Floors");
+
+            builder.Entity<Line>()
+                .ToTable("Lines");
+
+            builder.Entity<StoreNumber>()
+                .ToTable("StoreNumbers");
+
+            builder.Entity<Nationality>()
+                .ToTable("Nationalities");
+
+            builder.Entity<Citizenship>()
+                .ToTable("Citizenships");
+
+            builder.Entity<PassGroup>()
+                .ToTable("PassGroups");
+
+            builder.Entity<CloseReason>()
+                .ToTable("CloseReasons");
+
+            builder.Entity<DataProtectionKey>()
+                .ToTable("DataProtectionKeys");
+
+            // DateTime conversions for UTC
             foreach (var entityType in builder.Model.GetEntityTypes())
             {
                 var properties = entityType.GetProperties()

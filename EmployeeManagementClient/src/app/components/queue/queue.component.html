@@ -1,69 +1,106 @@
-<!-- src/app/components/queue/queue.component.html -->
-<div class="container mt-4">
-	<h2>Список талонов</h2>
-
-	<form [formGroup]="createTokenForm" (ngSubmit)="onCreateToken()">
-		<label for="tokenType">Тип талона:</label>
-		<select formControlName="type" id="tokenType" class="form-select">
-			<option value="P">P</option>
-			<option value="G">G</option>
-		</select>
-		<button type="submit" class="btn btn-primary">Создать талон</button>
-	</form>
-	<br>
-
-	<div class="d-flex justify-content-end align-items-center mb-2">
-		<label for="pageSize" class="me-2">Элементов на странице:</label>
-		<select id="pageSize" class="form-select" (change)="onPageSizeChange($event)">
-			<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
-		</select>
-	</div>
-
-	<div *ngIf="totalPages > 1" class="pagination-container">
-		<div class="pagination-squares">
-			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-				[class.disabled]="page === '...'" (click)="onPageClick(page)">
-				{{ page }}
-			</div>
-		</div>
-	</div>
-	<br>
-
-	<table class="table table-bordered table-striped">
-		<thead>
-			<tr>
-				<th>ID</th>
-				<th>Дата</th>
-				<th>Талон</th>
-				<th>Тип</th>
-				<th>Статус</th>
-				<th>Пользователь</th>
-				<th>Действия</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr *ngFor="let t of tokens">
-				<td>{{ t.id }}</td>
-				<td>{{ t.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
-				<td>{{ t.token }}</td>
-				<td>{{ t.tokenType }}</td>
-				<td>{{ t.status }}</td>
-				<td>{{ getUserName(t.userId) }}</td>
-				<td>
-					<button *ngIf="t.status === 'Active'" class="btn btn-danger btn-sm" (click)="onCloseToken(t.token)">
-						Закрыть
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Список талонов</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<form [formGroup]="createTokenForm" (ngSubmit)="onCreateToken()" class="create-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="16px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Тип талона</mat-label>
+							<mat-select formControlName="type" placeholder="Выберите тип талона">
+								<mat-option value="P">P</mat-option>
+								<mat-option value="G">G</mat-option>
+							</mat-select>
+							<mat-icon matSuffix>list</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+				</mat-grid-list>
+				<div class="action-buttons">
+					<button mat-raised-button color="primary" class="action-btn" type="submit"
+						matTooltip="Создать талон">
+						Создать талон
 					</button>
-				</td>
-			</tr>
-		</tbody>
-	</table>
+				</div>
+			</form>
 
-	<div *ngIf="totalPages > 1" class="pagination-container">
-		<div class="pagination-squares">
-			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-				[class.disabled]="page === '...'" (click)="onPageClick(page)">
-				{{ page }}
+			<div class="page-size-container">
+				<span>Элементов на странице:</span>
+				<mat-select [(value)]="pageSize" (selectionChange)="onPageSizeChange($event)" class="page-size-select">
+					<mat-option *ngFor="let size of pageSizeOptions" [value]="size">
+						{{ size }}
+					</mat-option>
+				</mat-select>
 			</div>
-		</div>
-	</div>
+
+			<!-- Пагинация (верхняя) -->
+			<div *ngIf="totalPages > 1" class="pagination-container">
+				<div class="pagination-squares">
+					<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" (click)="onPageClick(page)">
+						{{ page }}
+					</span>
+				</div>
+			</div>
+
+			<!-- Таблица -->
+			<div *ngIf="tokens.length > 0">
+				<mat-table [dataSource]="tokens" class="data-table">
+					<ng-container matColumnDef="id">
+						<mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
+						<mat-cell *matCellDef="let token">{{ token.id }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="createdAt">
+						<mat-header-cell *matHeaderCellDef>Дата</mat-header-cell>
+						<mat-cell *matCellDef="let token">{{ token.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="token">
+						<mat-header-cell *matHeaderCellDef>Талон</mat-header-cell>
+						<mat-cell *matCellDef="let token">{{ token.token }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="tokenType">
+						<mat-header-cell *matHeaderCellDef>Тип</mat-header-cell>
+						<mat-cell *matCellDef="let token">{{ token.tokenType }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="status">
+						<mat-header-cell *matHeaderCellDef>Статус</mat-header-cell>
+						<mat-cell *matCellDef="let token">{{ token.status }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="user">
+						<mat-header-cell *matHeaderCellDef>Пользователь</mat-header-cell>
+						<mat-cell *matCellDef="let token">{{ getUserName(token.userId) }}</mat-cell>
+					</ng-container>
+					<ng-container matColumnDef="actions">
+						<mat-header-cell *matHeaderCellDef>Действия</mat-header-cell>
+						<mat-cell *matCellDef="let token">
+							<button *ngIf="token.status === 'Active'" mat-icon-button color="warn"
+								class="action-btn icon-only" (click)="onCloseToken(token.token)"
+								matTooltip="Закрыть талон">
+								<mat-icon>close</mat-icon>
+							</button>
+						</mat-cell>
+					</ng-container>
+					<mat-header-row
+						*matHeaderRowDef="['id', 'createdAt', 'token', 'tokenType', 'status', 'user', 'actions']"></mat-header-row>
+					<mat-row
+						*matRowDef="let row; columns: ['id', 'createdAt', 'token', 'tokenType', 'status', 'user', 'actions']"></mat-row>
+				</mat-table>
+			</div>
+
+			<div *ngIf="tokens.length === 0" class="text-center">
+				<p class="text-muted">Нет записей для отображения</p>
+			</div>
+
+			<!-- Пагинация (нижняя) -->
+			<div *ngIf="totalPages > 1" class="pagination-container">
+				<div class="pagination-squares">
+					<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" (click)="onPageClick(page)">
+						{{ page }}
+					</span>
+				</div>
+			</div>
+		</mat-card-content>
+	</mat-card>
 </div>

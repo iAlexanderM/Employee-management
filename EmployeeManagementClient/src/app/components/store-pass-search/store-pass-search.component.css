@@ -1,173 +1,127 @@
-.panel-header-sm {
-	height: 60px;
-	background: linear-gradient(60deg, #26c6da, #00acc1);
-	box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(0, 188, 212, 0.4);
-}
-
+/* Основной контейнер */
 .main-content {
-	padding: 20px;
-	overflow-y: auto;
-	height: calc(100vh - 60px);
-}
-
-.card {
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	margin-bottom: 20px;
-}
-
-.card-header {
-	padding: 16px;
-	border-bottom: 1px solid #ddd;
-}
-
-.card-title {
-	margin: 0;
-	font-size: 1.5rem;
-	font-weight: 400;
-}
-
-.card-body {
-	padding: 16px;
-}
-
-.table-responsive {
+	max-width: 1920px;
 	width: 100%;
-	overflow: visible;
+	margin: 0 auto;
+	padding: 2rem;
+	background-color: #fefaf6;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
 }
 
-.table {
+.search-form {
+	padding: 8px 0;
+	margin-bottom: 16px;
+	width: 40%;
+	flex-direction: column;
+}
+
+mat-grid-list {
 	width: 100%;
-	border-collapse: collapse;
-	background: transparent;
 }
 
-.table th,
-.table td {
-	padding: 12px 15px;
-	border-bottom: 1px solid #ddd;
-	white-space: nowrap;
-	font-size: 16px;
-	vertical-align: middle;
+mat-grid-tile {
+	align-items: flex-start;
+	padding-top: 6px;
 }
 
-.table th {
-	font-weight: 500;
-	color: #3f51b5;
-	height: 50px;
-	/* Reduced from 220px for practicality */
+.form-group {
+	margin-bottom: 16px;
 }
 
-.table tr {
-	height: 60px;
-	/* Reduced from 400px for better UX */
+.form-group label {
+	font-weight: 600;
+	color: #6b7280;
+	margin-bottom: 4px;
+	display: block;
 }
 
-.inner-table th,
-.inner-table td {
-	padding: 10px 15px;
-	font-size: 14px;
-	vertical-align: middle;
+.pagination-container {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 16px;
 }
 
-.inner-table th {
-	height: 40px;
-	/* Reduced from 220px */
+.pagination-squares {
+	display: flex;
+	gap: 8px;
 }
 
-.inner-table tr {
-	height: 50px;
-	/* Reduced from 400px */
-}
-
-.contractor-img,
-.document-img {
-	width: 100px;
-	/* Reduced from 200px for better fit */
-	height: 60px;
-	object-fit: cover;
-	cursor: pointer;
+.square {
+	padding: 8px 12px;
+	border: 1px solid #e5e7eb;
 	border-radius: 4px;
-	margin-right: 10px;
-	vertical-align: middle;
+	cursor: pointer;
+	user-select: none;
+	font-size: 14px;
+	color: #111827;
+	background-color: #ffffff;
+	transition: all 0.2s ease;
 }
 
-.action-buttons {
+.square.active {
+	background-color: #3786f3;
+	color: #ffffff;
+	border-color: #3786f3;
+}
+
+.square.disabled {
+	cursor: default;
+	color: #6b7280;
+	background-color: #f3f4f6;
+	border-color: #e5e7eb;
+}
+
+.contractor-img {
+	width: 150px;
+	height: 150px;
+	object-fit: cover;
+	border-radius: 4px;
+	border: 1px solid #e5e7eb;
+}
+
+.page-size-container {
 	display: flex;
-	gap: 10px;
-	flex-wrap: wrap;
 	align-items: center;
+	gap: 8px;
+	justify-content: flex-end;
 }
 
-.action-buttons-inline {
-	display: flex;
-	gap: 10px;
+.page-size-container span {
+	font-size: 14px;
+	color: #111827;
 }
 
-.pass-list-container {
-	padding: 15px;
-	background: #f9f9f9;
-}
-
-.inner-table {
-	width: 100%;
-	border-collapse: collapse;
-	margin-top: 8px;
+.page-size-container mat-select {
+	width: 80px;
+	border: 1px solid #e5e7eb;
+	border-radius: 4px;
+	padding: 4px 8px;
+	font-size: 14px;
+	background-color: #ffffff;
 }
 
 .color-circle {
 	display: inline-block;
-	width: 16px;
-	height: 16px;
+	width: 20px;
+	height: 20px;
 	border-radius: 50%;
-	vertical-align: middle;
+	border: 1px solid #d1d5db;
 }
 
-.text-center {
-	text-align: center;
+.contractor-table th {
+	background: #3786f3;
+	font-weight: 600;
+	color: #ffffff;
 }
 
-.text-muted {
-	color: #6c757d;
-}
+@media (max-width: 768px) {
+	.main-content {
+		padding: 1rem;
+	}
 
-.w-100 {
-	width: 100%;
-}
-
-.d-flex {
-	display: flex;
-}
-
-.gap-2 {
-	gap: 8px;
-}
-
-.justify-content-between {
-	justify-content: space-between;
-}
-
-.align-items-center {
-	align-items: center;
-}
-
-.mb-4 {
-	margin-bottom: 16px;
-}
-
-.mt-3 {
-	margin-top: 12px;
-}
-
-.ms-3 {
-	margin-left: 12px;
-}
-
-.text-danger {
-	color: #dc3545;
-}
-
-tr.detail-row {
-	height: auto !important;
-	background: #f9f9f9;
+	.page-size-container {
+		justify-content: flex-start;
+	}
 }

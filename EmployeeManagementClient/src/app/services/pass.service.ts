@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 import { Pass } from '../models/pass.model';
 import { PassPrintQueueItem } from '../models/pass-print-queue.model';
-import { environment } from '../../environments/environment';
-import { catchError } from 'rxjs/operators';
-import { HttpHeaders } from '@angular/common/http';
+import { PassByStoreResponseDto, ContractorPassesDto, PassDetailsDto } from '../models/store-pass-search.model';
 import { UserService } from './user.service';
 
 @Injectable({
@@ -19,12 +19,22 @@ export class PassService {
 
 	constructor(private http: HttpClient, private userService: UserService) { }
 
+	private getAuthHeaders(): HttpHeaders {
+		const token = this.userService.getToken();
+		return new HttpHeaders({
+			Authorization: token ? `Bearer ${token}` : '',
+			'Content-Type': 'application/json'
+		});
+	}
+
 	getAllPasses(): Observable<Pass[]> {
-		return this.http.get<Pass[]>(this.baseUrl);
+		return this.http.get<Pass[]>(this.baseUrl, { headers: this.getAuthHeaders() });
 	}
 
 	getPassById(id: number): Observable<Pass> {
-		return this.http.get<Pass>(`${this.baseUrl}/${id}`);
+		return this.http.get<Pass>(`${this.baseUrl}/${id}`, { headers: this.getAuthHeaders() }).pipe(
+			catchError(err => throwError(() => new Error(err.message || 'Не удалось получить пропуск')))
+		);
 	}
 
 	getPrintQueue(page: number, pageSize: number, contractorId?: number): Observable<{ items: PassPrintQueueItem[], total: number }> {
@@ -34,86 +44,127 @@ export class PassService {
 		if (contractorId) {
 			params = params.set('contractorId', contractorId.toString());
 		}
-		console.log('Параметры:', params.toString());
-		return this.http.get<{ items: PassPrintQueueItem[], total: number }>(`${this.baseUrl}/print-queue`, { params });
+		return this.http.get<{ items: PassPrintQueueItem[], total: number }>(`${this.baseUrl}/print-queue`, { params, headers: this.getAuthHeaders() });
 	}
 
 	getIssuedPasses(page: number, pageSize: number, contractorId?: number): Observable<{ items: PassPrintQueueItem[], total: number }> {
 		let params = new HttpParams()
 			.set('page', page.toString())
 			.set('pageSize', pageSize.toString());
-
 		if (contractorId) {
 			params = params.set('contractorId', contractorId.toString());
 		}
-
-		return this.http.get<{ items: PassPrintQueueItem[], total: number }>(`${this.baseUrl}/issued`, { params });
+		return this.http.get<{ items: PassPrintQueueItem[], total: number }>(`${this.baseUrl}/issued`, { params, headers: this.getAuthHeaders() });
 	}
 
 	issuePass(id: number): Observable<void> {
-		return this.http.post<void>(`${this.baseUrl}/${id}/issue`, {});
+		return this.http.post<void>(`${this.baseUrl}/${id}/issue`, {}, { headers: this.getAuthHeaders() });
 	}
 
 	closePass(passId: number, reason: string, closedBy: string): Observable<any> {
-		const token = this.userService.getToken();
-		if (!token) {
-			console.warn('Токен отсутствует в PassService');
-			return throwError(() => new Error('Токен отсутствует'));
-		}
-		console.debug('Токен найден в PassService:', token.substring(0, 50) + '...');
-		const headers = new HttpHeaders({
-			Authorization: `Bearer ${token}`,
-			'Content-Type': 'application/json'
-		});
-		console.debug('Отправка closedBy в PassService:', closedBy);
+		const headers = this.getAuthHeaders();
 		const body = { closeReason: reason, closedBy };
 		return this.http.post(`${this.baseUrl}/${passId}/close`, body, { headers }).pipe(
-			catchError(err => {
-				console.error('Ошибка при закрытии пропуска в PassService:', err);
-				return throwError(() => err);
-			})
+			catchError(err => throwError(() => err))
 		);
 	}
 
 	reopenPass(id: number): Observable<void> {
-		return this.http.post<void>(`${this.baseUrl}/${id}/reopen`, {});
+		return this.http.post<void>(`${this.baseUrl}/${id}/reopen`, {}, { headers: this.getAuthHeaders() });
 	}
 
 	getPendingPassesByTransactionId(transactionId: number): Observable<Pass[]> {
-		return this.http.get<Pass[]>(`${this.baseUrl}/by-transaction-id/${transactionId}/pending`);
+		return this.http.get<Pass[]>(`${this.baseUrl}/by-transaction-id/${transactionId}/pending`, { headers: this.getAuthHeaders() });
 	}
 
 	getPassesByTransactionId(transactionId: number): Observable<Pass[]> {
-		return this.http.get<Pass[]>(`${this.baseUrl}/by-transaction-id/${transactionId}`);
+		return this.http.get<Pass[]>(`${this.baseUrl}/by-transaction-id/${transactionId}`, { headers: this.getAuthHeaders() });
 	}
 
 	issuePassesByTransactionId(transactionId: number): Observable<void> {
-		return this.http.post<void>(`${this.baseUrl}/issue-by-transaction-id/${transactionId}`, {});
+		return this.http.post<void>(`${this.baseUrl}/issue-by-transaction-id/${transactionId}`, {}, { headers: this.getAuthHeaders() });
 	}
 
-	searchPassesByStore(criteria: any): Observable<any[]> {
+	searchPassesByStore(criteria: {
+		building: string;
+		floor: string;
+		line: string;
+		storeNumber: string;
+		showActive?: boolean;
+		showClosed?: boolean;
+		page?: number;
+		pageSize?: number;
+		isArchived?: boolean;
+	}): Observable<PassByStoreResponseDto[]> {
 		let params = new HttpParams();
-		for (const key in criteria) {
+		const validKeys: (keyof typeof criteria)[] = [
+			'building',
+			'floor',
+			'line',
+			'storeNumber',
+			'showActive',
+			'showClosed',
+			'page',
+			'pageSize',
+			'isArchived'
+		];
+
+		for (const key of validKeys) {
 			if (criteria[key] !== null && criteria[key] !== undefined && criteria[key] !== '') {
 				params = params.set(key, criteria[key].toString());
 			}
 		}
-		return this.http.get<any[]>(`${this.searchBaseUrl}/search`, { params });
+
+		return this.http.get<PassByStoreResponseDto[]>(`${this.searchBaseUrl}/search`, { params, headers: this.getAuthHeaders() }).pipe(
+			catchError(err => {
+				console.error('Ошибка при поиске пропусков:', err);
+				return throwError(() => new Error(err.error?.message || 'Ошибка при поиске пропусков'));
+			})
+		);
 	}
 
-	getBuildingSuggestions(query: string): Observable<string[]> {
-		return this.http.get<string[]>(`${this.suggestionsApiUrl}/buildings`, { params: { query } });
+	getContractorActivePasses(contractorId: number): Observable<PassDetailsDto[]> {
+		return this.http.get<PassDetailsDto[]>(`${this.baseUrl}/contractor/${contractorId}/active`, { headers: this.getAuthHeaders() }).pipe(
+			catchError(err => {
+				console.error('Ошибка при получении активных пропусков контрагента:', err);
+				return of([]);
+			})
+		);
 	}
 
-	getFloorSuggestions(query: string): Observable<string[]> {
-		return this.http.get<string[]>(`${this.suggestionsApiUrl}/floors`, { params: { query } });
+	getBuildingSuggestions(query: string, isArchived: boolean = false): Observable<string[]> {
+		const params = new HttpParams()
+			.set('query', query)
+			.set('isArchived', isArchived.toString());
+		return this.http.get<string[]>(`${this.suggestionsApiUrl}/buildings`, { params, headers: this.getAuthHeaders() }).pipe(
+			catchError(() => of([]))
+		);
 	}
 
-	getLineSuggestions(query: string): Observable<string[]> {
-		return this.http.get<string[]>(`${this.suggestionsApiUrl}/lines`, { params: { query } });
+	getFloorSuggestions(query: string, isArchived: boolean = false): Observable<string[]> {
+		const params = new HttpParams()
+			.set('query', query)
+			.set('isArchived', isArchived.toString());
+		return this.http.get<string[]>(`${this.suggestionsApiUrl}/floors`, { params, headers: this.getAuthHeaders() }).pipe(
+			catchError(() => of([]))
+		);
 	}
 
-	getStoreNumberSuggestions(query: string): Observable<string[]> {
-		return this.http.get<string[]>(`${this.suggestionsApiUrl}/storeNumbers`, { params: { query } });
+	getLineSuggestions(query: string, isArchived: boolean = false): Observable<string[]> {
+		const params = new HttpParams()
+			.set('query', query)
+			.set('isArchived', isArchived.toString());
+		return this.http.get<string[]>(`${this.suggestionsApiUrl}/lines`, { params, headers: this.getAuthHeaders() }).pipe(
+			catchError(() => of([]))
+		);
+	}
+
+	getStoreNumberSuggestions(query: string, isArchived: boolean = false): Observable<string[]> {
+		const params = new HttpParams()
+			.set('query', query)
+			.set('isArchived', isArchived.toString());
+		return this.http.get<string[]>(`${this.suggestionsApiUrl}/storeNumbers`, { params, headers: this.getAuthHeaders() }).pipe(
+			catchError(() => of([]))
+		);
 	}
 }

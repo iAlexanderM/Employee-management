@@ -1,24 +1,41 @@
-<div class="container mt-4">
-	<h2>Добавить запись в справочник "Должность"</h2>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Добавить запись в справочник "Должность"</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<mat-card *ngIf="errorMessage" class="error-message" role="alert">
+				<mat-icon>error_outline</mat-icon>
+				{{ errorMessage }}
+			</mat-card>
 
-	<!-- Блок отображения ошибки -->
-	<div *ngIf="errorMessage" class="error-message">
-		<p>{{ errorMessage }}</p>
-	</div>
+			<form [formGroup]="positionForm" (ngSubmit)="addPosition()" class="create-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="8px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Название должности *</mat-label>
+							<input matInput formControlName="positionName" placeholder="Введите название должности"
+								required />
+							<mat-icon matSuffix>search</mat-icon>
+							<mat-error
+								*ngIf="positionForm.get('positionName')?.invalid && positionForm.get('positionName')?.touched">
+								Название должности обязательно
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+				</mat-grid-list>
 
-	<!-- Форма добавления -->
-	<form [formGroup]="positionForm" (ngSubmit)="addPosition()">
-		<div class="form-group">
-			<label for="positionName">Название должности:</label>
-			<div class="input-container">
-				<input id="positionName" type="text" placeholder="Введите название должности"
-					formControlName="positionName" required />
-			</div>
-			<div *ngIf="positionForm.get('positionName')?.invalid && positionForm.get('positionName')?.touched"
-				class="error">
-				Название должности обязательно.
-			</div>
-		</div>
-		<button type="submit" class="btn btn-primary" [disabled]="positionForm.invalid">Добавить</button>
-	</form>
+				<div class="action-buttons">
+					<button mat-raised-button color="primary" class="action-btn" type="submit"
+						[disabled]="positionForm.invalid" matTooltip="Добавить должность">
+						Добавить
+					</button>
+					<button mat-stroked-button color="accent" class="action-btn" type="button" (click)="cancel()"
+						matTooltip="Отменить добавление">
+						Отменить
+					</button>
+				</div>
+			</form>
+		</mat-card-content>
+	</mat-card>
 </div>

@@ -9,7 +9,9 @@ import { TransactionService } from '../../../services/transaction.service';
 import { TokenService } from '../../../services/token.service';
 import { QueueSyncService } from '../../../services/queue-sync.service';
 import { SearchFilterResetService } from '../../../services/search-filter-reset.service';
-import { ContractorDto, Store, PassType, ContractorStorePassCreateDto, CreateTransactionDto } from '../../../models/transaction.model';
+import { ContractorDto, ContractorStorePassCreateDto, CreateTransactionDto } from '../../../models/transaction.model';
+import { Store } from '../../../models/store.model';
+import { PassType } from '../../../models/pass-type.model';
 import { QueueToken } from '../../../models/queue.model';
 
 import { ContractorModalComponent } from '../../modals/contractor-modal/contractor-modal.component';

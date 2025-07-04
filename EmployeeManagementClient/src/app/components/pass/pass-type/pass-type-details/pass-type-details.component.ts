@@ -1,158 +1,123 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PassGroupTypeService } from '../../../../services/pass-group-type.service';
 import { PassType } from '../../../../models/pass-type.model';
-import {
-	ReactiveFormsModule,
-	FormBuilder,
-	FormGroup,
-	FormControl
-} from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
 	selector: 'app-pass-type-details',
 	standalone: true,
-	imports: [CommonModule, RouterModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		RouterModule,
+		MatCardModule,
+		MatButtonModule,
+		MatIconModule,
+		MatTooltipModule,
+	],
 	templateUrl: './pass-type-details.component.html',
 	styleUrls: ['./pass-type-details.component.css'],
 })
 export class PassTypeDetailsComponent implements OnInit {
-	passTypes: PassType[] = [];
-	displayedPassTypes: PassType[] = [];
-
-	groupId!: number;
-	groupName!: string;
-
-	searchForm: FormGroup;
-
-	currentPage = 1;
-	pageSizeOptions = [25, 50, 100];
-
-	pageSize = 25;
-
-	pageSizeControl: FormControl<number>;
-
-	visiblePages: (number | string)[] = [];
+	passType: PassType | null = null;
+	passGroupName: string = '';
+	errorMessage: string = '';
+	printContent: SafeHtml | null = null;
 
 	constructor(
-		private passGroupTypeService: PassGroupTypeService,
 		private route: ActivatedRoute,
-		private fb: FormBuilder
-	) {
-		this.searchForm = this.fb.group({
-			id: [null],
-			name: ['']
-		});
-
-		this.pageSizeControl = this.fb.control<number>(this.pageSize, { nonNullable: true });
-	}
+		private router: Router,
+		private service: PassGroupTypeService,
+		private sanitizer: DomSanitizer
+	) { }
 
 	ngOnInit(): void {
-		this.pageSizeControl.valueChanges.subscribe((newValue) => {
-			this.pageSize = newValue;
-			this.onPageSizeChange();
-		});
+		const id = Number(this.route.snapshot.params['id']);
+		if (!id) {
+			console.error('Некорректный ID типа пропуска');
+			this.errorMessage = 'Некорректный ID типа пропуска.';
+			return;
+		}
 
-		this.route.queryParams.subscribe((params) => {
-			this.groupId = +params['groupId'];
-			this.groupName = params['groupName'];
-			this.loadPassTypes();
-		});
-	}
-
-	// Загрузка типов для конкретной группы
-	loadPassTypes(): void {
-		this.passGroupTypeService.getTypes(this.groupId).subscribe({
+		this.service.getTypeById(id).subscribe({
 			next: (data) => {
-				this.passTypes = data;
-				this.updatePagination();
+				this.passType = data;
+				this.preparePrintContent();
+				this.loadGroupName(data.passGroupId);
 			},
-			error: (err) => console.error('Ошибка при загрузке типов пропусков:', err),
+			error: (err) => {
+				console.error('Ошибка при загрузке типа пропуска:', err);
+				this.errorMessage = 'Ошибка при загрузке типа пропуска.';
+			},
 		});
 	}
 
-	searchPassTypes(): void {
-		const formValue = this.searchForm.value;
-		const id = formValue.id !== null ? formValue.id : undefined;
-		const name = formValue.name ? formValue.name.trim() : undefined;
-
-		this.passGroupTypeService.searchPassTypes(id, name).subscribe({
-			next: (data) => {
-				this.passTypes = data;
-				this.updatePagination();
-			},
-			error: (err) => console.error('Ошибка при поиске типов пропусков:', err),
-		});
+	loadGroupName(passGroupId: number): void {
+		if (passGroupId) {
+			this.service.getGroupById(passGroupId).subscribe({
+				next: (group) => (this.passGroupName = group.name),
+				error: (err) => console.error('Ошибка при загрузке названия группы:', err),
+			});
+		}
 	}
 
-	resetFilters(): void {
-		this.searchForm.reset({ id: null, name: '' });
-		this.currentPage = 1;
-		this.loadPassTypes();
-	}
-
-	updateDisplayedPassTypes(): void {
-		const startIndex = (this.currentPage - 1) * this.pageSize;
-		const endIndex = startIndex + this.pageSize;
-		this.displayedPassTypes = this.passTypes.slice(startIndex, endIndex);
-	}
-
-	onPageSizeChange(): void {
-		this.currentPage = 1;
-		this.updatePagination();
-	}
-
-	updatePagination(): void {
-		this.updateDisplayedPassTypes();
-		this.calculateVisiblePages();
-	}
-
-	calculateVisiblePages(): void {
-		const total = this.totalPages();
-		const pages: (number | string)[] = [];
-		const maxVisiblePages = 7;
-
-		if (total <= maxVisiblePages) {
-			for (let i = 1; i <= total; i++) {
-				pages.push(i);
-			}
+	preparePrintContent(): void {
+		if (this.passType?.printTemplate) {
+			this.printContent = this.sanitizer.bypassSecurityTrustHtml(this.passType.printTemplate);
 		} else {
-			if (this.currentPage <= 4) {
-				for (let i = 1; i <= 5; i++) {
-					pages.push(i);
-				}
-				pages.push('...');
-				pages.push(total);
-			} else if (this.currentPage >= total - 3) {
-				pages.push(1);
-				pages.push('...');
-				for (let i = total - 4; i <= total; i++) {
-					pages.push(i);
-				}
-			} else {
-				pages.push(1);
-				pages.push('...');
-				pages.push(this.currentPage - 1);
-				pages.push(this.currentPage);
-				pages.push(this.currentPage + 1);
-				pages.push('...');
-				pages.push(total);
-			}
-		}
-
-		this.visiblePages = pages;
-	}
-
-	onPageClick(page: number | string): void {
-		if (typeof page === 'number' && page > 0 && page <= this.totalPages()) {
-			this.currentPage = page;
-			this.updateDisplayedPassTypes();
-			this.calculateVisiblePages();
+			console.warn('Шаблон для печати отсутствует');
+			this.printContent = this.sanitizer.bypassSecurityTrustHtml('<p>Шаблон не найден</p>');
 		}
 	}
 
-	totalPages(): number {
-		return Math.ceil(this.passTypes.length / this.pageSize);
+	printPassType(): void {
+		if (!this.passType?.printTemplate) {
+			console.error('Шаблон для печати отсутствует');
+			this.errorMessage = 'Шаблон для печати отсутствует.';
+			return;
+		}
+
+		const printWindow = window.open('', '_blank', 'fullscreen=yes');
+		if (printWindow) {
+			printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print Pass Type #${this.passType.id}</title>
+            <style>
+              @page { margin: 0; }
+              body { margin: 0; padding: 0; }
+              img { max-width: 100%; height: auto; display: block; }
+              @media print {
+                body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              }
+            </style>
+          </head>
+          <body onload="window.print()">
+            <div style="margin: 40px 0;">
+              ${this.passType.printTemplate}
+            </div>
+          </body>
+        </html>
+      `);
+			printWindow.document.close();
+			printWindow.onafterprint = () => printWindow.close();
+		} else {
+			console.error('Не удалось открыть окно печати.');
+			this.errorMessage = 'Не удалось открыть окно печати.';
+		}
+	}
+
+	goBack(): void {
+		this.router.navigate(['/pass-types'], {
+			queryParams: {
+				groupId: this.passType?.passGroupId,
+				groupName: this.passGroupName,
+			},
+		});
 	}
 }

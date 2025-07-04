@@ -5,14 +5,37 @@ import { Position } from '../../../models/position.model';
 import { Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTableModule } from '@angular/material/table';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+
 
 @Component({
 	selector: 'app-position-list',
 	standalone: true,
 	imports: [
-		CommonModule,
 		ReactiveFormsModule,
+		CommonModule,
 		RouterModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatGridListModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatTooltipModule,
+		MatProgressSpinnerModule,
+		MatSnackBarModule,
 	],
 	templateUrl: './position-list.component.html',
 	styleUrls: ['./position-list.component.css']

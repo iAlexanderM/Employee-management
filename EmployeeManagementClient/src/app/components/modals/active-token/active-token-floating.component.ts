@@ -5,11 +5,28 @@ import { Router } from '@angular/router';
 import { SearchFilterResetService } from '../../../services/search-filter-reset.service';
 import { QueueService } from '../../../services/queue.service';
 import { QueueToken } from '../../../models/queue.model';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
 	selector: 'app-active-token-floating',
 	standalone: true,
-	imports: [CommonModule],
+	imports: [
+		CommonModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatSnackBarModule],
 	templateUrl: './active-token-floating.component.html',
 	styleUrls: ['./active-token-floating.component.css']
 })
@@ -57,5 +74,9 @@ export class ActiveTokenComponent {
 				this.errorMessage = 'Не удалось закрыть талон.';
 			}
 		});
+	}
+
+	stopPropagation(event: Event): void {
+		event.stopPropagation();
 	}
 }

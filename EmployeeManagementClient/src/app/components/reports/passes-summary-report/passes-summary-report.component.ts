@@ -13,6 +13,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+import { MatCardModule } from '@angular/material/card';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 export const MY_DATE_FORMATS = {
 	parse: { dateInput: 'LL' },
@@ -28,9 +34,21 @@ export const MY_DATE_FORMATS = {
 	selector: 'app-passes-summary-report',
 	standalone: true,
 	imports: [
-		CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
-		MatButtonModule, MatDatepickerModule, MatNativeDateModule, MatTableModule,
-		MatIconModule
+		ReactiveFormsModule,
+		CommonModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatGridListModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatTooltipModule,
+		MatProgressSpinnerModule,
+		MatSnackBarModule,
+		MatDatepickerModule,
+		MatNativeDateModule,
 	],
 	templateUrl: './passes-summary-report.component.html',
 	styleUrls: ['./passes-summary-report.component.css'],

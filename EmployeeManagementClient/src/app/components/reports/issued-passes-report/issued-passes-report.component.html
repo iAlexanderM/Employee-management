@@ -1,156 +1,202 @@
-<!-- src/app/components/reports/issued-passes-report/issued-passes-report.component.html -->
-<div class="container mt-4">
-	<h2>Список выписанных пропусков</h2>
-	<form [formGroup]="reportForm">
-		<mat-form-field appearance="fill">
-			<mat-label>Дата начала</mat-label>
-			<mat-datepicker-toggle matPrefix [for]="pickerStart"></mat-datepicker-toggle>
-			<input matInput [matDatepicker]="pickerStart" formControlName="startDate" placeholder="ДД.ММ.ГГГГ" readonly
-				(click)="pickerStart.open()">
-			<mat-datepicker #pickerStart></mat-datepicker>
-			<mat-error *ngIf="reportForm.get('startDate')?.hasError('required')">Дата начала обязательна</mat-error>
-		</mat-form-field>
-		<mat-form-field appearance="fill">
-			<mat-label>Дата окончания</mat-label>
-			<mat-datepicker-toggle matPrefix [for]="pickerEnd"></mat-datepicker-toggle>
-			<input matInput [matDatepicker]="pickerEnd" formControlName="endDate" placeholder="ДД.ММ.ГГГГ" readonly
-				(click)="pickerEnd.open()">
-			<mat-datepicker #pickerEnd></mat-datepicker>
-			<mat-error *ngIf="reportForm.get('endDate')?.hasError('required')">Дата окончания обязательна</mat-error>
-		</mat-form-field>
-		<mat-form-field appearance="fill">
-			<mat-label>Здание</mat-label>
-			<input matInput formControlName="building" placeholder="Введите здание (необязательно)"
-				[matAutocomplete]="autoBuilding">
-			<mat-autocomplete #autoBuilding="matAutocomplete">
-				<mat-option *ngFor="let suggestion of buildingSuggestions$ | async" [value]="suggestion">
-					{{suggestion}}
-				</mat-option>
-				<mat-option *ngIf="(buildingSuggestions$ | async)?.length === 0 && reportForm.get('building')?.value"
-					disabled>
-					Нет совпадений
-				</mat-option>
-			</mat-autocomplete>
-		</mat-form-field>
-		<mat-form-field appearance="fill">
-			<mat-label>Этаж</mat-label>
-			<input matInput formControlName="floor" placeholder="Введите этаж (необязательно)"
-				[matAutocomplete]="autoFloor">
-			<mat-autocomplete #autoFloor="matAutocomplete">
-				<mat-option *ngFor="let suggestion of floorSuggestions$ | async" [value]="suggestion">
-					{{suggestion}}
-				</mat-option>
-				<mat-option *ngIf="(floorSuggestions$ | async)?.length === 0 && reportForm.get('floor')?.value"
-					disabled>
-					Нет совпадений
-				</mat-option>
-			</mat-autocomplete>
-		</mat-form-field>
-		<mat-form-field appearance="fill">
-			<mat-label>Линия</mat-label>
-			<input matInput formControlName="line" placeholder="Введите линию (необязательно)"
-				[matAutocomplete]="autoLine">
-			<mat-autocomplete #autoLine="matAutocomplete">
-				<mat-option *ngFor="let suggestion of lineSuggestions$ | async" [value]="suggestion">
-					{{suggestion}}
-				</mat-option>
-				<mat-option *ngIf="(lineSuggestions$ | async)?.length === 0 && reportForm.get('line')?.value" disabled>
-					Нет совпадений
-				</mat-option>
-			</mat-autocomplete>
-		</mat-form-field>
-		<mat-form-field appearance="fill">
-			<mat-label>Тип пропуска</mat-label>
-			<input matInput formControlName="passType" placeholder="Введите тип (необязательно)"
-				[matAutocomplete]="autoPassType">
-			<mat-autocomplete #autoPassType="matAutocomplete">
-				<mat-option *ngFor="let suggestion of passTypeSuggestions$ | async" [value]="suggestion">
-					{{suggestion}}
-				</mat-option>
-				<mat-option *ngIf="(passTypeSuggestions$ | async)?.length === 0 && reportForm.get('passType')?.value"
-					disabled>
-					Нет совпадений
-				</mat-option>
-			</mat-autocomplete>
-		</mat-form-field>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Список выписанных пропусков</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<form [formGroup]="reportForm" class="search-form">
+				<mat-grid-list cols="2" rowHeight="80px" gutterSize="16px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Дата начала</mat-label>
+							<input matInput [matDatepicker]="pickerStart" formControlName="startDate"
+								placeholder="ДД.ММ.ГГГГ" readonly (click)="pickerStart.open()" />
+							<mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+							<mat-datepicker #pickerStart></mat-datepicker>
+							<mat-error *ngIf="reportForm.get('startDate')?.hasError('required')">
+								Дата начала обязательна
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Дата окончания</mat-label>
+							<input matInput [matDatepicker]="pickerEnd" formControlName="endDate"
+								placeholder="ДД.ММ.ГГГГ" readonly (click)="pickerEnd.open()" />
+							<mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+							<mat-datepicker #pickerEnd></mat-datepicker>
+							<mat-error *ngIf="reportForm.get('endDate')?.hasError('required')">
+								Дата окончания обязательна
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Здание</mat-label>
+							<input matInput formControlName="building" placeholder="Введите здание (необязательно)"
+								[matAutocomplete]="autoBuilding" />
+							<mat-icon matSuffix>business</mat-icon>
+							<mat-autocomplete #autoBuilding="matAutocomplete">
+								<mat-option *ngFor="let suggestion of buildingSuggestions$ | async"
+									[value]="suggestion">
+									{{ suggestion }}
+								</mat-option>
+								<mat-option
+									*ngIf="(buildingSuggestions$ | async)?.length === 0 && reportForm.get('building')?.value"
+									disabled>
+									Нет совпадений
+								</mat-option>
+							</mat-autocomplete>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Этаж</mat-label>
+							<input matInput formControlName="floor" placeholder="Введите этаж (необязательно)"
+								[matAutocomplete]="autoFloor" />
+							<mat-icon matSuffix>stairs</mat-icon>
+							<mat-autocomplete #autoFloor="matAutocomplete">
+								<mat-option *ngFor="let suggestion of floorSuggestions$ | async" [value]="suggestion">
+									{{ suggestion }}
+								</mat-option>
+								<mat-option
+									*ngIf="(floorSuggestions$ | async)?.length === 0 && reportForm.get('floor')?.value"
+									disabled>
+									Нет совпадений
+								</mat-option>
+							</mat-autocomplete>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Линия</mat-label>
+							<input matInput formControlName="line" placeholder="Введите линию (необязательно)"
+								[matAutocomplete]="autoLine" />
+							<mat-icon matSuffix>store</mat-icon>
+							<mat-autocomplete #autoLine="matAutocomplete">
+								<mat-option *ngFor="let suggestion of lineSuggestions$ | async" [value]="suggestion">
+									{{ suggestion }}
+								</mat-option>
+								<mat-option
+									*ngIf="(lineSuggestions$ | async)?.length === 0 && reportForm.get('line')?.value"
+									disabled>
+									Нет совпадений
+								</mat-option>
+							</mat-autocomplete>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Тип пропуска</mat-label>
+							<input matInput formControlName="passType" placeholder="Введите тип (необязательно)"
+								[matAutocomplete]="autoPassType" />
+							<mat-icon matSuffix>badge</mat-icon>
+							<mat-autocomplete #autoPassType="matAutocomplete">
+								<mat-option *ngFor="let suggestion of passTypeSuggestions$ | async"
+									[value]="suggestion">
+									{{ suggestion }}
+								</mat-option>
+								<mat-option
+									*ngIf="(passTypeSuggestions$ | async)?.length === 0 && reportForm.get('passType')?.value"
+									disabled>
+									Нет совпадений
+								</mat-option>
+							</mat-autocomplete>
+						</mat-form-field>
+					</mat-grid-tile>
+				</mat-grid-list>
+				<div class="d-flex justify-content-start gap-2 mt-4">
+					<button mat-raised-button color="primary" class="action-btn" (click)="generateReport()"
+						[disabled]="reportForm.invalid" matTooltip="Сформировать отчет">
+						Сформировать
+					</button>
+					<button mat-stroked-button color="primary" class="action-btn" (click)="resetForm()"
+						matTooltip="Сбросить форму">
+						Сбросить
+					</button>
+					<button mat-raised-button color="accent" class="action-btn" (click)="downloadReport()"
+						[disabled]="dataSource.length === 0 || reportForm.invalid" matTooltip="Сохранить в Excel">
+						Сохранить в Excel
+					</button>
+				</div>
+			</form>
 
-		<div class="buttons">
-			<button mat-raised-button color="primary" (click)="generateReport()"
-				[disabled]="reportForm.invalid">Сформировать</button>
-			<button mat-raised-button (click)="resetForm()">Сбросить</button>
-			<button mat-raised-button color="accent" (click)="downloadReport()"
-				[disabled]="dataSource.length === 0 || reportForm.invalid">Сохранить в Excel</button>
-		</div>
-	</form>
+			<mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageIndex]="pageIndex"
+				[pageSizeOptions]="[10, 25, 50, 100]" (page)="onPageChange($event)" showFirstLastButtons
+				class="pagination-container"></mat-paginator>
 
-	<mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="[50]"
-		(page)="onPageChange($event)" showFirstLastButtons>
-	</mat-paginator>
-	<mat-table [dataSource]="dataSource" class="mat-elevation-z8" *ngIf="dataSource.length > 0">
-		<ng-container matColumnDef="passType">
-			<mat-header-cell *matHeaderCellDef>Тип пропуска</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.passType }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="building">
-			<mat-header-cell *matHeaderCellDef>Здание</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.building }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="floor">
-			<mat-header-cell *matHeaderCellDef>Этаж</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.floor }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="line">
-			<mat-header-cell *matHeaderCellDef>Линия</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.line }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="storeNumber">
-			<mat-header-cell *matHeaderCellDef>Торговая точка</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.storeNumber }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="contractorId">
-			<mat-header-cell *matHeaderCellDef>Код контрагента</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.contractorId }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="fullName">
-			<mat-header-cell *matHeaderCellDef>ФИО</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.fullName }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="position">
-			<mat-header-cell *matHeaderCellDef>Должность</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.position }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="citizenship">
-			<mat-header-cell *matHeaderCellDef>Гражданство</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.citizenship }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="nationality">
-			<mat-header-cell *matHeaderCellDef>Национальность</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.nationality }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="startDate">
-			<mat-header-cell *matHeaderCellDef>Дата начала</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.startDate | date:'dd.MM.yyyy' }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="endDate">
-			<mat-header-cell *matHeaderCellDef>Дата окончания</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.endDate | date:'dd.MM.yyyy' }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="status">
-			<mat-header-cell *matHeaderCellDef>Статус</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.status }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="phone">
-			<mat-header-cell *matHeaderCellDef>Телефон</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.phone }}</mat-cell>
-		</ng-container>
-		<ng-container matColumnDef="productType">
-			<mat-header-cell *matHeaderCellDef>Группа товаров</mat-header-cell>
-			<mat-cell *matCellDef="let element">{{ element.productType }}</mat-cell>
-		</ng-container>
-		<mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-		<mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-	</mat-table>
-	<mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="[50]"
-		(page)="onPageChange($event)" showFirstLastButtons>
-	</mat-paginator>
+			<div *ngIf="!isLoading && dataSource.length === 0" class="text-center mt-4">
+				<p class="text-muted">Нет данных для отображения</p>
+			</div>
+
+			<mat-table [dataSource]="dataSource" class="data-table" *ngIf="dataSource.length > 0">
+				<ng-container matColumnDef="passType">
+					<mat-header-cell *matHeaderCellDef>Тип пропуска</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.passType }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="building">
+					<mat-header-cell *matHeaderCellDef>Здание</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.building }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="floor">
+					<mat-header-cell *matHeaderCellDef>Этаж</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.floor }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="line">
+					<mat-header-cell *matHeaderCellDef>Линия</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.line }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="storeNumber">
+					<mat-header-cell *matHeaderCellDef>Торговая точка</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.storeNumber }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="contractorId">
+					<mat-header-cell *matHeaderCellDef>Код контрагента</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.contractorId }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="fullName">
+					<mat-header-cell *matHeaderCellDef>ФИО</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.fullName }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="position">
+					<mat-header-cell *matHeaderCellDef>Должность</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.position }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="citizenship">
+					<mat-header-cell *matHeaderCellDef>Гражданство</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.citizenship }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="nationality">
+					<mat-header-cell *matHeaderCellDef>Национальность</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.nationality }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="startDate">
+					<mat-header-cell *matHeaderCellDef>Дата начала</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.startDate | date:'dd.MM.yyyy' }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="endDate">
+					<mat-header-cell *matHeaderCellDef>Дата окончания</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.endDate | date:'dd.MM.yyyy' }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="status">
+					<mat-header-cell *matHeaderCellDef>Статус</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.status }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="phone">
+					<mat-header-cell *matHeaderCellDef>Телефон</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.phone }}</mat-cell>
+				</ng-container>
+				<ng-container matColumnDef="productType">
+					<mat-header-cell *matHeaderCellDef>Группа товаров</mat-header-cell>
+					<mat-cell *matCellDef="let element">{{ element.productType }}</mat-cell>
+				</ng-container>
+				<mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+				<mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+			</mat-table>
+
+			<mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageIndex]="pageIndex"
+				[pageSizeOptions]="[10, 25, 50, 100]" (page)="onPageChange($event)" showFirstLastButtons
+				class="pagination-container"></mat-paginator>
+		</mat-card-content>
+	</mat-card>
 </div>
