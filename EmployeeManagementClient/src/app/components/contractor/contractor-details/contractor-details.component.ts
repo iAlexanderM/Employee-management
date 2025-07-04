@@ -25,32 +25,33 @@ import { PassPrintQueueItem } from '../../../models/pass-print-queue.model';
 import { Photo } from '../../../models/contractor.model';
 
 @Component({
-    selector: 'app-contractor-details',
-    imports: [
-        CommonModule,
-        RouterModule,
-        ReactiveFormsModule,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatCardModule,
-        MatTableModule,
-        MatIconModule,
-        MatProgressSpinnerModule,
-    ],
-    templateUrl: './contractor-details.component.html',
-    styleUrls: ['./contractor-details.component.css'],
-    animations: [
-        trigger('modalFade', [
-            transition(':enter', [
-                style({ opacity: 0, transform: 'scale(0.95)' }),
-                animate('200ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
-            ]),
-            transition(':leave', [
-                animate('150ms ease-in', style({ opacity: 0, transform: 'scale(0.95)' })),
-            ]),
-        ]),
-    ]
+	selector: 'app-contractor-details',
+	standalone: true,
+	imports: [
+		CommonModule,
+		RouterModule,
+		ReactiveFormsModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatTableModule,
+		MatIconModule,
+		MatProgressSpinnerModule,
+	],
+	templateUrl: './contractor-details.component.html',
+	styleUrls: ['./contractor-details.component.css'],
+	animations: [
+		trigger('modalFade', [
+			transition(':enter', [
+				style({ opacity: 0, transform: 'scale(0.95)' }),
+				animate('200ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
+			]),
+			transition(':leave', [
+				animate('150ms ease-in', style({ opacity: 0, transform: 'scale(0.95)' })),
+			]),
+		]),
+	]
 })
 export class ContractorDetailsComponent implements OnInit, OnDestroy, AfterViewInit {
 	@ViewChild('noteTextarea') noteTextarea!: ElementRef<HTMLTextAreaElement>;

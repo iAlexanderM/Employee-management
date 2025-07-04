@@ -6,10 +6,11 @@ import { StorePointsService } from '../../../../services/store-points.service';
 import { StoreNumber } from '../../../../models/store-points.model';
 
 @Component({
-    selector: 'app-store-points-store-number-edit',
-    imports: [CommonModule, ReactiveFormsModule],
-    templateUrl: './store-points-store-number-edit.component.html',
-    styleUrls: ['./store-points-store-number-edit.component.css']
+	selector: 'app-store-points-store-number-edit',
+	standalone: true,
+	imports: [CommonModule, ReactiveFormsModule],
+	templateUrl: './store-points-store-number-edit.component.html',
+	styleUrls: ['./store-points-store-number-edit.component.css']
 })
 export class StorePointsStoreNumberEditComponent implements OnInit {
 	storeNumberForm: FormGroup;

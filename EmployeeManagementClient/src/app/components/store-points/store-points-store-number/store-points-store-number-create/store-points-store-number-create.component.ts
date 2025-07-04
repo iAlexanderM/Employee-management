@@ -5,10 +5,11 @@ import { StorePointsService } from '../../../../services/store-points.service';
 import { Router } from '@angular/router';
 
 @Component({
-    selector: 'app-store-points-store-number-create',
-    imports: [CommonModule, ReactiveFormsModule],
-    templateUrl: './store-points-store-number-create.component.html',
-    styleUrls: ['./store-points-store-number-create.component.css']
+	selector: 'app-store-points-store-number-create',
+	standalone: true,
+	imports: [CommonModule, ReactiveFormsModule],
+	templateUrl: './store-points-store-number-create.component.html',
+	styleUrls: ['./store-points-store-number-create.component.css']
 })
 export class StorePointsStoreNumberCreateComponent {
 	// Убираем newStoreNumberName: string

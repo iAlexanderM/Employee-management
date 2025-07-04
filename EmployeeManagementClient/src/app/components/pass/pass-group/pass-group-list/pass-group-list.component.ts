@@ -15,24 +15,25 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
-    selector: 'app-pass-group-list',
-    templateUrl: './pass-group-list.component.html',
-    styleUrls: ['./pass-group-list.component.css'],
-    imports: [
-        CommonModule,
-        RouterModule,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatCardModule,
-        MatGridListModule,
-        MatTableModule,
-        MatSelectModule,
-        MatIconModule,
-        MatTooltipModule,
-        MatProgressSpinnerModule,
-        MatSnackBarModule,
-    ]
+	selector: 'app-pass-group-list',
+	templateUrl: './pass-group-list.component.html',
+	styleUrls: ['./pass-group-list.component.css'],
+	standalone: true,
+	imports: [
+		CommonModule,
+		RouterModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatGridListModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatTooltipModule,
+		MatProgressSpinnerModule,
+		MatSnackBarModule,
+	]
 })
 export class PassGroupListComponent {
 	passGroups: any[] = [];

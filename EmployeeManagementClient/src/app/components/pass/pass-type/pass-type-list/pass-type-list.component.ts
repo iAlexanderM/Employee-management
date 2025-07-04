@@ -22,25 +22,26 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
-    selector: 'app-pass-type-list',
-    imports: [
-        CommonModule,
-        RouterModule,
-        ReactiveFormsModule,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatCardModule,
-        MatGridListModule,
-        MatTableModule,
-        MatSelectModule,
-        MatIconModule,
-        MatTooltipModule,
-        MatProgressSpinnerModule,
-        MatSnackBarModule,
-    ],
-    templateUrl: './pass-type-list.component.html',
-    styleUrls: ['./pass-type-list.component.css']
+	selector: 'app-pass-type-list',
+	standalone: true,
+	imports: [
+		CommonModule,
+		RouterModule,
+		ReactiveFormsModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatGridListModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatTooltipModule,
+		MatProgressSpinnerModule,
+		MatSnackBarModule,
+	],
+	templateUrl: './pass-type-list.component.html',
+	styleUrls: ['./pass-type-list.component.css']
 })
 export class PassTypeListComponent implements OnInit {
 	passTypes: PassType[] = [];

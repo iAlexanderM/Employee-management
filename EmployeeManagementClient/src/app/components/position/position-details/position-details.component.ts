@@ -5,10 +5,11 @@ import { PositionService } from '../../../services/position.service';
 import { Position } from '../../../models/position.model';
 
 @Component({
-    selector: 'app-position-details',
-    imports: [CommonModule],
-    templateUrl: './position-details.component.html',
-    styleUrl: './position-details.component.css'
+	selector: 'app-position-details',
+	standalone: true,
+	imports: [CommonModule],
+	templateUrl: './position-details.component.html',
+	styleUrl: './position-details.component.css'
 })
 export class PositionDetailsComponent implements OnInit {
 	position: Position | null = null;

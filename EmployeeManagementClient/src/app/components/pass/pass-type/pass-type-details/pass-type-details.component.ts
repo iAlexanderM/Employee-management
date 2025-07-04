@@ -10,17 +10,18 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
-    selector: 'app-pass-type-details',
-    imports: [
-        CommonModule,
-        RouterModule,
-        MatCardModule,
-        MatButtonModule,
-        MatIconModule,
-        MatTooltipModule,
-    ],
-    templateUrl: './pass-type-details.component.html',
-    styleUrls: ['./pass-type-details.component.css']
+	selector: 'app-pass-type-details',
+	standalone: true,
+	imports: [
+		CommonModule,
+		RouterModule,
+		MatCardModule,
+		MatButtonModule,
+		MatIconModule,
+		MatTooltipModule,
+	],
+	templateUrl: './pass-type-details.component.html',
+	styleUrls: ['./pass-type-details.component.css']
 })
 export class PassTypeDetailsComponent implements OnInit {
 	passType: PassType | null = null;

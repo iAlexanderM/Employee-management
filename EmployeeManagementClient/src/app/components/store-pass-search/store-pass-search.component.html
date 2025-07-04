@@ -76,135 +76,132 @@
 				</div>
 				<div *ngIf="errorMessage" class="alert mt-4">{{ errorMessage }}</div>
 			</form>
-
-			<div class="loading-indicator top" *ngIf="isLoading">
-				<mat-spinner diameter="40"></mat-spinner>
-				<span>Загрузка...</span>
-			</div>
-
-			<ng-container *ngFor="let item of flattenedContractors; let i = index; trackBy: trackByContractor">
-				<div class="results-section" @fadeIn [attr.data-contractor-id]="item.contractor.contractorId">
-					<table class="data-table contractor-table">
-						<thead>
-							<tr>
-								<th>ID / Магазин</th>
-								<th>Фото</th>
-								<th>ФИО</th>
-								<th>Должность</th>
-								<th>Телефон</th>
-								<th>Гражданство</th>
-								<th>Тип продукции</th>
-								<th>Начало</th>
-								<th>Окончание</th>
-								<th>Действия</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>{{ item.contractor.contractorId }} {{ formatStore(item.store) }}</td>
-								<td>
-									<img *ngIf="item.contractor?.contractorPhotoPath"
-										[src]="getAbsolutePhotoUrl(item.contractor.contractorPhotoPath)"
-										class="contractor-img"
-										(click)="openImageInNewWindow(getAbsolutePhotoUrl(item.contractor.contractorPhotoPath))">
-								</td>
-								<td>{{ item.contractor.contractorName }}</td>
-								<td>{{ getLatestPass(item.isActive ? item.contractor.activePasses :
-									getSortedPasses(item.contractor, item.store))?.position || '-' }}</td>
-								<td>{{ item.contractor.phoneNumber || '-' }}</td>
-								<td>{{ item.contractor.citizenship || '-' }}</td>
-								<td>{{ item.contractor.productType || '-' }}</td>
-								<td>{{ getLatestPass(item.isActive ? item.contractor.activePasses :
-									getSortedPasses(item.contractor, item.store))?.startDate | date:'dd.MM.yyyy' }}</td>
-								<td>{{ getLatestPass(item.isActive ? item.contractor.activePasses :
-									getSortedPasses(item.contractor, item.store))?.endDate | date:'dd.MM.yyyy' }}</td>
-								<td>
-									<button mat-icon-button color="primary" class="action-btn icon-only"
-										(click)="viewContractor(item.contractor.contractorId)" matTooltip="Просмотреть">
-										<mat-icon>person</mat-icon>
-									</button>
-									<button mat-icon-button color="accent" class="action-btn icon-only"
-										(click)="editContractor(item.contractor.contractorId)"
-										matTooltip="Редактировать">
-										<mat-icon>mode_edit_outline</mat-icon>
-									</button>
-									<button mat-icon-button class="action-btn icon-only"
-										(click)="togglePanel(item.contractor.contractorId, item.isActive ? 'active' : 'closed')"
-										matTooltip="Пропуска">
-										<mat-icon>list_alt</mat-icon>
-									</button>
-								</td>
-							</tr>
-							<tr
-								*ngIf="isPanelExpanded(item.contractor.contractorId, item.isActive ? 'active' : 'closed')">
-								<td colspan="10">
-									<mat-expansion-panel [expanded]="true">
-										<table class="data-table">
-											<thead>
-												<tr>
-													<th>Цвет</th>
-													<th>Тип</th>
-													<th>Срок</th>
-													<th>Стоимость</th>
-													<th>Дата выдачи</th>
-													<th>Дата начала</th>
-													<th>Дата окончания</th>
-													<th>Место</th>
-													<th>Должность</th>
-													<th>Статус</th>
-													<th>Действия</th>
-												</tr>
-											</thead>
-											<tbody>
-												<tr *ngFor="let pass of getSortedPasses(item.contractor, item.store)">
-													<td><span class="color-circle"
-															[style.backgroundColor]="pass.passTypeColor"></span></td>
-													<td>[{{ pass.passTypeId }}] {{ pass.passTypeName }}</td>
-													<td>{{ pass.passTypeDurationInMonths }} мес.</td>
-													<td>{{ pass.cost | number:'1.0-0' }}</td>
-													<td>{{ pass.transactionDate | date:'dd.MM.yyyy' }}</td>
-													<td>{{ pass.startDate | date:'dd.MM.yyyy' }}</td>
-													<td>{{ pass.endDate | date:'dd.MM.yyyy' }}</td>
-													<td>{{ formatStore(pass) }}</td>
-													<td>{{ pass.position || 'Не указана' }}</td>
-													<td>{{ pass.isClosed ? 'Закрыт' : 'Активен' }}</td>
-													<td>
-														<button mat-icon-button color="primary"
-															class="action-btn icon-only"
-															(click)="extendPass(pass, item.store)"
-															matTooltip="Продлить">
-															<mat-icon>refresh</mat-icon>
-														</button>
-														<button mat-icon-button color="warn"
-															class="action-btn icon-only" *ngIf="!pass.isClosed"
-															(click)="closePass(pass.id)" matTooltip="Закрыть">
-															<mat-icon>close</mat-icon>
-														</button>
-													</td>
-												</tr>
-												<tr *ngIf="getSortedPasses(item.contractor, item.store).length === 0">
-													<td colspan="11">Нет пропусков</td>
-												</tr>
-											</tbody>
-										</table>
-									</mat-expansion-panel>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-			</ng-container>
-
-			<div #loadMoreTrigger class="load-more-trigger" *ngIf="hasMoreResults"></div>
-
-			<div class="loading-indicator bottom" *ngIf="isLoading && !flattenedContractors.length">
-				<mat-spinner diameter="40"></mat-spinner>
-				<span>Загрузка...</span>
-			</div>
-
-			<div *ngIf="flattenedContractors.length === 0 && !isLoading" class="text-center mt-4">
-				<p class="text-muted">Нет данных для отображения</p>
-			</div>
 		</mat-card-content>
 	</mat-card>
+
+	<div #loadPreviousTrigger class="load-previous-trigger"></div>
+
+	<div infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="300" (scrolled)="loadMoreResults()"
+		[scrollWindow]="true">
+		<ng-container *ngFor="let item of flattenedContractors; let i = index; trackBy: trackByContractor">
+			<div class="results-section" @fadeIn [attr.data-contractor-id]="item.contractor.contractorId">
+				<table class="data-table contractor-table">
+					<thead>
+						<tr>
+							<th>ID / Магазин</th>
+							<th>Фото</th>
+							<th>ФИО</th>
+							<th>Должность</th>
+							<th>Телефон</th>
+							<th>Гражданство</th>
+							<th>Тип продукции</th>
+							<th>Начало</th>
+							<th>Окончание</th>
+							<th>Действия</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>{{ item.contractor.contractorId }} {{ formatStore(item.store) }}</td>
+							<td>
+								<img *ngIf="item.contractor?.contractorPhotoPath"
+									[src]="getAbsolutePhotoUrl(item.contractor.contractorPhotoPath)"
+									class="contractor-img"
+									(click)="openImageInNewWindow(getAbsolutePhotoUrl(item.contractor.contractorPhotoPath))">
+							</td>
+							<td>{{ item.contractor.contractorName }}</td>
+							<td>{{ getLatestPass(item.isActive ? item.contractor.activePasses :
+								getSortedPasses(item.contractor, item.store))?.position || '-' }}</td>
+							<td>{{ item.contractor.phoneNumber || '-' }}</td>
+							<td>{{ item.contractor.citizenship || '-' }}</td>
+							<td>{{ item.contractor.productType || '-' }}</td>
+							<td>{{ getLatestPass(item.isActive ? item.contractor.activePasses :
+								getSortedPasses(item.contractor, item.store))?.startDate | date:'dd.MM.yyyy' }}</td>
+							<td>{{ getLatestPass(item.isActive ? item.contractor.activePasses :
+								getSortedPasses(item.contractor, item.store))?.endDate | date:'dd.MM.yyyy' }}</td>
+							<td>
+								<button mat-icon-button color="primary" class="action-btn icon-only"
+									(click)="viewContractor(item.contractor.contractorId)" matTooltip="Просмотреть">
+									<mat-icon>person</mat-icon>
+								</button>
+								<button mat-icon-button color="accent" class="action-btn icon-only"
+									(click)="editContractor(item.contractor.contractorId)" matTooltip="Редактировать">
+									<mat-icon>mode_edit_outline</mat-icon>
+								</button>
+								<button mat-icon-button class="action-btn icon-only"
+									(click)="togglePanel(item.contractor.contractorId, item.isActive ? 'active' : 'closed')"
+									matTooltip="Пропуска">
+									<mat-icon>list_alt</mat-icon>
+								</button>
+							</td>
+						</tr>
+						<tr *ngIf="isPanelExpanded(item.contractor.contractorId, item.isActive ? 'active' : 'closed')">
+							<td colspan="10">
+								<mat-expansion-panel
+									[expanded]="isPanelExpanded(item.contractor.contractorId, item.isActive ? 'active' : 'closed')"
+									(opened)="togglePanel(item.contractor.contractorId, item.isActive ? 'active' : 'closed')"
+									(closed)="togglePanel(item.contractor.contractorId, item.isActive ? 'active' : 'closed')">
+									<table class="data-table">
+										<thead>
+											<tr>
+												<th>Цвет</th>
+												<th>Тип</th>
+												<th>Срок</th>
+												<th>Стоимость</th>
+												<th>Дата выдачи</th>
+												<th>Дата начала</th>
+												<th>Дата окончания</th>
+												<th>Место</th>
+												<th>Должность</th>
+												<th>Статус</th>
+												<th>Действия</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr *ngFor="let pass of getSortedPasses(item.contractor, item.store)">
+												<td><span class="color-circle"
+														[style.backgroundColor]="pass.passTypeColor"></span></td>
+												<td>[{{ pass.passTypeId }}] {{ pass.passTypeName }}</td>
+												<td>{{ pass.passTypeDurationInMonths }} мес.</td>
+												<td>{{ pass.cost | number:'1.0-0' }}</td>
+												<td>{{ pass.transactionDate | date:'dd.MM.yyyy' }}</td>
+												<td>{{ pass.startDate | date:'dd.MM.yyyy' }}</td>
+												<td>{{ pass.endDate | date:'dd.MM.yyyy' }}</td>
+												<td>{{ formatStore(pass) }}</td>
+												<td>{{ pass.position || 'Не указана' }}</td>
+												<td>{{ pass.isClosed ? 'Закрыт' : 'Активен' }}</td>
+												<td>
+													<button mat-icon-button color="primary" class="action-btn icon-only"
+														(click)="extendPass(pass, item.store)" matTooltip="Продлить">
+														<mat-icon>refresh</mat-icon>
+													</button>
+													<button mat-icon-button color="warn" class="action-btn icon-only"
+														*ngIf="!pass.isClosed" (click)="closePass(pass.id)"
+														matTooltip="Закрыть">
+														<mat-icon>close</mat-icon>
+													</button>
+												</td>
+											</tr>
+											<tr *ngIf="getSortedPasses(item.contractor, item.store).length === 0">
+												<td colspan="11">Нет пропусков</td>
+											</tr>
+										</tbody>
+									</table>
+								</mat-expansion-panel>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</ng-container>
+	</div>
+
+	<div class="loading-indicator" *ngIf="isLoading">
+		<mat-spinner diameter="40"></mat-spinner>
+		<span>Загрузка...</span>
+	</div>
+
+	<div *ngIf="flattenedContractors.length === 0 && !isLoading" class="text-center mt-4">
+		<p class="text-muted">Нет данных для отображения</p>
+	</div>
 </div>

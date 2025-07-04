@@ -5,10 +5,11 @@ import { StorePointsService } from '../../../../services/store-points.service';
 import { Floor } from '../../../../models/store-points.model';
 
 @Component({
-    selector: 'app-store-points-floor-details',
-    imports: [CommonModule],
-    templateUrl: './store-points-floor-details.component.html',
-    styleUrls: ['./store-points-floor-details.component.css']
+	selector: 'app-store-points-floor-details',
+	standalone: true,
+	imports: [CommonModule],
+	templateUrl: './store-points-floor-details.component.html',
+	styleUrls: ['./store-points-floor-details.component.css']
 })
 export class StorePointsFloorDetailsComponent implements OnInit {
 	floor: Floor | null = null;

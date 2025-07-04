@@ -17,14 +17,15 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatCardModule } from '@angular/material/card';
 
 @Component({
-    selector: 'app-active-passes-report',
-    imports: [
-        CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
-        MatButtonModule, MatTableModule, MatIconModule, MatAutocompleteModule,
-        MatCheckboxModule, MatPaginatorModule, MatGridListModule, MatCardModule
-    ],
-    templateUrl: './active-passes-report.component.html',
-    styleUrls: ['./active-passes-report.component.css']
+	selector: 'app-active-passes-report',
+	standalone: true,
+	imports: [
+		CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
+		MatButtonModule, MatTableModule, MatIconModule, MatAutocompleteModule,
+		MatCheckboxModule, MatPaginatorModule, MatGridListModule, MatCardModule
+	],
+	templateUrl: './active-passes-report.component.html',
+	styleUrls: ['./active-passes-report.component.css']
 })
 export class ActivePassesReportComponent implements OnInit, OnDestroy {
 	reportForm: FormGroup;

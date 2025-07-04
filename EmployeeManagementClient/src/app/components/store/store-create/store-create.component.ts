@@ -10,10 +10,11 @@ import { StoreSelectOrAddModalComponent } from '../../modals/store-select-or-add
 import { Subscription } from 'rxjs';
 
 @Component({
-    selector: 'app-store-create',
-    imports: [CommonModule, ReactiveFormsModule, StoreSelectOrAddModalComponent],
-    templateUrl: './store-create.component.html',
-    styleUrls: ['./store-create.component.css']
+	selector: 'app-store-create',
+	standalone: true,
+	imports: [CommonModule, ReactiveFormsModule, StoreSelectOrAddModalComponent],
+	templateUrl: './store-create.component.html',
+	styleUrls: ['./store-create.component.css']
 })
 export class StoreCreateComponent implements OnInit, OnDestroy {
 	storeForm: FormGroup;

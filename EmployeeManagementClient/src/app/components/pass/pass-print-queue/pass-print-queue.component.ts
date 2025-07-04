@@ -18,25 +18,26 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
-    selector: 'app-pass-print-queue',
-    imports: [
-        ReactiveFormsModule,
-        CommonModule,
-        RouterModule,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatCardModule,
-        MatGridListModule,
-        MatTableModule,
-        MatSelectModule,
-        MatIconModule,
-        MatTooltipModule,
-        MatProgressSpinnerModule,
-        MatSnackBarModule,
-    ],
-    templateUrl: './pass-print-queue.component.html',
-    styleUrls: ['./pass-print-queue.component.css']
+	selector: 'app-pass-print-queue',
+	standalone: true,
+	imports: [
+		ReactiveFormsModule,
+		CommonModule,
+		RouterModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatGridListModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatTooltipModule,
+		MatProgressSpinnerModule,
+		MatSnackBarModule,
+	],
+	templateUrl: './pass-print-queue.component.html',
+	styleUrls: ['./pass-print-queue.component.css']
 })
 export class PassPrintQueueComponent implements OnInit {
 	passes: PassPrintQueueItem[] = [];

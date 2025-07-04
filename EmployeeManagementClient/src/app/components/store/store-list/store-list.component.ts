@@ -12,18 +12,19 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 
 @Component({
-    selector: 'app-store-list',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        RouterModule,
-        MatAutocompleteModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatButtonModule,
-    ],
-    templateUrl: './store-list.component.html',
-    styleUrls: ['./store-list.component.css']
+	selector: 'app-store-list',
+	standalone: true,
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		RouterModule,
+		MatAutocompleteModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatButtonModule,
+	],
+	templateUrl: './store-list.component.html',
+	styleUrls: ['./store-list.component.css']
 })
 export class StoreListComponent implements OnInit, OnDestroy {
 	displayedStores: Store[] = [];

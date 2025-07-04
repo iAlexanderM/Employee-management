@@ -33,24 +33,25 @@ interface DecodedToken {
 
 
 @Component({
-    selector: 'app-queue',
-    imports: [
-        ReactiveFormsModule,
-        CommonModule,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatCardModule,
-        MatGridListModule,
-        MatTableModule,
-        MatSelectModule,
-        MatIconModule,
-        MatTooltipModule,
-        MatProgressSpinnerModule,
-        MatSnackBarModule,
-    ],
-    templateUrl: './queue.component.html',
-    styleUrls: ['./queue.component.css']
+	selector: 'app-queue',
+	standalone: true,
+	imports: [
+		ReactiveFormsModule,
+		CommonModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatGridListModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatTooltipModule,
+		MatProgressSpinnerModule,
+		MatSnackBarModule,
+	],
+	templateUrl: './queue.component.html',
+	styleUrls: ['./queue.component.css']
 })
 export class QueueComponent implements OnInit { // Убрали OnDestroy т.к. SignalR не отписываем
 	tokens: QueueToken[] = [];

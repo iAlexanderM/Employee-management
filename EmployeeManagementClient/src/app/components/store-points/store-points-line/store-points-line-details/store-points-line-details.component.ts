@@ -5,10 +5,11 @@ import { StorePointsService } from '../../../../services/store-points.service';
 import { Line } from '../../../../models/store-points.model';
 
 @Component({
-    selector: 'app-store-points-line-details',
-    imports: [CommonModule],
-    templateUrl: './store-points-line-details.component.html',
-    styleUrls: ['./store-points-line-details.component.css']
+	selector: 'app-store-points-line-details',
+	standalone: true,
+	imports: [CommonModule],
+	templateUrl: './store-points-line-details.component.html',
+	styleUrls: ['./store-points-line-details.component.css']
 })
 export class StorePointsLineDetailsComponent implements OnInit {
 	line: Line | null = null;

@@ -18,26 +18,27 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
-    selector: 'app-contractor-edit',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        RouterModule,
-        NgxMaskDirective,
-        CitizenshipAndNationalityModalComponent,
-        MatCardModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatCheckboxModule,
-        MatButtonModule,
-        MatIconModule,
-        MatGridListModule,
-        MatTooltipModule,
-    ],
-    providers: [provideNgxMask()],
-    templateUrl: './contractor-edit.component.html',
-    styleUrls: ['./contractor-edit.component.css']
+	selector: 'app-contractor-edit',
+	standalone: true,
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		RouterModule,
+		NgxMaskDirective,
+		CitizenshipAndNationalityModalComponent,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatCheckboxModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule,
+	],
+	providers: [provideNgxMask()],
+	templateUrl: './contractor-edit.component.html',
+	styleUrls: ['./contractor-edit.component.css']
 })
 export class ContractorEditComponent implements OnInit {
 	contractorForm!: FormGroup;

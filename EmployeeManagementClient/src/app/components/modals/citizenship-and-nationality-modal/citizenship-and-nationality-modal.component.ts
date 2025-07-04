@@ -14,21 +14,22 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
-    selector: 'app-citizenship-and-nationality-modal',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatCardModule,
-        MatTableModule,
-        MatSelectModule,
-        MatIconModule,
-        MatSnackBarModule
-    ],
-    templateUrl: './citizenship-and-nationality-modal.component.html',
-    styleUrls: ['./citizenship-and-nationality-modal.component.css']
+	selector: 'app-citizenship-and-nationality-modal',
+	standalone: true,
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatSnackBarModule
+	],
+	templateUrl: './citizenship-and-nationality-modal.component.html',
+	styleUrls: ['./citizenship-and-nationality-modal.component.css']
 })
 export class CitizenshipAndNationalityModalComponent implements OnInit {
 	@Input() fieldName: string = '';

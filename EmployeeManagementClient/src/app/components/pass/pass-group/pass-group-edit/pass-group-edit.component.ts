@@ -14,22 +14,23 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
-    selector: 'app-pass-group-edit',
-    templateUrl: './pass-group-edit.component.html',
-    styleUrls: ['./pass-group-edit.component.css'],
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatCardModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatCheckboxModule,
-        MatButtonModule,
-        MatIconModule,
-        MatGridListModule,
-        MatTooltipModule,
-    ]
+	selector: 'app-pass-group-edit',
+	templateUrl: './pass-group-edit.component.html',
+	styleUrls: ['./pass-group-edit.component.css'],
+	standalone: true,
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatCheckboxModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule,
+	]
 })
 export class PassGroupEditComponent implements OnInit {
 	groupForm: FormGroup;

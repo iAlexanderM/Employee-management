@@ -15,22 +15,23 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
-    selector: 'app-contractor-points-nationality-edit',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatCardModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatCheckboxModule,
-        MatButtonModule,
-        MatIconModule,
-        MatGridListModule,
-        MatTooltipModule,
-    ],
-    templateUrl: './contractor-points-nationality-edit.component.html',
-    styleUrls: ['./contractor-points-nationality-edit.component.css'] // Исправлено на styleUrls
+	selector: 'app-contractor-points-nationality-edit',
+	standalone: true,
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatCheckboxModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule,
+	],
+	templateUrl: './contractor-points-nationality-edit.component.html',
+	styleUrls: ['./contractor-points-nationality-edit.component.css'] // Исправлено на styleUrls
 })
 export class ContractorPointsNationalityEditComponent implements OnInit {
 	nationality: Nationality | null = null;

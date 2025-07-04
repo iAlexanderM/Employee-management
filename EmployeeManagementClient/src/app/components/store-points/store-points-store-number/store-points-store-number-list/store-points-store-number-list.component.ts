@@ -7,10 +7,11 @@ import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angul
 import { Subscription } from 'rxjs';
 
 @Component({
-    selector: 'app-store-points-store-number-list',
-    imports: [CommonModule, ReactiveFormsModule, RouterModule],
-    templateUrl: './store-points-store-number-list.component.html',
-    styleUrls: ['./store-points-store-number-list.component.css']
+	selector: 'app-store-points-store-number-list',
+	standalone: true,
+	imports: [CommonModule, ReactiveFormsModule, RouterModule],
+	templateUrl: './store-points-store-number-list.component.html',
+	styleUrls: ['./store-points-store-number-list.component.css']
 })
 export class StorePointsStoreNumberListComponent implements OnInit, OnDestroy {
 	storeNumbers: StoreNumber[] = [];

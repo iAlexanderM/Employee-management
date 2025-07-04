@@ -17,26 +17,27 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 
 @Component({
-    selector: 'app-report-list',
-    imports: [
-        MatListModule,
-        CommonModule,
-        RouterModule,
-        CommonModule,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatCardModule,
-        MatGridListModule,
-        MatTableModule,
-        MatSelectModule,
-        MatIconModule,
-        MatTooltipModule,
-        MatProgressSpinnerModule,
-        MatSnackBarModule,
-    ],
-    templateUrl: './report-list.component.html',
-    styleUrls: ['./report-list.component.css']
+	selector: 'app-report-list',
+	standalone: true,
+	imports: [
+		MatListModule,
+		CommonModule,
+		RouterModule,
+		CommonModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatGridListModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatTooltipModule,
+		MatProgressSpinnerModule,
+		MatSnackBarModule,
+	],
+	templateUrl: './report-list.component.html',
+	styleUrls: ['./report-list.component.css']
 })
 export class ReportListComponent {
 	constructor(private authService: AuthService) { }

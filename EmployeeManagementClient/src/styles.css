@@ -318,7 +318,7 @@ mat-form-field.full-width {
 	padding: 5px 0;
 }
 
-.mat-accent.mat-mdc-button-base --mat-text-button-ripple-color {
+.mat-accent.mat-mdc-button-base --mat-button-text-ripple-color {
 	color: #3786f3;
 }
 

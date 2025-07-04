@@ -7,10 +7,11 @@ import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angul
 import { Subscription } from 'rxjs';
 
 @Component({
-    selector: 'app-store-points-building-list',
-    imports: [CommonModule, ReactiveFormsModule, RouterModule],
-    templateUrl: './store-points-building-list.component.html',
-    styleUrls: ['./store-points-building-list.component.css']
+	selector: 'app-store-points-building-list',
+	standalone: true,
+	imports: [CommonModule, ReactiveFormsModule, RouterModule],
+	templateUrl: './store-points-building-list.component.html',
+	styleUrls: ['./store-points-building-list.component.css']
 })
 export class StorePointsBuildingListComponent implements OnInit, OnDestroy {
 	buildings: Building[] = [];

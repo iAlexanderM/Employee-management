@@ -15,23 +15,24 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TextFieldModule } from '@angular/cdk/text-field';
 
 @Component({
-    selector: 'app-contractor-points-nationality-create',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatCardModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatCheckboxModule,
-        MatButtonModule,
-        MatIconModule,
-        MatGridListModule,
-        MatTooltipModule,
-        TextFieldModule,
-    ],
-    templateUrl: './contractor-points-nationality-create.component.html',
-    styleUrls: ['./contractor-points-nationality-create.component.css']
+	selector: 'app-contractor-points-nationality-create',
+	standalone: true,
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatCheckboxModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule,
+		TextFieldModule,
+	],
+	templateUrl: './contractor-points-nationality-create.component.html',
+	styleUrls: ['./contractor-points-nationality-create.component.css']
 })
 export class ContractorPointsNationalityCreateComponent {
 	nationalityForm: FormGroup;

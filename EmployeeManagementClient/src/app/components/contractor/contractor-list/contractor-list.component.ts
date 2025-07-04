@@ -19,27 +19,28 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
-    selector: 'app-contractor-list',
-    imports: [
-        ReactiveFormsModule,
-        CommonModule,
-        RouterModule,
-        NgxMaskDirective,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatCardModule,
-        MatGridListModule,
-        MatTableModule,
-        MatSelectModule,
-        MatIconModule,
-        MatTooltipModule,
-        MatProgressSpinnerModule,
-        MatSnackBarModule,
-    ],
-    providers: [provideNgxMask()],
-    templateUrl: './contractor-list.component.html',
-    styleUrls: ['./contractor-list.component.css']
+	selector: 'app-contractor-list',
+	standalone: true,
+	imports: [
+		ReactiveFormsModule,
+		CommonModule,
+		RouterModule,
+		NgxMaskDirective,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatGridListModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatTooltipModule,
+		MatProgressSpinnerModule,
+		MatSnackBarModule,
+	],
+	providers: [provideNgxMask()],
+	templateUrl: './contractor-list.component.html',
+	styleUrls: ['./contractor-list.component.css']
 })
 export class ContractorListComponent implements OnInit, OnDestroy {
 	allContractors: Contractor[] = [];

@@ -18,25 +18,26 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
-    selector: 'app-contractor-points-citizenship-list',
-    imports: [
-        ReactiveFormsModule,
-        CommonModule,
-        RouterModule,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatCardModule,
-        MatGridListModule,
-        MatTableModule,
-        MatSelectModule,
-        MatIconModule,
-        MatTooltipModule,
-        MatProgressSpinnerModule,
-        MatSnackBarModule,
-    ],
-    templateUrl: './contractor-points-citizenship-list.component.html',
-    styleUrls: ['./contractor-points-citizenship-list.component.css']
+	selector: 'app-contractor-points-citizenship-list',
+	standalone: true,
+	imports: [
+		ReactiveFormsModule,
+		CommonModule,
+		RouterModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatGridListModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatTooltipModule,
+		MatProgressSpinnerModule,
+		MatSnackBarModule,
+	],
+	templateUrl: './contractor-points-citizenship-list.component.html',
+	styleUrls: ['./contractor-points-citizenship-list.component.css']
 })
 export class ContractorPointsCitizenshipListComponent implements OnInit, OnDestroy {
 

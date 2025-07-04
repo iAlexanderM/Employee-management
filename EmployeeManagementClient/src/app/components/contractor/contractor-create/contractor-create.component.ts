@@ -19,27 +19,28 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TextFieldModule } from '@angular/cdk/text-field';
 
 @Component({
-    selector: 'app-contractor-form',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        RouterModule,
-        NgxMaskDirective,
-        CitizenshipAndNationalityModalComponent,
-        MatCardModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatCheckboxModule,
-        MatButtonModule,
-        MatIconModule,
-        MatGridListModule,
-        MatTooltipModule,
-        TextFieldModule,
-    ],
-    providers: [provideNgxMask()],
-    templateUrl: './contractor-create.component.html',
-    styleUrls: ['./contractor-create.component.css']
+	selector: 'app-contractor-form',
+	standalone: true,
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		RouterModule,
+		NgxMaskDirective,
+		CitizenshipAndNationalityModalComponent,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatCheckboxModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule,
+		TextFieldModule,
+	],
+	providers: [provideNgxMask()],
+	templateUrl: './contractor-create.component.html',
+	styleUrls: ['./contractor-create.component.css']
 })
 export class ContractorCreateComponent implements OnInit {
 	contractorForm: FormGroup;

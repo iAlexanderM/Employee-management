@@ -21,22 +21,23 @@ export interface PassGroup {
 }
 
 @Component({
-    selector: 'app-pass-type-modal',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatCardModule,
-        MatTableModule,
-        MatSelectModule,
-        MatIconModule,
-        MatSnackBarModule,
-        MatProgressSpinnerModule,
-    ],
-    templateUrl: './pass-type-modal.component.html',
-    styleUrls: ['./pass-type-modal.component.css']
+	selector: 'app-pass-type-modal',
+	standalone: true,
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatSnackBarModule,
+		MatProgressSpinnerModule,
+	],
+	templateUrl: './pass-type-modal.component.html',
+	styleUrls: ['./pass-type-modal.component.css']
 })
 export class PassTypeModalComponent implements OnInit, OnDestroy {
 	@Output() modalClose = new EventEmitter<void>();

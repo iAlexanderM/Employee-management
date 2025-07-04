@@ -6,10 +6,11 @@ import { StorePointsService } from '../../../../services/store-points.service';
 import { Building } from '../../../../models/store-points.model';
 
 @Component({
-    selector: 'app-store-points-building-edit',
-    imports: [CommonModule, ReactiveFormsModule],
-    templateUrl: './store-points-building-edit.component.html',
-    styleUrls: ['./store-points-building-edit.component.css']
+	selector: 'app-store-points-building-edit',
+	standalone: true,
+	imports: [CommonModule, ReactiveFormsModule],
+	templateUrl: './store-points-building-edit.component.html',
+	styleUrls: ['./store-points-building-edit.component.css']
 })
 export class StorePointsBuildingEditComponent implements OnInit {
 	buildingForm: FormGroup;

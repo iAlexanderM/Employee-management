@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { BehaviorSubject, Subscription, Observable, of, Subject, forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError, takeUntil } from 'rxjs/operators';
@@ -20,40 +20,44 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { CommonModule } from '@angular/common';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
-    selector: 'app-store-pass-search',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatAutocompleteModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatButtonModule,
-        MatExpansionModule,
-        MatIconModule,
-        MatProgressSpinnerModule,
-        MatCheckboxModule,
-        MatCardModule,
-        MatDividerModule
-    ],
-    templateUrl: './store-pass-search.component.html',
-    styleUrls: ['./store-pass-search.component.css'],
-    animations: [
-        trigger('fadeIn', [
-            transition(':enter', [
-                style({ opacity: 0, transform: 'translateY(20px)' }),
-                animate('300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
-            ])
-        ])
-    ]
+	selector: 'app-store-pass-search',
+	standalone: true,
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatAutocompleteModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatButtonModule,
+		MatExpansionModule,
+		MatIconModule,
+		MatProgressSpinnerModule,
+		MatCheckboxModule,
+		MatCardModule,
+		MatDividerModule,
+		InfiniteScrollModule
+	],
+	templateUrl: './store-pass-search.component.html',
+	styleUrls: ['./store-pass-search.component.css'],
+	animations: [
+		trigger('fadeIn', [
+			transition(':enter', [
+				style({ opacity: 0, transform: 'translateY(20px)' }),
+				animate('300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+			])
+		])
+	]
 })
-export class StorePassSearchComponent implements OnInit, OnDestroy {
-	@ViewChild('loadMoreTrigger') loadMoreTrigger!: ElementRef;
+export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewInit {
+	@ViewChild('loadPreviousTrigger') loadPreviousTrigger!: ElementRef;
 
 	private readonly PAGE_SIZE = 100;
+	private readonly MAX_BUFFER_SIZE = 300; // Ограничение DOM для управления памятью
 	private readonly DEBOUNCE_TIME_MS = 300;
 	private readonly INTERSECTION_THRESHOLD = 0.1;
 	private readonly ROOT_MARGIN = '1000px';
@@ -65,8 +69,10 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 	isLoading = false;
 	errorMessage: string | null = null;
 	page = 1;
+	firstIndex = 0; // Индекс первого элемента в flattenedContractors
 	totalCount = 0;
 	hasMoreResults = true;
+	hasPreviousResults = false;
 	buildingSuggestions$ = new BehaviorSubject<string[]>([]);
 	floorSuggestions$ = new BehaviorSubject<string[]>([]);
 	lineSuggestions$ = new BehaviorSubject<string[]>([]);
@@ -118,13 +124,14 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 	}
 
 	ngAfterViewInit(): void {
-		if (this.loadMoreTrigger?.nativeElement) {
-			console.log('Observing loadMoreTrigger');
-			this.intersectionObserver.observe(this.loadMoreTrigger.nativeElement);
+		if (this.loadPreviousTrigger?.nativeElement) {
+			console.debug('Observing loadPreviousTrigger');
+			this.intersectionObserver.observe(this.loadPreviousTrigger.nativeElement);
 		} else {
-			console.error('loadMoreTrigger is not available in ngAfterViewInit');
+			setTimeout(() => this.observePreviousTrigger(), 100);
 		}
 		this.restoreScrollPosition();
+		this.cdr.markForCheck();
 	}
 
 	ngOnDestroy(): void {
@@ -132,6 +139,24 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 		this.intersectionObserver.disconnect();
 		this.destroy$.next();
 		this.destroy$.complete();
+	}
+
+	private observePreviousTrigger(): void {
+		if (this.loadPreviousTrigger?.nativeElement) {
+			console.debug('Observing loadPreviousTrigger');
+			this.intersectionObserver.observe(this.loadPreviousTrigger.nativeElement);
+		} else {
+			setTimeout(() => this.observePreviousTrigger(), 100);
+		}
+	}
+
+	private handleIntersection(entries: IntersectionObserverEntry[]): void {
+		entries.forEach(entry => {
+			if (entry.isIntersecting && !this.isLoading && this.hasPreviousResults) {
+				console.debug('IntersectionObserver triggered: Loading previous results');
+				this.scrollSubject.next();
+			}
+		});
 	}
 
 	private initializeResetSubscription(): void {
@@ -145,24 +170,14 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 		);
 	}
 
-	private handleIntersection(entries: IntersectionObserverEntry[]): void {
-		entries.forEach(entry => {
-			if (entry.isIntersecting && !this.isLoading && this.hasMoreResults) {
-				console.log('IntersectionObserver triggered: Loading more results');
-				this.scrollSubject.next();
-			}
-		});
-	}
-
 	private initializeScrollDebounce(): void {
 		this.subscriptions.push(
 			this.scrollSubject.pipe(
 				debounceTime(this.DEBOUNCE_TIME_MS),
 				takeUntil(this.destroy$)
 			).subscribe(() => {
-				console.log('Scroll debounce triggered: isLoading=', this.isLoading, 'hasMoreResults=', this.hasMoreResults);
-				if (!this.isLoading && this.hasMoreResults) {
-					this.loadMoreResults();
+				if (!this.isLoading && this.hasPreviousResults) {
+					this.loadPreviousResults();
 				}
 			})
 		);
@@ -176,7 +191,6 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 				takeUntil(this.destroy$)
 			).subscribe(() => {
 				if (this.areAllFieldsConfirmed()) {
-					console.log('Form value changed, triggering search');
 					this.searchPasses(true);
 				}
 			})
@@ -201,7 +215,9 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 				Line: criteria.line || null,
 				StoreNumber: criteria.storeNumber || null
 			};
-			this.searchPasses(true);
+			if (this.areAllFieldsConfirmed()) {
+				this.searchPasses(true);
+			}
 		}
 	}
 
@@ -224,17 +240,18 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 		results.forEach(store => {
 			const contractors = store.contractors ?? [];
 			contractors.forEach(contractor => {
-				const activePassesForStore = (contractor.activePasses ?? []).filter(pass =>
-					pass.building === store.building &&
-					pass.floor === store.floor &&
-					pass.line === store.line &&
-					pass.storeNumber === store.storeNumber
+				if (!contractor.contractorId) return;
+				const activePassesForStore = (contractor.activePasses ?? []).filter(
+					pass => pass.building === store.building &&
+						pass.floor === store.floor &&
+						pass.line === store.line &&
+						pass.storeNumber === store.storeNumber
 				);
-				const closedPassesForStore = (contractor.closedPasses ?? []).filter(pass =>
-					pass.building === store.building &&
-					pass.floor === store.floor &&
-					pass.line === store.line &&
-					pass.storeNumber === store.storeNumber
+				const closedPassesForStore = (contractor.closedPasses ?? []).filter(
+					pass => pass.building === store.building &&
+						pass.floor === store.floor &&
+						pass.line === store.line &&
+						pass.storeNumber === store.storeNumber
 				);
 
 				const hasActivePassesForStore = activePassesForStore.length > 0;
@@ -243,16 +260,13 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 				if (showActive && hasActivePassesForStore && !contractorIds.has(contractor.contractorId)) {
 					flattened.push({ store, contractor, isActive: true });
 					contractorIds.add(contractor.contractorId);
-				}
-				else if (showClosed && hasClosedPassesForStore && !hasActivePassesForStore && !contractorIds.has(contractor.contractorId)) {
+				} else if (showClosed && hasClosedPassesForStore && !hasActivePassesForStore && !contractorIds.has(contractor.contractorId)) {
 					flattened.push({ store, contractor, isActive: false });
 					contractorIds.add(contractor.contractorId);
 				}
 			});
 		});
 
-		// Убрана сортировка по contractorId, чтобы сохранить порядок бэкенда по MaxPassId
-		console.log('Flattened results:', flattened.map(item => ({ contractorId: item.contractor.contractorId, isActive: item.isActive })));
 		return flattened;
 	}
 
@@ -260,7 +274,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 		return Object.values(this.confirmedFields).every(value => value !== null && value.trim() !== '');
 	}
 
-	private searchPasses(isInitialSearch: boolean): void {
+	private searchPasses(isInitialSearch: boolean, direction: 'down' | 'up' = 'down'): void {
 		if (!this.areAllFieldsConfirmed()) {
 			this.errorMessage = 'Выберите значения для всех полей';
 			this.flattenedContractors = [];
@@ -268,48 +282,32 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 			return;
 		}
 
-		if (this.isLoading) {
-			console.log('Search blocked: isLoading is true');
-			return;
-		}
+		if (this.isLoading) return;
 
 		this.isLoading = true;
 		this.errorMessage = null;
-		const criteria = this.prepareSearchCriteria(isInitialSearch);
-
-		console.log('Searching with criteria:', criteria);
-
-		if (isInitialSearch) {
-			this.pageCache = {};
-			this.flattenedContractors = [];
-			this.page = 1;
-			this.hasMoreResults = true;
-			sessionStorage.removeItem('storePassScrollPosition');
-			sessionStorage.removeItem('storePassContractorId');
-		}
+		const criteria = this.prepareSearchCriteria(isInitialSearch, direction);
 
 		const cacheKey = this.getCacheKey(criteria);
 		if (this.pageCache[cacheKey]) {
-			console.log('Using cached data for key:', cacheKey);
-			this.handleSearchResponse(this.pageCache[cacheKey], isInitialSearch);
+			this.handleSearchResponse(this.pageCache[cacheKey], isInitialSearch, direction);
 			return;
 		}
 
 		this.passService.searchPassesByStore(criteria).subscribe({
 			next: (response: PassByStoreResponseDto[]) => {
-				console.log('Search response:', response);
 				if (!response || response.every(r => !r.contractors || r.contractors.length === 0)) {
 					this.errorMessage = null;
 					this.flattenedContractors = [];
 					this.totalCount = response[0]?.totalCount || 0;
 					this.hasMoreResults = false;
+					this.hasPreviousResults = this.firstIndex > 0;
 					this.isLoading = false;
 					this.cdr.markForCheck();
-					console.log('No contractors found, stopping infinite scroll');
 					return;
 				}
 				this.pageCache[cacheKey] = response;
-				this.handleSearchResponse(response, isInitialSearch);
+				this.handleSearchResponse(response, isInitialSearch, direction);
 			},
 			error: (error) => {
 				console.error('Search error:', error);
@@ -326,51 +324,61 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 		return `${criteria.building}_${criteria.floor}_${criteria.line}_${criteria.storeNumber}_${criteria.showActive}_${criteria.showClosed}_${criteria.page}`;
 	}
 
-	private handleSearchResponse(response: PassByStoreResponseDto[], isInitialSearch: boolean): void {
-		const showActive = this.searchForm.get('showActive')?.value;
-		const showClosed = this.searchForm.get('showClosed')?.value;
+	private handleSearchResponse(response: PassByStoreResponseDto[], isInitialSearch: boolean, direction: 'down' | 'up'): void {
+		const showActive = this.searchForm.get('showActive')?.value ?? true;
+		const showClosed = this.searchForm.get('showClosed')?.value ?? false;
 		const newFlattened = this.flattenResults(response, showActive, showClosed);
 
-		console.log('handleSearchResponse:', {
-			responseLength: response.length,
-			totalCount: response[0]?.totalCount,
-			newFlattenedLength: newFlattened.length,
-			flattenedContractorsLength: this.flattenedContractors.length,
-			hasMoreResults: this.hasMoreResults,
-			page: this.page
-		});
+		let scrollPosition = window.scrollY;
 
 		if (isInitialSearch) {
 			this.flattenedContractors = newFlattened;
+			this.firstIndex = 0;
+			this.page = 1;
 			window.scrollTo({ top: 0, behavior: 'smooth' });
+		} else if (direction === 'down') {
+			const existingIds = new Set(this.flattenedContractors.map(c => c.contractor.contractorId));
+			const filteredNewFlattened = newFlattened.filter(c => !existingIds.has(c.contractor.contractorId));
+			this.flattenedContractors.push(...filteredNewFlattened);
+			if (this.flattenedContractors.length > this.MAX_BUFFER_SIZE) {
+				this.flattenedContractors.splice(0, this.flattenedContractors.length - this.MAX_BUFFER_SIZE);
+				this.firstIndex += filteredNewFlattened.length;
+			}
+			this.page++;
 		} else {
 			const existingIds = new Set(this.flattenedContractors.map(c => c.contractor.contractorId));
 			const filteredNewFlattened = newFlattened.filter(c => !existingIds.has(c.contractor.contractorId));
-			this.flattenedContractors = [...this.flattenedContractors, ...filteredNewFlattened];
+			this.flattenedContractors.unshift(...filteredNewFlattened);
+			if (this.flattenedContractors.length > this.MAX_BUFFER_SIZE) {
+				this.flattenedContractors.splice(this.MAX_BUFFER_SIZE);
+			}
+			this.firstIndex = Math.max(0, this.firstIndex - filteredNewFlattened.length);
+			this.page--;
+			// Сохраняем позицию скролла
+			const newHeight = this.loadPreviousTrigger.nativeElement.offsetTop;
+			window.scrollTo({ top: scrollPosition + newHeight, behavior: 'auto' });
 		}
 
 		this.totalCount = response[0]?.totalCount || 0;
 		this.hasMoreResults = this.flattenedContractors.length < this.totalCount && response.length > 0;
-		this.page = isInitialSearch ? 1 : this.page + 1;
-
-		console.log('After update:', {
-			totalCount: this.totalCount,
-			flattenedContractorsLength: this.flattenedContractors.length,
-			hasMoreResults: this.hasMoreResults,
-			page: this.page
-		});
-
+		this.hasPreviousResults = this.firstIndex > 0;
 		this.isLoading = false;
+		console.debug('DOM elements:', this.flattenedContractors.length);
 		this.cdr.markForCheck();
 	}
 
-	private loadMoreResults(): void {
-		console.log('loadMoreResults called');
-		this.searchPasses(false);
+	public loadMoreResults(): void {
+		this.searchPasses(false, 'down');
 	}
 
-	private prepareSearchCriteria(isInitialSearch: boolean): SearchCriteria {
-		const targetPage = isInitialSearch ? 1 : this.page + 1;
+	private loadPreviousResults(): void {
+		if (this.page > 1) {
+			this.searchPasses(false, 'up');
+		}
+	}
+
+	private prepareSearchCriteria(isInitialSearch: boolean, direction: 'down' | 'up' = 'down'): SearchCriteria {
+		const targetPage = isInitialSearch ? 1 : (direction === 'down' ? this.page + 1 : this.page - 1);
 		const criteria: SearchCriteria = {
 			building: this.confirmedFields['Building'] || '',
 			floor: this.confirmedFields['Floor'] || '',
@@ -408,9 +416,12 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 		this.flattenedContractors = [];
 		this.errorMessage = null;
 		this.page = 1;
+		this.firstIndex = 0;
 		this.hasMoreResults = true;
+		this.hasPreviousResults = false;
 		this.pageCache = {};
 		this.totalCount = -1;
+		this.panelStates.clear();
 		this.cdr.markForCheck();
 	}
 
@@ -476,13 +487,9 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 		return `${store.building} ${store.floor} ${store.line} ${store.storeNumber}`.trim();
 	}
 
-	public formatPassStore(pass: PassDetailsDto): string {
-		return `${pass.building} ${pass.floor} ${pass.line} ${pass.storeNumber}`.trim();
-	}
-
 	public getAbsolutePhotoUrl(relativePath: string | null): string | null {
 		if (!relativePath) {
-			return null;
+			return this.DEFAULT_PHOTO_URL;
 		}
 		const cleanedPath = relativePath.replace(/\\/g, '/').replace(/^.*wwwroot\//, '');
 		return `${this.API_BASE_URL}/${cleanedPath}`;
@@ -500,57 +507,31 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 		let passes: PassDetailsDto[] = [];
 
 		if (showActive && !showClosed) {
-			passes = (contractor.activePasses ?? []);
+			passes = (contractor.activePasses ?? []).filter(
+				pass => pass.building === store.building &&
+					pass.floor === store.floor &&
+					pass.line === store.line &&
+					pass.storeNumber === store.storeNumber
+			);
 		} else if (showClosed) {
-			const closedPassesForStore = (contractor.closedPasses ?? []).filter(pass =>
-				pass.building === store.building &&
-				pass.floor === store.floor &&
-				pass.line === store.line &&
-				pass.storeNumber === store.storeNumber
+			const closedPassesForStore = (contractor.closedPasses ?? []).filter(
+				pass => pass.building === store.building &&
+					pass.floor === store.floor &&
+					pass.line === store.line &&
+					pass.storeNumber === store.storeNumber
 			);
 			passes = [
-				...(contractor.activePasses ?? []),
+				...(contractor.activePasses ?? []).filter(
+					pass => pass.building === store.building &&
+						pass.floor === store.floor &&
+						pass.line === store.line &&
+						pass.storeNumber === store.storeNumber
+				),
 				...closedPassesForStore
 			];
 		}
 
-		return passes.sort((a, b) => {
-			return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
-		});
-	}
-
-	public getActiveContractors(result: PassByStoreResponseDto): ContractorPassesDto[] {
-		return (result.contractors ?? []).filter(contractor => (contractor.activePasses ?? []).length > 0);
-	}
-
-	public getClosedContractors(result: PassByStoreResponseDto): ContractorPassesDto[] {
-		return (result.contractors ?? []).filter(contractor =>
-			(contractor.closedPasses ?? []).some(pass =>
-				pass.building === result.building &&
-				pass.floor === result.floor &&
-				pass.line === result.line &&
-				pass.storeNumber === result.storeNumber
-			) &&
-			!(contractor.activePasses ?? []).some(pass =>
-				pass.building === result.building &&
-				pass.floor === result.floor &&
-				pass.line === result.line &&
-				pass.storeNumber === result.storeNumber
-			)
-		);
-	}
-
-	private addMonths(date: Date, months: number): Date {
-		const newDate = new Date(date);
-		newDate.setMonth(newDate.getMonth() + months);
-		return newDate;
-	}
-
-	private formatDateToYYYYMMDD(date: Date): string {
-		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, '0');
-		const day = String(date.getDate()).padStart(2, '0');
-		return `${year}-${month}-${day}`;
+		return passes.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
 	}
 
 	public viewContractor(contractorId: number): void {
@@ -625,15 +606,12 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 					}
 				};
 
-				console.log("Подготовлены данные для передачи в state:", extendData);
-
 				this.isLoading = false;
 				this.router.navigate(['/transactions/create'], { state: extendData });
 			},
 			error: (err) => {
-				console.error('Ошибка при загрузке данных для продления через forkJoin:', err);
-				const message = err?.error?.message || err?.message || 'Неизвестная ошибка сервера';
-				this.errorMessage = `Ошибка при загрузке данных для продления: ${message}`;
+				console.error('Ошибка при загрузке данных для продления:', err);
+				this.errorMessage = `Ошибка при загрузке данных для продления: ${err.error?.message || 'Неизвестная ошибка'}`;
 				this.isLoading = false;
 				this.cdr.markForCheck();
 			}
@@ -687,7 +665,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 		}
 
 		this.isLoading = true;
-		const sub = this.passService.closePass(passId, reason, closedBy).subscribe({
+		this.passService.closePass(passId, reason, closedBy).subscribe({
 			next: () => {
 				const updatedActivePasses = (contractor.activePasses ?? []).filter(p => p.id !== passId);
 				const updatedClosedPasses = [
@@ -711,10 +689,8 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 				}
 
 				this.pageCache = {};
-
 				this.isLoading = false;
 				this.cdr.markForCheck();
-
 				this.searchPasses(true);
 			},
 			error: (err) => {
@@ -723,7 +699,6 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 				this.cdr.markForCheck();
 			}
 		});
-		this.subscriptions.push(sub);
 	}
 
 	public addPass(): void {
@@ -764,8 +739,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 				this.router.navigate(['/transactions/create'], { state: addData });
 			},
 			error: (err) => {
-				const message = err?.error?.message || err?.message || 'Неизвестная ошибка сервера';
-				this.errorMessage = `Ошибка при загрузке данных магазина: ${message}`;
+				this.errorMessage = `Ошибка при загрузке данных магазина: ${err.error?.message || 'Неизвестная ошибка'}`;
 				this.isLoading = false;
 				this.cdr.markForCheck();
 			}
@@ -776,7 +750,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy {
 		const key = `${contractorId}-${type}`;
 		const currentState = this.panelStates.get(key) || false;
 		this.panelStates.set(key, !currentState);
-		this.cdr.markForCheck();
+		this.cdr.detectChanges(); // Явное обновление DOM для mat-expansion-panel
 	}
 
 	public isPanelExpanded(contractorId: number, type: 'active' | 'closed'): boolean {

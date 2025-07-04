@@ -12,10 +12,11 @@ import { HistoryEntry, ChangeValue } from '../../../models/history.model';
 import { ApplicationUser } from '../../../models/application-user.model';
 
 @Component({
-    selector: 'app-store-edit',
-    imports: [CommonModule, ReactiveFormsModule, StoreSelectOrAddModalComponent],
-    templateUrl: './store-edit.component.html',
-    styleUrls: ['./store-edit.component.css']
+	selector: 'app-store-edit',
+	standalone: true,
+	imports: [CommonModule, ReactiveFormsModule, StoreSelectOrAddModalComponent],
+	templateUrl: './store-edit.component.html',
+	styleUrls: ['./store-edit.component.css']
 })
 export class StoreEditComponent implements OnInit {
 	storeForm: FormGroup;

@@ -15,21 +15,22 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
-    selector: 'app-contractor-select-modal',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatCardModule,
-        MatTableModule,
-        MatSelectModule,
-        MatIconModule,
-        MatSnackBarModule
-    ],
-    templateUrl: './contractor-modal.component.html',
-    styleUrls: ['./contractor-modal.component.css']
+	selector: 'app-contractor-select-modal',
+	standalone: true,
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatSnackBarModule
+	],
+	templateUrl: './contractor-modal.component.html',
+	styleUrls: ['./contractor-modal.component.css']
 })
 export class ContractorModalComponent implements OnInit, OnDestroy {
 	@Input() mode: 'select' | 'add' = 'select';

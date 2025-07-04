@@ -15,23 +15,24 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TextFieldModule } from '@angular/cdk/text-field';
 
 @Component({
-    selector: 'app-position-create',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatCardModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatCheckboxModule,
-        MatButtonModule,
-        MatIconModule,
-        MatGridListModule,
-        MatTooltipModule,
-        TextFieldModule,
-    ],
-    templateUrl: './position-create.component.html',
-    styleUrls: ['./position-create.component.css']
+	selector: 'app-position-create',
+	standalone: true,
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatCheckboxModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule,
+		TextFieldModule,
+	],
+	templateUrl: './position-create.component.html',
+	styleUrls: ['./position-create.component.css']
 })
 export class PositionCreateComponent {
 	positionForm: FormGroup;
