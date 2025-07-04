@@ -15,20 +15,20 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
-	selector: 'app-active-token-floating',
-	standalone: true,
-	imports: [
-		CommonModule,
-		MatButtonModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatCardModule,
-		MatTableModule,
-		MatSelectModule,
-		MatIconModule,
-		MatSnackBarModule],
-	templateUrl: './active-token-floating.component.html',
-	styleUrls: ['./active-token-floating.component.css']
+    selector: 'app-active-token-floating',
+    imports: [
+        CommonModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCardModule,
+        MatTableModule,
+        MatSelectModule,
+        MatIconModule,
+        MatSnackBarModule
+    ],
+    templateUrl: './active-token-floating.component.html',
+    styleUrls: ['./active-token-floating.component.css']
 })
 export class ActiveTokenComponent {
 	@Input() tokenData: QueueToken | null = null;

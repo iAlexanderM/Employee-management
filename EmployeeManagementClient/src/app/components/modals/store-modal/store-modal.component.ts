@@ -11,19 +11,19 @@ import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 
 @Component({
-	selector: 'app-store-select-or-add-modal',
-	standalone: true,
-	imports: [
-		CommonModule,
-		FormsModule,
-		ReactiveFormsModule,
-		MatButtonModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatCardModule,
-		MatTableModule,],
-	templateUrl: './store-modal.component.html',
-	styleUrls: ['./store-modal.component.css']
+    selector: 'app-store-select-or-add-modal',
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCardModule,
+        MatTableModule,
+    ],
+    templateUrl: './store-modal.component.html',
+    styleUrls: ['./store-modal.component.css']
 })
 export class StoreModalComponent implements OnInit, OnDestroy {
 	@Input() fieldName: 'building' | 'floor' | 'line' | 'storeNumber' = 'storeNumber';

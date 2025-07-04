@@ -29,21 +29,20 @@ export const MY_DATE_FORMATS = {
 };
 
 @Component({
-	selector: 'app-issued-passes-report',
-	standalone: true,
-	imports: [
-		CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
-		MatButtonModule, MatDatepickerModule, MatNativeDateModule, MatTableModule,
-		MatIconModule, MatAutocompleteModule, MatPaginatorModule, MatGridListModule,
-		MatCheckboxModule, MatCardModule
-	],
-	templateUrl: './issued-passes-report.component.html',
-	styleUrls: ['./issued-passes-report.component.css'],
-	providers: [
-		{ provide: MAT_DATE_LOCALE, useValue: 'ru-RU' },
-		{ provide: DateAdapter, useClass: NativeDateAdapter },
-		{ provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
-	]
+    selector: 'app-issued-passes-report',
+    imports: [
+        CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
+        MatButtonModule, MatDatepickerModule, MatNativeDateModule, MatTableModule,
+        MatIconModule, MatAutocompleteModule, MatPaginatorModule, MatGridListModule,
+        MatCheckboxModule, MatCardModule
+    ],
+    templateUrl: './issued-passes-report.component.html',
+    styleUrls: ['./issued-passes-report.component.css'],
+    providers: [
+        { provide: MAT_DATE_LOCALE, useValue: 'ru-RU' },
+        { provide: DateAdapter, useClass: NativeDateAdapter },
+        { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
+    ]
 })
 export class IssuedPassesReportComponent implements OnInit, OnDestroy {
 	reportForm: FormGroup;

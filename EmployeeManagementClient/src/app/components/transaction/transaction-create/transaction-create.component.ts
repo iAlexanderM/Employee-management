@@ -30,19 +30,18 @@ interface TransactionFormData {
 }
 
 @Component({
-	selector: 'app-transaction-create',
-	standalone: true,
-	imports: [
-		CommonModule,
-		ReactiveFormsModule,
-		ContractorModalComponent,
-		StoreModalComponent,
-		PassTypeModalComponent,
-		PositionModalComponent,
-		ActiveTokenComponent
-	],
-	templateUrl: './transaction-create.component.html',
-	styleUrls: ['./transaction-create.component.css']
+    selector: 'app-transaction-create',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        ContractorModalComponent,
+        StoreModalComponent,
+        PassTypeModalComponent,
+        PositionModalComponent,
+        ActiveTokenComponent
+    ],
+    templateUrl: './transaction-create.component.html',
+    styleUrls: ['./transaction-create.component.css']
 })
 export class TransactionCreateComponent implements OnInit, OnDestroy {
 	transactionForms: TransactionFormData[] = [];

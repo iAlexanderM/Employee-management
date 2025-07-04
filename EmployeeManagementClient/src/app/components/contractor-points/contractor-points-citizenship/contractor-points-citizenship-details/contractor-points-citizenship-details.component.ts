@@ -15,23 +15,22 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TextFieldModule } from '@angular/cdk/text-field';
 
 @Component({
-	selector: 'app-contractor-points-citizenship-details',
-	standalone: true,
-	imports: [
-		CommonModule,
-		MatCardModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatSelectModule,
-		MatCheckboxModule,
-		MatButtonModule,
-		MatIconModule,
-		MatGridListModule,
-		MatTooltipModule,
-		TextFieldModule,
-	],
-	templateUrl: './contractor-points-citizenship-details.component.html',
-	styleUrl: './contractor-points-citizenship-details.component.css'
+    selector: 'app-contractor-points-citizenship-details',
+    imports: [
+        CommonModule,
+        MatCardModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatCheckboxModule,
+        MatButtonModule,
+        MatIconModule,
+        MatGridListModule,
+        MatTooltipModule,
+        TextFieldModule,
+    ],
+    templateUrl: './contractor-points-citizenship-details.component.html',
+    styleUrl: './contractor-points-citizenship-details.component.css'
 })
 export class ContractorPointsCitizenshipDetailsComponent implements OnInit {
 	citizenship: Citizenship | null = null;

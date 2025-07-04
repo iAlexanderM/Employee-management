@@ -23,33 +23,32 @@ import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
-	selector: 'app-store-pass-search',
-	standalone: true,
-	changeDetection: ChangeDetectionStrategy.OnPush,
-	imports: [
-		CommonModule,
-		ReactiveFormsModule,
-		MatAutocompleteModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatButtonModule,
-		MatExpansionModule,
-		MatIconModule,
-		MatProgressSpinnerModule,
-		MatCheckboxModule,
-		MatCardModule,
-		MatDividerModule
-	],
-	templateUrl: './store-pass-search.component.html',
-	styleUrls: ['./store-pass-search.component.css'],
-	animations: [
-		trigger('fadeIn', [
-			transition(':enter', [
-				style({ opacity: 0, transform: 'translateY(20px)' }),
-				animate('300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
-			])
-		])
-	]
+    selector: 'app-store-pass-search',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        MatAutocompleteModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule,
+        MatExpansionModule,
+        MatIconModule,
+        MatProgressSpinnerModule,
+        MatCheckboxModule,
+        MatCardModule,
+        MatDividerModule
+    ],
+    templateUrl: './store-pass-search.component.html',
+    styleUrls: ['./store-pass-search.component.css'],
+    animations: [
+        trigger('fadeIn', [
+            transition(':enter', [
+                style({ opacity: 0, transform: 'translateY(20px)' }),
+                animate('300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+            ])
+        ])
+    ]
 })
 export class StorePassSearchComponent implements OnInit, OnDestroy {
 	@ViewChild('loadMoreTrigger') loadMoreTrigger!: ElementRef;

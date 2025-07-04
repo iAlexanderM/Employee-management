@@ -15,24 +15,23 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TextFieldModule } from '@angular/cdk/text-field';
 
 @Component({
-	selector: 'app-contractor-points-citizenship-create',
-	standalone: true,
-	imports: [
-		CommonModule,
-		ReactiveFormsModule,
-		MatCardModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatSelectModule,
-		MatCheckboxModule,
-		MatButtonModule,
-		MatIconModule,
-		MatGridListModule,
-		MatTooltipModule,
-		TextFieldModule,
-	],
-	templateUrl: './contractor-points-citizenship-create.component.html',
-	styleUrls: ['./contractor-points-citizenship-create.component.css']
+    selector: 'app-contractor-points-citizenship-create',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        MatCardModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatCheckboxModule,
+        MatButtonModule,
+        MatIconModule,
+        MatGridListModule,
+        MatTooltipModule,
+        TextFieldModule,
+    ],
+    templateUrl: './contractor-points-citizenship-create.component.html',
+    styleUrls: ['./contractor-points-citizenship-create.component.css']
 })
 export class ContractorPointsCitizenshipCreateComponent {
 	citizenshipForm: FormGroup;

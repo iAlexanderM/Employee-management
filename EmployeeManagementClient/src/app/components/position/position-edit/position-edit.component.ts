@@ -15,23 +15,22 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
-	selector: 'app-position-edit',
-	standalone: true,
-	imports: [
-		CommonModule,
-		ReactiveFormsModule,
-		MatCardModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatSelectModule,
-		MatCheckboxModule,
-		MatButtonModule,
-		MatIconModule,
-		MatGridListModule,
-		MatTooltipModule,
-	],
-	templateUrl: './position-edit.component.html',
-	styleUrls: ['./position-edit.component.css']
+    selector: 'app-position-edit',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        MatCardModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatCheckboxModule,
+        MatButtonModule,
+        MatIconModule,
+        MatGridListModule,
+        MatTooltipModule,
+    ],
+    templateUrl: './position-edit.component.html',
+    styleUrls: ['./position-edit.component.css']
 })
 export class PositionEditComponent implements OnInit {
 	position: Position | null = null;

@@ -11,11 +11,10 @@ import {
 } from '@angular/forms';
 
 @Component({
-	selector: 'app-store-points-line-edit',
-	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule], // убираем FormsModule, добавляем ReactiveFormsModule
-	templateUrl: './store-points-line-edit.component.html',
-	styleUrls: ['./store-points-line-edit.component.css']
+    selector: 'app-store-points-line-edit',
+    imports: [CommonModule, ReactiveFormsModule], // убираем FormsModule, добавляем ReactiveFormsModule
+    templateUrl: './store-points-line-edit.component.html',
+    styleUrls: ['./store-points-line-edit.component.css']
 })
 export class StorePointsLineEditComponent implements OnInit {
 	line: Line | null = null;

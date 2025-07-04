@@ -6,11 +6,10 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
-	selector: 'app-transaction-details',
-	standalone: true,
-	imports: [CommonModule],
-	templateUrl: './transaction-details.component.html',
-	styleUrls: ['./transaction-details.component.css']
+    selector: 'app-transaction-details',
+    imports: [CommonModule],
+    templateUrl: './transaction-details.component.html',
+    styleUrls: ['./transaction-details.component.css']
 })
 export class TransactionDetailsComponent implements OnInit {
 	transaction: PassTransaction | null = null;

@@ -5,11 +5,10 @@ import { StorePointsService } from '../../../../services/store-points.service';
 import { Router } from '@angular/router';
 
 @Component({
-	selector: 'app-store-points-line-create',
-	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
-	templateUrl: './store-points-line-create.component.html',
-	styleUrls: ['./store-points-line-create.component.css']
+    selector: 'app-store-points-line-create',
+    imports: [CommonModule, ReactiveFormsModule],
+    templateUrl: './store-points-line-create.component.html',
+    styleUrls: ['./store-points-line-create.component.css']
 })
 export class StorePointsLineCreateComponent {
 	lineForm: FormGroup;

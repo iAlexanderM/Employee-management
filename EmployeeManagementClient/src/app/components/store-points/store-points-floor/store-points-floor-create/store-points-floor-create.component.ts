@@ -5,11 +5,10 @@ import { StorePointsService } from '../../../../services/store-points.service';
 import { Router } from '@angular/router';
 
 @Component({
-	selector: 'app-store-points-floor-create',
-	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
-	templateUrl: './store-points-floor-create.component.html',
-	styleUrls: ['./store-points-floor-create.component.css']
+    selector: 'app-store-points-floor-create',
+    imports: [CommonModule, ReactiveFormsModule],
+    templateUrl: './store-points-floor-create.component.html',
+    styleUrls: ['./store-points-floor-create.component.css']
 })
 export class StorePointsFloorCreateComponent {
 	floorForm: FormGroup;

@@ -31,41 +31,40 @@ export const MY_DATE_FORMATS = {
 };
 
 @Component({
-	selector: 'app-passes-summary-report',
-	standalone: true,
-	imports: [
-		ReactiveFormsModule,
-		CommonModule,
-		MatButtonModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatCardModule,
-		MatGridListModule,
-		MatTableModule,
-		MatSelectModule,
-		MatIconModule,
-		MatTooltipModule,
-		MatProgressSpinnerModule,
-		MatSnackBarModule,
-		MatDatepickerModule,
-		MatNativeDateModule,
-	],
-	templateUrl: './passes-summary-report.component.html',
-	styleUrls: ['./passes-summary-report.component.css'],
-	providers: [
-		{ provide: MAT_DATE_LOCALE, useValue: 'ru-RU' },
-		{ provide: DateAdapter, useClass: NativeDateAdapter },
-		{ provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
-		DatePipe
-	],
-	animations: [
-		trigger('detailExpand', [
-			state('collapsed, void', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-			state('expanded', style({ height: '*', visibility: 'visible' })),
-			transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-			transition('void => expanded', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'))
-		]),
-	],
+    selector: 'app-passes-summary-report',
+    imports: [
+        ReactiveFormsModule,
+        CommonModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCardModule,
+        MatGridListModule,
+        MatTableModule,
+        MatSelectModule,
+        MatIconModule,
+        MatTooltipModule,
+        MatProgressSpinnerModule,
+        MatSnackBarModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+    ],
+    templateUrl: './passes-summary-report.component.html',
+    styleUrls: ['./passes-summary-report.component.css'],
+    providers: [
+        { provide: MAT_DATE_LOCALE, useValue: 'ru-RU' },
+        { provide: DateAdapter, useClass: NativeDateAdapter },
+        { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
+        DatePipe
+    ],
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed, void', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+            transition('void => expanded', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'))
+        ]),
+    ]
 })
 export class PassesSummaryReportComponent implements OnInit {
 	reportForm: FormGroup;

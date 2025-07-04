@@ -12,21 +12,21 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
-	selector: 'app-store-select-or-add-modal',
-	standalone: true,
-	imports: [
-		CommonModule,
-		FormsModule,
-		ReactiveFormsModule,
-		MatButtonModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatCardModule,
-		MatTableModule,
-		MatSelectModule,
-		MatIconModule],
-	templateUrl: './store-select-or-add-modal.component.html',
-	styleUrls: ['./store-select-or-add-modal.component.css']
+    selector: 'app-store-select-or-add-modal',
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCardModule,
+        MatTableModule,
+        MatSelectModule,
+        MatIconModule
+    ],
+    templateUrl: './store-select-or-add-modal.component.html',
+    styleUrls: ['./store-select-or-add-modal.component.css']
 })
 export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 	@Input() fieldName: 'building' | 'floor' | 'line' | 'storeNumber' = 'building';

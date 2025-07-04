@@ -24,20 +24,19 @@ export const MY_DATE_FORMATS = {
 };
 
 @Component({
-	selector: 'app-financial-report',
-	standalone: true,
-	imports: [
-		CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
-		MatButtonModule, MatDatepickerModule, MatNativeDateModule, MatTableModule,
-		MatIconModule, MatGridListModule, MatCardModule,
-	],
-	templateUrl: './financial-report.component.html',
-	styleUrls: ['./financial-report.component.css'],
-	providers: [
-		{ provide: MAT_DATE_LOCALE, useValue: 'ru-RU' },
-		{ provide: DateAdapter, useClass: NativeDateAdapter },
-		{ provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
-	]
+    selector: 'app-financial-report',
+    imports: [
+        CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
+        MatButtonModule, MatDatepickerModule, MatNativeDateModule, MatTableModule,
+        MatIconModule, MatGridListModule, MatCardModule,
+    ],
+    templateUrl: './financial-report.component.html',
+    styleUrls: ['./financial-report.component.css'],
+    providers: [
+        { provide: MAT_DATE_LOCALE, useValue: 'ru-RU' },
+        { provide: DateAdapter, useClass: NativeDateAdapter },
+        { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
+    ]
 })
 export class FinancialReportComponent implements OnInit {
 	reportForm: FormGroup;

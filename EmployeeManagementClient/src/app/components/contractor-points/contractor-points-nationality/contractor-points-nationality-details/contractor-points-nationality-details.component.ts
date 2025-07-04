@@ -16,23 +16,22 @@ import { TextFieldModule } from '@angular/cdk/text-field';
 
 
 @Component({
-	selector: 'app-contractor-points-nationality-details',
-	standalone: true,
-	imports: [
-		CommonModule,
-		MatCardModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatSelectModule,
-		MatCheckboxModule,
-		MatButtonModule,
-		MatIconModule,
-		MatGridListModule,
-		MatTooltipModule,
-		TextFieldModule,
-	],
-	templateUrl: './contractor-points-nationality-details.component.html',
-	styleUrl: './contractor-points-nationality-details.component.css'
+    selector: 'app-contractor-points-nationality-details',
+    imports: [
+        CommonModule,
+        MatCardModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatCheckboxModule,
+        MatButtonModule,
+        MatIconModule,
+        MatGridListModule,
+        MatTooltipModule,
+        TextFieldModule,
+    ],
+    templateUrl: './contractor-points-nationality-details.component.html',
+    styleUrl: './contractor-points-nationality-details.component.css'
 })
 export class ContractorPointsNationalityDetailsComponent implements OnInit {
 	nationality: Nationality | null = null;

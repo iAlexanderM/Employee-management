@@ -19,26 +19,25 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
-	selector: 'app-issued-passes',
-	standalone: true,
-	imports: [
-		ReactiveFormsModule,
-		CommonModule,
-		RouterModule,
-		MatButtonModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatCardModule,
-		MatGridListModule,
-		MatTableModule,
-		MatSelectModule,
-		MatIconModule,
-		MatTooltipModule,
-		MatProgressSpinnerModule,
-		MatSnackBarModule,
-	],
-	templateUrl: './issued-passes.component.html',
-	styleUrls: ['./issued-passes.component.css']
+    selector: 'app-issued-passes',
+    imports: [
+        ReactiveFormsModule,
+        CommonModule,
+        RouterModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCardModule,
+        MatGridListModule,
+        MatTableModule,
+        MatSelectModule,
+        MatIconModule,
+        MatTooltipModule,
+        MatProgressSpinnerModule,
+        MatSnackBarModule,
+    ],
+    templateUrl: './issued-passes.component.html',
+    styleUrls: ['./issued-passes.component.css']
 })
 export class IssuedPassesComponent implements OnInit {
 	passes: PassPrintQueueItem[] = [];

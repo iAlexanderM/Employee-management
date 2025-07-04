@@ -11,12 +11,15 @@
 			"prefix": "app",
 			"architect": {
 				"build": {
-					"builder": "@angular-devkit/build-angular:browser",
+					"builder": "@angular-devkit/build-angular:application",
 					"options": {
-						"outputPath": "dist/employee-management-client",
-						"index": "src/index.html",
-						"main": "src/main.ts",
-						"polyfills": "src/polyfills.ts",
+						"outputPath": {
+              "base": "dist/employee-management-client"
+            },
+            "index": "src/index.html",
+						"polyfills": [
+              "src/polyfills.ts"
+            ],
 						"tsConfig": "tsconfig.app.json",
 						"aot": true,
 						"assets": [
@@ -28,7 +31,8 @@
 							"node_modules/material-design-icons-iconfont/dist/material-design-icons.css",
 							"@angular/material/prebuilt-themes/azure-blue.css"
 						],
-						"scripts": []
+            "scripts": [],
+            "browser": "src/main.ts"
 					},
 					"configurations": {
 						"production": {
@@ -46,10 +50,8 @@
 							],
 							"outputHashing": "all"
 						},
-						"development": {
-							"buildOptimizer": false,
-							"optimization": false,
-							"vendorChunk": true,
+            "development": {
+              "optimization": false,
 							"extractLicenses": false,
 							"sourceMap": true,
 							"namedChunks": true
@@ -63,19 +65,19 @@
 						"proxyConfig": "proxy.conf.json"
 					},
 					"configurations": {
-						"production": {
-							"browserTarget": "EmployeeManagementClient:build:production"
+            "production": {
+              "buildTarget": "EmployeeManagementClient:build:production"
 						},
-						"development": {
-							"browserTarget": "EmployeeManagementClient:build:development"
+            "development": {
+              "buildTarget": "EmployeeManagementClient:build:development"
 						}
 					},
 					"defaultConfiguration": "development"
 				},
 				"extract-i18n": {
 					"builder": "@angular-devkit/build-angular:extract-i18n",
-					"options": {
-						"browserTarget": "EmployeeManagementClient:build"
+          "options": {
+            "buildTarget": "EmployeeManagementClient:build"
 					}
 				},
 				"test": {

@@ -11,19 +11,18 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
-	selector: 'app-login',
-	standalone: true,
-	imports: [
-		ReactiveFormsModule,
-		CommonModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatButtonModule,
-		MatCardModule,
-		MatIconModule
-	],
-	templateUrl: './login.component.html',
-	styleUrls: ['./login.component.css']
+    selector: 'app-login',
+    imports: [
+        ReactiveFormsModule,
+        CommonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule,
+        MatCardModule,
+        MatIconModule
+    ],
+    templateUrl: './login.component.html',
+    styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
 	loginForm: FormGroup;

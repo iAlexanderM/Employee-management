@@ -6,11 +6,10 @@ import { StorePointsService } from '../../../../services/store-points.service';
 import { Floor } from '../../../../models/store-points.model';
 
 @Component({
-	selector: 'app-store-points-floor-edit',
-	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
-	templateUrl: './store-points-floor-edit.component.html',
-	styleUrls: ['./store-points-floor-edit.component.css']
+    selector: 'app-store-points-floor-edit',
+    imports: [CommonModule, ReactiveFormsModule],
+    templateUrl: './store-points-floor-edit.component.html',
+    styleUrls: ['./store-points-floor-edit.component.css']
 })
 export class StorePointsFloorEditComponent implements OnInit {
 	floorForm: FormGroup;

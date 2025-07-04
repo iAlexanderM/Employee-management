@@ -19,26 +19,25 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 
 @Component({
-	selector: 'app-position-list',
-	standalone: true,
-	imports: [
-		ReactiveFormsModule,
-		CommonModule,
-		RouterModule,
-		MatButtonModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatCardModule,
-		MatGridListModule,
-		MatTableModule,
-		MatSelectModule,
-		MatIconModule,
-		MatTooltipModule,
-		MatProgressSpinnerModule,
-		MatSnackBarModule,
-	],
-	templateUrl: './position-list.component.html',
-	styleUrls: ['./position-list.component.css']
+    selector: 'app-position-list',
+    imports: [
+        ReactiveFormsModule,
+        CommonModule,
+        RouterModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCardModule,
+        MatGridListModule,
+        MatTableModule,
+        MatSelectModule,
+        MatIconModule,
+        MatTooltipModule,
+        MatProgressSpinnerModule,
+        MatSnackBarModule,
+    ],
+    templateUrl: './position-list.component.html',
+    styleUrls: ['./position-list.component.css']
 })
 export class PositionListComponent implements OnInit, OnDestroy {
 

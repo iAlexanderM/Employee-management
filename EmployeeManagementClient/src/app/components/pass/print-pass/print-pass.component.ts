@@ -13,17 +13,16 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
-	selector: 'app-print-pass',
-	standalone: true,
-	imports: [
-		CommonModule,
-		HttpClientModule,
-		MatCardModule,
-		MatButtonModule,
-		MatIconModule,
-	],
-	templateUrl: './print-pass.component.html',
-	styleUrls: ['./print-pass.component.css'],
+    selector: 'app-print-pass',
+    imports: [
+        CommonModule,
+        HttpClientModule,
+        MatCardModule,
+        MatButtonModule,
+        MatIconModule,
+    ],
+    templateUrl: './print-pass.component.html',
+    styleUrls: ['./print-pass.component.css']
 })
 export class PrintPassComponent implements OnInit {
 	passes: Pass[] = [];

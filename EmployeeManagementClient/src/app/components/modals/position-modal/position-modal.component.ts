@@ -14,21 +14,21 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
-	selector: 'app-position-modal',
-	standalone: true,
-	imports: [
-		CommonModule,
-		ReactiveFormsModule,
-		MatButtonModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatCardModule,
-		MatTableModule,
-		MatSelectModule,
-		MatIconModule,
-		MatSnackBarModule],
-	templateUrl: './position-modal.component.html',
-	styleUrls: ['./position-modal.component.css']
+    selector: 'app-position-modal',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCardModule,
+        MatTableModule,
+        MatSelectModule,
+        MatIconModule,
+        MatSnackBarModule
+    ],
+    templateUrl: './position-modal.component.html',
+    styleUrls: ['./position-modal.component.css']
 })
 export class PositionModalComponent implements OnInit, OnChanges {
 	@Input() isVisible: boolean = false;

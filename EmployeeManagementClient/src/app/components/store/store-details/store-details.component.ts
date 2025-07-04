@@ -13,19 +13,18 @@ import { Subscription } from 'rxjs';
 import { UserService } from '../../../services/user.service';
 
 @Component({
-	selector: 'app-store-details',
-	standalone: true,
-	imports: [CommonModule, RouterModule, ReactiveFormsModule],
-	templateUrl: './store-details.component.html',
-	styleUrls: ['./store-details.component.css'],
-	animations: [
-		trigger('fadeIn', [
-			transition(':enter', [
-				style({ opacity: 0 }),
-				animate('300ms ease-out', style({ opacity: 1 })),
-			]),
-		]),
-	],
+    selector: 'app-store-details',
+    imports: [CommonModule, RouterModule, ReactiveFormsModule],
+    templateUrl: './store-details.component.html',
+    styleUrls: ['./store-details.component.css'],
+    animations: [
+        trigger('fadeIn', [
+            transition(':enter', [
+                style({ opacity: 0 }),
+                animate('300ms ease-out', style({ opacity: 1 })),
+            ]),
+        ]),
+    ]
 })
 export class StoreDetailsComponent implements OnInit, OnDestroy {
 	store: Store | null = null;

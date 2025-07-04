@@ -7,11 +7,10 @@ import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angul
 import { Subscription } from 'rxjs';
 
 @Component({
-	selector: 'app-store-points-floor-list',
-	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule, RouterModule],
-	templateUrl: './store-points-floor-list.component.html',
-	styleUrls: ['./store-points-floor-list.component.css']
+    selector: 'app-store-points-floor-list',
+    imports: [CommonModule, ReactiveFormsModule, RouterModule],
+    templateUrl: './store-points-floor-list.component.html',
+    styleUrls: ['./store-points-floor-list.component.css']
 })
 export class StorePointsFloorListComponent implements OnInit, OnDestroy {
 	floors: Floor[] = [];

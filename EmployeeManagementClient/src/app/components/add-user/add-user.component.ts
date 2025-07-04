@@ -6,11 +6,10 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
-	selector: 'app-add-user',
-	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
-	templateUrl: './add-user.component.html',
-	styleUrls: ['./add-user.component.css']
+    selector: 'app-add-user',
+    imports: [CommonModule, ReactiveFormsModule],
+    templateUrl: './add-user.component.html',
+    styleUrls: ['./add-user.component.css']
 })
 export class AddUserComponent {
 	addUserForm: FormGroup;

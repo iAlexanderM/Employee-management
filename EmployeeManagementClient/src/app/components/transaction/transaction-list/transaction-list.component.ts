@@ -15,19 +15,18 @@ import { AuthService } from '../../../services/auth.service';
 import { PassService } from '../../../services/pass.service';
 
 @Component({
-	selector: 'app-transaction-list',
-	standalone: true,
-	imports: [
-		CommonModule,
-		RouterModule,
-		ReactiveFormsModule,
-		MatAutocompleteModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatButtonModule
-	],
-	templateUrl: './transaction-list.component.html',
-	styleUrls: ['./transaction-list.component.css']
+    selector: 'app-transaction-list',
+    imports: [
+        CommonModule,
+        RouterModule,
+        ReactiveFormsModule,
+        MatAutocompleteModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule
+    ],
+    templateUrl: './transaction-list.component.html',
+    styleUrls: ['./transaction-list.component.css']
 })
 export class TransactionListComponent implements OnInit {
 	searchForm!: FormGroup;

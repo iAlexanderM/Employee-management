@@ -7,11 +7,10 @@ import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angul
 import { Subscription } from 'rxjs';
 
 @Component({
-	selector: 'app-store-points-line-list',
-	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule, RouterModule],
-	templateUrl: './store-points-line-list.component.html',
-	styleUrls: ['./store-points-line-list.component.css']
+    selector: 'app-store-points-line-list',
+    imports: [CommonModule, ReactiveFormsModule, RouterModule],
+    templateUrl: './store-points-line-list.component.html',
+    styleUrls: ['./store-points-line-list.component.css']
 })
 export class StorePointsLineListComponent implements OnInit, OnDestroy {
 	lines: Line[] = [];

@@ -5,11 +5,10 @@ import { StorePointsService } from '../../../../services/store-points.service';
 import { Building } from '../../../../models/store-points.model';
 
 @Component({
-	selector: 'app-store-points-building-details',
-	standalone: true,
-	imports: [CommonModule],
-	templateUrl: './store-points-building-details.component.html',
-	styleUrls: ['./store-points-building-details.component.css']
+    selector: 'app-store-points-building-details',
+    imports: [CommonModule],
+    templateUrl: './store-points-building-details.component.html',
+    styleUrls: ['./store-points-building-details.component.css']
 })
 export class StorePointsBuildingDetailsComponent implements OnInit {
 	building: Building | null = null;

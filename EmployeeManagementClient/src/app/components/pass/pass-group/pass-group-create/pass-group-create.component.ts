@@ -15,25 +15,24 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TextFieldModule } from '@angular/cdk/text-field';
 
 @Component({
-	selector: 'app-pass-group-create',
-	templateUrl: './pass-group-create.component.html',
-	styleUrls: ['./pass-group-create.component.css'],
-	standalone: true,
-	imports: [
-		CommonModule,
-		ReactiveFormsModule,
-		RouterModule,
-		MatCardModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatSelectModule,
-		MatCheckboxModule,
-		MatButtonModule,
-		MatIconModule,
-		MatGridListModule,
-		MatTooltipModule,
-		TextFieldModule,
-	],
+    selector: 'app-pass-group-create',
+    templateUrl: './pass-group-create.component.html',
+    styleUrls: ['./pass-group-create.component.css'],
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        RouterModule,
+        MatCardModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatCheckboxModule,
+        MatButtonModule,
+        MatIconModule,
+        MatGridListModule,
+        MatTooltipModule,
+        TextFieldModule,
+    ]
 })
 export class PassGroupCreateComponent {
 	groupForm: FormGroup;

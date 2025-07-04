@@ -15,23 +15,22 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
-	selector: 'app-contractor-points-citizenship-edit',
-	standalone: true,
-	imports: [
-		CommonModule,
-		ReactiveFormsModule,
-		MatCardModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatSelectModule,
-		MatCheckboxModule,
-		MatButtonModule,
-		MatIconModule,
-		MatGridListModule,
-		MatTooltipModule,
-	],
-	templateUrl: './contractor-points-citizenship-edit.component.html',
-	styleUrls: ['./contractor-points-citizenship-edit.component.css']
+    selector: 'app-contractor-points-citizenship-edit',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        MatCardModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatCheckboxModule,
+        MatButtonModule,
+        MatIconModule,
+        MatGridListModule,
+        MatTooltipModule,
+    ],
+    templateUrl: './contractor-points-citizenship-edit.component.html',
+    styleUrls: ['./contractor-points-citizenship-edit.component.css']
 })
 export class ContractorPointsCitizenshipEditComponent implements OnInit {
 	citizenship: Citizenship | null = null;

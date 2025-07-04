@@ -17,25 +17,24 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TextFieldModule } from '@angular/cdk/text-field';
 
 @Component({
-	selector: 'app-pass-type-edit',
-	standalone: true,
-	imports: [
-		CommonModule,
-		ReactiveFormsModule,
-		PassGroupModalComponent,
-		MatCardModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatSelectModule,
-		MatCheckboxModule,
-		MatButtonModule,
-		MatIconModule,
-		MatGridListModule,
-		MatTooltipModule,
-		TextFieldModule,
-	],
-	templateUrl: './pass-type-edit.component.html',
-	styleUrls: ['./pass-type-edit.component.css'],
+    selector: 'app-pass-type-edit',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        PassGroupModalComponent,
+        MatCardModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatCheckboxModule,
+        MatButtonModule,
+        MatIconModule,
+        MatGridListModule,
+        MatTooltipModule,
+        TextFieldModule,
+    ],
+    templateUrl: './pass-type-edit.component.html',
+    styleUrls: ['./pass-type-edit.component.css']
 })
 export class PassTypeEditComponent implements OnInit {
 	passTypeForm: FormGroup;

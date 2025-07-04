@@ -17,25 +17,24 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TextFieldModule } from '@angular/cdk/text-field';
 
 @Component({
-	selector: 'app-pass-type-create',
-	standalone: true,
-	imports: [
-		CommonModule,
-		ReactiveFormsModule,
-		PassGroupModalComponent,
-		MatCardModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatSelectModule,
-		MatCheckboxModule,
-		MatButtonModule,
-		MatIconModule,
-		MatGridListModule,
-		MatTooltipModule,
-		TextFieldModule,
-	],
-	templateUrl: './pass-type-create.component.html',
-	styleUrls: ['./pass-type-create.component.css'],
+    selector: 'app-pass-type-create',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        PassGroupModalComponent,
+        MatCardModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatCheckboxModule,
+        MatButtonModule,
+        MatIconModule,
+        MatGridListModule,
+        MatTooltipModule,
+        TextFieldModule,
+    ],
+    templateUrl: './pass-type-create.component.html',
+    styleUrls: ['./pass-type-create.component.css']
 })
 export class PassTypeCreateComponent {
 	passTypeForm: FormGroup;

@@ -20,20 +20,19 @@ export const MY_DATE_FORMATS = {
 };
 
 @Component({
-	selector: 'app-expiring-passes-report',
-	standalone: true,
-	imports: [
-		CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
-		MatButtonModule, MatDatepickerModule, MatNativeDateModule, MatTableModule,
-		MatIconModule, MatPaginatorModule, MatGridListModule, MatCardModule
-	],
-	templateUrl: './expiring-passes-report.component.html',
-	styleUrls: ['./expiring-passes-report.component.css'],
-	providers: [
-		{ provide: MAT_DATE_LOCALE, useValue: 'ru-RU' },
-		{ provide: DateAdapter, useClass: NativeDateAdapter },
-		{ provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
-	]
+    selector: 'app-expiring-passes-report',
+    imports: [
+        CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
+        MatButtonModule, MatDatepickerModule, MatNativeDateModule, MatTableModule,
+        MatIconModule, MatPaginatorModule, MatGridListModule, MatCardModule
+    ],
+    templateUrl: './expiring-passes-report.component.html',
+    styleUrls: ['./expiring-passes-report.component.css'],
+    providers: [
+        { provide: MAT_DATE_LOCALE, useValue: 'ru-RU' },
+        { provide: DateAdapter, useClass: NativeDateAdapter },
+        { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
+    ]
 })
 export class ExpiringPassesReportComponent implements OnInit {
 	reportForm: FormGroup;

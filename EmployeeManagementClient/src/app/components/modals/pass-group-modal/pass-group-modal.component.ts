@@ -11,20 +11,20 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
-	selector: 'app-pass-group-modal',
-	standalone: true,
-	imports: [
-		CommonModule,
-		MatButtonModule,
-		MatFormFieldModule,
-		MatInputModule,
-		MatCardModule,
-		MatTableModule,
-		MatSelectModule,
-		MatIconModule,
-		MatSnackBarModule],
-	templateUrl: './pass-group-modal.component.html',
-	styleUrls: ['./pass-group-modal.component.css'],
+    selector: 'app-pass-group-modal',
+    imports: [
+        CommonModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCardModule,
+        MatTableModule,
+        MatSelectModule,
+        MatIconModule,
+        MatSnackBarModule
+    ],
+    templateUrl: './pass-group-modal.component.html',
+    styleUrls: ['./pass-group-modal.component.css']
 })
 export class PassGroupModalComponent {
 	@Output() modalClose = new EventEmitter<void>();
