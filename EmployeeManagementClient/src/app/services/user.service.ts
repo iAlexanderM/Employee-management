@@ -18,16 +18,16 @@ export class UserService {
 	) { }
 
 	private getAuthHeaders(): HttpHeaders {
-		const token = this.authService.getToken(); // Используем AuthService
+		const accessToken = this.authService.getAccessToken(); // Используем AuthService
 		return new HttpHeaders({
-			Authorization: token ? `Bearer ${token}` : '',
+			Authorization: accessToken ? `Bearer ${accessToken}` : '',
 			'Content-Type': 'application/json'
 		});
 	}
 
 	getToken(): string | null {
-		const token = this.authService.getToken();
-		return token;
+		const accessToken = this.authService.getAccessToken();
+		return accessToken;
 	}
 
 	getAllUsers(): Observable<ApplicationUser[]> {
@@ -42,13 +42,13 @@ export class UserService {
 	}
 
 	getCurrentUser(): ApplicationUser | null {
-		const token = this.authService.getToken();
-		if (!token) {
+		const accessToken = this.authService.getAccessToken();
+		if (!accessToken) {
 			console.warn('Токен отсутствует (UserService via AuthService)');
 			return null;
 		}
 		try {
-			const payload = JSON.parse(atob(token.split('.')[1]));
+			const payload = JSON.parse(atob(accessToken.split('.')[1]));
 			console.debug('Payload токена:', payload);
 			const exp = payload.exp;
 			const expDate = new Date(exp * 1000);
@@ -71,7 +71,7 @@ export class UserService {
 						return null;
 					}
 				});
-				return null; // Возвращаем null, пока токен обновляется
+				return null;
 			}
 			const userName = payload.sub || payload.name || payload.username || payload.email || null;
 			const userId = payload.userId || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || '';

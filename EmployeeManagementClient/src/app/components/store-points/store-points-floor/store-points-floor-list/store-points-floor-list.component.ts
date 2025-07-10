@@ -6,10 +6,34 @@ import { Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
+// Angular Material Imports
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 @Component({
 	selector: 'app-store-points-floor-list',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule, RouterModule],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		RouterModule,
+		MatCardModule,
+		MatButtonModule,
+		MatInputModule,
+		MatFormFieldModule,
+		MatIconModule,
+		MatSelectModule,
+		MatTableModule,
+		MatGridListModule,
+		MatTooltipModule
+	],
 	templateUrl: './store-points-floor-list.component.html',
 	styleUrls: ['./store-points-floor-list.component.css']
 })

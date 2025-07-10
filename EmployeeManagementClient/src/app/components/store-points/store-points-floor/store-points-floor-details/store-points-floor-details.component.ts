@@ -4,10 +4,22 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { StorePointsService } from '../../../../services/store-points.service';
 import { Floor } from '../../../../models/store-points.model';
 
+// Angular Material Imports
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 @Component({
 	selector: 'app-store-points-floor-details',
 	standalone: true,
-	imports: [CommonModule],
+	imports: [
+		CommonModule,
+		MatCardModule,
+		MatButtonModule,
+		MatIconModule,
+		MatTooltipModule
+	],
 	templateUrl: './store-points-floor-details.component.html',
 	styleUrls: ['./store-points-floor-details.component.css']
 })

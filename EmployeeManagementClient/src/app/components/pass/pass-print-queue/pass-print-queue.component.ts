@@ -134,12 +134,12 @@ export class PassPrintQueueComponent implements OnInit {
 	onPageSizeChange(event: any): void {
 		const target = event.target as HTMLSelectElement;
 		this.pageSize = +target.value;
-		this.currentPage = 1; // Сбрасываем на первую страницу при изменении размера
+		this.currentPage = 1;
 		this.loadPrintQueue();
 	}
 
 	onSearch(): void {
-		this.currentPage = 1; // Сбрасываем на первую страницу при поиске
+		this.currentPage = 1;
 		this.loadPrintQueue();
 	}
 

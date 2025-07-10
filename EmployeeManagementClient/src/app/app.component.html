@@ -1,49 +1,22 @@
 <div *ngIf="showContent()" class="app-layout">
-	<nav class="sidebar navbar navbar-expand-lg navbar-light bg-light">
-		<div class="brand">Бюро пропусков v0.01</div>
-		<ul class="navbar-nav ms-auto">
-			<ng-container *ngFor="let item of data; let i = index">
-				<li class="nav-item" *ngIf="!item.childProperties && hasRole(getRequiredRole(item.parentName))">
-					<a class="btn btn-primary w-100" [routerLink]="item.routerLink">
-						{{ item.parentName }}
-					</a>
-				</li>
-				<li class="nav-item" [class.nav-item--accordion]="item.childProperties"
-					*ngIf="item.childProperties && hasAccessToChild(item.childProperties)">
-					<button class="accordion w-100" (click)="toggleAccordian($event, i)">
-						{{ item.parentName }}
-					</button>
-					<div class="panel" [class.show]="item.isActive">
-						<ul class="navbar-nav dropdown-menu show">
-							<li class="nav-item" *ngFor="let child of item.childProperties">
-								<ng-container *ngIf="hasRole(getRequiredRole(child.propertyName))">
-									<a class="nav-link dropdown-item w-100"
-										[routerLink]="getRouterLink(child.propertyName)">
-										{{ child.propertyName }}
-									</a>
-								</ng-container>
-							</li>
-						</ul>
-					</div>
-				</li>
-			</ng-container>
-		</ul>
-		<div class="footer">
-			<div *ngIf="isAuthenticated()">
-				<button class="btn btn-primary w-100" (click)="logout()">Выход</button>
-			</div>
-			<div *ngIf="!isAuthenticated()">
-				<a class="btn btn-primary w-100" routerLink="/login">Вход</a>
-			</div>
-		</div>
-	</nav>
-	<div class="content-container">
-		<router-outlet></router-outlet>
-	</div>
+	<mat-sidenav-container class="app-sidenav-container">
+		<mat-sidenav mode="side" opened class="sidebar-container-wrapper">
+			<app-sidebar></app-sidebar>
+		</mat-sidenav>
+
+		<mat-sidenav-content class="content-container">
+			<app-header></app-header>
+			<router-outlet></router-outlet>
+		</mat-sidenav-content>
+	</mat-sidenav-container>
 </div>
+
 <div *ngIf="!showContent()" class="container mt-5">
 	<router-outlet></router-outlet>
 </div>
+
 <app-active-token-floating *ngIf="showActivePanel" [tokenData]="activeToken"
 	(close)="onCloseTokenPanel()"></app-active-token-floating>
-<div class="local-overlay-root"></div>
+
+<div class="local-overlay-root">
+</div>

@@ -10,7 +10,6 @@
 	align-items: center;
 	z-index: 1000;
 }
-
 .modal-content {
 	max-width: 1920px;
 	width: 90%;
@@ -19,46 +18,35 @@
 	background-color: #fefaf6;
 	padding: 2rem;
 }
-
 .section-title {
 	font-size: 1.5rem;
 	font-weight: 600;
 	color: #111827;
 }
-
 .search-section,
 .page-size-section,
 .pagination-section,
 .table-section {
 	margin-bottom: 40px;
 }
-
 .search-form-container {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
 }
-
-.form-field {
-	width: 50%;
-}
-
 .actions {
 	display: flex;
 	gap: 8px;
 }
-
 .pagination-container {
 	display: flex;
 	justify-content: flex-end;
 	margin-top: 16px;
 }
-
 .pagination-squares {
 	display: flex;
 	gap: 8px;
 }
-
 .square {
 	padding: 8px 12px;
 	border: 1px solid #e5e7eb;
@@ -70,32 +58,21 @@
 	background-color: #ffffff;
 	transition: all 0.2s ease;
 }
-
 .square.active {
 	background-color: #3786f3;
 	color: #ffffff;
 	border-color: #3786f3;
 }
-
 .square.disabled {
 	cursor: default;
 	color: #6b7280;
 	background-color: #f3f4f6;
 	border-color: #e5e7eb;
 }
-
-.page-size-container {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	justify-content: flex-end;
-}
-
 .page-size-container span {
 	font-size: 14px;
 	color: #111827;
 }
-
 .page-size-container mat-select {
 	width: 80px;
 	border: 1px solid #e5e7eb;
@@ -104,21 +81,17 @@
 	font-size: 14px;
 	background-color: #ffffff;
 }
-
 .table-container {
 	width: 100%;
 }
-
 .data-table {
 	width: 100%;
 }
-
 .data-table mat-header-row,
 .data-table mat-row {
 	height: 60px;
 	/* Увеличенная высота строк */
 }
-
 .data-table .mat-column-id,
 .data-table .mat-column-sortOrder {
 	width: 16.67%;
@@ -126,37 +99,24 @@
 	max-width: 16.67%;
 	min-width: 16.67%;
 }
-
 .data-table .mat-column-name {
 	width: 66.66%;
 	/* Остаток ширины для столбца "Название" */
 }
-
 .text-muted {
 	color: #6b7280;
 }
-
 .action-btn {
 	font-size: 14px;
 }
-
 .modal-content mat-card-content {
 	background-color: #fefaf6;
 	padding: 12px;
 	border: 1px solid #d6d3d1;
 	flex-grow: 1;
 }
-
 @media (max-width: 768px) {
 	.modal-content {
 		padding: 1rem;
-	}
-
-	.form-field {
-		width: 100%;
-	}
-
-	.page-size-container {
-		justify-content: flex-start;
 	}
 }

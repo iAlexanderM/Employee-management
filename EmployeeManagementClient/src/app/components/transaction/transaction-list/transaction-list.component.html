@@ -1,124 +1,166 @@
-<div class="container mt-4">
-	<h2>Список транзакций</h2>
-	<button type="button" class="btn btn-link mb-3" (click)="toggleSearchForm()">
-		{{ isExpanded ? 'Свернуть' : 'Развернуть' }}
-	</button>
-
-	<div class="search-form-container">
-		<form *ngIf="isExpanded" [formGroup]="searchForm" (ngSubmit)="onSearchClick()" class="mb-4">
-			<div class="row mb-2">
-				<div class="col-md-4">
-					<mat-form-field appearance="outline" class="w-90">
-						<mat-label>Торговая точка</mat-label>
-						<input matInput formControlName="storeSearch" [matAutocomplete]="autoStore" />
-						<mat-autocomplete #autoStore="matAutocomplete">
-							<mat-option *ngFor="let store of (storeOptions$ | async)" [value]="store">
-								{{ store }}
-							</mat-option>
-							<mat-option *ngIf="(storeOptions$ | async)?.length === 0" disabled>
-								Нет торговых точек для отображения
-							</mat-option>
-						</mat-autocomplete>
-					</mat-form-field>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Список транзакций</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<div class="d-flex align-items-center justify-content-between mb-4">
+				<button mat-button color="primary" (click)="toggleSearchForm()">
+					{{ isExpanded ? 'Свернуть' : 'Развернуть' }}
+				</button>
+				<div class="page-size-container">
+					<span>Элементов на странице:</span>
+					<mat-select [(value)]="pageSize" (selectionChange)="onPageSizeChange($event)">
+						<mat-option *ngFor="let size of pageSizeOptions" [value]="size">
+							{{ size }}
+						</mat-option>
+					</mat-select>
 				</div>
-				<div class="col-md-4">
-					<mat-form-field appearance="outline" class="w-90">
-						<mat-label>ФИО контрагента</mat-label>
-						<input matInput formControlName="contractorName" [matAutocomplete]="autoContractor" />
-						<mat-autocomplete #autoContractor="matAutocomplete" [displayWith]="displayContractor">
-							<ng-container *ngIf="contractorOptions$ | async as contractors">
-								<mat-option *ngFor="let contractor of contractors" [value]="contractor">
-									{{ displayContractor(contractor) }}
+			</div>
+
+			<div class="search-form-container" *ngIf="isExpanded">
+				<form [formGroup]="searchForm" (ngSubmit)="onSearchClick()" class="search-form">
+					<div class="search-fields">
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Торговая точка</mat-label>
+							<input matInput formControlName="storeSearch" [matAutocomplete]="autoStore" />
+							<mat-icon matSuffix>business</mat-icon>
+							<mat-autocomplete #autoStore="matAutocomplete">
+								<mat-option *ngFor="let store of (storeOptions$ | async)" [value]="store">
+									{{ store }}
 								</mat-option>
-								<mat-option *ngIf="contractors.length === 0" disabled>
-									Нет контрагентов для отображения
+								<mat-option *ngIf="(storeOptions$ | async)?.length === 0" disabled>
+									Нет торговых точек для отображения
 								</mat-option>
-							</ng-container>
-						</mat-autocomplete>
-					</mat-form-field>
+							</mat-autocomplete>
+						</mat-form-field>
+
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>ФИО контрагента</mat-label>
+							<input matInput formControlName="contractorName" [matAutocomplete]="autoContractor" />
+							<mat-icon matSuffix>person</mat-icon>
+							<mat-autocomplete #autoContractor="matAutocomplete" [displayWith]="displayContractor">
+								<ng-container *ngIf="contractorOptions$ | async as contractors">
+									<mat-option *ngFor="let contractor of contractors" [value]="contractor">
+										{{ displayContractor(contractor) }}
+									</mat-option>
+									<mat-option *ngIf="contractors.length === 0" disabled>
+										Нет контрагентов для отображения
+									</mat-option>
+								</ng-container>
+							</mat-autocomplete>
+						</mat-form-field>
+
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Кем выдан</mat-label>
+							<input type="text" matInput formControlName="userName" [matAutocomplete]="autoUser">
+							<mat-autocomplete #autoUser="matAutocomplete" [displayWith]="displayUser">
+								<mat-option *ngFor="let user of filteredUsers$ | async" [value]="user">
+									{{ (user.lastName ? user.lastName + ' ' : '') + (user.firstName ? user.firstName + '
+									' : '') +
+									(user.middleName || '') }}
+									<span *ngIf="!(user.lastName || user.firstName || user.middleName)">{{ user.userName
+										}}</span>
+								</mat-option>
+							</mat-autocomplete>
+							<mat-icon matSuffix>assignment_ind</mat-icon>
+						</mat-form-field>
+					</div>
+					<div class="d-flex gap-2">
+						<button mat-raised-button color="primary" type="submit">Поиск</button>
+						<button mat-raised-button type="button" (click)="onResetFilters()">Сбросить</button>
+					</div>
+				</form>
+			</div>
+
+			<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
+				<div class="pagination-squares">
+					<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" (click)="onPageClick(page)">
+						{{ page }}
+					</span>
 				</div>
-				<div class="col-md-4">
-					<mat-form-field appearance="outline" class="w-90">
-						<mat-label>Кем выдан</mat-label>
-						<select matNativeControl formControlName="userName">
-							<option *ngFor="let user of users" [value]="user">{{ user || 'Все пользователи' }}</option>
-						</select>
-					</mat-form-field>
+			</div>
+			<br>
+
+			<div *ngIf="isLoading" class="text-center mt-4">
+				<mat-spinner></mat-spinner>
+				<p>Загрузка данных...</p>
+			</div>
+			<div class="data-section">
+				<mat-card class="section-card"><mat-card-content>
+						<div class="table-wrapper">
+							<table mat-table *ngIf="transactions.length > 0 && !isLoading" [dataSource]="transactions"
+								class="data-table">
+								<ng-container matColumnDef="id">
+									<th mat-header-cell *matHeaderCellDef>Код</th>
+									<td mat-cell *matCellDef="let t">{{ t.id }}</td>
+								</ng-container>
+								<ng-container matColumnDef="token">
+									<th mat-header-cell *matHeaderCellDef>Номер талона</th>
+									<td mat-cell *matCellDef="let t">{{ t.token || 'Нет данных' }}</td>
+								</ng-container>
+								<ng-container matColumnDef="stores">
+									<th mat-header-cell *matHeaderCellDef>Торговая точка</th>
+									<td mat-cell *matCellDef="let t" [innerHTML]="getStoresDisplay(t)"></td>
+								</ng-container>
+								<ng-container matColumnDef="contractors">
+									<th mat-header-cell *matHeaderCellDef>ФИО контрагента</th>
+									<td mat-cell *matCellDef="let t" [innerHTML]="getContractorsDisplay(t)"></td>
+								</ng-container>
+								<ng-container matColumnDef="passTypes">
+									<th mat-header-cell *matHeaderCellDef>Тип пропуска</th>
+									<td mat-cell *matCellDef="let t" [innerHTML]="getPassTypesDisplay(t)"></td>
+								</ng-container>
+								<ng-container matColumnDef="count">
+									<th mat-header-cell *matHeaderCellDef>Кол-во</th>
+									<td mat-cell *matCellDef="let t">{{ t.contractorStorePasses.length || 0 }}</td>
+								</ng-container>
+								<ng-container matColumnDef="amount">
+									<th mat-header-cell *matHeaderCellDef>Общая сумма</th>
+									<td mat-cell *matCellDef="let t">{{ t.amount ? t.amount : 'Нет данных' }}</td>
+								</ng-container>
+								<ng-container matColumnDef="user">
+									<th mat-header-cell *matHeaderCellDef>Пользователь</th>
+									<td mat-cell *matCellDef="let t">{{ getUserFullNameDisplay(t) }} ({{
+										t.user?.userName || 'N/A' }})</td>
+								</ng-container>
+								<ng-container matColumnDef="actions">
+									<th mat-header-cell *matHeaderCellDef>Действия</th>
+									<td mat-cell *matCellDef="let t">
+										<button mat-icon-button color="primary" class="action-btn icon-only"
+											*ngIf="t.status === 'Ожидает оплату' && (hasRole('Admin') || hasRole('Cashier'))"
+											(click)="confirmPayment(t.id)" [disabled]="t.status !== 'Ожидает оплату'">
+											<mat-icon>payments</mat-icon>
+										</button>
+										<button mat-icon-button color="primary" class="action-btn icon-only"
+											(click)="navigateToDetails(t.id)" matTooltip="Просмотреть">
+											<mat-icon>search</mat-icon>
+										</button>
+									</td>
+								</ng-container>
+								<mat-header-row
+									*matHeaderRowDef="['id', 'token', 'stores', 'contractors', 'passTypes', 'count', 'amount', 'user', 'actions']"></mat-header-row>
+								<mat-row
+									*matRowDef="let row; columns: ['id', 'token', 'stores', 'contractors', 'passTypes', 'count', 'amount', 'user', 'actions']"
+									[ngClass]="{'pending': row.status === 'Ожидает оплату', 'paid': row.status === 'Оплачено'}"></mat-row>
+							</table>
+							<div *ngIf="!isLoading && transactions.length === 0" class="text-center mt-4">
+								<p class="text-muted">Нет транзакций для отображения</p>
+							</div>
+						</div>
+					</mat-card-content>
+				</mat-card>
+			</div>
+
+			<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
+				<div class="pagination-squares">
+					<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" (click)="onPageClick(page)">
+						{{ page }}
+					</span>
 				</div>
 			</div>
-			<div class="d-flex gap-2">
-				<button mat-raised-button color="primary" type="submit">Поиск</button>
-				<button mat-raised-button type="button" (click)="onResetFilters()">Сбросить</button>
-			</div>
-		</form>
-	</div>
-
-	<div class="d-flex justify-content-start align-items-center mb-2">
-		<label for="pageSize" class="me-2">Элементов на странице:</label>
-		<select id="pageSize" class="form-select" (change)="onPageSizeChange($event)">
-			<option *ngFor="let option of pageSizeOptions" [value]="option">{{ option }}</option>
-		</select>
-	</div>
-
-	<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
-		<div class="pagination-squares">
-			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-				[class.disabled]="page === '...'" (click)="onPageClick(page)">
-				{{ page }}
-			</div>
-		</div>
-	</div>
-	<br>
-
-	<div *ngIf="isLoading" class="text-center mt-4">Загрузка данных...</div>
-	<div *ngIf="!isLoading">
-		<table class="table table-bordered transaction-table" *ngIf="transactions.length > 0">
-			<thead>
-				<tr>
-					<th>Код</th>
-					<th>Номер талона</th>
-					<th>Торговая точка</th>
-					<th>ФИО контрагента</th>
-					<th>Тип пропуска</th>
-					<th>Кол-во</th>
-					<th>Общая сумма</th>
-					<th>Пользователь</th>
-					<th>Действия</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr *ngFor="let t of transactions"
-					[ngClass]="{'pending': t.status === 'Ожидает оплату', 'paid': t.status === 'Оплачено'}">
-					<td>{{ t.id }}</td>
-					<td>{{ t.token || 'Нет данных' }}</td>
-					<td>{{ getStoresDisplay(t) }}</td>
-					<td>{{ getContractorsDisplay(t) }}</td>
-					<td>{{ getPassTypesDisplay(t) }}</td>
-					<td>{{ t.contractorStorePasses.length || 0 }}</td>
-					<td>{{ t.amount ? t.amount : 'Нет данных' }}</td>
-					<td>{{ t.user?.userName || 'N/A' }}</td>
-					<td>
-						<button class="btn btn-primary btn-sm action-btn me-2"
-							*ngIf="t.status === 'Ожидает оплату' && (hasRole('Admin') || hasRole('Cashier'))"
-							(click)="confirmPayment(t.id)" [disabled]="t.status !== 'Ожидает оплату'">
-							Оплатить
-						</button>
-						<button class="btn btn-info btn-sm action-btn" (click)="navigateToDetails(t.id)">
-							Просмотреть
-						</button>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		<p *ngIf="transactions.length === 0" class="text-center mt-4">Нет транзакций для отображения</p>
-	</div>
-
-	<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
-		<div class="pagination-squares">
-			<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-				[class.disabled]="page === '...'" (click)="onPageClick(page)">
-				{{ page }}
-			</div>
-		</div>
-	</div>
+		</mat-card-content>
+	</mat-card>
 </div>

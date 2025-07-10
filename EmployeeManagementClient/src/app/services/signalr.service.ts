@@ -14,11 +14,11 @@ export class SignalRService {
 		this.hubConnection = new signalR.HubConnectionBuilder()
 			.withUrl('http://localhost:8080/hubs/queue', {
 				accessTokenFactory: () => {
-					const token = this.authService.getToken();
-					console.log('SignalR attaching token:', token?.substring(0, 50) + '...');
-					return token ?? '';
+					const accessToken = this.authService.getAccessToken();
+					console.log('SignalR attaching accessToken:', accessToken?.substring(0, 50) + '...');
+					return accessToken ?? '';
 				},
-				transport: signalR.HttpTransportType.WebSockets // Принудительно WebSocket
+				transport: signalR.HttpTransportType.WebSockets
 			})
 			.withAutomaticReconnect()
 			.configureLogging(signalR.LogLevel.Information)

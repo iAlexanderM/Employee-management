@@ -4,18 +4,34 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { StorePointsService } from '../../../../services/store-points.service';
 import { Router } from '@angular/router';
 
+// Angular Material Imports
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 @Component({
 	selector: 'app-store-points-store-number-create',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatCardModule,
+		MatButtonModule,
+		MatInputModule,
+		MatFormFieldModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule
+	],
 	templateUrl: './store-points-store-number-create.component.html',
 	styleUrls: ['./store-points-store-number-create.component.css']
 })
 export class StorePointsStoreNumberCreateComponent {
-	// Убираем newStoreNumberName: string
-	// Вместо этого — FormGroup (или FormControl).
 	storeNumberForm: FormGroup;
-
 	errorMessage: string = '';
 
 	constructor(
@@ -23,31 +39,29 @@ export class StorePointsStoreNumberCreateComponent {
 		private router: Router,
 		private fb: FormBuilder
 	) {
-		// Создаём форму. Можно добавить валидаторы, например required.
 		this.storeNumberForm = this.fb.group({
 			name: ['', Validators.required]
 		});
 	}
 
 	addStoreNumber(): void {
-		// Если форма невалидна — показываем ошибку (опционально).
+		this.errorMessage = ''; // Clear previous errors
+
 		if (this.storeNumberForm.invalid) {
 			this.errorMessage = 'Название точки не может быть пустым.';
 			return;
 		}
 
-		// Считываем значение из формы
 		const rawName = this.storeNumberForm.value.name;
 		const trimmedName = (rawName || '').trim();
+
 		if (!trimmedName) {
 			this.errorMessage = 'Название точки не может быть пустым.';
 			return;
 		}
 
-		// Вызываем сервис для создания
 		this.storePointsService.addStoreNumber(trimmedName).subscribe(
 			() => {
-				// При успехе — переходим на список
 				this.router.navigate(['/storeNumber']);
 			},
 			(error) => {
@@ -58,5 +72,9 @@ export class StorePointsStoreNumberCreateComponent {
 				}
 			}
 		);
+	}
+
+	cancel(): void {
+		this.router.navigate(['/storeNumber']);
 	}
 }

@@ -4,10 +4,21 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { StorePointsService } from '../../../../services/store-points.service';
 import { Building } from '../../../../models/store-points.model';
 
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatIconModule } from '@angular/material/icon';
+
 @Component({
 	selector: 'app-store-points-building-details',
 	standalone: true,
-	imports: [CommonModule],
+	imports: [
+		CommonModule,
+		MatCardModule,
+		MatButtonModule,
+		MatTooltipModule,
+		MatIconModule
+	],
 	templateUrl: './store-points-building-details.component.html',
 	styleUrls: ['./store-points-building-details.component.css']
 })
@@ -41,14 +52,12 @@ export class StorePointsBuildingDetailsComponent implements OnInit {
 		});
 	}
 
-	// Метод для перехода на страницу редактирования
 	editBuilding(): void {
 		if (this.building && this.building.id) {
 			this.router.navigate(['/building/edit', this.building.id]);
 		}
 	}
 
-	// Метод для возврата к списку
 	goBack(): void {
 		this.router.navigate(['/building']);
 	}

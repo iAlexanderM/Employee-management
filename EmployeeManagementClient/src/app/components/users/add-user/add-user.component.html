@@ -1,0 +1,124 @@
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Добавить нового пользователя</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<mat-card *ngIf="errorMessage" class="error-message mt-4" role="alert">
+				<mat-icon>error_outline</mat-icon> {{ errorMessage }}
+			</mat-card>
+			<mat-card *ngIf="successMessage" class="success-message mt-4" role="alert">
+				<mat-icon>check_circle_outline</mat-icon> {{ successMessage }}
+			</mat-card>
+			<mat-card *ngIf="serverErrors.length > 0" class="error-message mt-4" role="alert">
+				<mat-icon>error_outline</mat-icon>
+				<ul>
+					<li *ngFor="let error of serverErrors">{{ error.description }}</li>
+				</ul>
+			</mat-card>
+
+			<form [formGroup]="addUserForm" (ngSubmit)="register()" class="create-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="8px">
+
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Логин *</mat-label>
+							<input matInput formControlName="username" placeholder="Введите логин">
+							<mat-icon matSuffix>account_circle</mat-icon>
+							<mat-error
+								*ngIf="addUserForm.get('username')?.invalid && addUserForm.get('username')?.touched">
+								Логин обязателен.
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Пароль *</mat-label>
+							<input matInput type="password" formControlName="password" placeholder="Введите пароль">
+							<mat-icon matSuffix>lock</mat-icon>
+							<mat-error
+								*ngIf="addUserForm.get('password')?.invalid && addUserForm.get('password')?.touched">
+								Пароль обязателен.
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Роль *</mat-label>
+							<mat-select formControlName="role" required>
+								<mat-option value="" disabled>Выберите роль</mat-option>
+								<mat-option value="Admin">Admin</mat-option>
+								<mat-option value="Cashier">Cashier</mat-option>
+								<mat-option value="Manager">Manager</mat-option>
+							</mat-select>
+							<mat-icon matSuffix>assignment_ind</mat-icon>
+							<mat-error *ngIf="addUserForm.get('role')?.invalid && addUserForm.get('role')?.touched">
+								Роль обязательна.
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Фамилия *</mat-label>
+							<input matInput formControlName="lastName" placeholder="Введите фамилию">
+							<mat-icon matSuffix>person</mat-icon>
+							<mat-error
+								*ngIf="addUserForm.get('lastName')?.invalid && addUserForm.get('lastName')?.touched">
+								Фамилия обязательна.
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Имя *</mat-label>
+							<input matInput formControlName="firstName" placeholder="Введите имя">
+							<mat-icon matSuffix>person</mat-icon>
+							<mat-error
+								*ngIf="addUserForm.get('firstName')?.invalid && addUserForm.get('firstName')?.touched">
+								Имя обязательно.
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Отчество (опционально)</mat-label>
+							<input matInput formControlName="middleName" placeholder="Введите отчество">
+							<mat-icon matSuffix>person</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Email (опционально)</mat-label>
+							<input matInput type="email" formControlName="email" placeholder="Введите email">
+							<mat-icon matSuffix>email</mat-icon>
+							<mat-error *ngIf="addUserForm.get('email')?.invalid && addUserForm.get('email')?.touched">
+								Введите корректный email (если заполняете).
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Номер телефона (опционально)</mat-label>
+							<input matInput type="text" id="phoneNumber" formControlName="phoneNumber"
+								placeholder="Введите номер телефона">
+							<mat-icon matSuffix>phone</mat-icon>
+						</mat-form-field>
+					</mat-grid-tile>
+
+				</mat-grid-list>
+
+				<div class="d-flex justify-content-between gap-2 mt-4">
+					<button mat-raised-button color="primary" class="action-btn" type="submit"
+						[disabled]="addUserForm.invalid" matTooltip="Добавить нового пользователя">Добавить</button>
+				</div>
+			</form>
+		</mat-card-content>
+	</mat-card>
+</div>

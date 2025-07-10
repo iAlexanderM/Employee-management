@@ -11,11 +11,29 @@ import { HistoryEntry, ChangeValue } from '../../../models/history.model';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Subscription } from 'rxjs';
 import { UserService } from '../../../services/user.service';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
 	selector: 'app-store-details',
 	standalone: true,
-	imports: [CommonModule, RouterModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		RouterModule,
+		ReactiveFormsModule,
+		MatButtonModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatCardModule,
+		MatTableModule,
+		MatIconModule,
+		MatProgressSpinnerModule
+	],
 	templateUrl: './store-details.component.html',
 	styleUrls: ['./store-details.component.css'],
 	animations: [
@@ -37,6 +55,7 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
 	showHistory = false;
 	userMap: { [key: string]: string } = {};
 	private subscriptions: Subscription[] = [];
+	historyColumns: string[] = ['timestamp', 'action', 'user', 'details', 'changes'];
 
 	constructor(
 		private route: ActivatedRoute,
@@ -257,5 +276,11 @@ export class StoreDetailsComponent implements OnInit, OnDestroy {
 			isArchived: 'Статус архивации',
 		};
 		return fieldTranslations[field] || field;
+	}
+
+	clearErrorMessage(): void {
+		this.errorMessage = null;
+		this.successMessage = null;
+		this.cdr.detectChanges();
 	}
 }

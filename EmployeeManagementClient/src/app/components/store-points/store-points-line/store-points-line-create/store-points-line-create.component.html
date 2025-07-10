@@ -1,28 +1,40 @@
-<div class="container">
-	<h2>Добавить запись в справочник "Линия"</h2>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Добавить запись в справочник "Линия"</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<mat-card *ngIf="errorMessage" class="error-message mt-4" role="alert">
+				<mat-icon>error_outline</mat-icon>
+				{{ errorMessage }}
+			</mat-card>
 
-	<!-- Блок отображения ошибки -->
-	<div *ngIf="errorMessage" class="alert alert-danger">
-		<p>{{ errorMessage }}</p>
-	</div>
+			<form [formGroup]="lineForm" (ngSubmit)="addLine()" class="create-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="8px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Название линии *</mat-label>
+							<input matInput id="lineName" type="text" placeholder="Введите название линии"
+								formControlName="lineName" />
+							<mat-icon matSuffix>timeline</mat-icon>
+							<mat-error *ngIf="lineForm.get('lineName')?.invalid && lineForm.get('lineName')?.touched">
+								Название линии обязательно
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+				</mat-grid-list>
 
-	<!-- Форма добавления -->
-	<form [formGroup]="lineForm" (ngSubmit)="addLine()">
-		<div class="form-group">
-			<label for="lineName">Название линии:</label>
-			<div class="input-container">
-				<input id="lineName" type="text" class="form-control" placeholder="Введите название линии"
-					formControlName="lineName" [ngClass]="{
-            'is-invalid':
-              lineForm.get('lineName')?.invalid && lineForm.get('lineName')?.touched
-          }" required />
-				<!-- Сообщение об ошибке для поля название линии -->
-				<div *ngIf="lineForm.get('lineName')?.invalid && lineForm.get('lineName')?.touched"
-					class="invalid-feedback">
-					Название линии обязательно.
+				<div class="d-flex justify-content-between gap-2 mt-4">
+					<button mat-raised-button color="primary" class="action-btn" type="submit"
+						[disabled]="lineForm.invalid" matTooltip="Добавить линию">
+						Добавить
+					</button>
+					<button mat-stroked-button color="accent" class="action-btn" type="button" (click)="cancel()"
+						matTooltip="Отменить добавление">
+						Отменить
+					</button>
 				</div>
-			</div>
-		</div>
-		<button type="submit" class="btn btn-primary" [disabled]="lineForm.invalid">Добавить</button>
-	</form>
+			</form>
+		</mat-card-content>
+	</mat-card>
 </div>

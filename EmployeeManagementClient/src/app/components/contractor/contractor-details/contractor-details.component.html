@@ -1,13 +1,8 @@
-<div class="contractor-details container">
-	<mat-card *ngIf="errorMessage" class="error-message" role="alert">
-		<mat-icon>error_outline</mat-icon>
-		{{ errorMessage }}
-	</mat-card>
-
+<div class="main-content">
 	<div class="content-grid" *ngIf="contractor">
 		<div class="column-main">
-			<mat-card class="section-card">
-				<mat-card-title class="section-title">ID: {{ contractor.id }}</mat-card-title>
+			<mat-card class="section-card"><mat-card-header>
+					<mat-card-title class="section-title">ID: {{ contractor.id }}</mat-card-title></mat-card-header>
 				<mat-card-content>
 					<div class="archived-status" *ngIf="contractor.isArchived">Архивирован</div>
 					<div class="action-buttons">
@@ -74,8 +69,8 @@
 		</div>
 
 		<div class="column-personal">
-			<mat-card class="section-card">
-				<mat-card-title class="section-title">Личные данные</mat-card-title>
+			<mat-card class="section-card"><mat-card-header>
+					<mat-card-title class="section-title">Личные данные</mat-card-title></mat-card-header>
 				<mat-card-content>
 					<dl class="info-list">
 						<div class="info-item">
@@ -110,8 +105,8 @@
 					</dl>
 				</mat-card-content>
 			</mat-card>
-			<mat-card class="section-card">
-				<mat-card-title class="section-title">Дополнительная информация</mat-card-title>
+			<mat-card class="section-card"><mat-card-header>
+					<mat-card-title class="section-title">Дополнительная информация</mat-card-title></mat-card-header>
 				<mat-card-content>
 					<dl class="info-list">
 						<div class="info-item">
@@ -128,8 +123,8 @@
 		</div>
 
 		<div class="column-secondary">
-			<mat-card class="section-card">
-				<mat-card-title class="section-title">Паспортные данные</mat-card-title>
+			<mat-card class="section-card"><mat-card-header>
+					<mat-card-title class="section-title">Паспортные данные</mat-card-title></mat-card-header>
 				<mat-card-content>
 					<dl class="info-list">
 						<div class="info-item">
@@ -152,8 +147,8 @@
 					</dl>
 				</mat-card-content>
 			</mat-card>
-			<mat-card class="section-card">
-				<mat-card-title class="section-title">Пометка</mat-card-title>
+			<mat-card class="section-card"><mat-card-header>
+					<mat-card-title class="section-title">Пометка</mat-card-title></mat-card-header>
 				<mat-card-content>
 					<form [formGroup]="noteForm" (ngSubmit)="saveNote()" class="note-form">
 						<mat-form-field appearance="outline" class="full-width-expand">
@@ -180,8 +175,8 @@
 		</div>
 
 		<div class="column-full">
-			<mat-card class="section-card">
-				<mat-card-title class="section-title">Пропуска</mat-card-title>
+			<mat-card class="section-card"><mat-card-header>
+					<mat-card-title class="section-title">Пропуска</mat-card-title></mat-card-header>
 				<mat-card-content>
 					<div class="table-wrapper">
 						<table mat-table [dataSource]="contractor.passes" class="data-table" role="grid"
@@ -260,8 +255,8 @@
 						[attr.aria-label]="showHistory ? 'Скрыть историю изменений' : 'Показать историю изменений'">
 						{{ showHistory ? 'Скрыть историю' : 'Показать историю' }}
 					</button>
-					<div *ngIf="showHistory" class="history-content">
-						<mat-card-title class="section-title">История изменений</mat-card-title>
+					<div *ngIf="showHistory" class="history-content"><mat-card-header>
+							<mat-card-title class="section-title">История изменений</mat-card-title></mat-card-header>
 						<mat-spinner *ngIf="isLoadingHistory" diameter="40" aria-label="Загрузка..."></mat-spinner>
 						<table mat-table class="history-table" [dataSource]="historyEntries"
 							*ngIf="!isLoadingHistory && historyEntries.length > 0" role="grid"

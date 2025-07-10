@@ -1,3 +1,7 @@
+import { ApplicationUser } from "./application-user.model";
+import { Store } from "./store.model";
+import { PassType } from "./pass-type.model";
+
 export interface PassTransaction {
 	id: number;
 	token: string;
@@ -33,26 +37,6 @@ export interface ContractorDto {
 	firstName?: string;
 	middleName?: string;
 	passportSerialNumber?: string;
-}
-
-export interface Store {
-	id: number;
-	building?: string;
-	floor?: string;
-	line?: string;
-	storeNumber?: string;
-}
-
-export interface PassType {
-	id: number;
-	name?: string;
-	durationInMonths?: number;
-	cost?: number;
-}
-
-export interface ApplicationUser {
-	id: string;
-	userName?: string;
 }
 
 export interface CreateTransactionDto {

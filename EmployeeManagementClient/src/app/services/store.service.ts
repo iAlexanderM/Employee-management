@@ -99,6 +99,16 @@ export class StoreService {
 		);
 	}
 
+	updateStoreNote(id: number, note: string | null): Observable<void> {
+		return this.http.put<void>(`${this.storesApiUrl}/${id}/note`, { note }, { headers: this.getAuthHeaders() }).pipe(
+			catchError((error) => {
+				console.error('Ошибка при обновлении заметки магазина:', error);
+				const errorMessage = error.error?.message || error.message || 'Не удалось обновить заметку';
+				return throwError(() => new Error(errorMessage));
+			})
+		);
+	}
+
 	archiveStore(id: number): Observable<void> {
 		return this.http.put<void>(`${this.storesApiUrl}/archive/${id}`, {}, { headers: this.getAuthHeaders() }).pipe(
 			catchError((error) => {

@@ -37,7 +37,7 @@ import { Photo } from '../../../models/contractor.model';
 		MatCardModule,
 		MatTableModule,
 		MatIconModule,
-		MatProgressSpinnerModule,
+		MatProgressSpinnerModule
 	],
 	templateUrl: './contractor-details.component.html',
 	styleUrls: ['./contractor-details.component.css'],

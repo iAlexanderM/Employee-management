@@ -1,88 +1,174 @@
 <div class="main-content">
-	<mat-card class="section-card">
-		<mat-card-header>
-			<mat-card-title class="section-title">Поиск пропусков по торговой точке</mat-card-title>
-		</mat-card-header>
-		<mat-card-content>
-			<form [formGroup]="searchForm" class="search-form">
-				<div class="search-fields">
-					<mat-form-field appearance="fill" class="full-width">
-						<mat-label>Здание</mat-label>
-						<input matInput formControlName="Building" [matAutocomplete]="autoBuilding"
-							(input)="onInput('Building', $event)">
-						<mat-icon matSuffix>business</mat-icon>
-						<mat-autocomplete #autoBuilding="matAutocomplete"
-							(optionSelected)="selectSuggestion('Building', $event.option.value)">
-							<mat-option *ngFor="let suggestion of (buildingSuggestions$ | async)"
-								[value]="suggestion">{{ suggestion }}</mat-option>
-							<mat-option
-								*ngIf="(buildingSuggestions$ | async)?.length === 0 && searchForm.get('Building')?.value && !isFieldConfirmed('Building')"
-								disabled>Нет результатов</mat-option>
-						</mat-autocomplete>
-					</mat-form-field>
+	<div class="content-grid">
+		<div class="column-left">
+			<mat-card class="section-card">
+				<mat-card-header>
+					<mat-card-title class="section-title">Поиск пропусков по торговой точке</mat-card-title>
+				</mat-card-header>
+				<mat-card-content>
+					<form [formGroup]="searchForm" class="search-form">
+						<div class="search-fields">
+							<mat-form-field appearance="fill" class="full-width">
+								<mat-label>Здание</mat-label>
+								<input matInput formControlName="Building" [matAutocomplete]="autoBuilding"
+									(input)="onInput('Building', $event)">
+								<mat-icon matSuffix>business</mat-icon>
+								<mat-autocomplete #autoBuilding="matAutocomplete"
+									(optionSelected)="selectSuggestion('Building', $event.option.value)">
+									<mat-option *ngFor="let suggestion of (buildingSuggestions$ | async)"
+										[value]="suggestion">{{ suggestion }}</mat-option>
+									<mat-option
+										*ngIf="(buildingSuggestions$ | async)?.length === 0 && searchForm.get('Building')?.value && !isFieldConfirmed('Building')"
+										disabled>Нет результатов</mat-option>
+								</mat-autocomplete>
+							</mat-form-field>
 
-					<mat-form-field appearance="fill" class="full-width">
-						<mat-label>Этаж</mat-label>
-						<input matInput formControlName="Floor" [matAutocomplete]="autoFloor"
-							(input)="onInput('Floor', $event)">
-						<mat-icon matSuffix>stairs</mat-icon>
-						<mat-autocomplete #autoFloor="matAutocomplete"
-							(optionSelected)="selectSuggestion('Floor', $event.option.value)">
-							<mat-option *ngFor="let suggestion of (floorSuggestions$ | async)" [value]="suggestion">{{
-								suggestion }}</mat-option>
-							<mat-option
-								*ngIf="(floorSuggestions$ | async)?.length === 0 && searchForm.get('Floor')?.value && !isFieldConfirmed('Floor')"
-								disabled>Нет результатов</mat-option>
-						</mat-autocomplete>
-					</mat-form-field>
+							<mat-form-field appearance="fill" class="full-width">
+								<mat-label>Этаж</mat-label>
+								<input matInput formControlName="Floor" [matAutocomplete]="autoFloor"
+									(input)="onInput('Floor', $event)">
+								<mat-icon matSuffix>stairs</mat-icon>
+								<mat-autocomplete #autoFloor="matAutocomplete"
+									(optionSelected)="selectSuggestion('Floor', $event.option.value)">
+									<mat-option *ngFor="let suggestion of (floorSuggestions$ | async)"
+										[value]="suggestion">{{
+										suggestion }}</mat-option>
+									<mat-option
+										*ngIf="(floorSuggestions$ | async)?.length === 0 && searchForm.get('Floor')?.value && !isFieldConfirmed('Floor')"
+										disabled>Нет результатов</mat-option>
+								</mat-autocomplete>
+							</mat-form-field>
 
-					<mat-form-field appearance="fill" class="full-width">
-						<mat-label>Линия</mat-label>
-						<input matInput formControlName="Line" [matAutocomplete]="autoLine"
-							(input)="onInput('Line', $event)">
-						<mat-icon matSuffix>store</mat-icon>
-						<mat-autocomplete #autoLine="matAutocomplete"
-							(optionSelected)="selectSuggestion('Line', $event.option.value)">
-							<mat-option *ngFor="let suggestion of (lineSuggestions$ | async)" [value]="suggestion">{{
-								suggestion }}</mat-option>
-							<mat-option
-								*ngIf="(lineSuggestions$ | async)?.length === 0 && searchForm.get('Line')?.value && !isFieldConfirmed('Line')"
-								disabled>Нет результатов</mat-option>
-						</mat-autocomplete>
-					</mat-form-field>
+							<mat-form-field appearance="fill" class="full-width">
+								<mat-label>Линия</mat-label>
+								<input matInput formControlName="Line" [matAutocomplete]="autoLine"
+									(input)="onInput('Line', $event)">
+								<mat-icon matSuffix>store</mat-icon>
+								<mat-autocomplete #autoLine="matAutocomplete"
+									(optionSelected)="selectSuggestion('Line', $event.option.value)">
+									<mat-option *ngFor="let suggestion of (lineSuggestions$ | async)"
+										[value]="suggestion">{{
+										suggestion }}</mat-option>
+									<mat-option
+										*ngIf="(lineSuggestions$ | async)?.length === 0 && searchForm.get('Line')?.value && !isFieldConfirmed('Line')"
+										disabled>Нет результатов</mat-option>
+								</mat-autocomplete>
+							</mat-form-field>
 
-					<mat-form-field appearance="fill" class="full-width">
-						<mat-label>Торговая точка</mat-label>
-						<input matInput formControlName="StoreNumber" [matAutocomplete]="autoStoreNumber"
-							(input)="onInput('StoreNumber', $event)">
-						<mat-icon matSuffix>storefront</mat-icon>
-						<mat-autocomplete #autoStoreNumber="matAutocomplete"
-							(optionSelected)="selectSuggestion('StoreNumber', $event.option.value)">
-							<mat-option *ngFor="let suggestion of (storeNumberSuggestions$ | async)"
-								[value]="suggestion">{{ suggestion }}</mat-option>
-							<mat-option
-								*ngIf="(storeNumberSuggestions$ | async)?.length === 0 && searchForm.get('StoreNumber')?.value && !isFieldConfirmed('StoreNumber')"
-								disabled>Нет результатов</mat-option>
-						</mat-autocomplete>
-					</mat-form-field>
-				</div>
-				<div class="d-flex justify-content-start gap-2 mt-4">
-					<mat-checkbox formControlName="showActive">Активные</mat-checkbox>
-					<mat-checkbox formControlName="showClosed">Закрытые</mat-checkbox>
-					<button mat-stroked-button color="primary" class="action-btn"
-						(click)="resetFilters()">Сбросить</button>
-					<button mat-raised-button color="primary" class="action-btn" (click)="addPass()"
-						[disabled]="!areAllFieldsConfirmed() || totalCount < 0">Добавить</button>
-				</div>
-				<div *ngIf="errorMessage" class="alert mt-4">{{ errorMessage }}</div>
-			</form>
-		</mat-card-content>
+							<mat-form-field appearance="fill" class="full-width">
+								<mat-label>Торговая точка</mat-label>
+								<input matInput formControlName="StoreNumber" [matAutocomplete]="autoStoreNumber"
+									(input)="onInput('StoreNumber', $event)">
+								<mat-icon matSuffix>storefront</mat-icon>
+								<mat-autocomplete #autoStoreNumber="matAutocomplete"
+									(optionSelected)="selectSuggestion('StoreNumber', $event.option.value)">
+									<mat-option *ngFor="let suggestion of (storeNumberSuggestions$ | async)"
+										[value]="suggestion">{{ suggestion }}</mat-option>
+									<mat-option
+										*ngIf="(storeNumberSuggestions$ | async)?.length === 0 && searchForm.get('StoreNumber')?.value && !isFieldConfirmed('StoreNumber')"
+										disabled>Нет результатов</mat-option>
+								</mat-autocomplete>
+							</mat-form-field>
+						</div>
+						<div class="d-flex justify-content-start gap-2 mt-4">
+							<mat-checkbox formControlName="showActive">Активные</mat-checkbox>
+							<mat-checkbox formControlName="showClosed">Закрытые</mat-checkbox>
+							<button mat-stroked-button color="primary" class="action-btn"
+								(click)="resetFilters()">Сбросить</button>
+							<button mat-raised-button color="primary" class="action-btn" (click)="addPass()"
+								[disabled]="!areAllFieldsConfirmed() || totalCount < 0">Добавить</button>
+						</div>
+					</form>
+				</mat-card-content>
+			</mat-card>
+		</div>
+
+
+		<div class="column-center" *ngIf="areAllFieldsConfirmed()">
+			<mat-card class="section-card">
+				<mat-card-title class="section-title">Пометка</mat-card-title>
+				<mat-card-content>
+					<form [formGroup]="noteForm" (ngSubmit)="saveNote()" class="note-form">
+						<mat-form-field appearance="outline" class="full-width-expand">
+							<textarea matInput #noteTextarea formControlName="note" maxlength="500"
+								placeholder="Введите заметку" aria-label="Заметка торговой точки" cdkTextareaAutosize
+								cdkAutosizeMinRows="5" cdkAutosizeMaxRows="14"></textarea>
+							<mat-error *ngIf="noteForm.get('note')?.hasError('maxlength')">Заметка не должна превышать
+								500 символов</mat-error>
+						</mat-form-field>
+						<div class="d-flex justify-content-start gap-2 mt-4">
+							<button mat-raised-button color="primary" class="action-btn" type="submit"
+								[disabled]="!noteForm.valid || noteForm.pristine" aria-label="Сохранить заметку">
+								Сохранить
+							</button>
+							<button mat-raised-button color="warn" type="button" (click)="clearNote()"
+								[disabled]="!noteForm.get('note')?.value" aria-label="Очистить заметку">
+								Очистить
+							</button>
+						</div>
+					</form>
+				</mat-card-content>
+			</mat-card>
+		</div>
+
+		<div class="column-right" *ngIf="areAllFieldsConfirmed()">
+			<mat-card class="section-card">
+				<mat-card-content>
+					<button mat-raised-button color="primary" class="action-btn" (click)="toggleHistory()"
+						[attr.aria-label]="showHistory ? 'Скрыть историю изменений' : 'Показать историю изменений'">
+						{{ showHistory ? 'Скрыть историю' : 'Показать историю' }}
+					</button>
+					<div *ngIf="showHistory" class="history-content scrollable-content"> <mat-card-title
+							class="section-title">История изменений</mat-card-title>
+						<mat-spinner *ngIf="isLoadingHistory" diameter="40" aria-label="Загрузка..."></mat-spinner>
+						<table mat-table [dataSource]="historyEntries" class="history-table"
+							*ngIf="!isLoadingHistory && historyEntries.data.length > 0" role="grid"
+							aria-label="Таблица истории изменений торговой точки">
+							<ng-container matColumnDef="timestamp">
+								<th mat-header-cell *matHeaderCellDef>Дата и время</th>
+								<td mat-cell *matCellDef="let entry">{{ entry.timestamp | date:'dd.MM.yyyy HH:mm' }}
+								</td>
+							</ng-container>
+							<ng-container matColumnDef="action">
+								<th mat-header-cell *matHeaderCellDef>Действие</th>
+								<td mat-cell *matCellDef="let entry">{{ formatHistoryAction(entry.action) }}</td>
+							</ng-container>
+							<ng-container matColumnDef="user">
+								<th mat-header-cell *matHeaderCellDef>Пользователь</th>
+								<td mat-cell *matCellDef="let entry">{{ userMap[entry.user] || 'Неизвестно' }}</td>
+							</ng-container>
+							<ng-container matColumnDef="details">
+								<th mat-header-cell *matHeaderCellDef>Детали</th>
+								<td mat-cell *matCellDef="let entry">{{ entry.details || 'Нет подробностей' }}</td>
+							</ng-container>
+							<ng-container matColumnDef="changes">
+								<th mat-header-cell *matHeaderCellDef>Изменения</th>
+								<td mat-cell *matCellDef="let entry">{{ formatHistoryChanges(entry.changes) }}</td>
+							</ng-container>
+							<tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
+							<tr mat-row *matRowDef="let row; columns: historyColumns;"></tr>
+						</table>
+						<mat-card *ngIf="!isLoadingHistory && historyEntries.data.length === 0 && showHistory"
+							class="error-message">
+							История изменений не найдена.
+						</mat-card>
+					</div>
+				</mat-card-content>
+			</mat-card>
+		</div>
+	</div>
+
+	<mat-card *ngIf="errorMessage" class="error-message" role="alert">
+		<mat-icon>error_outline</mat-icon>
+		{{ errorMessage }} <br>
 	</mat-card>
 
-	<div #loadPreviousTrigger class="load-previous-trigger"></div>
+	<div class="results-container">
+		<div class="loading-indicator top" *ngIf="isLoading && !flattenedContractors.length">
+			<mat-spinner diameter="40"></mat-spinner>
+			<span>Загрузка...</span>
+		</div>
 
-	<div infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="300" (scrolled)="loadMoreResults()"
-		[scrollWindow]="true">
 		<ng-container *ngFor="let item of flattenedContractors; let i = index; trackBy: trackByContractor">
 			<div class="results-section" @fadeIn [attr.data-contractor-id]="item.contractor.contractorId">
 				<table class="data-table contractor-table">
@@ -137,10 +223,7 @@
 						</tr>
 						<tr *ngIf="isPanelExpanded(item.contractor.contractorId, item.isActive ? 'active' : 'closed')">
 							<td colspan="10">
-								<mat-expansion-panel
-									[expanded]="isPanelExpanded(item.contractor.contractorId, item.isActive ? 'active' : 'closed')"
-									(opened)="togglePanel(item.contractor.contractorId, item.isActive ? 'active' : 'closed')"
-									(closed)="togglePanel(item.contractor.contractorId, item.isActive ? 'active' : 'closed')">
+								<mat-expansion-panel [expanded]="true">
 									<table class="data-table">
 										<thead>
 											<tr>
@@ -194,14 +277,16 @@
 				</table>
 			</div>
 		</ng-container>
-	</div>
 
-	<div class="loading-indicator" *ngIf="isLoading">
-		<mat-spinner diameter="40"></mat-spinner>
-		<span>Загрузка...</span>
-	</div>
+		<div #loadMoreTrigger class="load-more-trigger" *ngIf="hasMoreResults"></div>
 
-	<div *ngIf="flattenedContractors.length === 0 && !isLoading" class="text-center mt-4">
-		<p class="text-muted">Нет данных для отображения</p>
+		<div class="loading-indicator bottom" *ngIf="isLoading && flattenedContractors.length">
+			<mat-spinner diameter="40"></mat-spinner>
+			<span>Загрузка...</span>
+		</div>
+
+		<div *ngIf="flattenedContractors.length === 0 && !isLoading" class="text-center mt-4">
+			<p class="text-muted">Нет контрагентов для отображения</p>
+		</div>
 	</div>
 </div>

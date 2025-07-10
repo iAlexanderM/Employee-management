@@ -10,10 +10,30 @@ import {
 	Validators
 } from '@angular/forms';
 
+// Angular Material Imports
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
+
 @Component({
 	selector: 'app-store-points-line-edit',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule], // убираем FormsModule, добавляем ReactiveFormsModule
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatCardModule,
+		MatButtonModule,
+		MatInputModule,
+		MatFormFieldModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule
+	],
 	templateUrl: './store-points-line-edit.component.html',
 	styleUrls: ['./store-points-line-edit.component.css']
 })
@@ -88,5 +108,10 @@ export class StorePointsLineEditComponent implements OnInit {
 				}
 			}
 		);
+	}
+
+	// Add the cancel method to navigate back
+	cancel(): void {
+		this.router.navigate(['/line']);
 	}
 }

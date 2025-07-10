@@ -1,0 +1,40 @@
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Список пользователей</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<div *ngIf="isLoading" class="spinner-container">
+				<mat-spinner></mat-spinner>
+			</div>
+			<mat-table [dataSource]="(users$ | async) || []" class="data-table">
+
+				<ng-container matColumnDef="rowNumber">
+					<mat-header-cell *matHeaderCellDef> № </mat-header-cell>
+					<mat-cell *matCellDef="let user"> {{ user.rowNumber }} </mat-cell>
+				</ng-container>
+
+				<ng-container matColumnDef="username">
+					<mat-header-cell *matHeaderCellDef> Логин </mat-header-cell>
+					<mat-cell *matCellDef="let user"> {{ user.userName }} </mat-cell>
+				</ng-container>
+
+				<ng-container matColumnDef="fullName">
+					<mat-header-cell *matHeaderCellDef> ФИО </mat-header-cell>
+					<mat-cell *matCellDef="let user"> {{ getFullName(user) }} </mat-cell>
+				</ng-container>
+
+				<ng-container matColumnDef="email">
+					<mat-header-cell *matHeaderCellDef> Email </mat-header-cell>
+					<mat-cell *matCellDef="let user"> {{ user.email || 'N/A' }} </mat-cell>
+				</ng-container>
+
+				<mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+				<mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+			</mat-table>
+			<div *ngIf="!isLoading && (users$ | async)?.length === 0" class="text-center mt-4">
+				<p class="text-muted">Пользователи не найдены.</p>
+			</div>
+		</mat-card-content>
+	</mat-card>
+</div>

@@ -52,16 +52,17 @@ public class PassTransactionSearchService : IPassTransactionSearchService
             }
             else
             {
-                var queryParts = searchDto.StoreSearch.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (queryParts.Length > 0)
-                {
-                    query = query.Where(t => t.ContractorStorePasses.Any(csp => csp.Store != null && (
-                        (queryParts.Length > 0 && EF.Functions.Like(csp.Store.Building ?? "", $"%{queryParts[0]}%")) ||
-                        (queryParts.Length > 1 && EF.Functions.Like(csp.Store.Floor ?? "", $"%{queryParts[1]}%")) ||
-                        (queryParts.Length > 2 && EF.Functions.Like(csp.Store.Line ?? "", $"%{queryParts[2]}%")) ||
-                        (queryParts.Length > 3 && EF.Functions.Like(csp.Store.StoreNumber ?? "", $"%{queryParts[3]}%"))
-                    )));
-                }
+                var searchTerms = searchDto.StoreSearch.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                query = query.Where(t => t.ContractorStorePasses.Any(csp =>
+                    csp.Store != null &&
+                    searchTerms.All(term =>
+                        (csp.Store.Building != null && csp.Store.Building.ToLower().Contains(term)) ||
+                        (csp.Store.Floor != null && csp.Store.Floor.ToLower().Contains(term)) ||
+                        (csp.Store.Line != null && csp.Store.Line.ToLower().Contains(term)) ||
+                        (csp.Store.StoreNumber != null && csp.Store.StoreNumber.ToLower().Contains(term))
+                    )
+                ));
             }
         }
 

@@ -8,21 +8,12 @@
 	display: flex;
 	flex-direction: column;
 }
-
 .section-card {
 	background-color: #ffffff;
 	border-radius: 8px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	padding: 16px;
 }
-
-.section-title {
-	font-size: 24px;
-	font-weight: 600;
-	color: #1f2937;
-	margin-bottom: 16px;
-}
-
 .error-message {
 	background-color: #fee2e2;
 	color: #dc2626;
@@ -30,16 +21,13 @@
 	border-radius: 4px;
 	margin-bottom: 16px;
 }
-
 .create-form {
 	padding: 8px 0;
 	margin-bottom: 16px;
 }
-
 mat-grid-list {
 	width: 100%;
 }
-
 mat-grid-tile {
 	display: flex;
 	flex-direction: column;
@@ -48,23 +36,19 @@ mat-grid-tile {
 	padding-top: 6px;
 	overflow: visible;
 }
-
 .full-width {
 	width: 100%;
 }
-
 .form-group {
 	margin-bottom: 16px;
 	margin-top: 8px;
 }
-
 .form-group label {
 	font-weight: 600;
 	color: #6b7280;
 	margin-bottom: 4px;
 	display: block;
 }
-
 .note-textarea-field textarea.mat-input-element {
 	width: 100%;
 	box-sizing: border-box;
@@ -77,7 +61,6 @@ mat-grid-tile {
 	font-size: 14px;
 	line-height: 1.4;
 }
-
 .color-input {
 	width: 40px;
 	height: 40px;
@@ -86,55 +69,40 @@ mat-grid-tile {
 	cursor: pointer;
 	border-radius: 4px;
 }
-
 .action-btn {
 	font-size: 14px;
 	padding: 8px 16px;
 	border-radius: 4px;
 }
-
 .selected-group {
 	margin-left: 16px;
 	color: #4b5563;
 }
-
 .d-flex {
 	display: flex;
 }
-
 .align-items-center {
 	align-items: center;
 }
-
 .justify-content-start {
 	justify-content: flex-start;
 }
-
 .gap-2 {
 	gap: 8px;
 }
-
 .mt-2 {
 	margin-top: 8px;
 }
-
 .mt-3 {
 	margin-top: 12px;
 }
-
 .mt-4 {
 	margin-top: 16px;
 }
-
 @media (max-width: 768px) {
 	.main-content {
 		padding: 1rem;
 	}
-
-	.section-title {
-		font-size: 20px;
-	}
-
 	.action-btn {
 		font-size: 12px;
 		padding: 6px 12px;

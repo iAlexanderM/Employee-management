@@ -1,165 +1,246 @@
-<div class="container mt-4">
-	<h2>Создание транзакций</h2>
-	<div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Создание транзакций</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<mat-card *ngIf="errorMessage" class="error-message mt-4" role="alert">
+				<mat-icon>error_outline</mat-icon> {{ errorMessage }}
+			</mat-card>
 
-	<app-active-token-floating *ngIf="activeTokenData" [tokenData]="activeTokenData"
-		(close)="activeTokenData = null"></app-active-token-floating>
+			<app-active-token-floating *ngIf="activeTokenData" [tokenData]="activeTokenData"
+				(close)="activeTokenData = null"></app-active-token-floating>
 
-	<div *ngFor="let formData of transactionForms; let i = index" class="mb-4 p-3 border rounded">
-		<h3>Документ {{ i + 1 }}</h3>
-		<form [formGroup]="formData.form" class="mt-3">
-			<input type="hidden" formControlName="contractorId">
-			<input type="hidden" formControlName="storeId">
-			<input type="hidden" formControlName="passTypeId">
+			<div *ngFor="let formData of transactionForms; let i = index"
+				class="mb-4 p-3 border rounded transaction-form-section">
+				<h3>Документ {{ i + 1 }}</h3>
+				<form [formGroup]="formData.form" class="create-form">
+					<input type="hidden" formControlName="contractorId">
+					<input type="hidden" formControlName="storeId">
+					<input type="hidden" formControlName="passTypeId">
 
-			<div class="row-custom mb-3">
-				<div class="col-custom-8 align-self-end">
-					<button type="button" class="btn btn-select" (click)="openStoreModal(i)">Выбрать</button>
-				</div>
-				<div class="col-custom-8 align-self-start">
-					<label class="form-label">Здание:</label>
-					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.store}"
-						[value]="formData.store?.building || 'Не выбрано'" readonly />
-				</div>
-				<div class="col-custom-8 align-self-start">
-					<label class="form-label">Этаж:</label>
-					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.store}"
-						[value]="formData.store?.floor || 'Не выбрано'" readonly />
-				</div>
-				<div class="col-custom-8 align-self-start">
-					<label class="form-label">Линия:</label>
-					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.store}"
-						[value]="formData.store?.line || 'Не выбрано'" readonly />
-				</div>
-				<div class="col-custom-8 align-self-start">
-					<label class="form-label">Точка:</label>
-					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.store}"
-						[value]="formData.store?.storeNumber || 'Не выбрано'" readonly />
-				</div>
-			</div>
-
-			<div class="row-custom mb-3">
-				<div class="col-custom-8 align-self-end">
-					<button type="button" class="btn btn-select" (click)="openContractorModal(i)">Выбрать</button>
-				</div>
-				<div class="col-custom-8 align-self-start">
-					<label class="form-label">Фамилия:</label>
-					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.contractor}"
-						[value]="formData.contractor?.lastName || 'Не выбрано'" readonly />
-				</div>
-				<div class="col-custom-8 align-self-start">
-					<label class="form-label">Имя:</label>
-					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.contractor}"
-						[value]="formData.contractor?.firstName || 'Не выбрано'" readonly />
-				</div>
-				<div class="col-custom-8 align-self-start">
-					<label class="form-label">Отчество:</label>
-					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.contractor}"
-						[value]="formData.contractor?.middleName || 'Не выбрано'" readonly />
-				</div>
-				<div class="col-custom-8 align-self-start">
-					<label class="form-label">Серия и №:</label>
-					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.contractor}"
-						[value]="formData.contractor?.passportSerialNumber || 'Не выбрано'" readonly />
-				</div>
-				<div class="col-custom-8 col-span-2 align-self-start">
-					<label for="position_{{i}}" class="form-label">Должность:</label>
-					<div class="position-container d-flex align-items-center">
-						<select id="position_{{i}}" formControlName="position" class="form-control position-select me-2"
-							[ngClass]="{'invalid-field': !formData.form.get('position')?.value}"
-							(change)="onPositionChange(i, $event)">
-							<option value="" disabled>Выберите должность</option>
-							<option value="Сотрудник">Сотрудник</option>
-							<option value="Подрядчик">Подрядчик</option>
-							<option value="Наёмный работник">Наёмный работник</option>
-						</select>
-						<ng-container
-							*ngIf="formData.modalPosition || formData.form.get('position')?.value === 'Наёмный работник'">
-							<input type="text" class="form-control position-input me-2"
-								[value]="formData.modalPosition || ''" readonly />
-							<button *ngIf="formData.form.get('position')?.value === 'Наёмный работник'" type="button"
-								class="btn btn-select me-2" (click)="openPositionModal(i)">
-								Выбрать из списка
+					<mat-grid-list cols="6" rowHeight="80px" gutterSize="8px">
+						<mat-grid-tile>
+							<button mat-raised-button color="primary" class="full-width" type="button"
+								(click)="openStoreModal(i)">
+								<mat-icon>store</mat-icon> Выбрать Здание
 							</button>
+						</mat-grid-tile>
+						<mat-grid-tile>
+							<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+								<mat-label>Здание</mat-label>
+								<input matInput [value]="formData.store?.building || 'Не выбрано'" readonly
+									[ngClass]="{'invalid-field': !formData.store}" />
+								<mat-icon matSuffix>business</mat-icon>
+							</mat-form-field>
+						</mat-grid-tile>
+						<mat-grid-tile>
+							<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+								<mat-label>Этаж</mat-label>
+								<input matInput [value]="formData.store?.floor || 'Не выбрано'" readonly
+									[ngClass]="{'invalid-field': !formData.store}" />
+								<mat-icon matSuffix>layers</mat-icon>
+							</mat-form-field>
+						</mat-grid-tile>
+						<mat-grid-tile>
+							<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+								<mat-label>Линия</mat-label>
+								<input matInput [value]="formData.store?.line || 'Не выбрано'" readonly
+									[ngClass]="{'invalid-field': !formData.store}" />
+								<mat-icon matSuffix>timeline</mat-icon>
+							</mat-form-field>
+						</mat-grid-tile>
+						<mat-grid-tile>
+							<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+								<mat-label>Точка</mat-label>
+								<input matInput [value]="formData.store?.storeNumber || 'Не выбрано'" readonly
+									[ngClass]="{'invalid-field': !formData.store}" />
+								<mat-icon matSuffix>pin_drop</mat-icon>
+							</mat-form-field>
+						</mat-grid-tile>
+						<mat-grid-tile></mat-grid-tile>
+					</mat-grid-list>
+
+					<mat-grid-list cols="6" rowHeight="80px" gutterSize="8px">
+						<mat-grid-tile>
+							<button mat-raised-button color="primary" class="full-width" type="button"
+								(click)="openContractorModal(i)">
+								<mat-icon>person_search</mat-icon> Выбрать Контрагента
+							</button>
+						</mat-grid-tile>
+						<mat-grid-tile>
+							<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+								<mat-label>Фамилия</mat-label>
+								<input matInput [value]="formData.contractor?.lastName || 'Не выбрано'" readonly
+									[ngClass]="{'invalid-field': !formData.contractor}" />
+								<mat-icon matSuffix>person</mat-icon>
+							</mat-form-field>
+						</mat-grid-tile>
+						<mat-grid-tile>
+							<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+								<mat-label>Имя</mat-label>
+								<input matInput [value]="formData.contractor?.firstName || 'Не выбрано'" readonly
+									[ngClass]="{'invalid-field': !formData.contractor}" />
+								<mat-icon matSuffix>person</mat-icon>
+							</mat-form-field>
+						</mat-grid-tile>
+						<mat-grid-tile>
+							<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+								<mat-label>Отчество</mat-label>
+								<input matInput [value]="formData.contractor?.middleName || 'Не выбрано'" readonly
+									[ngClass]="{'invalid-field': !formData.contractor}" />
+								<mat-icon matSuffix>person</mat-icon>
+							</mat-form-field>
+						</mat-grid-tile>
+						<mat-grid-tile>
+							<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+								<mat-label>Серия и № паспорта</mat-label>
+								<input matInput [value]="formData.contractor?.passportSerialNumber || 'Не выбрано'"
+									readonly [ngClass]="{'invalid-field': !formData.contractor}" />
+								<mat-icon matSuffix>badge</mat-icon>
+							</mat-form-field>
+						</mat-grid-tile>
+						<mat-grid-tile></mat-grid-tile>
+					</mat-grid-list>
+
+					<mat-grid-list cols="6" rowHeight="80px" gutterSize="8px">
+						<mat-grid-tile></mat-grid-tile>
+
+						<mat-grid-tile>
+							<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+								<mat-label>Должность</mat-label>
+								<mat-select formControlName="position" class="full-width"
+									[ngClass]="{'invalid-field': !formData.form.get('position')?.value}"
+									(selectionChange)="onPositionChange(i, $event)">
+									<mat-option value="" disabled>Выберите должность</mat-option>
+									<mat-option *ngFor="let position of filteredPositions" [value]="position.name">
+										{{ position.name }}
+									</mat-option>
+								</mat-select>
+								<mat-icon matSuffix>work</mat-icon>
+							</mat-form-field>
+						</mat-grid-tile>
+
+						<ng-container *ngIf="formData.form.get('position')?.value === manualEntryPositionName">
+							<mat-grid-tile>
+								<mat-form-field appearance="fill" class="full-width manual-input-field"
+									floatLabel="auto">
+									<mat-label>Другая должность</mat-label>
+									<input matInput [value]="formData.modalPosition || ''" readonly />
+								</mat-form-field>
+							</mat-grid-tile>
+							<mat-grid-tile>
+								<button mat-raised-button color="primary" class="full-width" type="button"
+									(click)="openPositionModal(i)">
+									<mat-icon>list_alt</mat-icon> Выбрать должность
+								</button>
+							</mat-grid-tile>
+							<mat-grid-tile colspan="2"></mat-grid-tile>
 						</ng-container>
-					</div>
+
+						<ng-container *ngIf="formData.form.get('position')?.value !== manualEntryPositionName">
+							<mat-grid-tile colspan="4"></mat-grid-tile>
+						</ng-container>
+					</mat-grid-list>
+
 					<app-position-modal [isVisible]="formData.form.get('showPositionModal')?.value" mode="select"
 						(modalClose)="formData.form.get('showPositionModal')?.setValue(false)"
 						(itemSelected)="positionSelected(i, $event)">
 					</app-position-modal>
-				</div>
+
+					<mat-grid-list cols="6" rowHeight="80px" gutterSize="8px">
+						<mat-grid-tile>
+							<button mat-raised-button color="primary" class="full-width" type="button"
+								(click)="openPassTypeModal(i)">
+								<mat-icon>vpn_key</mat-icon> Выбрать Тип пропуска
+							</button>
+						</mat-grid-tile>
+						<mat-grid-tile>
+							<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+								<mat-label>Тип пропуска</mat-label>
+								<input matInput [value]="formData.passType?.name || 'Не выбрано'" readonly
+									[ngClass]="{'invalid-field': !formData.passType}" />
+								<mat-icon matSuffix>card_membership</mat-icon>
+							</mat-form-field>
+						</mat-grid-tile>
+						<mat-grid-tile>
+							<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+								<mat-label>Стоимость</mat-label>
+								<input matInput [value]="formData.totalCost || '0'" readonly />
+								<mat-icon matSuffix>attach_money</mat-icon>
+							</mat-form-field>
+						</mat-grid-tile>
+						<mat-grid-tile>
+							<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+								<mat-label>Дата начала</mat-label>
+								<input matInput [matDatepicker]="startDatePicker" formControlName="startDate"
+									[ngClass]="{'invalid-field': !formData.form.get('startDate')?.value}" readonly
+									(click)="startDatePicker.open()" (dateChange)="onStartDateChange($event, i)">
+								<mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+								<mat-datepicker #startDatePicker></mat-datepicker>
+							</mat-form-field>
+						</mat-grid-tile>
+						<mat-grid-tile>
+							<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+								<mat-label>Дата окончания</mat-label>
+								<input matInput [matDatepicker]="endDatePicker" formControlName="endDate" readonly
+									[ngClass]="{'invalid-field': !formData.form.get('endDate')?.value}" />
+								<mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+								<mat-datepicker #endDatePicker></mat-datepicker>
+							</mat-form-field>
+						</mat-grid-tile>
+					</mat-grid-list>
+
+					<div class="d-flex justify-content-end gap-2 mt-4">
+						<button mat-raised-button color="warn" type="button" (click)="removeTransactionForm(i)"
+							*ngIf="i === 0 && transactionForms.length > 1" matTooltip="Удалить документ">
+							<mat-icon>delete</mat-icon> Удалить документ
+						</button>
+						<button mat-raised-button color="accent" type="button" (click)="removeTransactionForm(i)"
+							*ngIf="i === 0 && transactionForms.length === 1" matTooltip="Очистить форму">
+							<mat-icon>clear_all</mat-icon> Очистить
+						</button>
+						<button mat-raised-button color="warn" type="button" (click)="removeTransactionForm(i)"
+							*ngIf="i > 0" matTooltip="Удалить документ">
+							<mat-icon>delete</mat-icon> Удалить документ
+						</button>
+					</div>
+				</form>
+
+				<app-contractor-select-modal *ngIf="formData.form.controls['showContractorModal'].value"
+					(modalClose)="formData.form.controls['showContractorModal'].setValue(false)"
+					(itemSelected)="contractorSelected(i, $event)">
+				</app-contractor-select-modal>
+				<app-store-select-or-add-modal *ngIf="formData.form.controls['showStoreModal'].value"
+					fieldName="storeNumber" mode="select"
+					(modalClose)="formData.form.controls['showStoreModal'].setValue(false)"
+					(itemSelected)="storeSelected(i, $event)">
+				</app-store-select-or-add-modal>
+				<app-pass-type-modal *ngIf="formData.form.controls['showPassTypeModal'].value"
+					(modalClose)="formData.form.controls['showPassTypeModal'].setValue(false)"
+					(itemSelected)="passTypeSelected(i, $event)">
+				</app-pass-type-modal>
 			</div>
 
-			<div class="row-custom mb-3">
-				<div class="col-custom-8 align-self-end">
-					<button type="button" class="btn btn-select" (click)="openPassTypeModal(i)">Выбрать</button>
+			<div class="form-actions-footer">
+				<button mat-raised-button color="accent" type="button" (click)="addTransactionForm()"
+					matTooltip="Добавить новый документ" class="full-width-button-footer">
+					<mat-icon>add</mat-icon> Добавить документ
+				</button>
+
+				<div class="total-cost-display-footer">
+					<mat-form-field appearance="fill" floatLabel="always" class="full-width">
+						<mat-label>Итоговая стоимость</mat-label>
+						<input matInput [value]="getTotalCost()" readonly />
+						<mat-icon matSuffix>attach_money</mat-icon>
+					</mat-form-field>
 				</div>
-				<div class="col-custom-8 align-self-start">
-					<label class="form-label">Тип пропуска:</label>
-					<input type="text" class="form-control" [ngClass]="{'invalid-field': !formData.passType}"
-						[value]="formData.passType?.name || 'Не выбрано'" readonly />
-				</div>
-				<div class="col-custom-8 align-self-start">
-					<label class="form-label">Стоимость:</label>
-					<input type="text" class="form-control" [value]="formData.totalCost || '0'" readonly />
-				</div>
-				<div class="col-custom-8 align-self-start">
-					<label class="form-label">Дата начала:</label>
-					<input type="date" class="form-control" formControlName="startDate"
-						[ngClass]="{'invalid-field': !formData.form.get('startDate')?.value}" />
-				</div>
-				<div class="col-custom-8 align-self-start">
-					<label class="form-label">Дата окончания:</label>
-					<input type="text" class="form-control"
-						[ngClass]="{'invalid-field': !formData.form.get('endDate')?.value}"
-						[value]="formatDateDisplay(formData.form.get('endDate')?.value) || ''" readonly />
-				</div>
+
+				<button mat-raised-button color="primary" type="button" (click)="createTransaction()"
+					matTooltip="Сохранить все транзакции" class="full-width-button-footer">
+					<mat-icon>save</mat-icon> Сохранить
+				</button>
 			</div>
-
-			<div class="row-custom mb-3 align-bottom">
-				<div class="col-custom-8 text-end">
-					<button type="button" class="btn btn-danger me-2" (click)="removeTransactionForm(i)"
-						*ngIf="i === 0 && transactionForms.length > 1">
-						Удалить документ
-					</button>
-					<button type="button" class="btn btn-warning me-2" (click)="removeTransactionForm(i)"
-						*ngIf="i === 0 && transactionForms.length === 1">
-						Очистить
-					</button>
-					<button type="button" class="btn btn-danger me-2" (click)="removeTransactionForm(i)" *ngIf="i > 0">
-						Удалить документ
-					</button>
-				</div>
-			</div>
-		</form>
-
-		<app-contractor-select-modal *ngIf="formData.form.controls['showContractorModal'].value"
-			(modalClose)="formData.form.controls['showContractorModal'].setValue(false)"
-			(itemSelected)="contractorSelected(i, $event)"></app-contractor-select-modal>
-		<app-store-select-or-add-modal *ngIf="formData.form.controls['showStoreModal'].value" fieldName="storeNumber"
-			mode="select" (modalClose)="formData.form.controls['showStoreModal'].setValue(false)"
-			(itemSelected)="storeSelected(i, $event)"></app-store-select-or-add-modal>
-		<app-pass-type-modal *ngIf="formData.form.controls['showPassTypeModal'].value"
-			(modalClose)="formData.form.controls['showPassTypeModal'].setValue(false)"
-			(itemSelected)="passTypeSelected(i, $event)"></app-pass-type-modal>
-	</div>
-
-	<div class="row-custom mb-3 align-bottom">
-		<div class="col-custom-8 col-span-2 text-end">
-			<button type="button" class="btn btn-success" (click)="addTransactionForm()">Добавить документ</button>
-		</div>
-	</div>
-
-	<div class="row-custom mb-3 align-bottom">
-		<div class="col-custom-8 col-span-2">
-			<label class="form-label">Итого:</label>
-			<input type="text" class="form-control" [value]="getTotalCost()" readonly />
-		</div>
-	</div>
-
-	<div class="row-custom mb-3 align-bottom">
-		<div class="col-custom-8 text-end">
-			<button type="button" class="btn btn-primary" (click)="createTransaction()">Сохранить</button>
-		</div>
-	</div>
+		</mat-card-content>
+	</mat-card>
 </div>

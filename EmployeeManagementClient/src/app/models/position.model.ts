@@ -1,5 +1,5 @@
 export interface Position {
-	id?: number;
+	id: number;
 	name: string;
 	sortOrder: number;
 	isArchived?: boolean;

@@ -4,13 +4,23 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TransactionService } from '../../../services/transaction.service';
 import { SuggestionService } from '../../../services/suggestion.service';
+import { UserService } from '../../../services/user.service';
 import { PassTransaction, ContractorDto } from '../../../models/transaction.model';
+import { ApplicationUser } from '../../../models/application-user.model';
 import { Observable, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, catchError, tap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, catchError, tap, startWith, map } from 'rxjs/operators';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTableModule } from '@angular/material/table';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../../services/auth.service';
 import { PassService } from '../../../services/pass.service';
 
@@ -22,9 +32,17 @@ import { PassService } from '../../../services/pass.service';
 		RouterModule,
 		ReactiveFormsModule,
 		MatAutocompleteModule,
+		MatButtonModule,
 		MatFormFieldModule,
 		MatInputModule,
-		MatButtonModule
+		MatCardModule,
+		MatGridListModule,
+		MatTableModule,
+		MatSelectModule,
+		MatIconModule,
+		MatTooltipModule,
+		MatProgressSpinnerModule,
+		MatSnackBarModule
 	],
 	templateUrl: './transaction-list.component.html',
 	styleUrls: ['./transaction-list.component.css']
@@ -44,7 +62,9 @@ export class TransactionListComponent implements OnInit {
 
 	contractorOptions$: Observable<ContractorDto[]> = of([]);
 	storeOptions$: Observable<string[]> = of([]);
-	users: string[] = [''];
+
+	allUsers: ApplicationUser[] = [];
+	filteredUsers$: Observable<ApplicationUser[]> = of([]);
 
 	constructor(
 		private fb: FormBuilder,
@@ -55,6 +75,7 @@ export class TransactionListComponent implements OnInit {
 		private cdr: ChangeDetectorRef,
 		private authService: AuthService,
 		private passService: PassService,
+		private userService: UserService,
 	) { }
 
 	ngOnInit(): void {
@@ -71,7 +92,7 @@ export class TransactionListComponent implements OnInit {
 		});
 
 		this.setupAutocomplete();
-		this.loadUsers();
+		this.loadAllUsers();
 		this.loadTransactions();
 	}
 
@@ -102,19 +123,43 @@ export class TransactionListComponent implements OnInit {
 				switchMap(value => this.suggestionService.getStoreSuggestions(value || '')),
 				catchError(() => of([]))
 			);
+
+		this.filteredUsers$ = this.searchForm.get('userName')!.valueChanges.pipe(
+			startWith(''),
+			debounceTime(300),
+			distinctUntilChanged(),
+			map(value => this._filterUsers(value || ''))
+		);
 	}
 
-	private loadUsers(): void {
-		this.transactionService.getUniqueUserNames().subscribe({
-			next: (userNames) => {
-				this.users = ['', ...userNames];
-				console.log('Loaded users from AspNetUsers:', this.users);
+	private loadAllUsers(): void {
+		this.userService.getAllUsers().subscribe({
+			next: (users) => {
+				this.allUsers = users;
+				console.log('Loaded all users:', this.allUsers);
 			},
 			error: (err) => {
-				console.error('Ошибка при загрузке пользователей:', err);
-				this.users = [''];
+				console.error('Ошибка при загрузке всех пользователей:', err);
+				this.allUsers = [];
 			}
 		});
+	}
+
+	private _filterUsers(value: string | ApplicationUser): ApplicationUser[] {
+		const filterValue = typeof value === 'string' ? value.toLowerCase() : '';
+
+		return this.allUsers.filter(user => {
+			const fullName = `${user.lastName || ''} ${user.firstName || ''} ${user.middleName || ''} ${user.userName || ''}`.toLowerCase();
+			return fullName.includes(filterValue);
+		});
+	}
+
+	displayUser(user: ApplicationUser): string {
+		if (!user) {
+			return '';
+		}
+		const fullName = `${user.lastName || ''} ${user.firstName || ''} ${user.middleName || ''}`.trim();
+		return fullName || user.userName;
 	}
 
 	hasRole(role: string): boolean {
@@ -167,7 +212,7 @@ export class TransactionListComponent implements OnInit {
 					const passport = c.passportSerialNumber || '';
 					return `${fullName}${passport ? ', ' + passport : ''}`;
 				})
-				.join('\n');
+				.join('</br>');
 		}
 		return 'Нет данных';
 	}
@@ -179,7 +224,7 @@ export class TransactionListComponent implements OnInit {
 					const p = csp.passType;
 					return `${p.name || ''}, ${p.durationInMonths || 0} месяцев, ${p.cost || 0} руб.`;
 				})
-				.join('\n');
+				.join('</br>');
 		}
 		return 'Нет данных';
 	}
@@ -191,7 +236,7 @@ export class TransactionListComponent implements OnInit {
 					const s = csp.store;
 					return `${s.building || ''} ${s.floor || ''} ${s.line || ''} ${s.storeNumber || ''}`.trim();
 				})
-				.join('\n');
+				.join('</br>');
 		}
 		return 'Нет данных';
 	}
@@ -235,12 +280,13 @@ export class TransactionListComponent implements OnInit {
 		this.visiblePages = pages;
 	}
 
-	onPageSizeChange(event: Event): void {
-		const selectElement = event.target as HTMLSelectElement;
-		this.pageSize = +selectElement.value;
+	onPageSizeChange(event: any): void {
+		const target = event.target as HTMLSelectElement;
+		this.pageSize = +target.value;
 		this.currentPage = 1;
 		this.loadTransactions();
 	}
+
 
 	onPageClick(page: number | string): void {
 		if (page === '...') return;
@@ -277,10 +323,13 @@ export class TransactionListComponent implements OnInit {
 	onSearchClick(): void {
 		this.currentPage = 1;
 		const selectedContractor: ContractorDto | string = this.searchForm.get('contractorName')!.value;
+		const selectedUser: ApplicationUser | string = this.searchForm.get('userName')!.value;
+
 		const searchParams = {
 			...this.searchForm.value,
 			contractorName: typeof selectedContractor === 'string' ? selectedContractor : (selectedContractor ? this.displayContractor(selectedContractor) : ''),
-			contractorId: typeof selectedContractor === 'object' && selectedContractor ? selectedContractor.id : null
+			contractorId: typeof selectedContractor === 'object' && selectedContractor ? selectedContractor.id : null,
+			userName: typeof selectedUser === 'object' && selectedUser ? selectedUser.userName : selectedUser
 		};
 		console.log('Search params before load:', searchParams);
 		this.loadTransactions(searchParams);
@@ -299,5 +348,26 @@ export class TransactionListComponent implements OnInit {
 
 	navigateToDetails(id: number): void {
 		this.router.navigate(['/transactions/details', id]);
+	}
+
+	getUserFullNameDisplay(transaction: PassTransaction): string {
+		const user = transaction.user;
+		if (!user) {
+			return transaction.userId || 'N/A';
+		}
+
+		const lastName = user.lastName || '';
+		const firstName = user.firstName || '';
+		const middleName = user.middleName || '';
+		const userName = user.userName || '';
+
+		let fullNameParts = [];
+		if (lastName) fullNameParts.push(lastName);
+		if (firstName) fullNameParts.push(firstName);
+		if (middleName) fullNameParts.push(middleName);
+
+		const fullName = fullNameParts.join(' ').trim();
+
+		return fullName;
 	}
 }

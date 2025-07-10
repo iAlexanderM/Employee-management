@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from '../components/login/login.component';
-import { AddUserComponent } from '../components/add-user/add-user.component';
+import { AddUserComponent } from '../components/users/add-user/add-user.component';
+import { UserListComponent } from '../components/users/user-list/user-list.component';
 import { AuthGuard } from '../guards/auth.guard';
 
 import { passGroupRoutes, passPrintRoutes, storePassSearchRoutes } from './pass.module';
@@ -16,6 +17,7 @@ import { reportRoutes } from './report.module';
 
 export const appRoutes: Routes = [
 	{ path: 'login', component: LoginComponent },
+	{ path: 'users', component: UserListComponent },
 	{ path: 'add-user', component: AddUserComponent, canActivate: [AuthGuard] },
 	...contractorRoutes,
 	...storeRoutes,

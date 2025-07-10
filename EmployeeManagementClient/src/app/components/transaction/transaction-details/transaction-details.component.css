@@ -1,79 +1,207 @@
-/* src/app/components/transaction/transaction-details/transaction-details.component.css */
-
-/* Таблица */
+.main-content {
+	max-width: 1920px;
+	width: 100%;
+	margin: 0 auto;
+	padding: 2rem;
+	background-color: #fefaf6;
+	font-family: 'Poppins', 'Roboto', sans-serif;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+.content-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 12px;
+	align-items: stretch;
+}
+@media (min-width: 768px) {
+	.content-grid {
+		grid-template-columns: 1fr;
+		grid-template-areas:
+			"main"
+			"full";
+	}
+}
+@media (min-width: 1200px) {
+	.content-grid {
+		grid-template-columns: 1fr;
+		grid-template-areas:
+			"main"
+			"full";
+	}
+}
+.column-main {
+	display: flex;
+	flex-direction: column;
+	min-height: 300px;
+	grid-area: main;
+	max-width: 50%;
+	align-self: flex-start;
+}
+.column-full {
+	grid-area: full;
+	width: 100%;
+	margin: 24px 0;
+}
+.section-card {
+	border-radius: 8px;
+	box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+	padding: 10px;
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+	border: 1px solid #e5e7eb;
+	width: 100%;
+}
+.section-card .mat-mdc-card-content {
+	padding: 12px;
+	border: 1px solid #d6d3d1;
+	flex-grow: 1;
+}
+.section-card .mat-mdc-card-title {
+	font-family: 'Poppins', 'Roboto', sans-serif;
+	font-weight: 700;
+	font-size: 18px;
+	color: #111827;
+	margin-top: 6px;
+	margin-bottom: 6px;
+	text-align: left;
+	/* Changed to left-align the title */
+}
+/* Removed column-main .section-title, as it was right-aligning the title, which you want on the left */
+/* Action Buttons */
+.action-buttons-row {
+	grid-column: 1 / -1;
+	/* Ensure it spans full width */
+	width: 100%;
+	margin-top: 16px;
+	/* Margin after the table */
+	margin-bottom: 16px;
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+	/* Ensure buttons align to the left */
+}
+.action-btn {
+	font-family: 'Poppins', 'Roboto', sans-serif;
+	font-weight: 500;
+	font-size: 14px;
+	height: 40px;
+	border-radius: 4px;
+	min-width: 40px;
+}
+.action-btn.mat-mdc-raised-button[color="primary"] {
+	background-color: #3b82f6;
+	color: #ffffff;
+	border-color: #2563eb;
+}
+.action-btn.mat-mdc-raised-button[color="primary"]:hover:not(.mdc-button--disabled) {
+	background-color: #2563eb;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+	transform: translateY(-1px);
+}
+.action-btn.mat-mdc-raised-button[color="accent"] {
+	background-color: #f43f5e;
+	color: #ffffff;
+	border-color: #e11d48;
+}
+.action-btn.mat-mdc-raised-button[color="accent"]:hover:not(.mdc-button--disabled) {
+	background-color: #e11d48;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+	transform: translateY(-1px);
+}
+.action-btn.mat-mdc-raised-button.mdc-button--disabled {
+	background-color: #f3f4f6;
+	color: #6b7280;
+	border-color: transparent;
+	cursor: not-allowed;
+}
+.error-message {
+	background-color: #fef2f2;
+	color: #ef4444;
+	padding: 12px 16px;
+	border-radius: 8px;
+	margin-bottom: 20px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	border: 1px solid #fca5a5;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.error-message mat-icon {
+	color: #ef4444;
+}
+.info-list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin-top: 24px;
+}
+.info-item {
+	display: flex;
+	gap: 10px;
+	font-size: 12px;
+	border-bottom: 1px dashed #e5e7eb;
+	padding-bottom: 4px;
+}
+.info-item:last-child {
+	border-bottom: none;
+	padding-bottom: 0;
+}
+.info-value {
+	color: #111827;
+	flex-grow: 1;
+}
+.table-wrapper {
+	overflow-x: auto;
+	margin-top: 16px;
+}
 .transaction-table {
 	width: 100%;
-	border-collapse: collapse;
-	margin-bottom: 20px;
-	font-size: 14px;
+	border-collapse: separate;
+	border-spacing: 0;
+	border-radius: 6px;
+	overflow: hidden;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
-
-.transaction-table thead th {
-	background-color: #007bff;
-	/* Цвет заголовка оставлен как в примере */
-	color: #fff;
+.transaction-table th,
+.transaction-table td {
+	padding: 6px 10px;
 	text-align: left;
-	padding: 10px;
-	border-bottom: 2px solid #ddd;
+	border-bottom: 1px solid #e5e7eb;
 }
-
-.transaction-table tbody td {
-	padding: 10px;
-	border-bottom: 1px solid #ddd;
-	text-align: left;
-	word-wrap: break-word;
-	white-space: pre-wrap;
-	vertical-align: top;
+.transaction-table th {
+	background: #3786f3;
+	color: #ffffff;
+	font-weight: 600;
 }
-
-/* Эффект при наведении на строку */
-.transaction-table tbody tr:hover {
-	background-color: #e9ecef;
+.transaction-table tr:hover {
+	background-color: #f5f5f4;
 }
-
-/* Дополнительные стили для контейнера и кнопок */
-.container {
-	padding: 20px;
+.transaction-table td {
+	white-space: normal;
 }
-
-.card {
-	border: 1px solid #ddd;
-	border-radius: 5px;
-	background-color: #f9f9f9;
-	padding: 15px;
+.mat-icon,
+i.material-icons {
+	color: #1f2937;
+	font-size: 20px;
+	width: 20px;
+	height: 20px;
 }
-
-.d-flex {
-	display: flex;
+@media (max-width: 768px) {
+	.transaction-details {
+		padding: 1rem;
+	}
+	.action-buttons-row {
+		flex-direction: column;
+		gap: 12px;
+	}
 }
-
-.gap-2 {
-	gap: 0.5rem;
-}
-
-.btn {
-	padding: 8px 12px;
-	font-size: 14px;
-	border-radius: 4px;
-	cursor: pointer;
-}
-
-.btn-success {
-	background-color: #28a745;
-	color: #fff;
-	border: none;
-}
-
-.btn-success:hover {
-	background-color: #218838;
-}
-
-.btn-secondary {
-	background-color: #6c757d;
-	color: #fff;
-	border: none;
-}
-
-.btn-secondary:hover {
-	background-color: #5a6268;
+@media (max-width: 480px) {
+	.info-item {
+		flex-direction: column;
+		gap: 8px;
+	}
 }

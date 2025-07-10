@@ -22,11 +22,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-interface DecodedToken {
-	sub?: string; // Обычно Subject ID (используется как User ID)
-	nameid?: string; // Иногда User ID в этом claim
-	unique_name?: string; // Иногда имя пользователя
-	// другие свойства...
+interface DecodedAccessToken {
+	sub?: string;
+	nameid?: string;
+	unique_name?: string;
 	exp?: number;
 	iat?: number;
 }
@@ -53,7 +52,7 @@ interface DecodedToken {
 	templateUrl: './queue.component.html',
 	styleUrls: ['./queue.component.css']
 })
-export class QueueComponent implements OnInit { // Убрали OnDestroy т.к. SignalR не отписываем
+export class QueueComponent implements OnInit {
 	tokens: QueueToken[] = [];
 	createTokenForm: FormGroup;
 	currentPage = 1;
@@ -68,7 +67,7 @@ export class QueueComponent implements OnInit { // Убрали OnDestroy т.к.
 		private queueService: QueueService,
 		private fb: FormBuilder,
 		private signalRService: SignalRService,
-		private authService: AuthService, // AuthService остается
+		private authService: AuthService,
 		private router: Router,
 		private transactionService: TransactionService,
 		private searchFilterResetService: SearchFilterResetService,
@@ -145,14 +144,14 @@ export class QueueComponent implements OnInit { // Убрали OnDestroy т.к.
 
 	// Новый метод для получения ID пользователя из токена
 	private getCurrentUserIdFromToken(): string | null {
-		const token = this.authService.getToken(); // Получаем токен из AuthService
-		if (!token) {
+		const accessToken = this.authService.getAccessToken(); // Получаем токен из AuthService
+		if (!accessToken) {
 			return null;
 		}
 		try {
-			const decodedToken: DecodedToken = jwtDecode(token);
+			const decodedAccessToken: DecodedAccessToken = jwtDecode(accessToken);
 			// Пытаемся получить ID из 'sub' или 'nameid'. Адаптируйте под ваш токен!
-			const userId = decodedToken.sub || decodedToken.nameid;
+			const userId = decodedAccessToken.sub || decodedAccessToken.nameid;
 			return userId || null;
 		} catch (error) {
 			console.error("Failed to decode token:", error);
@@ -188,6 +187,12 @@ export class QueueComponent implements OnInit { // Убрали OnDestroy т.к.
 				alert(res.message);
 				this.searchFilterResetService.triggerReset();
 				this.queueSyncService.setActiveToken('');
+
+				localStorage.removeItem('transactionForms_DRAFT');
+				console.log('Черновик (DRAFT) данных формы удален из localStorage при закрытии талона.');
+
+				localStorage.removeItem(`transactionForms_${token}`);
+				console.log(`Данные формы для закрытого талона ${token} удалены из localStorage.`);
 			},
 			error: (err) => {
 				console.error('Ошибка при закрытии талона:', err);

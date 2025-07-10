@@ -1,114 +1,168 @@
-<div class="store-edit container">
-	<!-- Error Message -->
-	<div *ngIf="errorMessage" class="alert alert-danger mt-4" role="alert">
-		{{ errorMessage }}
-	</div>
+<div class="store-edit-container main-content">
+	<mat-card *ngIf="errorMessage" class="error-message mt-4" role="alert">
+		<mat-icon>error_outline</mat-icon>
+		<p>{{ errorMessage }}</p>
+	</mat-card>
 
-	<!-- Store Form -->
-	<div class="section-card mt-4" *ngIf="originalStore">
-		<h2 class="section-title">Редактирование магазина ID: {{ storeId }}</h2>
-		<form [formGroup]="storeForm" (ngSubmit)="updateStore()" class="store-form">
-			<div class="form-grid">
-				<div class="form-group">
-					<label for="building">Здание</label>
-					<input id="building" formControlName="building" class="form-control" readonly
-						(click)="openModal('building', 'select')" aria-label="Здание" />
-				</div>
-				<div class="form-group">
-					<label for="floor">Этаж</label>
-					<input id="floor" formControlName="floor" class="form-control" readonly
-						(click)="openModal('floor', 'select')" aria-label="Этаж" />
-				</div>
-				<div class="form-group">
-					<label for="line">Линия</label>
-					<input id="line" formControlName="line" class="form-control" readonly
-						(click)="openModal('line', 'select')" aria-label="Линия" />
-				</div>
-				<div class="form-group">
-					<label for="storeNumber">Номер магазина</label>
-					<input id="storeNumber" formControlName="storeNumber" class="form-control" readonly
-						(click)="openModal('storeNumber', 'select')" aria-label="Номер магазина" />
-				</div>
-				<div class="form-group">
-					<label for="sortOrder">Порядок сортировки</label>
-					<input id="sortOrder" type="number" formControlName="sortOrder" class="form-control"
-						aria-label="Порядок сортировки" />
-					<div class="error-message" *ngIf="storeForm.get('sortOrder')?.hasError('min')">
-						Порядок сортировки должен быть не меньше 0
-					</div>
-				</div>
-				<div class="form-group full-width">
-					<label for="note">Заметка</label>
-					<textarea id="note" formControlName="note" class="form-control" rows="4"
-						placeholder="Введите заметку" aria-label="Заметка"></textarea>
-					<div class="error-message" *ngIf="storeForm.get('note')?.hasError('maxlength')">
-						Заметка не должна превышать 500 символов
-					</div>
-				</div>
-			</div>
-			<div class="action-buttons d-flex gap-2 mt-4">
-				<button type="submit" class="action-btn action-btn-primary" [disabled]="!isModified()"
-					aria-label="Сохранить изменения">
-					Сохранить
-				</button>
-				<button type="button" class="action-btn action-btn-secondary" (click)="navigateBack()"
-					aria-label="Вернуться назад">
-					Назад
-				</button>
-				<button *ngIf="!storeForm.get('isArchived')?.value" type="button" class="action-btn action-btn-danger"
-					(click)="archiveStore()" aria-label="Архивировать магазин">
-					Архивировать
-				</button>
-				<button *ngIf="storeForm.get('isArchived')?.value" type="button" class="action-btn action-btn-success"
-					(click)="unarchiveStore()" aria-label="Разархивировать магазин">
-					Разархивировать
-				</button>
-			</div>
-		</form>
-	</div>
+	<mat-card class="section-card mt-4" *ngIf="originalStore">
+		<mat-card-header>
+			<mat-card-title class="section-title">Редактирование магазина ID: {{ storeId }}</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<form [formGroup]="storeForm" (ngSubmit)="updateStore()" class="store-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="8px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Здание *</mat-label>
+							<input matInput formControlName="building" readonly placeholder="Выбранное здание" />
+							<mat-icon matSuffix (click)="openModal('building', 'select')" class="action-icon"
+								matTooltip="Выбрать здание">search</mat-icon>
+							<mat-icon matSuffix (click)="openModal('building', 'add')" class="action-icon"
+								matTooltip="Добавить здание">add</mat-icon>
+							<mat-error *ngIf="storeForm.get('building')?.invalid && storeForm.get('building')?.touched">
+								Здание обязательно.
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
 
-	<!-- History Section -->
-	<div class="section-card mt-4" *ngIf="originalStore">
-		<button class="action-btn action-btn-primary mb-3" (click)="toggleHistory()" [attr.aria-label]="
-		  showHistory ? 'Скрыть историю изменений' : 'Показать историю изменений'
-		">
-			{{ showHistory ? 'Скрыть историю' : 'Показать историю' }}
-		</button>
-		<div *ngIf="showHistory">
-			<h2 class="section-title">История изменений</h2>
-			<div *ngIf="isLoadingHistory" class="text-center">
-				<div class="spinner-border" role="status">
-					<span class="visually-hidden">Загрузка...</span>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Этаж *</mat-label>
+							<input matInput formControlName="floor" readonly placeholder="Выбранный этаж" />
+							<mat-icon matSuffix (click)="openModal('floor', 'select')" class="action-icon"
+								matTooltip="Выбрать этаж">search</mat-icon>
+							<mat-icon matSuffix (click)="openModal('floor', 'add')" class="action-icon"
+								matTooltip="Добавить этаж">add</mat-icon>
+							<mat-error *ngIf="storeForm.get('floor')?.invalid && storeForm.get('floor')?.touched">
+								Этаж обязателен.
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Линия *</mat-label>
+							<input matInput formControlName="line" readonly placeholder="Выбранная линия" />
+							<mat-icon matSuffix (click)="openModal('line', 'select')" class="action-icon"
+								matTooltip="Выбрать линию">search</mat-icon>
+							<mat-icon matSuffix (click)="openModal('line', 'add')" class="action-icon"
+								matTooltip="Добавить линию">add</mat-icon>
+							<mat-error *ngIf="storeForm.get('line')?.invalid && storeForm.get('line')?.touched">
+								Линия обязательна.
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Торговая точка *</mat-label>
+							<input matInput formControlName="storeNumber" readonly
+								placeholder="Выбранная торговая точка" />
+							<mat-icon matSuffix (click)="openModal('storeNumber', 'select')" class="action-icon"
+								matTooltip="Выбрать торговую точку">search</mat-icon>
+							<mat-icon matSuffix (click)="openModal('storeNumber', 'add')" class="action-icon"
+								matTooltip="Добавить торговую точку">add</mat-icon>
+							<mat-error
+								*ngIf="storeForm.get('storeNumber')?.invalid && storeForm.get('storeNumber')?.touched">
+								Торговая точка обязательна.
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Порядок сортировки *</mat-label>
+							<input matInput type="number" formControlName="sortOrder" min="0" />
+							<mat-error
+								*ngIf="storeForm.get('sortOrder')?.invalid && storeForm.get('sortOrder')?.touched">
+								Номер сортировки должен быть неотрицательным.
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+
+					<mat-grid-tile [colspan]="3" [rowspan]="2">
+						<div class="note-container">
+							<mat-form-field appearance="fill" class="full-width note-textarea-field" floatLabel="auto">
+								<mat-label>Заметка</mat-label>
+								<textarea matInput formControlName="note" maxlength="500" placeholder="Введите заметку"
+									aria-label="Заметка о торговой точке" cdkTextareaAutosize [cdkAutosizeMinRows]="7"
+									[cdkAutosizeMaxRows]="7"></textarea>
+								<mat-error
+									*ngIf="storeForm.get('note')?.hasError('maxlength') && storeForm.get('note')?.touched">
+									Заметка не должна превышать 500 символов.
+								</mat-error>
+							</mat-form-field>
+						</div>
+					</mat-grid-tile>
+				</mat-grid-list>
+
+				<div class="action-buttons d-flex gap-2 mt-4">
+					<button mat-raised-button color="primary" class="action-btn" type="submit"
+						[disabled]="!isModified()" matTooltip="Сохранить изменения">
+						Сохранить
+					</button>
+					<button mat-stroked-button color="accent" class="action-btn" type="button" (click)="navigateBack()"
+						matTooltip="Вернуться назад">
+						Назад
+					</button>
+					<button *ngIf="!storeForm.get('isArchived')?.value" mat-flat-button color="warn" class="action-btn"
+						type="button" (click)="archiveStore()" matTooltip="Архивировать магазин">
+						Архивировать
+					</button>
+					<button *ngIf="storeForm.get('isArchived')?.value" mat-flat-button color="primary"
+						class="action-btn" type="button" (click)="unarchiveStore()"
+						matTooltip="Разархивировать магазин">
+						Разархивировать
+					</button>
+				</div>
+			</form>
+		</mat-card-content>
+	</mat-card>
+
+	<mat-card class="section-card mt-4" *ngIf="originalStore">
+		<mat-card-header>
+			<mat-card-title class="section-title">История изменений</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<button mat-flat-button color="primary" class="action-btn mb-3" (click)="toggleHistory()"
+				[attr.aria-label]="showHistory ? 'Скрыть историю изменений' : 'Показать историю изменений'">
+				{{ showHistory ? 'Скрыть историю' : 'Показать историю' }}
+			</button>
+
+			<div *ngIf="showHistory">
+				<div *ngIf="isLoadingHistory" class="text-center">
+					<mat-spinner diameter="40"></mat-spinner>
+					<p class="mt-2 text-muted">Загрузка...</p>
+				</div>
+				<table *ngIf="!isLoadingHistory && historyEntries.length > 0" class="data-table" role="grid"
+					aria-label="Таблица истории изменений магазина">
+					<thead>
+						<tr>
+							<th scope="col">Дата и время</th>
+							<th scope="col">Действие</th>
+							<th scope="col">Пользователь</th>
+							<th scope="col">Подробности</th>
+							<th scope="col">Изменения</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr *ngFor="let entry of historyEntries">
+							<td>{{ entry.timestamp | date: 'dd.MM.yyyy HH:mm:ss' }}</td>
+							<td>{{ formatHistoryAction(entry.action) }}</td>
+							<td>{{ userMap[entry.user] || 'Неизвестно' }}</td>
+							<td>{{ entry.details || 'Нет подробностей' }}</td>
+							<td>{{ formatHistoryChanges(entry.changes) }}</td>
+						</tr>
+					</tbody>
+				</table>
+				<div *ngIf="!isLoadingHistory && historyEntries.length === 0" class="alert alert-info text-center mt-3">
+					История изменений не найдена.
 				</div>
 			</div>
-			<table *ngIf="!isLoadingHistory && historyEntries.length > 0" class="data-table" role="grid"
-				aria-label="Таблица истории изменений магазина">
-				<thead>
-					<tr>
-						<th scope="col">Дата и время</th>
-						<th scope="col">Действие</th>
-						<th scope="col">Пользователь</th>
-						<th scope="col">Подробности</th>
-						<th scope="col">Изменения</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr *ngFor="let entry of historyEntries">
-						<td>{{ entry.timestamp | date: 'dd.MM.yyyy HH:mm:ss' }}</td>
-						<td>{{ formatHistoryAction(entry.action) }}</td>
-						<td>{{ userMap[entry.user] || 'Неизвестно' }}</td>
-						<td>{{ entry.details || 'Нет подробностей' }}</td>
-						<td>{{ formatHistoryChanges(entry.changes) }}</td>
-					</tr>
-				</tbody>
-			</table>
-			<div *ngIf="!isLoadingHistory && historyEntries.length === 0" class="alert alert-info">
-				История изменений не найдена.
-			</div>
-		</div>
-	</div>
+		</mat-card-content>
+	</mat-card>
 
 	<app-store-select-or-add-modal *ngIf="isModalOpen" [fieldName]="modalField" [mode]="modalMode"
-		(modalClose)="closeModal()" (itemSelected)="selectItem($event)"
-		(itemAdded)="addItem($event)"></app-store-select-or-add-modal>
+		(modalClose)="closeModal()" (itemSelected)="selectItem($event)" (itemAdded)="addItem($event)">
+	</app-store-select-or-add-modal>
 </div>

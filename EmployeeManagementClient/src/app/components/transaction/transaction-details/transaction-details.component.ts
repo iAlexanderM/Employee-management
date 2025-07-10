@@ -1,26 +1,42 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+
 import { TransactionService } from '../../../services/transaction.service';
 import { PassTransaction } from '../../../models/transaction.model';
-import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
+import { UserService } from '../../../services/user.service';
+import { ApplicationUser } from '../../../models/application-user.model';
 
 @Component({
 	selector: 'app-transaction-details',
 	standalone: true,
-	imports: [CommonModule],
+	imports: [
+		CommonModule,
+		MatCardModule,
+		MatIconModule,
+		MatButtonModule
+	],
 	templateUrl: './transaction-details.component.html',
 	styleUrls: ['./transaction-details.component.css']
 })
 export class TransactionDetailsComponent implements OnInit {
 	transaction: PassTransaction | null = null;
 	transactionId: number = 0;
+	errorMessage: string | null = null;
+
+	allUsers: ApplicationUser[] = [];
 
 	constructor(
 		private route: ActivatedRoute,
 		private transactionService: TransactionService,
 		private router: Router,
-		private authService: AuthService
+		private authService: AuthService,
+		private userService: UserService
 	) { }
 
 	ngOnInit(): void {
@@ -34,10 +50,12 @@ export class TransactionDetailsComponent implements OnInit {
 		this.transactionService.getTransactionById(this.transactionId).subscribe({
 			next: (data) => {
 				this.transaction = data;
+				this.errorMessage = null;
 			},
 			error: (error) => {
 				console.error('Ошибка при загрузке транзакции:', error);
 				this.transaction = null;
+				this.errorMessage = 'Ошибка при загрузке деталей транзакции. Пожалуйста, попробуйте еще раз.';
 			}
 		});
 	}
@@ -51,6 +69,7 @@ export class TransactionDetailsComponent implements OnInit {
 				},
 				error: (error) => {
 					console.error('Ошибка при подтверждении оплаты:', error);
+					this.errorMessage = 'Не удалось подтвердить оплату. Пожалуйста, попробуйте еще раз.';
 					alert('Не удалось подтвердить оплату.');
 				}
 			});

@@ -74,11 +74,22 @@ export class StorePointsService {
 		Object.keys(criteria).forEach(key => {
 			params = params.set(key, criteria[key].toString());
 		});
+
 		return this.http.get<any>(`${this.baseApiUrl}/SearchBuildings/search`, { params }).pipe(
-			map(response => ({
-				total: response.total || response.data?.length || 0,
-				buildings: response.data || []
-			})),
+			map(response => {
+				if (Array.isArray(response)) {
+					return {
+						total: response.length,
+						buildings: response
+					};
+				}
+				const buildings = response.buildings || response.data || [];
+
+				return {
+					total: response.total ?? buildings.length,
+					buildings: buildings
+				};
+			}),
 			catchError(error => {
 				console.error('[searchBuildings] Error:', error);
 				return of({ total: 0, buildings: [] });
@@ -132,17 +143,27 @@ export class StorePointsService {
 		Object.keys(criteria).forEach(key => {
 			params = params.set(key, criteria[key].toString());
 		});
-		return this.http.get<any>(`${this.baseApiUrl}/Floor/search`, { params }).pipe(
-			map(response => ({
-				total: response.total || response.data?.length || 0,
-				floors: response.data || []
-			})),
+		return this.http.get<any>(`${this.baseApiUrl}/searchFloors/search`, { params }).pipe(
+			map(response => {
+				if (Array.isArray(response)) {
+					return {
+						total: response.length,
+						floors: response
+					};
+				}
+				const floors = response.floors || response.data || [];
+				return {
+					total: response.total ?? floors.length,
+					floors: floors
+				};
+			}),
 			catchError(error => {
 				console.error('[searchFloors] Error:', error);
 				return of({ total: 0, floors: [] });
 			})
 		);
 	}
+
 
 	getLines(page: number = 1, pageSize: number = 25, filters: { [key: string]: any } = {}, isArchived = false): Observable<{ total: number; lines: Line[] }> {
 		const params = this.getParams(page, pageSize, filters, isArchived);
@@ -190,11 +211,20 @@ export class StorePointsService {
 		Object.keys(criteria).forEach(key => {
 			params = params.set(key, criteria[key].toString());
 		});
-		return this.http.get<any>(`${this.baseApiUrl}/Line/search`, { params }).pipe(
-			map(response => ({
-				total: response.total || response.data?.length || 0,
-				lines: response.data || []
-			})),
+		return this.http.get<any>(`${this.baseApiUrl}/searchLines/search`, { params }).pipe(
+			map(response => {
+				if (Array.isArray(response)) {
+					return {
+						total: response.length,
+						lines: response
+					};
+				}
+				const lines = response.lines || response.data || [];
+				return {
+					total: response.total ?? lines.length,
+					lines: lines
+				};
+			}),
 			catchError(error => {
 				console.error('[searchLines] Error:', error);
 				return of({ total: 0, lines: [] });
@@ -248,11 +278,20 @@ export class StorePointsService {
 		Object.keys(criteria).forEach(key => {
 			params = params.set(key, criteria[key].toString());
 		});
-		return this.http.get<any>(`${this.baseApiUrl}/StoreNumber/search`, { params }).pipe(
-			map(response => ({
-				total: response.total || response.data?.length || 0,
-				storeNumbers: response.data || []
-			})),
+		return this.http.get<any>(`${this.baseApiUrl}/searchStoreNumbers/search`, { params }).pipe(
+			map(response => {
+				if (Array.isArray(response)) {
+					return {
+						total: response.length,
+						storeNumbers: response
+					};
+				}
+				const storeNumbers = response.storeNumbers || response.data || [];
+				return {
+					total: response.total ?? storeNumbers.length,
+					storeNumbers: storeNumbers
+				};
+			}),
 			catchError(error => {
 				console.error('[searchStoreNumbers] Error:', error);
 				return of({ total: 0, storeNumbers: [] });

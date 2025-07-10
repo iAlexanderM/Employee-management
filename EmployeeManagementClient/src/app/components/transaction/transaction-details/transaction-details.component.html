@@ -1,57 +1,106 @@
-<div class="container mt-4" *ngIf="transaction; else noTransaction">
-	<h2>Детали транзакции #{{ transaction.id }}</h2>
-	<div class="card">
-		<div class="card-body">
-			<p><strong>Талон:</strong> {{ transaction.token }}</p>
-			<p><strong>Пользователь:</strong> {{ transaction.user?.userName || transaction.userId }}</p>
-			<p><strong>Статус:</strong> {{ transaction.status }}</p>
-			<p><strong>Дата создания:</strong> {{ transaction.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</p>
-			<p><strong>Дата оплаты:</strong> {{ transaction.paymentDate ? (transaction.paymentDate | date:'dd.MM.yyyy
-				HH:mm:ss') : '0000-00-00 00:00:00' }}</p>
+<div class="main-content">
+	<mat-card *ngIf="errorMessage" class="error-message" role="alert">
+		<mat-icon>error_outline</mat-icon>
+		{{ errorMessage }}
+	</mat-card>
 
-			<table class="table table-bordered transaction-table">
-				<thead>
-					<tr>
-						<th>Торговая точка</th>
-						<th>Контрагент</th>
-						<th>Должность</th>
-						<th>Тип пропуска</th>
-						<th>Сумма</th>
-						<th>Дата начала</th>
-						<th>Дата окончания</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr *ngFor="let csp of transaction.contractorStorePasses">
-						<td>{{ csp.store.building }} {{ csp.store.floor }} {{ csp.store.line }} {{
-							csp.store.storeNumber
-							}}</td>
-						<td>{{ csp.contractor.lastName }} {{ csp.contractor.firstName }} {{ csp.contractor.middleName
-							}}
-							({{ csp.contractor.passportSerialNumber }})</td>
-						<td>{{ csp.position }}</td>
-						<td>{{ csp.passType.name }} , {{ csp.passType.durationInMonths }}</td>
-						<td>{{ csp.passType.cost }}</td>
-						<td>{{ transaction.startDate | date:'dd.MM.yyyy' }}</td>
-						<td>{{ transaction.endDate | date:'dd.MM.yyyy' }}</td>
-					</tr>
-				</tbody>
-			</table>
+	<div class="content-grid" *ngIf="transaction; else noTransaction">
+		<div class="column-main">
+			<mat-card class="section-card">
+				<mat-card-title class="section-title">Детали транзакции #{{ transaction.id }}</mat-card-title>
+				<mat-card-content>
+					<dl class="info-list">
+						<div class="info-item">
+							<dt class="info-label">Талон</dt>
+							<dd class="info-value">{{ transaction.token }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Пользователь</dt>
+							<dd class="info-value">
+								{{ transaction.user?.lastName ? transaction.user?.lastName + ' ' : '' }}
+								{{ transaction.user?.firstName ? transaction.user?.firstName + ' ' : '' }}
+								{{ transaction.user?.middleName || '' }} ({{ transaction.user?.userName ||
+								transaction.userId }})
+							</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Статус</dt>
+							<dd class="info-value">{{ transaction.status }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Дата создания</dt>
+							<dd class="info-value">{{ transaction.createdAt | date:'dd.MM.yyyy HH:mm:ss' }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Дата оплаты</dt>
+							<dd class="info-value">
+								{{ transaction.paymentDate ? (transaction.paymentDate | date:'dd.MM.yyyy HH:mm:ss') :
+								'0000-00-00 00:00:00' }}
+							</dd>
+						</div>
+					</dl>
+				</mat-card-content>
+			</mat-card>
+		</div>
 
-			<div class="d-flex gap-2">
-				<button class="btn btn-success" (click)="confirmPayment()"
+		<div class="column-full">
+			<mat-card class="section-card">
+				<mat-card-title class="section-title">Пропуска в транзакции</mat-card-title>
+				<mat-card-content>
+					<div class="table-wrapper">
+						<table class="table table-bordered transaction-table">
+							<thead>
+								<tr>
+									<th>Торговая точка</th>
+									<th>Контрагент</th>
+									<th>Должность</th>
+									<th>Тип пропуска</th>
+									<th>Сумма</th>
+									<th>Дата начала</th>
+									<th>Дата окончания</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr *ngFor="let csp of transaction.contractorStorePasses">
+									<td>{{ csp.store.building }} {{ csp.store.floor }} {{ csp.store.line }} {{
+										csp.store.storeNumber }}</td>
+									<td>
+										{{ csp.contractor.lastName }} {{ csp.contractor.firstName }} {{
+										csp.contractor.middleName }}
+										({{ csp.contractor.passportSerialNumber }})
+									</td>
+									<td>{{ csp.position }}</td>
+									<td>{{ csp.passType.name }} , {{ csp.passType.durationInMonths }}</td>
+									<td>{{ csp.passType.cost }}</td>
+									<td>{{ transaction.startDate | date:'dd.MM.yyyy' }}</td>
+									<td>{{ transaction.endDate | date:'dd.MM.yyyy' }}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</mat-card-content>
+			</mat-card>
+		</div>
+
+		<div class="column-full action-buttons-row">
+			<div class="d-flex gap-2 justify-content-start">
+				<button mat-raised-button color="primary" class="action-btn" (click)="confirmPayment()"
 					*ngIf="transaction.status === 'Ожидает оплату' && (hasRole('Admin') || hasRole('Cashier'))">
 					Подтвердить оплату
 				</button>
-				<button class="btn btn-secondary" (click)="goBack()">Назад</button>
 			</div>
 		</div>
 	</div>
-</div>
 
-<ng-template #noTransaction>
-	<div class="container mt-4">
-		<p>Транзакция не найдена.</p>
-		<button class="btn btn-secondary" (click)="goBack()">Назад</button>
+	<div class="column-full action-buttons-row mt-3">
+		<div class="d-flex justify-content-start">
+			<button mat-raised-button color="accent" class="action-btn" (click)="goBack()">Назад</button>
+		</div>
 	</div>
-</ng-template>
+
+	<ng-template #noTransaction>
+		<div class="container mt-4 text-center">
+			<p>Транзакция не найдена.</p>
+		</div>
+	</ng-template>
+</div>

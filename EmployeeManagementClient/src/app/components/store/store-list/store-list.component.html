@@ -1,184 +1,216 @@
-<div class="panel-header panel-header-sm"></div>
 <div class="main-content">
-	<div class="row">
-		<div class="col-md-12">
-			<div class="card">
-				<div class="card-header">
-					<h4 class="card-title">Поиск торговых точек</h4>
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Поиск торговых точек</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<mat-card *ngIf="errorMessage" class="error-message mb-4" role="alert">
+				<mat-icon>error_outline</mat-icon>
+				{{ errorMessage }}
+			</mat-card>
+
+			<div class="d-flex gap-2 mb-4">
+				<button mat-stroked-button color="primary" class="action-btn" (click)="toggleSearchForm()">
+					{{ isExpanded ? 'Свернуть' : 'Развернуть' }}
+				</button>
+				<button mat-stroked-button color="primary" class="action-btn" (click)="toggleArchived()">
+					{{ showArchived ? 'Показать активные' : 'Показать архивные' }}
+				</button>
+			</div>
+
+			<form *ngIf="isExpanded" [formGroup]="searchForm" (ngSubmit)="searchStores()" class="search-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="16px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>ID</mat-label>
+							<input matInput id="Id" formControlName="Id" type="text" inputmode="numeric"
+								pattern="[0-9]*" />
+							<mat-icon matSuffix>vpn_key</mat-icon>
+							<mat-error *ngIf="searchForm.get('Id')?.invalid && searchForm.get('Id')?.touched">
+								ID должен быть числом
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Здание</mat-label>
+							<input matInput id="Building" formControlName="Building"
+								(input)="onInput('Building', $event)" [matAutocomplete]="buildingAuto" />
+							<mat-icon matSuffix>business</mat-icon>
+							<mat-autocomplete #buildingAuto="matAutocomplete"
+								(optionSelected)="selectSuggestion('Building', $event.option.value)">
+								<mat-option *ngFor="let suggestion of buildingSuggestions$ | async"
+									[value]="suggestion">
+									{{ suggestion }}
+								</mat-option>
+							</mat-autocomplete>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Этаж</mat-label>
+							<input matInput id="Floor" formControlName="Floor" (input)="onInput('Floor', $event)"
+								[matAutocomplete]="floorAuto" />
+							<mat-icon matSuffix>layers</mat-icon>
+							<mat-autocomplete #floorAuto="matAutocomplete"
+								(optionSelected)="selectSuggestion('Floor', $event.option.value)">
+								<mat-option *ngFor="let suggestion of floorSuggestions$ | async" [value]="suggestion">
+									{{ suggestion }}
+								</mat-option>
+							</mat-autocomplete>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Линия</mat-label>
+							<input matInput id="Line" formControlName="Line" (input)="onInput('Line', $event)"
+								[matAutocomplete]="lineAuto" />
+							<mat-icon matSuffix>timeline</mat-icon>
+							<mat-autocomplete #lineAuto="matAutocomplete"
+								(optionSelected)="selectSuggestion('Line', $event.option.value)">
+								<mat-option *ngFor="let suggestion of lineSuggestions$ | async" [value]="suggestion">
+									{{ suggestion }}
+								</mat-option>
+							</mat-autocomplete>
+						</mat-form-field>
+					</mat-grid-tile>
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width">
+							<mat-label>Торговая точка</mat-label>
+							<input matInput id="StoreNumber" formControlName="StoreNumber"
+								(input)="onInput('StoreNumber', $event)" [matAutocomplete]="storeNumberAuto" />
+							<mat-icon matSuffix>store</mat-icon>
+							<mat-autocomplete #storeNumberAuto="matAutocomplete"
+								(optionSelected)="selectSuggestion('StoreNumber', $event.option.value)">
+								<mat-option *ngFor="let suggestion of storeNumberSuggestions$ | async"
+									[value]="suggestion">
+									{{ suggestion }}
+								</mat-option>
+							</mat-autocomplete>
+						</mat-form-field>
+					</mat-grid-tile>
+				</mat-grid-list>
+				<div class="d-flex justify-content-start gap-2 mt-4">
+					<button mat-raised-button color="primary" class="action-btn" type="submit">Найти</button>
+					<button mat-stroked-button color="primary" class="action-btn" type="button"
+						(click)="resetFilters()">Сбросить</button>
 				</div>
-				<div class="card-body">
-					<!-- Сообщение об ошибке -->
-					<div *ngIf="errorMessage" class="alert alert-danger">
-						{{ errorMessage }}
-					</div>
+			</form>
 
-					<button mat-stroked-button class="mb-3" (click)="toggleSearchForm()">
-						{{ isExpanded ? 'Свернуть' : 'Развернуть' }}
+			<div class="top-controls mb-4">
+				<div class="action-btn">
+					<button mat-raised-button color="primary" class="action-btn" routerLink="/stores/new">
+						Добавить новую точку
 					</button>
-					<button mat-stroked-button class="mb-3 ms-2" (click)="toggleArchived()">
-						{{ showArchived ? 'Показать активные' : 'Показать архивные' }}
-					</button>
-
-					<!-- Форма поиска -->
-					<form *ngIf="isExpanded" [formGroup]="searchForm" (ngSubmit)="searchStores()" class="mb-4">
-						<div class="row">
-							<div class="col-md-3">
-								<mat-form-field appearance="fill">
-									<mat-label>ID</mat-label>
-									<input matInput id="Id" formControlName="Id" type="text" />
-									<mat-error *ngIf="searchForm.get('Id')?.invalid && searchForm.get('Id')?.touched">
-										ID должен быть числом
-									</mat-error>
-								</mat-form-field>
-							</div>
-							<div class="col-md-3">
-								<mat-form-field appearance="fill">
-									<mat-label>Здание</mat-label>
-									<input matInput id="Building" formControlName="Building"
-										(input)="onInput('Building', $event)" [matAutocomplete]="buildingAuto" />
-									<mat-autocomplete #buildingAuto="matAutocomplete"
-										(optionSelected)="selectSuggestion('Building', $event.option.value)">
-										<mat-option *ngFor="let suggestion of buildingSuggestions$ | async"
-											[value]="suggestion">
-											{{ suggestion }}
-										</mat-option>
-									</mat-autocomplete>
-								</mat-form-field>
-							</div>
-							<div class="col-md-3">
-								<mat-form-field appearance="fill">
-									<mat-label>Этаж</mat-label>
-									<input matInput id="Floor" formControlName="Floor"
-										(input)="onInput('Floor', $event)" [matAutocomplete]="floorAuto" />
-									<mat-autocomplete #floorAuto="matAutocomplete"
-										(optionSelected)="selectSuggestion('Floor', $event.option.value)">
-										<mat-option *ngFor="let suggestion of floorSuggestions$ | async"
-											[value]="suggestion">
-											{{ suggestion }}
-										</mat-option>
-									</mat-autocomplete>
-								</mat-form-field>
-							</div>
-							<div class="col-md-3">
-								<mat-form-field appearance="fill">
-									<mat-label>Линия</mat-label>
-									<input matInput id="Line" formControlName="Line" (input)="onInput('Line', $event)"
-										[matAutocomplete]="lineAuto" />
-									<mat-autocomplete #lineAuto="matAutocomplete"
-										(optionSelected)="selectSuggestion('Line', $event.option.value)">
-										<mat-option *ngFor="let suggestion of lineSuggestions$ | async"
-											[value]="suggestion">
-											{{ suggestion }}
-										</mat-option>
-									</mat-autocomplete>
-								</mat-form-field>
-							</div>
-							<div class="col-md-3">
-								<mat-form-field appearance="fill">
-									<mat-label>Торговая точка</mat-label>
-									<input matInput id="StoreNumber" formControlName="StoreNumber"
-										(input)="onInput('StoreNumber', $event)" [matAutocomplete]="storeNumberAuto" />
-									<mat-autocomplete #storeNumberAuto="matAutocomplete"
-										(optionSelected)="selectSuggestion('StoreNumber', $event.option.value)">
-										<mat-option *ngFor="let suggestion of storeNumberSuggestions$ | async"
-											[value]="suggestion">
-											{{ suggestion }}
-										</mat-option>
-									</mat-autocomplete>
-								</mat-form-field>
-							</div>
-						</div>
-						<div class="row mt-4">
-							<div class="col-md-12 text-end">
-								<button mat-raised-button color="primary" type="submit">Найти</button>
-								<button mat-stroked-button color="primary" type="button"
-									(click)="resetFilters()">Сбросить</button>
-							</div>
-						</div>
-					</form>
-
-					<div class="d-flex align-items-center justify-content-between mb-2">
-						<button mat-flat-button color="accent" routerLink="/stores/new">Добавить новую точку</button>
-						<div class="d-flex justify-content-end align-items-center mb-3">
-							<label for="pageSize" class="me-2">Элементов на странице:</label>
-							<select id="pageSize" class="form-select w-auto" [value]="pageSize"
-								(change)="onPageSizeChange($event)">
-								<option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
-							</select>
-						</div>
-					</div>
-
-					<!-- Пагинация -->
-					<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
-						<div class="pagination-squares">
-							<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-								[class.disabled]="page === '...'" (click)="onPageClick(page)">
-								{{ page }}
-							</div>
-						</div>
-					</div>
-
-					<!-- Сообщение при загрузке -->
-					<div *ngIf="isLoading" class="text-center mt-4">
-						<p>Загрузка данных...</p>
-					</div>
-					<br />
-
-					<!-- Таблица магазинов -->
-					<div *ngIf="!isLoading">
-						<table class="table table-bordered store-table" *ngIf="displayedStores.length > 0">
-							<thead>
-								<tr>
-									<th>Сортировка</th>
-									<th>ID</th>
-									<th>Здание</th>
-									<th>Этаж</th>
-									<th>Линия</th>
-									<th>Торговая точка</th>
-									<th>Статус</th>
-									<th>Действия</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr *ngFor="let store of displayedStores">
-									<td>{{ store.sortOrder }}</td>
-									<td>{{ store.id }}</td>
-									<td>{{ store.building }}</td>
-									<td>{{ store.floor }}</td>
-									<td>{{ store.line }}</td>
-									<td>{{ store.storeNumber }}</td>
-									<td>{{ store.isArchived ? 'Архив' : 'Активен' }}</td>
-									<td>
-										<button mat-raised-button color="primary"
-											(click)="viewStoreDetails(store.id)">Просмотреть</button>
-										<button mat-flat-button color="accent"
-											(click)="editStore(store.id)">Редактировать</button>
-										<button *ngIf="!store.isArchived" mat-flat-button color="warn"
-											(click)="archiveStore(store.id)">Архивировать</button>
-										<button *ngIf="store.isArchived" mat-flat-button color="accent"
-											(click)="unarchiveStore(store.id)">Разархивировать</button>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-
-						<!-- Нет данных -->
-						<ng-template #noData>
-							<p class="text-center mt-4">Нет данных для отображения</p>
-						</ng-template>
-					</div>
-
-					<!-- Пагинация -->
-					<div *ngIf="!isLoading && totalPages > 1" class="pagination-container">
-						<div class="pagination-squares">
-							<div *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-								[class.disabled]="page === '...'" (click)="onPageClick(page)">
-								{{ page }}
-							</div>
-						</div>
-					</div>
 				</div>
 			</div>
-		</div>
-	</div>
+
+			<div *ngIf="!isLoading && totalPages > 1" class="pagination-container mb-3">
+				<div class="pagination-squares">
+					<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" (click)="onPageClick(page)">
+						{{ page }}
+					</span>
+				</div>
+			</div>
+
+			<div class="d-flex align-items-center justify-content-between">
+				<div class="page-size-container">
+					<span>Элементов на странице:</span>
+					<mat-select [(value)]="pageSize" (selectionChange)="onPageSizeChange($event)">
+						<mat-option *ngFor="let size of pageSizeOptions" [value]="size">
+							{{ size }}
+						</mat-option>
+					</mat-select>
+				</div>
+			</div>
+
+			<div *ngIf="isLoading" class="text-center mt-4">
+				<mat-spinner></mat-spinner>
+				<p>Загрузка данных...</p>
+			</div>
+
+			<br />
+
+			<div *ngIf="!isLoading && displayedStores.length > 0">
+				<table mat-table [dataSource]="displayedStores" class="data-table">
+
+					<ng-container matColumnDef="sortOrder">
+						<mat-header-cell *matHeaderCellDef> Сортировка </mat-header-cell>
+						<mat-cell *matCellDef="let store"> {{ store.sortOrder }} </mat-cell>
+					</ng-container>
+
+					<ng-container matColumnDef="id">
+						<mat-header-cell *matHeaderCellDef> ID </mat-header-cell>
+						<mat-cell *matCellDef="let store"> {{ store.id }} </mat-cell>
+					</ng-container>
+
+					<ng-container matColumnDef="building">
+						<mat-header-cell *matHeaderCellDef> Здание </mat-header-cell>
+						<mat-cell *matCellDef="let store"> {{ store.building }} </mat-cell>
+					</ng-container>
+
+					<ng-container matColumnDef="floor">
+						<mat-header-cell *matHeaderCellDef> Этаж </mat-header-cell>
+						<mat-cell *matCellDef="let store"> {{ store.floor }} </mat-cell>
+					</ng-container>
+
+					<ng-container matColumnDef="line">
+						<mat-header-cell *matHeaderCellDef> Линия </mat-header-cell>
+						<mat-cell *matCellDef="let store"> {{ store.line }} </mat-cell>
+					</ng-container>
+
+					<ng-container matColumnDef="storeNumber">
+						<mat-header-cell *matHeaderCellDef> Торговая точка </mat-header-cell>
+						<mat-cell *matCellDef="let store"> {{ store.storeNumber }} </mat-cell>
+					</ng-container>
+
+					<ng-container matColumnDef="status">
+						<mat-header-cell *matHeaderCellDef> Статус </mat-header-cell>
+						<mat-cell *matCellDef="let store"> {{ store.isArchived ? 'Архив' : 'Активен' }} </mat-cell>
+					</ng-container>
+
+					<ng-container matColumnDef="actions">
+						<mat-header-cell *matHeaderCellDef> Действия </mat-header-cell>
+						<mat-cell *matCellDef="let store">
+							<button mat-icon-button color="primary" matTooltip="Просмотреть"
+								(click)="viewStoreDetails(store.id)">
+								<mat-icon>visibility</mat-icon>
+							</button>
+							<button mat-icon-button color="accent" matTooltip="Редактировать"
+								(click)="editStore(store.id)">
+								<mat-icon>edit</mat-icon>
+							</button>
+							<button mat-icon-button color="warn" matTooltip="Архивировать" *ngIf="!store.isArchived"
+								(click)="archiveStore(store.id)">
+								<mat-icon>archive</mat-icon>
+							</button>
+							<button mat-icon-button color="accent" matTooltip="Разархивировать" *ngIf="store.isArchived"
+								(click)="unarchiveStore(store.id)">
+								<mat-icon>unarchive</mat-icon>
+							</button>
+						</mat-cell>
+					</ng-container>
+
+					<mat-header-row
+						*matHeaderRowDef="['sortOrder', 'id', 'building', 'floor', 'line', 'storeNumber', 'status', 'actions']"></mat-header-row>
+					<mat-row
+						*matRowDef="let row; columns: ['sortOrder', 'id', 'building', 'floor', 'line', 'storeNumber', 'status', 'actions'];"></mat-row>
+				</table>
+			</div>
+
+			<div *ngIf="!isLoading && displayedStores.length === 0" class="text-center mt-4">
+				<p class="text-muted">Нет данных для отображения</p>
+			</div>
+
+			<div *ngIf="!isLoading && totalPages > 1" class="pagination-container mt-3">
+				<div class="pagination-squares">
+					<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+						[class.disabled]="page === '...'" (click)="onPageClick(page)">
+						{{ page }}
+					</span>
+				</div>
+			</div>
+		</mat-card-content>
+	</mat-card>
 </div>

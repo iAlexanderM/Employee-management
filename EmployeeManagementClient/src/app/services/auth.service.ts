@@ -1,3 +1,4 @@
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, timer, Subscription, Subject } from 'rxjs';
@@ -12,8 +13,8 @@ export class AuthService {
 	private apiUrl = '/api/auth';
 	private inactivityTimeout: any;
 	private tokenExpiryCheckTimer: Subscription | null = null;
-	private readonly maxInactivityDuration = 30 * 60 * 1000; // 30 минут
-	private readonly refreshThreshold = 10 * 60 * 1000; // 10 минут
+	private readonly maxInactivityDuration = 30 * 60 * 1000;
+	private readonly refreshThreshold = 10 * 60 * 1000;
 	private isLoggingOut = false;
 
 	public activeTokenCheck$ = new Subject<void>();
@@ -25,11 +26,11 @@ export class AuthService {
 	) { }
 
 	initializeToken(): Observable<boolean> {
-		const token = this.tokenService.getToken();
+		const accessToken = this.tokenService.getAccessToken();
 		const tokenExpiry = this.tokenService.getTokenExpiry();
 
-		if (token && tokenExpiry && Date.now() < tokenExpiry) {
-			console.log(`Токен активен. Истекает: ${new Date(tokenExpiry).toLocaleString()}`);
+		if (accessToken && tokenExpiry && Date.now() < tokenExpiry) {
+			console.log(`Токен доступа активен.Истекает: ${new Date(tokenExpiry).toLocaleString()} `);
 			this.startInactivityTimer();
 			this.startTokenExpiryCheck();
 			this.activeTokenCheck$.next();
@@ -37,11 +38,11 @@ export class AuthService {
 		}
 
 		if (this.tokenService.getRefreshToken()) {
-			console.log('Токен истёк. Попытка обновления.');
+			console.log('Токен доступа истёк. Попытка обновления.');
 			return this.refreshToken();
 		}
 
-		console.warn('Нет токена или refresh токена. Пользователь не авторизован.');
+		console.warn('Нет токена доступа или refresh токена. Пользователь не авторизован.');
 		this.logout();
 		return of(false);
 	}
@@ -92,21 +93,32 @@ export class AuthService {
 	}
 
 	private cleanupAfterLogout(): void {
-		this.tokenService.clearTokens();
+		const activeTokenToClose = this.tokenService.getActiveQueueToken();
+
+		localStorage.clear();
+		console.log('localStorage полностью очищен.');
+
 		if (this.inactivityTimeout) {
 			clearTimeout(this.inactivityTimeout);
 		}
 		this.stopTokenExpiryCheck();
-		this.tokenService.closeActiveToken(this.tokenService.getActiveToken());
+
+		if (activeTokenToClose) {
+			this.tokenService.closeActiveToken(activeTokenToClose).subscribe({
+				next: () => console.log('Active token закрыт на сервере.'),
+				error: (err) => console.error('Ошибка при закрытии active token на сервере:', err)
+			});
+		}
+
 		this.router.navigate(['/login']);
 		this.isLoggingOut = false;
 		console.log('Выход из системы выполнен. Пользователь перенаправлен на страницу логина.');
 	}
 
 	isAuthenticated(): boolean {
-		const token = this.tokenService.getToken();
+		const accessToken = this.tokenService.getAccessToken();
 		const tokenExpiry = this.tokenService.getTokenExpiry();
-		return !!(token && tokenExpiry && Date.now() < tokenExpiry);
+		return !!(accessToken && tokenExpiry && Date.now() < tokenExpiry);
 	}
 
 	refreshToken(): Observable<boolean> {
@@ -116,7 +128,7 @@ export class AuthService {
 			this.logout();
 			return of(false);
 		}
-		console.log('Попытка обновления токена...');
+		console.log('Попытка обновления токена доступа...');
 		return this.http
 			.post<{ accessToken: string; refreshToken: string }>(`${this.apiUrl}/refresh`, { refreshToken })
 			.pipe(
@@ -126,7 +138,7 @@ export class AuthService {
 						this.tokenService.saveTokens(response.accessToken, response.refreshToken, newTokenExpiry);
 						this.startInactivityTimer();
 						this.startTokenExpiryCheck();
-						console.log('Токен успешно обновлён.');
+						console.log('Токен доступа успешно обновлён.');
 						this.activeTokenCheck$.next();
 					} else {
 						console.warn('Ответ сервера не содержит accessToken при обновлении.');
@@ -135,15 +147,15 @@ export class AuthService {
 				}),
 				map(response => !!(response && response.accessToken)),
 				catchError(error => {
-					console.error('Ошибка при обновлении токена', error);
+					console.error('Ошибка при обновлении токена доступа', error);
 					this.logout();
 					return of(false);
 				})
 			);
 	}
 
-	getToken(): string | null {
-		return this.tokenService.getToken();
+	getAccessToken(): string | null {
+		return this.tokenService.getAccessToken();
 	}
 
 	resetInactivityTimer(): void {
@@ -166,29 +178,29 @@ export class AuthService {
 		const tokenExpiry = this.tokenService.getTokenExpiry();
 		if (!tokenExpiry) return;
 		const interval = Math.max(this.refreshThreshold, 10 * 1000);
-		console.log(`Запуск проверки истечения токена с интервалом: ${interval / 1000} секунд.`);
+		console.log(`Запуск проверки истечения токена доступа с интервалом: ${interval / 1000} секунд.`);
 		this.tokenExpiryCheckTimer = timer(0, interval).subscribe(() => {
 			const currentTokenExpiry = this.tokenService.getTokenExpiry();
 			if (!currentTokenExpiry) {
-				console.warn('Отсутствует время истечения токена. Выполняется logout.');
+				console.warn('Отсутствует время истечения токена доступа. Выполняется logout.');
 				this.logout();
 				return;
 			}
 			const timeRemaining = currentTokenExpiry - Date.now();
 			if (timeRemaining < this.refreshThreshold && timeRemaining > 0) {
-				console.log('Токен скоро истечёт. Выполняется обновление токена.');
+				console.log('Токен доступа скоро истечёт. Выполняется обновление токена.');
 				this.refreshToken().subscribe(success => {
 					if (!success) {
-						console.warn('Не удалось обновить токен. Выполняется logout.');
+						console.warn('Не удалось обновить токен доступа. Выполняется logout.');
 						this.logout();
 					}
 				});
 			} else if (timeRemaining <= 0) {
-				console.warn('Токен истёк. Выполняется logout.');
+				console.warn('Токен доступа истёк. Выполняется logout.');
 				this.logout();
 			} else {
 				const remainingMinutes = Math.floor(timeRemaining / 60000);
-				console.log(`Токен ещё действителен. Осталось: ${remainingMinutes} минут.`);
+				console.log(`Токен доступа ещё действителен. Осталось: ${remainingMinutes} минут.`);
 			}
 		});
 	}
@@ -197,19 +209,19 @@ export class AuthService {
 		if (this.tokenExpiryCheckTimer) {
 			this.tokenExpiryCheckTimer.unsubscribe();
 			this.tokenExpiryCheckTimer = null;
-			console.log('Проверка истечения токена остановлена.');
+			console.log('Проверка истечения токена доступа остановлена.');
 		}
 	}
 
 	getUserRoles(): string[] {
-		const token = this.tokenService.getToken();
-		if (!token) return [];
+		const accessToken = this.tokenService.getAccessToken();
+		if (!accessToken) return [];
 		try {
-			const payload = JSON.parse(atob(token.split('.')[1]));
+			const payload = JSON.parse(atob(accessToken.split('.')[1]));
 			const roles = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
 			return Array.isArray(roles) ? roles : roles ? [roles] : [];
 		} catch (e) {
-			console.error('Ошибка при парсинге токена:', e);
+			console.error('Ошибка при парсинге токена доступа:', e);
 			return [];
 		}
 	}
@@ -220,26 +232,26 @@ export class AuthService {
 	}
 
 	getCurrentUser(): string | null {
-		const token = this.tokenService.getToken();
-		if (!token) return null;
+		const accessToken = this.tokenService.getAccessToken();
+		if (!accessToken) return null;
 		try {
-			const payload = JSON.parse(atob(token.split('.')[1]));
+			const payload = JSON.parse(atob(accessToken.split('.')[1]));
 			return payload.sub || payload.name || null;
 		} catch (e) {
-			console.error('Ошибка при получении имени пользователя из токена:', e);
+			console.error('Ошибка при получении имени пользователя из токена доступа:', e);
 			return null;
 		}
 	}
 
 	getCurrentUserId(): string | null {
-		const token = this.tokenService.getToken();
-		if (!token) return null;
+		const accessToken = this.tokenService.getAccessToken();
+		if (!accessToken) return null;
 		try {
-			const payload = JSON.parse(atob(token.split('.')[1]));
+			const payload = JSON.parse(atob(accessToken.split('.')[1]));
 			console.log('JWT payload:', payload);
 			return payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || payload.sub || null;
 		} catch (e) {
-			console.error('Ошибка при получении UUID пользователя из токена:', e);
+			console.error('Ошибка при получении UUID пользователя из токена доступа:', e);
 			return null;
 		}
 	}

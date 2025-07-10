@@ -1,204 +1,86 @@
-.compact-container {
-	width: 95%;
+.main-content {
+	max-width: 1920px;
+	width: 100%;
 	margin: 0 auto;
+	padding: 2rem;
+	background-color: #fefaf6;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
 }
-
-h2 {
-	text-align: left;
-	margin-bottom: 20px;
+.search-form {
+	padding: 8px 0;
+	margin-bottom: 16px;
 }
-
-form {
-	margin-bottom: 20px;
-	padding: 10px;
-	border: 1px solid #ddd;
-	border-radius: 5px;
-	background-color: #f9f9f9;
+mat-grid-list {
+	width: 40%;
 }
-
-label {
-	font-weight: bold;
+mat-grid-tile {
+	align-items: flex-start;
+	padding-top: 6px;
 }
-
-/* Общие стили для кнопок */
-button,
-.btn {
-	display: inline-block;
-	font-size: 14px;
-	font-weight: 500;
-	padding: 8px 12px;
-	border-radius: 4px;
-	cursor: pointer;
-	border: 1px solid transparent;
-	transition: background-color 0.3s, border-color 0.3s;
-	margin: 5px;
+.form-group {
+	margin-bottom: 16px;
 }
-
-/* Цветовые стили */
-.btn-primary,
-.btn-warning,
-.btn-info {
-	background-color: #007bff;
-	border-color: #007bff;
-	color: #fff;
+.form-group label {
+	font-weight: 600;
+	color: #6b7280;
+	margin-bottom: 4px;
+	display: block;
 }
-
-.btn-primary:hover,
-.btn-warning:hover,
-.btn-info:hover {
-	background-color: #0056b3;
-	border-color: #0056b3;
-}
-
-.btn-secondary {
-	background-color: #6c757d;
-	border-color: #6c757d;
-	color: #fff;
-}
-
-.btn-secondary:hover {
-	background-color: #5a6268;
-	border-color: #545b62;
-}
-
-/* Выравнивание размера кнопок */
-.btn-equal {
-	min-width: 120px;
-	text-align: center;
-}
-
-/* Таблица */
-table {
-	width: 100%;
-	border-collapse: collapse;
-	margin-bottom: 20px;
-	font-size: 14px;
-}
-
-/* Фиксированная ширина колонок */
-table th,
-table td {
-	text-align: left;
-	word-wrap: break-word;
-}
-
-/* Фиксированная ширина колонок */
-table th,
-table td {
-	text-align: left;
-	word-wrap: break-word;
-}
-
-/* Стили для выпадающего списка */
-.dropdown-menu {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	background-color: #fff;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-	max-height: 200px;
-	/* Ограничение по высоте */
-	overflow-y: auto;
-	/* Прокрутка для длинного списка */
-	width: 100%;
-	/* Занимает всю ширину */
-	position: absolute;
-	z-index: 1000;
-	/* Поверх других элементов */
-}
-
-/* Элементы списка */
-.dropdown-menu li {
-	padding: 8px 12px;
-	font-size: 14px;
-	cursor: pointer;
-	transition: background-color 0.2s, color 0.2s;
-	color: #333;
-}
-
-/* Эффекты при наведении */
-.dropdown-menu li:hover {
-	background-color: #007bff;
-	color: white;
-}
-
-/* Прокрутка */
-.dropdown-menu::-webkit-scrollbar {
-	width: 8px;
-}
-
-.dropdown-menu::-webkit-scrollbar-thumb {
-	background-color: #007bff;
-	border-radius: 4px;
-}
-
-.dropdown-menu::-webkit-scrollbar-thumb:hover {
-	background-color: #0056b3;
-}
-
-thead th {
-	background-color: #007bff;
-	color: white;
-	text-align: left;
-	padding: 10px;
-	border-bottom: 2px solid #ddd;
-}
-
-tbody td {
-	padding: 10px;
-	border-bottom: 1px solid #ddd;
-}
-
-tr:nth-child(even) {
-	background-color: #f2f2f2;
-}
-
-tr:hover {
-	background-color: #e9ecef;
-}
-
-/* Пагинация */
 .pagination-container {
 	display: flex;
-	margin-top: 10px;
-	gap: 5px;
+	justify-content: flex-end;
+	margin-top: 16px;
 }
-
 .pagination-squares {
 	display: flex;
-	gap: 5px;
+	gap: 8px;
 }
-
 .square {
-	width: 30px;
-	height: 30px;
-	background-color: #e0e0e0;
-	color: #000;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	border-radius: 5px;
+	padding: 8px 12px;
+	border: 1px solid #e5e7eb;
+	border-radius: 4px;
 	cursor: pointer;
+	user-select: none;
 	font-size: 14px;
-	font-weight: bold;
-	flex-shrink: 0;
-	transition: background-color 0.2s;
+	color: #111827;
+	background-color: #ffffff;
+	transition: all 0.2s ease;
 }
-
-.square:hover {
-	background-color: #c0c0c0;
-}
-
 .square.active {
-	background-color: #007bff;
-	color: #fff;
+	background-color: #3786f3;
+	color: #ffffff;
+	border-color: #3786f3;
 }
-
 .square.disabled {
-	pointer-events: none;
-	background-color: transparent;
-	color: #aaa;
 	cursor: default;
+	color: #6b7280;
+	background-color: #f3f4f6;
+	border-color: #e5e7eb;
+}
+/* Contractor Image */
+.contractor-img {
+	width: 80px;
+	height: 80px;
+	object-fit: cover;
+	border-radius: 4px;
+	border: 1px solid #e5e7eb;
+}
+.page-size-container span {
+	font-size: 14px;
+	color: #111827;
+}
+.page-size-container mat-select {
+	width: 80px;
+	border: 1px solid #e5e7eb;
+	border-radius: 4px;
+	padding: 4px 8px;
+	font-size: 14px;
+	background-color: #ffffff;
+}
+@media (max-width: 768px) {
+	.main-content {
+		padding: 1rem;
+	}
 }

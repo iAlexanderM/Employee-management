@@ -6,10 +6,20 @@ import { Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BehaviorSubject, Subscription, Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
+
+// Angular Material Imports
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card'; // Added for mat-card
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; // Added for mat-spinner
+import { MatTableModule } from '@angular/material/table'; // Added for mat-table
+import { MatSelectModule } from '@angular/material/select'; // Added for mat-select
+import { MatIconModule } from '@angular/material/icon'; // Added for mat-icon
+import { MatGridListModule } from '@angular/material/grid-list'; // Added for mat-grid-list
+import { MatTooltipModule } from '@angular/material/tooltip'; // Added for matTooltip
+
 
 @Component({
 	selector: 'app-store-list',
@@ -22,6 +32,13 @@ import { MatButtonModule } from '@angular/material/button';
 		MatFormFieldModule,
 		MatInputModule,
 		MatButtonModule,
+		MatCardModule, // Added
+		MatProgressSpinnerModule, // Added
+		MatTableModule, // Added
+		MatSelectModule, // Added
+		MatIconModule, // Added
+		MatGridListModule, // Added
+		MatTooltipModule // Added
 	],
 	templateUrl: './store-list.component.html',
 	styleUrls: ['./store-list.component.css']
@@ -134,7 +151,7 @@ export class StoreListComponent implements OnInit, OnDestroy {
 		this.goToPage(page);
 	}
 
-	onPageSizeChange(event: Event): void {
+	onPageSizeChange(event: any): void {
 		const selectElement = event.target as HTMLSelectElement;
 		const newSize = parseInt(selectElement.value, 10);
 		if (!isNaN(newSize)) {
@@ -282,12 +299,12 @@ export class StoreListComponent implements OnInit, OnDestroy {
 	}
 
 	getSuggestionSubject(controlName: string): BehaviorSubject<string[]> {
-		return {
+		return ({
 			Building: this.buildingSuggestions$,
 			Floor: this.floorSuggestions$,
 			Line: this.lineSuggestions$,
 			StoreNumber: this.storeNumberSuggestions$,
-		}[controlName as 'Building' | 'Floor' | 'Line' | 'StoreNumber'];
+		} as { [key: string]: BehaviorSubject<string[]> })[controlName];
 	}
 
 	viewStoreDetails(id: number | undefined): void {
@@ -321,7 +338,7 @@ export class StoreListComponent implements OnInit, OnDestroy {
 		if (id !== undefined) {
 			const subscription = this.storeService.unarchiveStore(id).subscribe({
 				next: () => {
-					this.loadStores(); // Обновляем список после разархивирования
+					this.loadStores();
 				},
 				error: (err) => {
 					console.error('Ошибка при разархивировании:', err);

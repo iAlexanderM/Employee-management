@@ -179,7 +179,10 @@ namespace EmployeeManagementServer.Controllers
             {
                 UserName = dto.Username,
                 Email = dto.Email,
-                PhoneNumber = dto.PhoneNumber
+                PhoneNumber = dto.PhoneNumber,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                MiddleName = dto.MiddleName
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);

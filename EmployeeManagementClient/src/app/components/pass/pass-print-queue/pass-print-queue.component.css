@@ -8,51 +8,40 @@
 	display: flex;
 	flex-direction: column;
 }
-
 .section-title {
 	font-size: 1.25rem;
 	font-weight: 600;
 	color: #111827;
 }
-
 .search-form {
 	padding: 8px 0;
 	margin-bottom: 16px;
 }
-
 .full-width {
 	width: 100%;
 }
-
 .d-flex {
 	display: flex;
 }
-
 .gap-2 {
 	gap: 8px;
 }
-
 .mb-4 {
 	margin-bottom: 16px;
 }
-
 .justify-content-start {
 	justify-content: flex-start;
 }
-
 .justify-content-end {
 	justify-content: flex-end;
 }
-
 .align-items-center {
 	align-items: center;
 }
-
 .form-group {
 	margin-bottom: 16px;
 	margin-top: 8px;
 }
-
 .form-group label {
 	font-weight: 600;
 	color: #6b7280;
@@ -61,33 +50,27 @@
 	font-size: 14px;
 	/* Smaller font */
 }
-
 mat-form-field {
 	font-size: 14px;
 	/* Smaller font for inputs */
 }
-
 mat-form-field .mat-input-element {
 	font-size: 14px;
 	/* Smaller input text */
 }
-
 .action-btn {
 	font-size: 12px;
 	/* Smaller buttons */
 }
-
 .pagination-container {
 	display: flex;
 	justify-content: flex-end;
 	margin-top: 16px;
 }
-
 .pagination-squares {
 	display: flex;
 	gap: 8px;
 }
-
 .square {
 	padding: 8px 12px;
 	border: 1px solid #e5e7eb;
@@ -99,31 +82,21 @@ mat-form-field .mat-input-element {
 	background-color: #ffffff;
 	transition: all 0.2s ease;
 }
-
 .square.active {
 	background-color: #3786f3;
 	color: #ffffff;
 	border-color: #3786f3;
 }
-
 .square.disabled {
 	cursor: default;
 	color: #6b7280;
 	background-color: #f3f4f6;
 	border-color: #e5e7eb;
 }
-
-.page-size-container {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
 .page-size-container span {
 	font-size: 14px;
 	color: #111827;
 }
-
 .page-size-container mat-select {
 	width: 80px;
 	border: 1px solid #e5e7eb;
@@ -132,32 +105,17 @@ mat-form-field .mat-input-element {
 	font-size: 14px;
 	background-color: #ffffff;
 }
-
 .data-table {
 	width: 100%;
 	border-collapse: collapse;
 	background-color: #fafafa;
 	/* Grayer table */
 }
-
-.data-table mat-header-cell,
-.data-table mat-cell {
-	padding: 8px;
-	border-bottom: 1px solid #e5e7eb;
-	font-size: 14px;
-	color: #111827;
-}
-
 .data-table mat-header-cell {
 	background-color: #f3f4f6;
 	/* Grayer header */
 	font-weight: 600;
 }
-
-.data-table mat-cell {
-	background-color: #fafafa;
-}
-
 .pass-type-circle {
 	display: inline-block;
 	width: 16px;
@@ -167,25 +125,17 @@ mat-form-field .mat-input-element {
 	/* Consistent border */
 	margin-right: 4px;
 }
-
 .text-center {
 	text-align: center;
 }
-
 .text-muted {
 	color: #6b7280;
 	font-size: 14px;
 }
-
 @media (max-width: 768px) {
 	.main-content {
 		padding: 1rem;
 	}
-
-	.page-size-container {
-		justify-content: flex-start;
-	}
-
 	mat-form-field.full-width {
 		width: 100%;
 	}

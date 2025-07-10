@@ -5,10 +5,29 @@ import { Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule, MatDatepickerInputEvent } from '@angular/material/datepicker';
+import {
+	MatNativeDateModule,
+	DateAdapter,
+	MAT_DATE_FORMATS,
+	MAT_DATE_LOCALE,
+	NativeDateAdapter
+} from '@angular/material/core';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatCardModule } from '@angular/material/card';
+import { MatSelectChange } from '@angular/material/select';
+
 import { TransactionService } from '../../../services/transaction.service';
 import { TokenService } from '../../../services/token.service';
 import { QueueSyncService } from '../../../services/queue-sync.service';
 import { SearchFilterResetService } from '../../../services/search-filter-reset.service';
+import { PositionService } from '../../../services/position.service';
+import { Position } from '../../../models/position.model';
 import { ContractorDto, ContractorStorePassCreateDto, CreateTransactionDto } from '../../../models/transaction.model';
 import { Store } from '../../../models/store.model';
 import { PassType } from '../../../models/pass-type.model';
@@ -28,6 +47,43 @@ interface TransactionFormData {
 	form: FormGroup;
 	modalPosition?: string;
 }
+export class AppDateAdapter extends NativeDateAdapter {
+	override format(date: Date, displayFormat: Object): string {
+		if (displayFormat === 'DD.MM.YYYY') {
+			const day = date.getDate();
+			const month = date.getMonth() + 1;
+			const year = date.getFullYear();
+			return `${zeroPad(day, 2)}.${zeroPad(month, 2)}.${year}`;
+		}
+		return super.format(date, displayFormat);
+	}
+
+	override parse(value: any): Date | null {
+		if ((typeof value === 'string') && (value.indexOf('.') > -1)) {
+			const str = value.split('.');
+			const year = Number(str[2]);
+			const month = Number(str[1]) - 1; // Month is 0-indexed
+			const day = Number(str[0]);
+			return new Date(year, month, day);
+		}
+		const timestamp = typeof value === 'number' ? value : Date.parse(value);
+		return isNaN(timestamp) ? null : new Date(timestamp);
+	}
+}
+
+const zeroPad = (num: number, places: number) => String(num).padStart(places, '0');
+
+const MY_DATE_FORMATS = {
+	parse: {
+		dateInput: 'DD.MM.YYYY',
+	},
+	display: {
+		dateInput: 'DD.MM.YYYY',
+		monthYearLabel: 'MMM YYYY',
+		dateA11yLabel: 'LL',
+		monthYearA11yLabel: 'MMMM YYYY',
+	},
+};
 
 @Component({
 	selector: 'app-transaction-create',
@@ -35,20 +91,39 @@ interface TransactionFormData {
 	imports: [
 		CommonModule,
 		ReactiveFormsModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatIconModule,
+		MatButtonModule,
+		MatSelectModule,
+		MatDatepickerModule,
+		MatNativeDateModule,
+		MatGridListModule,
+		MatCardModule,
 		ContractorModalComponent,
 		StoreModalComponent,
 		PassTypeModalComponent,
 		PositionModalComponent,
-		ActiveTokenComponent
+		ActiveTokenComponent,
+	],
+	providers: [
+		{ provide: DateAdapter, useClass: AppDateAdapter, deps: [MAT_DATE_LOCALE] },
+		{ provide: MAT_DATE_LOCALE, useValue: 'ru-RU' },
+		{ provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
 	],
 	templateUrl: './transaction-create.component.html',
-	styleUrls: ['./transaction-create.component.css']
+	styleUrls: ['./transaction-create.component.css'],
 })
 export class TransactionCreateComponent implements OnInit, OnDestroy {
 	transactionForms: TransactionFormData[] = [];
 	errorMessage: string = '';
 	isLoading: boolean = true;
 	activeTokenData: QueueToken | null = null;
+
+	allPositions: Position[] = [];
+	filteredPositions: Position[] = [];
+	readonly manualEntryPositionName: string = 'Наемный работник';
+	public manualEntryPositionId: number | null = null;
 
 	private destroy$ = new Subject<void>();
 	private tokenSubscription!: Subscription;
@@ -63,7 +138,8 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 		private queueSyncService: QueueSyncService,
 		private router: Router,
 		private cdr: ChangeDetectorRef,
-		private searchFilterResetService: SearchFilterResetService
+		private searchFilterResetService: SearchFilterResetService,
+		private positionService: PositionService
 	) { }
 
 	ngOnInit(): void {
@@ -72,54 +148,114 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 
 		console.log('ngOnInit вызван с initialToken:', initialToken, 'state:', state);
 
-		if (initialToken && !this.hasLoadedFromStorage) {
-			this.activeTokenData = { token: initialToken } as QueueToken;
-			this.loadFromLocalStorage(initialToken);
-			this.hasLoadedFromStorage = true;
-		}
-
-		// Обработка сценария продления
-		if (state && state.contractorId && state.passTypeId && state.store) {
-			const stateKey = `${JSON.stringify(state)}_${Date.now()}`;
-			if (!this.processedStates.has(stateKey)) {
-				console.log('Обрабатывается новое состояние для продления:', state);
-				this.handleExtendPass(state);
-				this.processedStates.add(stateKey);
-				history.replaceState({}, document.title, window.location.pathname);
-			} else {
-				console.log('Состояние уже обработано, пропускаем:', state);
-			}
-		}
-		// Обработка сценария создания транзакции с предзаполненной торговой точкой
-		else if (state && state.store && !state.contractorId && !state.passTypeId && !this.processedStates.has(JSON.stringify(state))) {
-			console.log('Обработка state для создания транзакции с предзаполненной торговой точкой:', state);
-			this.handleCreateTransactionWithStore(state.store);
-			this.processedStates.add(JSON.stringify(state));
-			history.replaceState({}, document.title, window.location.pathname);
-		}
-
-		if (!this.transactionForms.length) {
-			this.addTransactionForm();
-		}
-
-		this.isLoading = false;
-		this.cdr.detectChanges();
-
-		this.tokenSubscription = this.queueSyncService.activeToken$
-			.pipe(takeUntil(this.destroy$))
-			.subscribe(token => {
-				if (token && token !== this.activeTokenData?.token) {
-					console.log('Токен изменен на:', token);
-					this.activeTokenData = { token } as QueueToken;
-					this.transactionForms.forEach(formData => formData.form.patchValue({ token }));
-					this.saveToLocalStorage();
-				} else if (!token) {
-					console.log('Токен очищен');
-					this.activeTokenData = null;
-					this.transactionForms.forEach(formData => formData.form.patchValue({ token: '' }));
-					this.saveToLocalStorage();
+		this.isLoading = true;
+		this.positionService.getPositions(1, 100).pipe(
+			takeUntil(this.destroy$)
+		).subscribe({
+			next: (response) => {
+				this.allPositions = response.positions;
+				this.filteredPositions = this.allPositions.filter(p => p.id >= 1 && p.id <= 4);
+				const foundManualPosition = this.allPositions.find(p => p.name === this.manualEntryPositionName);
+				if (foundManualPosition) {
+					this.manualEntryPositionId = foundManualPosition.id;
+				} else {
+					console.warn(`Должность '${this.manualEntryPositionName}' не найдена в списке должностей с бэкенда.`);
 				}
-			});
+
+				if (!this.hasLoadedFromStorage) {
+					this.activeTokenData = initialToken ? { token: initialToken } as QueueToken : null;
+					this.loadFromLocalStorage(initialToken || '');
+					this.hasLoadedFromStorage = true;
+				}
+
+				if (state && state.contractorId && state.passTypeId && state.store) {
+					const stateKey = `${JSON.stringify(state)}_${Date.now()}`;
+					if (!this.processedStates.has(stateKey)) {
+						console.log('Обрабатывается новое состояние для продления:', state);
+						this.handleExtendPass(state);
+						this.processedStates.add(stateKey);
+						history.replaceState({}, document.title, window.location.pathname);
+					} else {
+						console.log('Состояние уже обработано, пропускаем:', state);
+					}
+				} else if (state && state.store && !state.contractorId && !state.passTypeId && !this.processedStates.has(JSON.stringify(state))) {
+					console.log('Обработка state для создания транзакции с предзаполненной торговой точкой:', state);
+					this.handleCreateTransactionWithStore(state.store);
+					this.processedStates.add(JSON.stringify(state));
+					history.replaceState({}, document.title, window.location.pathname);
+				}
+
+				if (!this.transactionForms.length) {
+					this.addTransactionForm();
+				}
+
+				this.isLoading = false;
+				this.cdr.detectChanges();
+
+				this.tokenSubscription = this.queueSyncService.activeToken$
+					.pipe(takeUntil(this.destroy$))
+					.subscribe(token => {
+						if (token && token !== this.activeTokenData?.token) {
+							console.log('Токен изменен на:', token);
+							const oldActiveToken = this.activeTokenData?.token;
+
+							if (oldActiveToken) {
+								this.saveToLocalStorage();
+							}
+
+							this.activeTokenData = { token } as QueueToken;
+							this.transactionForms.forEach(formData => formData.form.patchValue({ token }));
+
+							const savedDataForNewToken = localStorage.getItem(`transactionForms_${token}`);
+							if (savedDataForNewToken) {
+								this.loadFromLocalStorage(token);
+								console.log(`Загружены существующие данные для НОВОГО токена: ${token}.`);
+							} else if (!oldActiveToken) {
+								console.log(`Переносим данные из черновика на новый токен: ${token}.`);
+								this.loadFromLocalStorage('');
+								this.transactionForms.forEach(formData => formData.form.patchValue({ token }));
+							} else {
+								console.log(`Нет данных для нового токена ${token}, и не было черновика. Начинаем с чистой формы.`);
+								this.transactionForms = [];
+								this.addTransactionForm();
+							}
+
+							this.saveToLocalStorage();
+							localStorage.removeItem('transactionForms_DRAFT');
+							console.log('Черновик (DRAFT) удален из localStorage.');
+
+							if (oldActiveToken && oldActiveToken !== token) {
+								localStorage.removeItem(`transactionForms_${oldActiveToken}`);
+								console.log(`Очищены старые данные формы для предыдущего талона ${oldActiveToken} из localStorage.`);
+							}
+						} else if (!token && this.activeTokenData?.token) {
+							console.log('Токен был очищен. Очищаем данные форм.');
+							const oldToken = this.activeTokenData?.token;
+							if (oldToken) {
+								localStorage.removeItem(`transactionForms_${oldToken}`);
+								console.log(`Очищены данные формы для талона ${oldToken} из localStorage.`);
+							}
+							this.activeTokenData = null;
+							this.transactionForms.forEach(formData => formData.form.patchValue({ token: '' }));
+
+							localStorage.removeItem('transactionForms_DRAFT');
+							console.log('Черновик (DRAFT) данных формы удален из localStorage, так как токен был очищен.');
+
+							this.transactionForms = [];
+							this.addTransactionForm();
+							this.cdr.detectChanges();
+						} else if (!token && !this.activeTokenData?.token) {
+							console.log('Токен пуст, нет активного токена. Не делаем никаких изменений в формах.');
+						}
+					});
+			},
+			error: (err) => {
+				this.errorMessage = 'Ошибка при загрузке должностей: ' + (err.error?.message || 'Неизвестная ошибка');
+				this.isLoading = false;
+				this.cdr.detectChanges();
+				console.error('Ошибка загрузки должностей:', err);
+			}
+		});
 
 		console.log('Значения форм в ngOnInit после всех операций:', this.transactionForms.map(f => f.form.getRawValue()));
 	}
@@ -138,40 +274,49 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 		const contractorId = state.contractorId;
 		const store = state.store;
 		const passTypeId = state.passTypeId;
-		const startDate = state.startDate ? this.formatDateToYYYYMMDD(new Date(state.startDate)) : this.formatDateToYYYYMMDD(new Date());
-		const position = state.position;
-		const passType = state.passType;
+		const startDate = state.startDate ? new Date(state.startDate) : new Date();
+
 		const contractorDetails = state.contractorDetails;
 		const originalPassId = state.originalPassId;
+		const passType = state.passType;
 
-		const basePositions = ['Сотрудник', 'Подрядчик', 'Наёмный работник'];
-		const isBasePosition = basePositions.includes(position);
-		const formPositionValue = isBasePosition ? position : 'Наёмный работник';
-		// Сохраняем оригинальную позицию, если она не базовая
-		const modalPosition = isBasePosition ? undefined : position;
+		const basePositions = this.filteredPositions.map(p => p.name);
+		const incomingPosition = state.position;
+		let formPositionValue: string;
+		let modalPositionValue: string | undefined;
 
-		// Заполняем не только form.patchValue, но и свойства formData
+		if (incomingPosition && basePositions.includes(incomingPosition)) {
+			formPositionValue = incomingPosition;
+			modalPositionValue = undefined;
+		} else if (incomingPosition) {
+			formPositionValue = this.manualEntryPositionName;
+			modalPositionValue = incomingPosition;
+		} else {
+			formPositionValue = '';
+			modalPositionValue = undefined;
+		}
+
 		formData.contractor = contractorDetails || null;
 		formData.store = store || null;
 		formData.passType = passType || null;
 		formData.totalCost = passType?.cost || 0;
-		formData.modalPosition = modalPosition; // Сохраняем позицию для модалки
+		formData.modalPosition = modalPositionValue;
 
 		formData.form.patchValue({
 			contractorId: contractorId,
-			storeId: store?.id, // Используем ID из объекта store
+			storeId: store?.id,
 			passTypeId: passTypeId,
-			startDate: startDate, // Используем отформатированную дату
+			startDate: startDate,
 			position: formPositionValue,
-			endDate: this.formatDateToYYYYMMDD(this.addMonths(new Date(startDate), passType?.durationInMonths || 0)),
+			endDate: this.addMonths(startDate, passType?.durationInMonths || 0),
 			token: this.activeTokenData?.token || '',
-			originalPassId: state.originalPassId
+			originalPassId: originalPassId
 		});
 
 		console.log('Новая форма добавлена и заполнена данными продления:', formData.form.getRawValue());
 		console.log('Все формы после добавления:', this.transactionForms.map(f => f.form.getRawValue()));
 
-		this.saveToLocalStorage(); // Сохраняем состояние с одной (новой) формой
+		this.saveToLocalStorage();
 		this.isLoading = false;
 		this.cdr.detectChanges();
 		this.isExtending = false;
@@ -189,7 +334,7 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 
 		const contractorStorePasses = this.transactionForms.map(formData => {
 			const fv = formData.form.getRawValue();
-			const positionToSend = fv.position === 'Наёмный работник' && formData.modalPosition ? formData.modalPosition : fv.position;
+			const positionToSend = fv.position === this.manualEntryPositionName && formData.modalPosition ? formData.modalPosition : fv.position;
 			return {
 				contractorId: fv.contractorId,
 				storeId: fv.storeId,
@@ -203,8 +348,8 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 		const transaction: CreateTransactionDto = {
 			token: firstFormValue.token,
 			contractorStorePasses,
-			startDate: new Date(firstFormValue.startDate),
-			endDate: new Date(firstFormValue.endDate)
+			startDate: firstFormValue.startDate,
+			endDate: firstFormValue.endDate
 		};
 
 		console.log('Транзакция для отправки:', JSON.stringify(transaction, null, 2));
@@ -293,10 +438,10 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 		this.cdr.detectChanges();
 	}
 
-	onPositionChange(index: number, event: Event): void {
-		const value = (event.target as HTMLSelectElement).value;
+	onPositionChange(index: number, event: MatSelectChange): void {
+		const value = event.value;
 		const formData = this.transactionForms[index];
-		if (value !== 'Наёмный работник') {
+		if (value !== this.manualEntryPositionName) {
 			formData.modalPosition = undefined;
 		}
 		formData.form.patchValue({ position: value });
@@ -307,7 +452,7 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 	positionSelected(index: number, position: string): void {
 		const formData = this.transactionForms[index];
 		formData.modalPosition = position;
-		formData.form.patchValue({ position: 'Наёмный работник', showPositionModal: false });
+		formData.form.patchValue({ position: this.manualEntryPositionName, showPositionModal: false });
 		this.saveToLocalStorage();
 		this.cdr.detectChanges();
 	}
@@ -316,20 +461,15 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 		return this.transactionForms.reduce((sum, formData) => sum + (formData.totalCost || 0), 0);
 	}
 
-	formatDateDisplay(dateStr: string): string {
-		if (!dateStr) return '';
-		const date = new Date(dateStr);
-		return `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
-	}
-
 	private createFormGroup(): FormGroup {
 		const form = this.fb.group({
 			token: [{ value: this.activeTokenData?.token || '', disabled: true }, Validators.required],
 			contractorId: [null, Validators.required],
 			storeId: [null, Validators.required],
 			passTypeId: [null, Validators.required],
-			startDate: [this.formatDateToYYYYMMDD(new Date()), Validators.required],
-			endDate: [{ value: '', disabled: true }, Validators.required],
+			startDate: [new Date(), Validators.required],
+			// Removed 'disabled: true' from endDate to fix transparency
+			endDate: [null, Validators.required],
 			position: ['', Validators.required],
 			showContractorModal: [false],
 			showStoreModal: [false],
@@ -361,8 +501,8 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 		const passType = formData.passType;
 		if (!startDate || !passType) return;
 
-		const endDate = this.addMonths(new Date(startDate), passType.durationInMonths || 0);
-		form.patchValue({ endDate: this.formatDateToYYYYMMDD(endDate) }, { emitEvent: false });
+		const endDate = this.addMonths(startDate, passType.durationInMonths || 0);
+		form.patchValue({ endDate: endDate }, { emitEvent: false });
 	}
 
 	private calculateTotalCost(formData: TransactionFormData): void {
@@ -383,39 +523,85 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 	}
 
 	private saveToLocalStorage(): void {
-		if (!this.activeTokenData?.token) return;
+		const storageKey = this.activeTokenData?.token
+			? `transactionForms_${this.activeTokenData.token}`
+			: 'transactionForms_DRAFT';
 
 		const dataToSave = this.transactionForms.map(formData => ({
 			contractor: formData.contractor,
 			store: formData.store,
 			passType: formData.passType,
 			totalCost: formData.totalCost,
-			formValue: formData.form.getRawValue(),
+			// Convert Date objects to ISO strings for storage
+			formValue: {
+				...formData.form.getRawValue(),
+				startDate: formData.form.get('startDate')?.value instanceof Date ? formData.form.get('startDate')?.value.toISOString() : null,
+				endDate: formData.form.get('endDate')?.value instanceof Date ? formData.form.get('endDate')?.value.toISOString() : null,
+				// Ensure showModal fields are boolean for storage consistency
+				showContractorModal: !!formData.form.get('showContractorModal')?.value,
+				showStoreModal: !!formData.form.get('showStoreModal')?.value,
+				showPassTypeModal: !!formData.form.get('showPassTypeModal')?.value,
+				showPositionModal: !!formData.form.get('showPositionModal')?.value,
+			},
 			modalPosition: formData.modalPosition
 		}));
 
-		localStorage.setItem(`transactionForms_${this.activeTokenData.token}`, JSON.stringify(dataToSave));
-		console.log('Сохранено в localStorage:', dataToSave);
+		localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+		console.log(`Сохранено в localStorage по ключу '${storageKey}':`, dataToSave);
 	}
 
 	private loadFromLocalStorage(token: string): void {
-		const savedData = localStorage.getItem(`transactionForms_${token}`);
+		let savedData: string | null = null;
+		let loadedToken: string | null = null;
+
+		if (token) {
+			savedData = localStorage.getItem(`transactionForms_${token}`);
+			loadedToken = token;
+			console.log(`Попытка загрузки данных для активного токена '${token}'.`);
+		} else {
+			savedData = localStorage.getItem('transactionForms_DRAFT');
+			loadedToken = 'DRAFT';
+			console.log('Попытка загрузки черновика (DRAFT) данных формы.');
+		}
+
 		if (savedData) {
 			const parsedData = JSON.parse(savedData);
 			this.transactionForms = parsedData.map((data: any) => {
 				const form = this.createFormGroup();
-				const basePositions = ['Сотрудник', 'Подрядчик', 'Наёмный работник'];
-				const position = data.formValue.position;
-				const isBasePosition = basePositions.includes(position);
-				const formPositionValue = isBasePosition ? position : 'Наёмный работник';
-				const modalPosition = isBasePosition ? undefined : position;
+				const basePositions = this.filteredPositions.map(p => p.name);
+
+				const savedFormPosition = data.formValue.position;
+				const savedModalPosition = data.modalPosition;
+
+				let formPositionValue: string;
+				let modalPositionValueForUI: string | undefined;
+				if (savedFormPosition === this.manualEntryPositionName) {
+					formPositionValue = this.manualEntryPositionName;
+					modalPositionValueForUI = savedModalPosition;
+				} else if (savedFormPosition && basePositions.includes(savedFormPosition)) {
+					formPositionValue = savedFormPosition;
+					modalPositionValueForUI = undefined;
+				} else {
+					formPositionValue = '';
+					modalPositionValueForUI = undefined;
+				}
+
+				// Convert ISO strings back to Date objects from storage
+				const startDateFromStorage = data.formValue.startDate ? new Date(data.formValue.startDate) : new Date();
+				const endDateFromStorage = data.formValue.endDate ? new Date(data.formValue.endDate) : null;
+
 
 				form.patchValue({
 					...data.formValue,
+					token: loadedToken === 'DRAFT' ? '' : data.formValue.token,
 					position: formPositionValue,
-					startDate: data.formValue.startDate || this.formatDateToYYYYMMDD(new Date()),
+					startDate: startDateFromStorage,
+					endDate: endDateFromStorage,
 					originalPassId: data.formValue.originalPassId || null,
-					showPositionModal: false
+					showContractorModal: !!data.formValue.showContractorModal,
+					showStoreModal: !!data.formValue.showStoreModal,
+					showPassTypeModal: !!data.formValue.showPassTypeModal,
+					showPositionModal: !!data.formValue.showPositionModal,
 				});
 				this.initAutoEndDateCalc(form);
 				return {
@@ -424,12 +610,13 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 					passType: data.passType,
 					totalCost: data.totalCost || 0,
 					form,
-					modalPosition: data.modalPosition || modalPosition
+					modalPosition: modalPositionValueForUI
 				};
 			});
-			console.log('Загружено из localStorage:', this.transactionForms.map(f => f.form.getRawValue()));
+			console.log(`Загружено из localStorage по ключу '${loadedToken}':`, this.transactionForms.map(f => f.form.getRawValue()));
 		} else {
 			this.transactionForms = [];
+			console.log(`Ничего не найдено в localStorage для '${loadedToken}'.`);
 		}
 		this.cdr.detectChanges();
 	}
@@ -437,7 +624,10 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 	private clearLocalStorage(): void {
 		if (this.activeTokenData?.token) {
 			localStorage.removeItem(`transactionForms_${this.activeTokenData.token}`);
+			console.log(`Данные формы для талона ${this.activeTokenData.token} удалены из localStorage после успешной транзакции.`);
 		}
+		localStorage.removeItem('transactionForms_DRAFT');
+		console.log('Черновик (DRAFT) данных формы удален из localStorage.');
 	}
 
 	private resetForm(formData: TransactionFormData): void {
@@ -446,8 +636,8 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 			contractorId: null,
 			storeId: null,
 			passTypeId: null,
-			startDate: this.formatDateToYYYYMMDD(new Date()),
-			endDate: '',
+			startDate: new Date(),
+			endDate: null,
 			position: '',
 			showContractorModal: false,
 			showStoreModal: false,
@@ -473,19 +663,12 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 			return;
 		}
 
-		if (!this.activeTokenData?.token) {
-			this.errorMessage = 'Токен не установлен. Пожалуйста, выберите активный токен.';
-			this.isLoading = false;
-			this.cdr.detectChanges();
-			return;
-		}
-
 		const formData = this.addTransactionForm();
 		formData.store = store;
 		formData.form.patchValue({
 			storeId: store.id,
-			startDate: this.formatDateToYYYYMMDD(new Date()),
-			token: this.activeTokenData.token
+			startDate: new Date(),
+			token: this.activeTokenData?.token || ''
 		});
 
 		console.log('Новая форма добавлена с предзаполненной торговой точкой:', formData.form.getRawValue());
@@ -494,5 +677,11 @@ export class TransactionCreateComponent implements OnInit, OnDestroy {
 		this.saveToLocalStorage();
 		this.isLoading = false;
 		this.cdr.detectChanges();
+	}
+
+	onStartDateChange(event: MatDatepickerInputEvent<Date>, formIndex: number): void {
+		console.log('startDate изменена через календарь:', event.value);
+		this.cdr.detectChanges();
+		this.saveToLocalStorage();
 	}
 }

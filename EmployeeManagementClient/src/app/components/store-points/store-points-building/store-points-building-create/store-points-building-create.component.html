@@ -1,27 +1,40 @@
-<div class="container mt-4">
-	<h2>Добавить запись в справочник "Здания"</h2>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Добавить запись в справочник "Здания"</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<mat-card *ngIf="errorMessage" class="error-message mt-4" role="alert">
+				<mat-icon>error_outline</mat-icon>
+				{{ errorMessage }}
+			</mat-card>
 
-	<!-- Блок отображения ошибки -->
-	<div *ngIf="errorMessage" class="alert alert-danger">
-		<p>{{ errorMessage }}</p>
-	</div>
+			<form [formGroup]="buildingForm" (ngSubmit)="addBuilding()" class="create-form">
+				<mat-grid-list cols="3" rowHeight="80px" gutterSize="8px">
+					<mat-grid-tile>
+						<mat-form-field appearance="fill" class="full-width" floatLabel="auto">
+							<mat-label>Название здания *</mat-label>
+							<input matInput id="buildingName" type="text" placeholder="Введите название здания"
+								formControlName="buildingName" />
+							<mat-icon matSuffix>business</mat-icon> <mat-error
+								*ngIf="buildingForm.get('buildingName')?.invalid && buildingForm.get('buildingName')?.touched">
+								Название здания обязательно
+							</mat-error>
+						</mat-form-field>
+					</mat-grid-tile>
+				</mat-grid-list>
 
-	<!-- Форма добавления -->
-	<form [formGroup]="buildingForm" (ngSubmit)="addBuilding()">
-		<div class="form-group">
-			<label for="buildingName">Название здания:</label>
-			<div class="input-container">
-				<input id="buildingName" type="text" class="form-control" placeholder="Введите название здания"
-					formControlName="buildingName" [ngClass]="{
-            'is-invalid':
-              buildingForm.get('buildingName')?.invalid && buildingForm.get('buildingName')?.touched
-          }" required />
-				<div *ngIf="buildingForm.get('buildingName')?.invalid && buildingForm.get('buildingName')?.touched"
-					class="invalid-feedback">
-					Название здания обязательно.
+				<div class="d-flex justify-content-between gap-2 mt-4">
+					<button mat-raised-button color="primary" class="action-btn" type="submit"
+						[disabled]="buildingForm.invalid" matTooltip="Добавить здание">
+						Добавить
+					</button>
+					<button mat-stroked-button color="accent" class="action-btn" type="button" (click)="cancel()"
+						matTooltip="Отменить добавление">
+						Отменить
+					</button>
 				</div>
-			</div>
-		</div>
-		<button type="submit" class="btn btn-primary" [disabled]="buildingForm.invalid">Добавить</button>
-	</form>
+			</form>
+		</mat-card-content>
+	</mat-card>
 </div>

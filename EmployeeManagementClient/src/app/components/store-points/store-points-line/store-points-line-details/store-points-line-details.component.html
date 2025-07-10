@@ -1,25 +1,38 @@
-<div class="container mt-4">
-	<h2>Детали линии № {{ line?.id }}</h2>
+<div class="main-content">
+	<mat-card class="section-card">
+		<mat-card-header>
+			<mat-card-title class="section-title">Детали линии № {{ line?.id }}</mat-card-title>
+		</mat-card-header>
+		<mat-card-content>
+			<div class="details-container">
+				<div class="detail-item">
+					<span class="detail-label">Сортировка:</span>
+					<span class="detail-value">{{ line?.sortOrder }}</span>
+				</div>
+				<div class="detail-item">
+					<span class="detail-label">Название:</span>
+					<span class="detail-value">{{ line?.name }}</span>
+				</div>
+				<div class="detail-item">
+					<span class="detail-label">Дата создания:</span>
+					<span class="detail-value">{{ line?.createdAt | date: 'dd.MM.yyyy HH:mm:ss' }}</span>
+				</div>
+				<div class="detail-item">
+					<span class="detail-label">Архивирован:</span>
+					<span class="detail-value">{{ line?.isArchived ? 'Да' : 'Нет' }}</span>
+				</div>
+			</div>
 
-	<div class="form-group">
-		<p><strong>Сортировка:</strong> {{ line?.sortOrder }}</p>
-	</div>
-
-	<div class="form-group">
-		<p><strong>Название:</strong> {{ line?.name }}</p>
-	</div>
-
-	<div class="form-group">
-		<p><strong>Дата создания: </strong> {{ line?.createdAt | date: 'dd.MM.yyyy HH:mm:ss' }}
-		</p>
-	</div>
-
-	<div class="form-group">
-		<p><strong>Архивирован: </strong> {{ line?.isArchived ? 'Да' : 'Нет' }}
-		</p>
-	</div>
-
-	<div class="form-group">
-		<button class="btn btn-primary" (click)="editLine()">Редактировать</button>
-	</div>
+			<div class="d-flex gap-2 mt-4">
+				<button mat-raised-button color="primary" class="action-btn" (click)="editLine()"
+					matTooltip="Редактировать линию">
+					Редактировать
+				</button>
+				<button mat-stroked-button color="accent" class="action-btn" (click)="goBack()"
+					matTooltip="Вернуться назад">
+					Назад
+				</button>
+			</div>
+		</mat-card-content>
+	</mat-card>
 </div>

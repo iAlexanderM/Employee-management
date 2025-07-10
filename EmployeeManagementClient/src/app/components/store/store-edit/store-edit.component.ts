@@ -11,10 +11,35 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { HistoryEntry, ChangeValue } from '../../../models/history.model';
 import { ApplicationUser } from '../../../models/application-user.model';
 
+// --- Angular Material Imports ---
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field'; // Для cdkTextareaAutosize в заметке
+
 @Component({
 	selector: 'app-store-edit',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule, StoreSelectOrAddModalComponent],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		StoreSelectOrAddModalComponent,
+		// --- Angular Material Modules ---
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatIconModule,
+		MatButtonModule,
+		MatGridListModule,
+		MatTooltipModule,
+		MatProgressSpinnerModule,
+		CdkTextareaAutosize // Это директива, а не модуль, поэтому импортируем ее напрямую
+	],
 	templateUrl: './store-edit.component.html',
 	styleUrls: ['./store-edit.component.css']
 })
@@ -41,10 +66,10 @@ export class StoreEditComponent implements OnInit {
 		private router: Router
 	) {
 		this.storeForm = this.fb.group({
-			building: [{ value: '', disabled: true }, Validators.required],
-			floor: [{ value: '', disabled: true }, Validators.required],
-			line: [{ value: '', disabled: true }, Validators.required],
-			storeNumber: [{ value: '', disabled: true }, Validators.required],
+			building: ['', [Validators.required, Validators.maxLength(50)]],
+			floor: ['', [Validators.required, Validators.maxLength(10)]],
+			line: ['', [Validators.required, Validators.maxLength(10)]],
+			storeNumber: ['', [Validators.required, Validators.maxLength(20)]],
 			sortOrder: [0, [Validators.required, Validators.min(0)]],
 			note: ['', [Validators.maxLength(500)]],
 			createdAt: [new Date(), Validators.required],

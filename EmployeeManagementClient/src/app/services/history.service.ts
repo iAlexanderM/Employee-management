@@ -20,16 +20,16 @@ export class HistoryService {
 	) { }
 
 	getHistory(entityType: string, entityId: string): Observable<HistoryEntry[]> {
-		const token = this.authService.getToken();
-		if (!token) {
+		const accessToken = this.authService.getAccessToken();
+		if (!accessToken) {
 			console.error('Токен отсутствует для запроса истории');
 			return throwError(() => ({
 				message: 'Токен авторизации отсутствует',
-				error: 'No token found',
+				error: 'No accessToken found',
 			}));
 		}
 		const headers = new HttpHeaders({
-			Authorization: `Bearer ${token}`,
+			Authorization: `Bearer ${accessToken}`,
 		});
 
 		const params = new HttpParams()
@@ -109,16 +109,16 @@ export class HistoryService {
 		changes: { [key: string]: ChangeValue };
 		user?: string;
 	}): Observable<any> {
-		const token = this.authService.getToken();
-		if (!token) {
+		const accessToken = this.authService.getAccessToken();
+		if (!accessToken) {
 			console.error('Токен отсутствует для записи истории');
 			return throwError(() => ({
 				message: 'Токен авторизации отсутствует',
-				error: 'No token found',
+				error: 'No accessToken found',
 			}));
 		}
 		const headers = new HttpHeaders({
-			Authorization: `Bearer ${token}`,
+			Authorization: `Bearer ${accessToken}`,
 			'Content-Type': 'application/json',
 		});
 

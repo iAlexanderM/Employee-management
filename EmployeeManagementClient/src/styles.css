@@ -1,20 +1,33 @@
+@font-face {
+	font-family: 'Poppins';
+	src: url('/assets/fonts/Poppins-Regular.ttf') format('truetype');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Poppins';
+	src: url('/assets/fonts/Poppins-SemiBold.ttf') format('truetype');
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}
 *,
 *::before,
 *::after {
 	box-sizing: border-box;
 }
-
 html,
 body {
 	margin: 0;
 	padding: 0;
 	height: 100%;
-	font-family: 'Poppins', 'Roboto', sans-serif;
+	font-family: 'Poppins', sans-serif;
 	font-size: 14px;
 	color: #333333;
 	background-color: #f8fafc;
+	overflow-y: auto;
 }
-
 /* Mat Icon */
 mat-icon.mat-icon,
 i.material-icons {
@@ -23,7 +36,34 @@ i.material-icons {
 	height: 20px;
 	color: #1f2937;
 }
-
+.mat-typography,
+html,
+body {
+	/* Примените это к body, чтобы переопределить все */
+	--mat-sys-body-large-font: 'Poppins', sans-serif;
+	--mat-sys-body-medium-font: 'Poppins', sans-serif;
+	--mat-sys-body-small-font: 'Poppins', sans-serif;
+	--mat-sys-display-large-font: 'Poppins', sans-serif;
+	--mat-sys-display-medium-font: 'Poppins', sans-serif;
+	--mat-sys-display-small-font: 'Poppins', sans-serif;
+	--mat-sys-headline-large-font: 'Poppins', sans-serif;
+	--mat-sys-headline-medium-font: 'Poppins', sans-serif;
+	--mat-sys-headline-small-font: 'Poppins', sans-serif;
+	--mat-sys-label-large-font: 'Poppins', sans-serif;
+	--mat-sys-label-medium-font: 'Poppins', sans-serif;
+	--mat-sys-label-small-font: 'Poppins', sans-serif;
+	--mat-sys-title-large-font: 'Poppins', sans-serif;
+	--mat-sys-title-medium-font: 'Poppins', sans-serif;
+	--mat-sys-title-small-font: 'Poppins', sans-serif;
+	--mat-button-text-font: 'Poppins', sans-serif;
+}
+.mat-mdc-card-title {
+	font-family: 'Poppins', sans-serif;
+}
+.login-card,
+.login-container {
+	font-family: "Poppins", sans-serif !important;
+}
 /* Buttons */
 .action-btn {
 	font-family: 'Poppins', 'Roboto', sans-serif;
@@ -34,7 +74,6 @@ i.material-icons {
 	min-width: 40px;
 	transition: all 0.3s ease;
 }
-
 .action-btn.mat-mdc-raised-button[color="primary"],
 .action-btn.mat-mdc-flat-button[color="primary"],
 .action-btn.mat-mdc-stroked-button[color="primary"] {
@@ -42,7 +81,6 @@ i.material-icons {
 	color: #ffffff;
 	border-color: #2563eb;
 }
-
 .action-btn.mat-mdc-raised-button[color="primary"]:hover:not(.mdc-button--disabled),
 .action-btn.mat-mdc-flat-button[color="primary"]:hover:not(.mdc-button--disabled),
 .action-btn.mat-mdc-stroked-button[color="primary"]:hover:not(.mdc-button--disabled) {
@@ -50,7 +88,6 @@ i.material-icons {
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 	transform: translateY(-1px);
 }
-
 .action-btn.mat-mdc-raised-button[color="accent"],
 .action-btn.mat-mdc-flat-button[color="accent"],
 .action-btn.mat-mdc-stroked-button[color="accent"] {
@@ -58,7 +95,6 @@ i.material-icons {
 	color: #ffffff;
 	border-color: #e11d48;
 }
-
 .action-btn.mat-mdc-raised-button[color="accent"]:hover:not(.mdc-button--disabled),
 .action-btn.mat-mdc-flat-button[color="accent"]:hover:not(.mdc-button--disabled),
 .action-btn.mat-mdc-stroked-button[color="accent"]:hover:not(.mdc-button--disabled) {
@@ -66,7 +102,6 @@ i.material-icons {
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 	transform: translateY(-1px);
 }
-
 .action-btn.mat-mdc-raised-button[color="warn"],
 .action-btn.mat-mdc-flat-button[color="warn"],
 .action-btn.mat-mdc-stroked-button[color="warn"] {
@@ -74,7 +109,6 @@ i.material-icons {
 	color: #ffffff;
 	border-color: #b91c1c;
 }
-
 .action-btn.mat-mdc-raised-button[color="warn"]:hover:not(.mdc-button--disabled),
 .action-btn.mat-mdc-flat-button[color="warn"]:hover:not(.mdc-button--disabled),
 .action-btn.mat-mdc-stroked-button[color="warn"]:hover:not(.mdc-button--disabled) {
@@ -82,7 +116,6 @@ i.material-icons {
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 	transform: translateY(-1px);
 }
-
 .action-btn.mat-mdc-raised-button[color="secondary"],
 .action-btn.mat-mdc-flat-button[color="secondary"],
 .action-btn.mat-mdc-stroked-button[color="secondary"] {
@@ -90,7 +123,6 @@ i.material-icons {
 	color: #ffffff;
 	border-color: #4b5563;
 }
-
 .action-btn.mat-mdc-raised-button[color="secondary"]:hover:not(.mdc-button--disabled),
 .action-btn.mat-mdc-flat-button[color="secondary"]:hover:not(.mdc-button--disabled),
 .action-btn.mat-mdc-stroked-button[color="secondary"]:hover:not(.mdc-button--disabled) {
@@ -98,7 +130,6 @@ i.material-icons {
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 	transform: translateY(-1px);
 }
-
 .action-btn.mat-mdc-raised-button.mdc-button--disabled,
 .action-btn.mat-mdc-flat-button.mdc-button--disabled,
 .action-btn.mat-mdc-stroked-button.mdc-button--disabled {
@@ -108,7 +139,6 @@ i.material-icons {
 	box-shadow: none;
 	cursor: not-allowed;
 }
-
 .action-btn.icon-only {
 	padding: 0;
 	width: 40px;
@@ -116,7 +146,6 @@ i.material-icons {
 	align-items: center;
 	justify-content: center;
 }
-
 .action-btn.icon-only mat-icon,
 .action-btn.icon-only i.material-icons {
 	font-size: 24px;
@@ -125,20 +154,17 @@ i.material-icons {
 	line-height: 24px;
 	margin: 0;
 }
-
 .action-btn.btn-sm {
 	width: 28px;
 	height: 28px;
 	padding: 0;
 }
-
 .action-btn.btn-sm mat-icon {
 	font-size: 18px;
 	width: 18px;
 	height: 18px;
 	line-height: 18px;
 }
-
 /* Tables */
 .data-table {
 	width: 100%;
@@ -149,28 +175,14 @@ i.material-icons {
 	background: #fefaf6;
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
-
-.data-table th,
-.data-table td {
-	padding: 6px 10px;
-	text-align: left;
-	border-bottom: 1px solid #e5e7eb;
-}
-
 .data-table th {
 	background: #3786f3;
 	color: #ffffff;
 	font-weight: 600;
 }
-
 .data-table tr:hover {
 	background-color: #f5f5f4;
 }
-
-.data-table td {
-	white-space: normal;
-}
-
 /* Cards */
 .section-card {
 	background: #fefaf6;
@@ -183,13 +195,11 @@ i.material-icons {
 	border: 1px solid #e5e7eb;
 	width: 100%;
 }
-
 .section-card .mat-mdc-card-content {
 	padding: 12px;
 	border: 1px solid #d6d3d1;
 	flex-grow: 1;
 }
-
 .section-card .mat-mdc-card-title {
 	font-family: 'Poppins', 'Roboto', sans-serif;
 	font-weight: 700;
@@ -199,7 +209,6 @@ i.material-icons {
 	margin-bottom: 6px;
 	text-align: left;
 }
-
 /* Photo Previews */
 .photo-previews,
 .document-photo-previews {
@@ -208,7 +217,6 @@ i.material-icons {
 	gap: 16px;
 	margin-top: 12px;
 }
-
 .photo-thumbnail img,
 .document-photo-thumbnail img {
 	width: 120px;
@@ -218,110 +226,88 @@ i.material-icons {
 	border: 1px solid #e5e7eb;
 	transition: transform 0.3s, box-shadow 0.3s;
 }
-
 .photo-thumbnail img:hover,
 .document-photo-thumbnail img:hover {
 	transform: scale(1.05);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-
 .photo-thumbnail button,
 .document-photo-thumbnail button {
 	margin-top: 8px;
 	font-size: 13px;
 }
-
 /* Text */
 .text-muted {
 	color: #333333;
 	font-style: italic;
 	font-size: 12px;
 }
-
 /* Utilities */
 .d-flex {
 	display: flex;
 }
-
 .gap-2 {
 	gap: 8px;
 }
-
 .mt-4 {
 	margin-top: 16px;
 }
-
 .mb-4 {
 	margin-bottom: 16px;
 }
-
 .justify-content-start {
 	justify-content: flex-start;
 }
-
 .justify-content-between {
 	justify-content: space-between;
 }
-
 .text-center {
 	text-align: center;
 }
-
 .mat-mdc-form-field-infix {
 	padding: 1rem;
 	height: auto ! important;
 }
-
 @media (max-width: 768px) {
 	.main-content {
 		padding-top: 1.2em;
 		padding-bottom: 0.8em;
 	}
-
 	mat-grid-tile {
 		width: 100%;
 	}
 }
-
 mat-form-field .mat-mdc-form-field-wrapper {
 	padding-bottom: 0;
 }
-
 mat-form-field .mat-mdc-form-field-outline {
 	border-width: 2px;
 	border-radius: 4px;
 }
-
 mat-form-field .mat-mdc-form-field-label {
 	font-size: 14px;
 	top: 1em;
 	color: #6b7280;
 	transition: transform 0.2s ease, top 0.2s ease, font-size 0.2s ease;
 }
-
 mat-form-field.mat-focused .mat-mdc-form-field-label,
 mat-form-field.mat-form-field-should-float .mat-mdc-form-field-label {
 	transform: translateY(-1.4em) scale(0.75);
 	top: 0.8em;
 	color: #3f51b5;
 }
-
 .mdc-text-field {
 	padding: 0 0 0 0 !important
 }
-
 mat-form-field.full-width {
 	width: 100%;
 }
-
 .mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-floating-label {
 	padding: 5px 0;
 }
-
 .mat-accent.mat-mdc-button-base --mat-button-text-ripple-color {
 	color: #3786f3;
 }
-
 .error-message {
 	background-color: #ffffff;
 	color: #d32f2f;
@@ -333,12 +319,10 @@ mat-form-field.full-width {
 	align-items: center;
 	gap: 12px;
 }
-
 .error-message mat-icon {
 	color: #d32f2f;
-	font-size: 24px;
+	font-size: 20px;
 }
-
 .error-message span {
 	font-weight: 500;
 }

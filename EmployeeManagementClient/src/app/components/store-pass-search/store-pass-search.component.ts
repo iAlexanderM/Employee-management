@@ -1,9 +1,11 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy, AfterViewInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BehaviorSubject, Subscription, Observable, of, Subject, forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError, takeUntil } from 'rxjs/operators';
 import { PassService } from '../../services/pass.service';
 import { TransactionService } from '../../services/transaction.service';
+import { HistoryService } from '../../services/history.service';
+import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 import { SearchFilterResetService } from '../../services/search-filter-reset.service';
 import { QueueSyncService } from '../../services/queue-sync.service';
@@ -20,8 +22,60 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { CommonModule } from '@angular/common';
-import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { HistoryEntry, ChangeValue } from '../../models/history.model';
+import { Store } from '../../models/store.model';
+import { StoreService } from '../../services/store.service';
+import { MatTableModule } from '@angular/material/table';
+import { MatTableDataSource } from '@angular/material/table';
+
+const PAGE_SIZE = 500;
+const DEBOUNCE_TIME_MS = 300;
+const INTERSECTION_THRESHOLD = 0.1;
+const ROOT_MARGIN = '1000px';
+const API_BASE_URL = 'http://localhost:8080';
+const DEFAULT_PHOTO_URL = '/assets/images/default-photo.jpg';
+const ANIMATION_DURATION = '300ms';
+const ANIMATION_EASING = 'ease-out';
+const TRANSFORM_START = 'translateY(20px)';
+const TRANSFORM_END = 'translateY(0)';
+const OPACITY_START = 0;
+const OPACITY_END = 1;
+const TOTAL_COUNT_DEFAULT = -1;
+const INITIAL_PAGE = 1;
+const DATE_OFFSET_DAYS = 0;
+const STORAGE_KEY_CRITERIA = 'storeSearchCriteria';
+const STORAGE_KEY_SCROLL = 'storePassScrollPosition';
+const STORAGE_KEY_PANEL = 'storePassPanelStates';
+const DEFAULT_POSITION = 'Наёмный работник';
+const PATH_SEPARATOR = '/';
+const WWWROOT_PREFIX = 'wwwroot';
+const ERROR_ALL_FIELDS = 'Выберите значения для всех полей';
+const ERROR_SERVER = 'Ошибка сервера';
+const ERROR_INVALID_DATE = 'Неверный формат даты окончания предыдущего пропуска';
+const ERROR_NO_CONTRACTOR = 'Не удалось получить все данные (контрагент, магазин или тип пропуска) для продления';
+const ERROR_NO_PASS = 'Пропуск с ID {0} не найден';
+const ERROR_PASS_CLOSED = 'Пропуск с ID {0} уже закрыт';
+const ERROR_NO_REASON = 'Причина закрытия не указана';
+const ERROR_NO_USER = 'Не удалось определить пользователя. Пожалуйста, войдите снова';
+const ERROR_NO_STORE = 'Не удалось найти магазин для создания пропуска';
+const ERROR_UNKNOWN = 'Неизвестная ошибка сервера';
+const LOG_OBSERVE_TRIGGER = 'Observing loadMoreTrigger';
+const LOG_TRIGGER_NOT_FOUND = 'loadMoreTrigger is not available in ngAfterViewInit';
+const LOG_INTERSECTION = 'IntersectionObserver triggered: Loading more results';
+const LOG_SCROLL_DEBOUNCE = 'Scroll debounce triggered: isLoading={0}, hasMoreResults={1}';
+const LOG_SEARCH_BLOCKED = 'Search blocked: isLoading is true';
+const LOG_FORM_CHANGED = 'Form value changed, triggering search';
+const LOG_CACHE_USED = 'Using cached data for key: {0}';
+const LOG_SEARCH_RESPONSE = 'Search response:';
+const LOG_NO_CONTRACTORS = 'No contractors found, stopping infinite scroll';
+const LOG_SEARCH_ERROR = 'Search error:';
+const LOG_FLATTENED = 'Flattened results:';
+const LOG_RESPONSE_DETAILS = 'handleSearchResponse:';
+const LOG_LOAD_MORE = 'loadMoreResults called';
+const LOG_INVALID_DATE_ERROR = 'Ошибка парсинга даты окончания пропуска:';
+const LOG_FORKJOIN_ERROR = 'Ошибка при загрузке данных для продления через forkJoin:';
+const LOG_EXTEND_DATA = 'Подготовлены данные для передачи в state:';
 
 @Component({
 	selector: 'app-store-pass-search',
@@ -38,45 +92,43 @@ import { trigger, transition, style, animate } from '@angular/animations';
 		MatIconModule,
 		MatProgressSpinnerModule,
 		MatCheckboxModule,
+		MatTableModule,
 		MatCardModule,
-		MatDividerModule,
-		InfiniteScrollModule
+		MatDividerModule
 	],
 	templateUrl: './store-pass-search.component.html',
 	styleUrls: ['./store-pass-search.component.css'],
 	animations: [
 		trigger('fadeIn', [
 			transition(':enter', [
-				style({ opacity: 0, transform: 'translateY(20px)' }),
-				animate('300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+				style({ opacity: OPACITY_START, transform: TRANSFORM_START }),
+				animate(`${ANIMATION_DURATION} ${ANIMATION_EASING}`, style({ opacity: OPACITY_END, transform: TRANSFORM_END }))
 			])
 		])
 	]
 })
-export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewInit {
-	@ViewChild('loadPreviousTrigger') loadPreviousTrigger!: ElementRef;
-
-	private readonly PAGE_SIZE = 100;
-	private readonly MAX_BUFFER_SIZE = 300; // Ограничение DOM для управления памятью
-	private readonly DEBOUNCE_TIME_MS = 300;
-	private readonly INTERSECTION_THRESHOLD = 0.1;
-	private readonly ROOT_MARGIN = '1000px';
-	private readonly API_BASE_URL = 'http://localhost:8080';
-	private readonly DEFAULT_PHOTO_URL = '/assets/images/default-photo.jpg';
-
+export class StorePassSearchComponent implements OnInit, OnDestroy {
+	@ViewChild('loadMoreTrigger') loadMoreTrigger!: ElementRef;
+	@ViewChild('noteTextarea') noteTextarea!: ElementRef<HTMLTextAreaElement>;
+	store: Store | null = null;
 	searchForm: FormGroup;
 	flattenedContractors: { store: PassByStoreResponseDto; contractor: ContractorPassesDto; isActive: boolean }[] = [];
 	isLoading = false;
+	isLoadingHistory = false;
+	noteForm: FormGroup;
+	showHistory = false;
+	userMap: { [key: string]: string } = {};
+	historyEntries = new MatTableDataSource<HistoryEntry>([]);
 	errorMessage: string | null = null;
-	page = 1;
-	firstIndex = 0; // Индекс первого элемента в flattenedContractors
-	totalCount = 0;
+	successMessage: string | null = null;
+	page = INITIAL_PAGE;
+	totalCount = TOTAL_COUNT_DEFAULT;
 	hasMoreResults = true;
-	hasPreviousResults = false;
 	buildingSuggestions$ = new BehaviorSubject<string[]>([]);
 	floorSuggestions$ = new BehaviorSubject<string[]>([]);
 	lineSuggestions$ = new BehaviorSubject<string[]>([]);
 	storeNumberSuggestions$ = new BehaviorSubject<string[]>([]);
+	historyColumns: string[] = ['timestamp', 'action', 'user', 'details', 'changes'];
 	private subscriptions: Subscription[] = [];
 	private confirmedFields: { [key: string]: string | null } = {
 		Building: null,
@@ -89,10 +141,14 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 	private intersectionObserver: IntersectionObserver;
 	private scrollSubject = new Subject<void>();
 	private destroy$ = new Subject<void>();
+	private historyLoad$ = new Subject<string>();
 
 	constructor(
 		private fb: FormBuilder,
+		private storeService: StoreService,
 		private passService: PassService,
+		private historyService: HistoryService,
+		private authService: AuthService,
 		private transactionService: TransactionService,
 		private userService: UserService,
 		private searchFilterResetService: SearchFilterResetService,
@@ -111,27 +167,37 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 
 		this.intersectionObserver = new IntersectionObserver(
 			(entries) => this.handleIntersection(entries),
-			{ threshold: this.INTERSECTION_THRESHOLD, rootMargin: this.ROOT_MARGIN }
+			{ threshold: INTERSECTION_THRESHOLD, rootMargin: ROOT_MARGIN }
 		);
+
+		this.noteForm = this.fb.group({
+			note: ['', [Validators.maxLength(500)]],
+		});
 	}
 
 	ngOnInit(): void {
+		this.loadCurrentUser();
+		this.loadUsersFromTransactions();
 		this.loadStoredSearchCriteria();
 		this.initializeAutocompleteHandlers();
 		this.initializeFormSubscriptions();
 		this.initializeScrollDebounce();
 		this.initializeResetSubscription();
+		this.initializeHistoryLoad();
+		if (this.areAllFieldsConfirmed()) {
+			this.loadStore();
+			this.searchPasses(true);
+		}
 	}
 
 	ngAfterViewInit(): void {
-		if (this.loadPreviousTrigger?.nativeElement) {
-			console.debug('Observing loadPreviousTrigger');
-			this.intersectionObserver.observe(this.loadPreviousTrigger.nativeElement);
+		if (this.loadMoreTrigger?.nativeElement) {
+			console.log(LOG_OBSERVE_TRIGGER);
+			this.intersectionObserver.observe(this.loadMoreTrigger.nativeElement);
 		} else {
-			setTimeout(() => this.observePreviousTrigger(), 100);
+			console.error(LOG_TRIGGER_NOT_FOUND);
 		}
 		this.restoreScrollPosition();
-		this.cdr.markForCheck();
 	}
 
 	ngOnDestroy(): void {
@@ -139,24 +205,29 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		this.intersectionObserver.disconnect();
 		this.destroy$.next();
 		this.destroy$.complete();
+		this.historyLoad$.complete();
 	}
 
-	private observePreviousTrigger(): void {
-		if (this.loadPreviousTrigger?.nativeElement) {
-			console.debug('Observing loadPreviousTrigger');
-			this.intersectionObserver.observe(this.loadPreviousTrigger.nativeElement);
-		} else {
-			setTimeout(() => this.observePreviousTrigger(), 100);
+	private loadCurrentUser(): void {
+		const user = this.userService.getCurrentUser();
+		if (user && user.id && user.userName) {
+			this.userMap[user.id] = user.userName;
 		}
 	}
 
-	private handleIntersection(entries: IntersectionObserverEntry[]): void {
-		entries.forEach(entry => {
-			if (entry.isIntersecting && !this.isLoading && this.hasPreviousResults) {
-				console.debug('IntersectionObserver triggered: Loading previous results');
-				this.scrollSubject.next();
-			}
+	private loadUsersFromTransactions(): void {
+		const sub = this.transactionService.searchTransactions({}, 1, 100).subscribe({
+			next: (result) => {
+				result.transactions.forEach((t: any) => {
+					if (t.user && t.userId && t.user.userName) {
+						this.userMap[t.userId] = t.user.userName;
+					}
+				});
+				this.cdr.markForCheck();
+			},
+			error: (err) => console.error('Ошибка загрузки пользователей из транзакций:', err),
 		});
+		this.subscriptions.push(sub);
 	}
 
 	private initializeResetSubscription(): void {
@@ -170,14 +241,24 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		);
 	}
 
+	private handleIntersection(entries: IntersectionObserverEntry[]): void {
+		entries.forEach(entry => {
+			if (entry.isIntersecting && !this.isLoading && this.hasMoreResults) {
+				console.log(LOG_INTERSECTION);
+				this.scrollSubject.next();
+			}
+		});
+	}
+
 	private initializeScrollDebounce(): void {
 		this.subscriptions.push(
 			this.scrollSubject.pipe(
-				debounceTime(this.DEBOUNCE_TIME_MS),
+				debounceTime(DEBOUNCE_TIME_MS),
 				takeUntil(this.destroy$)
 			).subscribe(() => {
-				if (!this.isLoading && this.hasPreviousResults) {
-					this.loadPreviousResults();
+				console.log(LOG_SCROLL_DEBOUNCE.replace('{0}', this.isLoading.toString()).replace('{1}', this.hasMoreResults.toString()));
+				if (!this.isLoading && this.hasMoreResults) {
+					this.loadMoreResults();
 				}
 			})
 		);
@@ -186,11 +267,12 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 	private initializeFormSubscriptions(): void {
 		this.subscriptions.push(
 			this.searchForm.valueChanges.pipe(
-				debounceTime(this.DEBOUNCE_TIME_MS),
+				debounceTime(DEBOUNCE_TIME_MS),
 				distinctUntilChanged(),
 				takeUntil(this.destroy$)
 			).subscribe(() => {
 				if (this.areAllFieldsConfirmed()) {
+					console.log(LOG_FORM_CHANGED);
 					this.searchPasses(true);
 				}
 			})
@@ -198,7 +280,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 	}
 
 	private loadStoredSearchCriteria(): void {
-		const storedCriteria = localStorage.getItem('storeSearchCriteria');
+		const storedCriteria = localStorage.getItem(STORAGE_KEY_CRITERIA);
 		if (storedCriteria) {
 			const criteria = JSON.parse(storedCriteria);
 			this.searchForm.patchValue({
@@ -215,10 +297,48 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				Line: criteria.line || null,
 				StoreNumber: criteria.storeNumber || null
 			};
-			if (this.areAllFieldsConfirmed()) {
-				this.searchPasses(true);
-			}
+			this.searchPasses(true);
 		}
+	}
+
+	private loadStore(): void {
+		if (!this.areAllFieldsConfirmed()) {
+			console.warn('Не все поля подтверждены для загрузки магазина', this.confirmedFields);
+			return;
+		}
+		this.isLoading = true;
+		this.store = null;
+		const criteria = {
+			building: this.confirmedFields['Building'] || '',
+			floor: this.confirmedFields['Floor'] || '',
+			line: this.confirmedFields['Line'] || '',
+			storeNumber: this.confirmedFields['StoreNumber'] || ''
+		};
+		console.log('Запрос магазина с параметрами:', criteria);
+		this.transactionService.getStoreByDetails(
+			criteria.building,
+			criteria.floor,
+			criteria.line,
+			criteria.storeNumber
+		).subscribe({
+			next: (store) => {
+				console.log('Получен магазин:', store);
+				this.store = store;
+				this.noteForm.patchValue({ note: store.note || '' }, { emitEvent: false });
+				this.noteForm.markAsPristine();
+				this.isLoading = false;
+				if (this.showHistory) {
+					this.loadHistory(store.id.toString());
+				}
+				this.cdr.markForCheck();
+			},
+			error: (err) => {
+				console.error('Ошибка при загрузке магазина:', err);
+				this.errorMessage = ERROR_NO_STORE;
+				this.isLoading = false;
+				this.cdr.markForCheck();
+			}
+		});
 	}
 
 	private saveSearchCriteria(): void {
@@ -230,7 +350,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 			showActive: this.searchForm.get('showActive')?.value ?? true,
 			showClosed: this.searchForm.get('showClosed')?.value ?? false
 		};
-		localStorage.setItem('storeSearchCriteria', JSON.stringify(criteria));
+		localStorage.setItem(STORAGE_KEY_CRITERIA, JSON.stringify(criteria));
 	}
 
 	private flattenResults(results: PassByStoreResponseDto[], showActive: boolean, showClosed: boolean): { store: PassByStoreResponseDto; contractor: ContractorPassesDto; isActive: boolean }[] {
@@ -240,18 +360,17 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		results.forEach(store => {
 			const contractors = store.contractors ?? [];
 			contractors.forEach(contractor => {
-				if (!contractor.contractorId) return;
-				const activePassesForStore = (contractor.activePasses ?? []).filter(
-					pass => pass.building === store.building &&
-						pass.floor === store.floor &&
-						pass.line === store.line &&
-						pass.storeNumber === store.storeNumber
+				const activePassesForStore = (contractor.activePasses ?? []).filter(pass =>
+					pass.building === store.building &&
+					pass.floor === store.floor &&
+					pass.line === store.line &&
+					pass.storeNumber === store.storeNumber
 				);
-				const closedPassesForStore = (contractor.closedPasses ?? []).filter(
-					pass => pass.building === store.building &&
-						pass.floor === store.floor &&
-						pass.line === store.line &&
-						pass.storeNumber === store.storeNumber
+				const closedPassesForStore = (contractor.closedPasses ?? []).filter(pass =>
+					pass.building === store.building &&
+					pass.floor === store.floor &&
+					pass.line === store.line &&
+					pass.storeNumber === store.storeNumber
 				);
 
 				const hasActivePassesForStore = activePassesForStore.length > 0;
@@ -260,13 +379,15 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				if (showActive && hasActivePassesForStore && !contractorIds.has(contractor.contractorId)) {
 					flattened.push({ store, contractor, isActive: true });
 					contractorIds.add(contractor.contractorId);
-				} else if (showClosed && hasClosedPassesForStore && !hasActivePassesForStore && !contractorIds.has(contractor.contractorId)) {
+				}
+				else if (showClosed && hasClosedPassesForStore && !hasActivePassesForStore && !contractorIds.has(contractor.contractorId)) {
 					flattened.push({ store, contractor, isActive: false });
 					contractorIds.add(contractor.contractorId);
 				}
 			});
 		});
 
+		console.log(LOG_FLATTENED, flattened.map(item => ({ contractorId: item.contractor.contractorId, isActive: item.isActive })));
 		return flattened;
 	}
 
@@ -274,47 +395,68 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		return Object.values(this.confirmedFields).every(value => value !== null && value.trim() !== '');
 	}
 
-	private searchPasses(isInitialSearch: boolean, direction: 'down' | 'up' = 'down'): void {
+	public isFieldConfirmed(controlName: string): boolean {
+		const currentValue = this.searchForm.get(controlName)?.value?.trim() || '';
+		return this.confirmedFields[controlName] === currentValue && currentValue !== '';
+	}
+
+	private searchPasses(isInitialSearch: boolean): void {
 		if (!this.areAllFieldsConfirmed()) {
-			this.errorMessage = 'Выберите значения для всех полей';
+			this.errorMessage = ERROR_ALL_FIELDS;
 			this.flattenedContractors = [];
 			this.cdr.markForCheck();
 			return;
 		}
 
-		if (this.isLoading) return;
+		if (this.isLoading) {
+			console.log(LOG_SEARCH_BLOCKED);
+			return;
+		}
 
 		this.isLoading = true;
 		this.errorMessage = null;
-		const criteria = this.prepareSearchCriteria(isInitialSearch, direction);
+		const criteria = this.prepareSearchCriteria(isInitialSearch);
+		console.log(LOG_SEARCH_RESPONSE, criteria);
+
+		if (isInitialSearch) {
+			this.pageCache = {};
+			this.flattenedContractors = [];
+			this.page = INITIAL_PAGE;
+			this.hasMoreResults = true;
+			sessionStorage.removeItem(STORAGE_KEY_SCROLL);
+			sessionStorage.removeItem(STORAGE_KEY_PANEL);
+			this.loadStore(); // Вызываем loadStore для обновления this.store
+		}
 
 		const cacheKey = this.getCacheKey(criteria);
 		if (this.pageCache[cacheKey]) {
-			this.handleSearchResponse(this.pageCache[cacheKey], isInitialSearch, direction);
+			console.log(LOG_CACHE_USED.replace('{0}', cacheKey));
+			this.handleSearchResponse(this.pageCache[cacheKey], isInitialSearch);
 			return;
 		}
 
 		this.passService.searchPassesByStore(criteria).subscribe({
 			next: (response: PassByStoreResponseDto[]) => {
+				console.log(LOG_SEARCH_RESPONSE, response);
 				if (!response || response.every(r => !r.contractors || r.contractors.length === 0)) {
 					this.errorMessage = null;
 					this.flattenedContractors = [];
 					this.totalCount = response[0]?.totalCount || 0;
 					this.hasMoreResults = false;
-					this.hasPreviousResults = this.firstIndex > 0;
 					this.isLoading = false;
 					this.cdr.markForCheck();
+					console.log(LOG_NO_CONTRACTORS);
 					return;
 				}
 				this.pageCache[cacheKey] = response;
-				this.handleSearchResponse(response, isInitialSearch, direction);
+				this.handleSearchResponse(response, isInitialSearch);
 			},
 			error: (error) => {
-				console.error('Search error:', error);
-				this.errorMessage = 'Ошибка сервера';
+				console.error(LOG_SEARCH_ERROR, error);
+				this.errorMessage = ERROR_SERVER;
 				this.isLoading = false;
 				this.flattenedContractors = [];
-				this.totalCount = -1;
+				this.totalCount = TOTAL_COUNT_DEFAULT;
 				this.cdr.markForCheck();
 			}
 		});
@@ -324,61 +466,51 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		return `${criteria.building}_${criteria.floor}_${criteria.line}_${criteria.storeNumber}_${criteria.showActive}_${criteria.showClosed}_${criteria.page}`;
 	}
 
-	private handleSearchResponse(response: PassByStoreResponseDto[], isInitialSearch: boolean, direction: 'down' | 'up'): void {
-		const showActive = this.searchForm.get('showActive')?.value ?? true;
-		const showClosed = this.searchForm.get('showClosed')?.value ?? false;
+	private handleSearchResponse(response: PassByStoreResponseDto[], isInitialSearch: boolean): void {
+		const showActive = this.searchForm.get('showActive')?.value;
+		const showClosed = this.searchForm.get('showClosed')?.value;
 		const newFlattened = this.flattenResults(response, showActive, showClosed);
 
-		let scrollPosition = window.scrollY;
+		console.log(LOG_RESPONSE_DETAILS, {
+			responseLength: response.length,
+			totalCount: response[0]?.totalCount,
+			newFlattenedLength: newFlattened.length,
+			flattenedContractorsLength: this.flattenedContractors.length,
+			hasMoreResults: this.hasMoreResults,
+			page: this.page
+		});
 
 		if (isInitialSearch) {
 			this.flattenedContractors = newFlattened;
-			this.firstIndex = 0;
-			this.page = 1;
 			window.scrollTo({ top: 0, behavior: 'smooth' });
-		} else if (direction === 'down') {
-			const existingIds = new Set(this.flattenedContractors.map(c => c.contractor.contractorId));
-			const filteredNewFlattened = newFlattened.filter(c => !existingIds.has(c.contractor.contractorId));
-			this.flattenedContractors.push(...filteredNewFlattened);
-			if (this.flattenedContractors.length > this.MAX_BUFFER_SIZE) {
-				this.flattenedContractors.splice(0, this.flattenedContractors.length - this.MAX_BUFFER_SIZE);
-				this.firstIndex += filteredNewFlattened.length;
-			}
-			this.page++;
 		} else {
 			const existingIds = new Set(this.flattenedContractors.map(c => c.contractor.contractorId));
 			const filteredNewFlattened = newFlattened.filter(c => !existingIds.has(c.contractor.contractorId));
-			this.flattenedContractors.unshift(...filteredNewFlattened);
-			if (this.flattenedContractors.length > this.MAX_BUFFER_SIZE) {
-				this.flattenedContractors.splice(this.MAX_BUFFER_SIZE);
-			}
-			this.firstIndex = Math.max(0, this.firstIndex - filteredNewFlattened.length);
-			this.page--;
-			// Сохраняем позицию скролла
-			const newHeight = this.loadPreviousTrigger.nativeElement.offsetTop;
-			window.scrollTo({ top: scrollPosition + newHeight, behavior: 'auto' });
+			this.flattenedContractors = [...this.flattenedContractors, ...filteredNewFlattened];
 		}
 
 		this.totalCount = response[0]?.totalCount || 0;
 		this.hasMoreResults = this.flattenedContractors.length < this.totalCount && response.length > 0;
-		this.hasPreviousResults = this.firstIndex > 0;
+		this.page = isInitialSearch ? INITIAL_PAGE : this.page + 1;
+
+		console.log('After update:', {
+			totalCount: this.totalCount,
+			flattenedContractorsLength: this.flattenedContractors.length,
+			hasMoreResults: this.hasMoreResults,
+			page: this.page
+		});
+
 		this.isLoading = false;
-		console.debug('DOM elements:', this.flattenedContractors.length);
 		this.cdr.markForCheck();
 	}
 
-	public loadMoreResults(): void {
-		this.searchPasses(false, 'down');
+	private loadMoreResults(): void {
+		console.log(LOG_LOAD_MORE);
+		this.searchPasses(false);
 	}
 
-	private loadPreviousResults(): void {
-		if (this.page > 1) {
-			this.searchPasses(false, 'up');
-		}
-	}
-
-	private prepareSearchCriteria(isInitialSearch: boolean, direction: 'down' | 'up' = 'down'): SearchCriteria {
-		const targetPage = isInitialSearch ? 1 : (direction === 'down' ? this.page + 1 : this.page - 1);
+	private prepareSearchCriteria(isInitialSearch: boolean): SearchCriteria {
+		const targetPage = isInitialSearch ? INITIAL_PAGE : this.page + 1;
 		const criteria: SearchCriteria = {
 			building: this.confirmedFields['Building'] || '',
 			floor: this.confirmedFields['Floor'] || '',
@@ -387,7 +519,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 			showActive: this.searchForm.get('showActive')?.value ?? true,
 			showClosed: this.searchForm.get('showClosed')?.value ?? false,
 			page: targetPage,
-			pageSize: this.PAGE_SIZE
+			pageSize: PAGE_SIZE
 		};
 		if (isInitialSearch) {
 			this.saveSearchCriteria();
@@ -396,15 +528,15 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 	}
 
 	private restoreScrollPosition(): void {
-		const scrollPosition = sessionStorage.getItem('storePassScrollPosition');
-		const storedPanelStates = sessionStorage.getItem('storePassPanelStates');
+		const scrollPosition = sessionStorage.getItem(STORAGE_KEY_SCROLL);
+		const storedPanelStates = sessionStorage.getItem(STORAGE_KEY_PANEL);
 		if (scrollPosition) {
 			window.scrollTo({ top: +scrollPosition, behavior: 'smooth' });
-			sessionStorage.removeItem('storePassScrollPosition');
+			sessionStorage.removeItem(STORAGE_KEY_SCROLL);
 		}
 		if (storedPanelStates) {
 			this.panelStates = new Map(JSON.parse(storedPanelStates));
-			sessionStorage.removeItem('storePassPanelStates');
+			sessionStorage.removeItem(STORAGE_KEY_PANEL);
 		}
 		this.cdr.markForCheck();
 	}
@@ -412,16 +544,13 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 	public resetFilters(): void {
 		this.searchForm.reset({ showActive: true, showClosed: false });
 		this.confirmedFields = { Building: null, Floor: null, Line: null, StoreNumber: null };
-		localStorage.removeItem('storeSearchCriteria');
+		localStorage.removeItem(STORAGE_KEY_CRITERIA);
 		this.flattenedContractors = [];
 		this.errorMessage = null;
-		this.page = 1;
-		this.firstIndex = 0;
+		this.page = INITIAL_PAGE;
 		this.hasMoreResults = true;
-		this.hasPreviousResults = false;
 		this.pageCache = {};
-		this.totalCount = -1;
-		this.panelStates.clear();
+		this.totalCount = TOTAL_COUNT_DEFAULT;
 		this.cdr.markForCheck();
 	}
 
@@ -437,7 +566,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		if (control) {
 			this.subscriptions.push(
 				control.valueChanges.pipe(
-					debounceTime(this.DEBOUNCE_TIME_MS),
+					debounceTime(DEBOUNCE_TIME_MS),
 					distinctUntilChanged(),
 					takeUntil(this.destroy$),
 					switchMap(query => {
@@ -468,11 +597,6 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		this.searchPasses(true);
 	}
 
-	public isFieldConfirmed(controlName: string): boolean {
-		const currentValue = this.searchForm.get(controlName)?.value?.trim() || '';
-		return this.confirmedFields[controlName] === currentValue && currentValue !== '';
-	}
-
 	public getSuggestionSubject(controlName: string): BehaviorSubject<string[]> {
 		const subjects: { [key: string]: BehaviorSubject<string[]> } = {
 			Building: this.buildingSuggestions$,
@@ -487,12 +611,16 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		return `${store.building} ${store.floor} ${store.line} ${store.storeNumber}`.trim();
 	}
 
+	public formatPassStore(pass: PassDetailsDto): string {
+		return `${pass.building} ${pass.floor} ${pass.line} ${pass.storeNumber}`.trim();
+	}
+
 	public getAbsolutePhotoUrl(relativePath: string | null): string | null {
 		if (!relativePath) {
-			return this.DEFAULT_PHOTO_URL;
+			return null;
 		}
-		const cleanedPath = relativePath.replace(/\\/g, '/').replace(/^.*wwwroot\//, '');
-		return `${this.API_BASE_URL}/${cleanedPath}`;
+		const cleanedPath = relativePath.replace(/\\/g, PATH_SEPARATOR).replace(new RegExp(`^.*${WWWROOT_PREFIX}${PATH_SEPARATOR}`), '');
+		return `${API_BASE_URL}${PATH_SEPARATOR}${cleanedPath}`;
 	}
 
 	public getLatestPass(passes: PassDetailsDto[] | undefined): PassDetailsDto | undefined {
@@ -507,42 +635,68 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		let passes: PassDetailsDto[] = [];
 
 		if (showActive && !showClosed) {
-			passes = (contractor.activePasses ?? []).filter(
-				pass => pass.building === store.building &&
-					pass.floor === store.floor &&
-					pass.line === store.line &&
-					pass.storeNumber === store.storeNumber
-			);
+			passes = (contractor.activePasses ?? []);
 		} else if (showClosed) {
-			const closedPassesForStore = (contractor.closedPasses ?? []).filter(
-				pass => pass.building === store.building &&
-					pass.floor === store.floor &&
-					pass.line === store.line &&
-					pass.storeNumber === store.storeNumber
+			const closedPassesForStore = (contractor.closedPasses ?? []).filter(pass =>
+				pass.building === store.building &&
+				pass.floor === store.floor &&
+				pass.line === store.line &&
+				pass.storeNumber === store.storeNumber
 			);
 			passes = [
-				...(contractor.activePasses ?? []).filter(
-					pass => pass.building === store.building &&
-						pass.floor === store.floor &&
-						pass.line === store.line &&
-						pass.storeNumber === store.storeNumber
-				),
+				...(contractor.activePasses ?? []),
 				...closedPassesForStore
 			];
 		}
 
-		return passes.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+		return passes.sort((a, b) => {
+			return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+		});
+	}
+
+	public getActiveContractors(result: PassByStoreResponseDto): ContractorPassesDto[] {
+		return (result.contractors ?? []).filter(contractor => (contractor.activePasses ?? []).length > 0);
+	}
+
+	public getClosedContractors(result: PassByStoreResponseDto): ContractorPassesDto[] {
+		return (result.contractors ?? []).filter(contractor =>
+			(contractor.closedPasses ?? []).some(pass =>
+				pass.building === result.building &&
+				pass.floor === result.floor &&
+				pass.line === result.line &&
+				pass.storeNumber === result.storeNumber
+			) &&
+			!(contractor.activePasses ?? []).some(pass =>
+				pass.building === result.building &&
+				pass.floor === result.floor &&
+				pass.line === result.line &&
+				pass.storeNumber === result.storeNumber
+			)
+		);
+	}
+
+	private addMonths(date: Date, months: number): Date {
+		const newDate = new Date(date);
+		newDate.setMonth(newDate.getMonth() + months);
+		return newDate;
+	}
+
+	private formatDateToYYYYMMDD(date: Date): string {
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		return `${year}-${month}-${day}`;
 	}
 
 	public viewContractor(contractorId: number): void {
-		sessionStorage.setItem('storePassScrollPosition', window.scrollY.toString());
-		sessionStorage.setItem('storePassPanelStates', JSON.stringify(Array.from(this.panelStates.entries())));
+		sessionStorage.setItem(STORAGE_KEY_SCROLL, window.scrollY.toString());
+		sessionStorage.setItem(STORAGE_KEY_PANEL, JSON.stringify(Array.from(this.panelStates.entries())));
 		this.router.navigate(['/contractors/details', contractorId]);
 	}
 
 	public editContractor(contractorId: number): void {
-		sessionStorage.setItem('storePassScrollPosition', window.scrollY.toString());
-		sessionStorage.setItem('storePassPanelStates', JSON.stringify(Array.from(this.panelStates.entries())));
+		sessionStorage.setItem(STORAGE_KEY_SCROLL, window.scrollY.toString());
+		sessionStorage.setItem(STORAGE_KEY_PANEL, JSON.stringify(Array.from(this.panelStates.entries())));
 		this.router.navigate(['/contractors/edit', contractorId]);
 	}
 
@@ -551,13 +705,13 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		try {
 			const previousEndDate = new Date(pass.endDate);
 			if (isNaN(previousEndDate.getTime())) {
-				throw new Error(`Invalid pass end date format: ${pass.endDate}`);
+				throw new Error(LOG_INVALID_DATE_ERROR);
 			}
 			newStartDate = new Date(previousEndDate);
-			newStartDate.setDate(newStartDate.getDate() + 1);
+			newStartDate.setDate(newStartDate.getDate() + DATE_OFFSET_DAYS);
 		} catch (error) {
-			console.error("Ошибка парсинга даты окончания пропуска:", error);
-			this.errorMessage = "Неверный формат даты окончания предыдущего пропуска.";
+			console.error(LOG_INVALID_DATE_ERROR, error);
+			this.errorMessage = ERROR_INVALID_DATE;
 			this.cdr.markForCheck();
 			return;
 		}
@@ -572,8 +726,8 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		}).subscribe({
 			next: ({ contractor, store, passType }) => {
 				if (!contractor || !store || !passType) {
-					console.error("Не удалось получить полные данные для продления:", { contractor, store, passType });
-					this.errorMessage = "Не удалось получить все данные (контрагент, магазин или тип пропуска) для продления.";
+					console.error(ERROR_NO_CONTRACTOR, { contractor, store, passType });
+					this.errorMessage = ERROR_NO_CONTRACTOR;
 					this.isLoading = false;
 					this.cdr.markForCheck();
 					return;
@@ -590,7 +744,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 						storeNumber: store.storeNumber
 					},
 					startDate: newStartDate.toISOString(),
-					position: pass.position || 'Наёмный работник',
+					position: pass.position || DEFAULT_POSITION,
 					contractorDetails: {
 						id: contractor.id,
 						lastName: contractor.lastName || '',
@@ -606,12 +760,15 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 					}
 				};
 
+				console.log(LOG_EXTEND_DATA, extendData);
+
 				this.isLoading = false;
 				this.router.navigate(['/transactions/create'], { state: extendData });
 			},
 			error: (err) => {
-				console.error('Ошибка при загрузке данных для продления:', err);
-				this.errorMessage = `Ошибка при загрузке данных для продления: ${err.error?.message || 'Неизвестная ошибка'}`;
+				console.error(LOG_FORKJOIN_ERROR, err);
+				const message = err?.error?.message || err?.message || ERROR_UNKNOWN;
+				this.errorMessage = `Ошибка при загрузке данных для продления: ${message}`;
 				this.isLoading = false;
 				this.cdr.markForCheck();
 			}
@@ -639,19 +796,19 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		}
 
 		if (!pass || !contractor || contractorIndex === undefined || !store) {
-			this.errorMessage = `Пропуск с ID ${passId} не найден.`;
+			this.errorMessage = ERROR_NO_PASS.replace('{0}', passId.toString());
 			this.cdr.markForCheck();
 			return;
 		}
 		if (pass.isClosed) {
-			this.errorMessage = `Пропуск с ID ${passId} уже закрыт.`;
+			this.errorMessage = ERROR_PASS_CLOSED.replace('{0}', passId.toString());
 			this.cdr.markForCheck();
 			return;
 		}
 
 		const reason = prompt('Укажите причину закрытия пропуска:');
 		if (!reason) {
-			this.errorMessage = 'Причина закрытия не указана.';
+			this.errorMessage = ERROR_NO_REASON;
 			this.cdr.markForCheck();
 			return;
 		}
@@ -659,13 +816,13 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		const user = this.userService.getCurrentUser();
 		const closedBy = user?.id;
 		if (!closedBy || !user?.userName) {
-			this.errorMessage = 'Не удалось определить пользователя. Пожалуйста, войдите снова.';
+			this.errorMessage = ERROR_NO_USER;
 			this.cdr.markForCheck();
 			return;
 		}
 
 		this.isLoading = true;
-		this.passService.closePass(passId, reason, closedBy).subscribe({
+		const sub = this.passService.closePass(passId, reason, closedBy).subscribe({
 			next: () => {
 				const updatedActivePasses = (contractor.activePasses ?? []).filter(p => p.id !== passId);
 				const updatedClosedPasses = [
@@ -689,21 +846,24 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				}
 
 				this.pageCache = {};
+
 				this.isLoading = false;
 				this.cdr.markForCheck();
+
 				this.searchPasses(true);
 			},
 			error: (err) => {
-				this.errorMessage = 'Не удалось закрыть пропуск: ' + (err.error?.message || 'Неизвестная ошибка');
+				this.errorMessage = 'Не удалось закрыть пропуск: ' + (err.error?.message || ERROR_UNKNOWN);
 				this.isLoading = false;
 				this.cdr.markForCheck();
 			}
 		});
+		this.subscriptions.push(sub);
 	}
 
 	public addPass(): void {
 		if (!this.areAllFieldsConfirmed()) {
-			this.errorMessage = 'Выберите значения для всех полей';
+			this.errorMessage = ERROR_ALL_FIELDS;
 			this.cdr.markForCheck();
 			return;
 		}
@@ -719,7 +879,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		).subscribe({
 			next: (store) => {
 				if (!store) {
-					this.errorMessage = 'Не удалось найти магазин для создания пропуска.';
+					this.errorMessage = ERROR_NO_STORE;
 					this.isLoading = false;
 					this.cdr.markForCheck();
 					return;
@@ -739,7 +899,8 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 				this.router.navigate(['/transactions/create'], { state: addData });
 			},
 			error: (err) => {
-				this.errorMessage = `Ошибка при загрузке данных магазина: ${err.error?.message || 'Неизвестная ошибка'}`;
+				const message = err?.error?.message || err?.message || ERROR_UNKNOWN;
+				this.errorMessage = `Ошибка при загрузке данных магазина: ${message}`;
 				this.isLoading = false;
 				this.cdr.markForCheck();
 			}
@@ -750,7 +911,7 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 		const key = `${contractorId}-${type}`;
 		const currentState = this.panelStates.get(key) || false;
 		this.panelStates.set(key, !currentState);
-		this.cdr.detectChanges(); // Явное обновление DOM для mat-expansion-panel
+		this.cdr.markForCheck();
 	}
 
 	public isPanelExpanded(contractorId: number, type: 'active' | 'closed'): boolean {
@@ -764,5 +925,171 @@ export class StorePassSearchComponent implements OnInit, OnDestroy, AfterViewIni
 
 	public trackByContractor(index: number, item: { contractor: ContractorPassesDto }): number {
 		return item.contractor.contractorId;
+	}
+
+	get note(): string {
+		return this.noteForm.get('note')?.value || '';
+	}
+
+	saveNote(): void {
+		if (!this.store || !this.noteForm.valid) {
+			console.warn('Сохранение невозможно: store=', this.store, 'noteForm.valid=', this.noteForm.valid);
+			return;
+		}
+
+		const note = this.noteForm.get('note')?.value?.trim() || null;
+		console.log('Сравнение заметок: note=', note, 'store.note=', this.store.note);
+
+		if (note === this.store.note) {
+			console.log('Заметка не изменилась, сохранение не требуется');
+			return;
+		}
+
+		this.isLoading = true;
+		const subscription = this.storeService.updateStoreNote(this.store.id, note).pipe(
+			switchMap(() => {
+				this.store = { ...this.store!, note }; // Временное обновление, будет синхронизировано при загрузке
+				this.noteForm.patchValue({ note: note || '' }, { emitEvent: false });
+				this.noteForm.markAsPristine();
+				this.successMessage = note ? 'Заметка успешно сохранена' : 'Заметка успешно очищена';
+				if (this.showHistory) {
+					return this.historyService.getHistory('store', this.store!.id.toString()).pipe(
+						catchError(err => {
+							console.error('Ошибка при загрузке истории после сохранения заметки:', err);
+							this.errorMessage = 'Не удалось обновить историю изменений.';
+							this.historyEntries.data = [];
+							return of({ generalHistory: [] });
+						})
+					);
+				}
+				return of({ generalHistory: this.historyEntries.data });
+			})
+		).subscribe({
+			next: (response) => {
+				if (this.showHistory) {
+					const historyEntries = Array.isArray(response) ? response : response.generalHistory || [];
+					console.log('Длина historyEntries.data до обновления:', this.historyEntries.data.length);
+					this.historyEntries.data = [...historyEntries];
+					console.log('Длина historyEntries.data после обновления:', this.historyEntries.data.length);
+					if (historyEntries.length === 0) {
+						console.debug('История для торговой точки пуста');
+					}
+				}
+				this.isLoading = false;
+				this.cdr.detectChanges();
+			},
+			error: (err) => {
+				this.errorMessage = 'Ошибка при сохранении заметки: ' + (err.message || 'Неизвестная ошибка');
+				console.error('Ошибка API:', err);
+				this.isLoading = false;
+				this.cdr.detectChanges();
+			}
+		});
+
+		this.subscriptions.push(subscription);
+	}
+
+	clearNote(): void {
+		this.noteForm.patchValue({ note: '' }, { emitEvent: true });
+		this.noteForm.markAsDirty();
+		this.noteForm.markAsTouched();
+		this.cdr.markForCheck();
+		console.log('Поле заметки очищено: noteForm.value=', this.noteForm.get('note')?.value);
+	}
+
+	private initializeHistoryLoad(): void {
+		this.subscriptions.push(
+			this.historyLoad$.pipe(
+				debounceTime(300),
+				distinctUntilChanged(),
+				switchMap(storeId => {
+					console.log(`Начинаем загрузку истории для storeId: ${storeId}`);
+					this.isLoadingHistory = true;
+					this.errorMessage = null;
+					this.cdr.markForCheck();
+					return this.historyService.getHistory('store', storeId).pipe(
+						catchError(err => {
+							console.error('Ошибка при загрузке истории:', err);
+							this.isLoadingHistory = false;
+							this.errorMessage = err.message || 'Не удалось загрузить историю изменений.';
+							this.historyEntries.data = [];
+							this.cdr.markForCheck();
+							return of({ generalHistory: [] });
+						})
+					);
+				}),
+				takeUntil(this.destroy$)
+			).subscribe(response => {
+				console.debug('Получен ответ API истории:', response);
+				const historyEntries = Array.isArray(response) ? response : response.generalHistory || [];
+				console.log('Длина historyEntries.data до обновления:', this.historyEntries.data.length);
+				this.historyEntries.data = [...historyEntries];
+				console.log('Длина historyEntries.data после обновления:', this.historyEntries.data.length);
+				this.isLoadingHistory = false;
+				if (historyEntries.length === 0) {
+					console.debug(`История для торговой точки пуста`);
+				}
+				this.cdr.detectChanges();
+			})
+		);
+	}
+
+	loadHistory(storeId: string): void {
+		console.log(`Инициируем загрузку истории для storeId: ${storeId}`);
+		this.historyLoad$.next(storeId);
+	}
+
+	formatHistoryChanges(changes: { [key: string]: ChangeValue } | undefined): string {
+		if (!changes || !Object.keys(changes).length) {
+			return 'Изменения отсутствуют';
+		}
+
+		return Object.entries(changes)
+			.map(([key, value]) => {
+				const fieldName = this.translateFieldName(key);
+				const oldValue = value.oldValue ?? 'не указано';
+				const newValue = value.newValue ?? 'не указано';
+				return `${fieldName}: с "${oldValue}" на "${newValue}"`;
+			})
+			.join('; ');
+	}
+
+	private translateFieldName(field: string): string {
+		const fieldTranslations: { [key: string]: string } = {
+			building: 'Здание',
+			floor: 'Этаж',
+			line: 'Линия',
+			storeNumber: 'Номер магазина',
+			sortOrder: 'Порядок сортировки',
+			note: 'Заметка',
+			isArchived: 'Статус архивации',
+		};
+		return fieldTranslations[field] || field;
+	}
+
+	toggleHistory(): void {
+		this.showHistory = !this.showHistory;
+		console.log('toggleHistory: showHistory=', this.showHistory, 'store=', this.store?.id);
+		if (this.showHistory && this.store && this.store.id) {
+			this.loadHistory(this.store.id.toString());
+		} else {
+			this.isLoadingHistory = false;
+			this.cdr.markForCheck();
+			if (!this.store) {
+				console.warn('Магазин не загружен, история не может быть запрошена');
+				this.errorMessage = 'Магазин не выбран';
+			}
+		}
+	}
+
+	formatHistoryAction(action: string): string {
+		const actionMap: { [key: string]: string } = {
+			create: 'Создание',
+			update: 'Обновление',
+			archive: 'Архивирование',
+			unarchive: 'Разархивирование',
+			update_note: 'Изменение заметки',
+		};
+		return actionMap[action.toLowerCase()] || action;
 	}
 }

@@ -8,16 +8,13 @@
 	display: flex;
 	flex-direction: column;
 }
-
 .edit-form {
 	padding: 8px 0;
 	margin-bottom: 16px;
 }
-
 mat-grid-list {
 	width: 100%;
 }
-
 mat-grid-tile {
 	display: flex;
 	flex-direction: column;
@@ -26,7 +23,6 @@ mat-grid-tile {
 	padding-top: 6px;
 	overflow: visible;
 }
-
 .note-textarea-field textarea.mat-input-element {
 	width: 100%;
 	box-sizing: border-box;
@@ -39,7 +35,6 @@ mat-grid-tile {
 	font-size: 14px;
 	line-height: 1.4;
 }
-
 .note-container {
 	width: 100%;
 	height: 100%;
@@ -47,19 +42,16 @@ mat-grid-tile {
 	flex-direction: column;
 	justify-content: flex-start;
 }
-
 .form-group {
 	margin-bottom: 16px;
 	margin-top: 8px;
 }
-
 .form-group label {
 	font-weight: 600;
 	color: #6b7280;
 	margin-bottom: 4px;
 	display: block;
 }
-
 .form-control-file {
 	width: 100%;
 	padding: 8px;
@@ -67,11 +59,9 @@ mat-grid-tile {
 	border-radius: 4px;
 	background-color: #ffffff;
 }
-
 .hidden-file-input {
 	display: none;
 }
-
 .photo-previews,
 .document-photo-previews {
 	display: flex;
@@ -79,45 +69,9 @@ mat-grid-tile {
 	gap: 16px;
 	margin-top: 8px;
 }
-
-.photo-thumbnail {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	width: 100px;
-	height: auto;
-	border: 1px solid #e5e7eb;
-	border-radius: 4px;
-	background-color: #ffffff;
-}
-
-.photo-thumbnail img {
-	width: 100px;
-	height: 100px;
-	object-fit: cover;
-}
-
-.photo-thumbnail.add-photo {
-	cursor: pointer;
-	background-color: #f3f4f6;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	transition: background-color 0.2s ease;
-	width: 100px;
-	height: 100px;
-}
-
 .photo-thumbnail.add-photo:hover {
 	background-color: #e5e7eb;
 }
-
-.add-icon {
-	font-size: 40px;
-	color: #6b7280;
-	font-weight: bold;
-}
-
 .button-container {
 	width: 100%;
 	display: flex;
@@ -126,7 +80,6 @@ mat-grid-tile {
 	min-height: 28px;
 	margin-bottom: 10px;
 }
-
 .action-btn.btn-sm {
 	display: block !important;
 	font-size: 12px;
@@ -142,22 +95,9 @@ mat-grid-tile {
 	border: none;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
-
 @media (max-width: 768px) {
-
 	.photo-previews,
 	.document-photo-previews {
 		gap: 8px;
-	}
-
-	.photo-thumbnail,
-	.photo-thumbnail.add-photo,
-	.photo-thumbnail img {
-		width: 80px;
-		height: 80px;
-	}
-
-	.add-icon {
-		font-size: 32px;
 	}
 }

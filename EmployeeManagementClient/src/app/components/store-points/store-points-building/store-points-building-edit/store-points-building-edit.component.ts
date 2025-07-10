@@ -5,10 +5,28 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { StorePointsService } from '../../../../services/store-points.service';
 import { Building } from '../../../../models/store-points.model';
 
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 @Component({
 	selector: 'app-store-points-building-edit',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule
+	],
 	templateUrl: './store-points-building-edit.component.html',
 	styleUrls: ['./store-points-building-edit.component.css']
 })
@@ -67,5 +85,9 @@ export class StorePointsBuildingEditComponent implements OnInit {
 		} else {
 			this.errorMessage = 'Пожалуйста, заполните все обязательные поля.';
 		}
+	}
+
+	cancel(): void {
+		this.router.navigate(['/building']);
 	}
 }

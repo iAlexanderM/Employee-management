@@ -4,10 +4,29 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { StorePointsService } from '../../../../services/store-points.service';
 import { Router } from '@angular/router';
 
+// Angular Material Imports
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 @Component({
 	selector: 'app-store-points-floor-create',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatCardModule,
+		MatButtonModule,
+		MatInputModule,
+		MatFormFieldModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule
+	],
 	templateUrl: './store-points-floor-create.component.html',
 	styleUrls: ['./store-points-floor-create.component.css']
 })
@@ -51,5 +70,9 @@ export class StorePointsFloorCreateComponent {
 		} else {
 			this.errorMessage = 'Пожалуйста, заполните обязательные поля.';
 		}
+	}
+
+	cancel(): void {
+		this.router.navigate(['/floor']);
 	}
 }

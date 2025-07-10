@@ -10,7 +10,6 @@
 	align-items: center;
 	z-index: 1000;
 }
-
 .modal-content {
 	max-width: 1920px;
 	width: 90%;
@@ -19,52 +18,40 @@
 	background-color: #fefaf6;
 	padding: 2rem;
 }
-
 .modal-content mat-card-content {
 	background-color: #fefaf6;
 	padding: 12px;
 	border: 1px solid #d6d3d1;
 	flex-grow: 1;
 }
-
 .section-title {
 	font-size: 1.5rem;
 	font-weight: 600;
 	color: #111827;
 }
-
 .search-section,
 .pagination-section,
 .table-section {
 	margin-bottom: 40px;
 }
-
 .search-form-container {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
 }
-
-.form-field {
-	width: 50%;
-}
-
 .actions {
 	display: flex;
 	gap: 8px;
 }
-
 .pagination-container {
 	display: flex;
 	justify-content: flex-end;
 	margin-top: 16px;
 }
-
 .pagination-squares {
 	display: flex;
 	gap: 8px;
 }
-
 .square {
 	padding: 8px 12px;
 	border: 1px solid #e5e7eb;
@@ -76,33 +63,27 @@
 	background-color: #ffffff;
 	transition: all 0.2s ease;
 }
-
 .square.active {
 	background-color: #3786f3;
 	color: #ffffff;
 	border-color: #3786f3;
 }
-
 .square.disabled {
 	cursor: default;
 	color: #6b7280;
 	background-color: #f3f4f6;
 	border-color: #e5e7eb;
 }
-
 .table-container {
 	width: 100%;
 }
-
 .data-table {
 	width: 100%;
 }
-
 .data-table mat-header-row,
 .data-table mat-row {
 	height: 60px;
 }
-
 .data-table mat-header-cell,
 .data-table mat-cell {
 	border: 1px solid #e5e7eb;
@@ -112,55 +93,41 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
-
 .data-table .mat-column-id,
 .data-table .mat-column-sortOrder {
 	width: 10%;
 	max-width: 10%;
 	min-width: 10%;
 }
-
 .data-table .mat-column-building {
 	width: 25%;
 }
-
 .data-table .mat-column-floor {
 	width: 15%;
 }
-
 .data-table .mat-column-line {
 	width: 20%;
 }
-
 .data-table .mat-column-storeNumber {
 	width: 20%;
 }
-
 .text-muted {
 	color: #6b7280;
 }
-
 .text-danger {
 	color: #dc3545;
 	margin-top: 8px;
 }
-
 .action-btn {
 	font-size: 14px;
 }
-
 .section-card .mat-mdc-card-content {
 	padding: 12px;
 	border: 1px solid #d6d3d1;
 	flex-grow: 1;
 }
-
 @media (max-width: 768px) {
 	.modal-content {
 		padding: 1rem;
-	}
-
-	.form-field {
-		width: 100%;
 	}
 }

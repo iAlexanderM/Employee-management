@@ -1,13 +1,17 @@
 import { User } from './pass.model';
 
 export interface PassByStoreResponseDto {
-	storeId: number;
+	id: number;
 	building: string;
 	floor: string;
 	line: string;
 	storeNumber: string;
-	contractors?: ContractorPassesDto[];
+	note?: string | null;
+	createdAt?: string;
+	sortOrder?: number;
+	isArchived?: boolean;
 	totalCount?: number;
+	contractors?: ContractorPassesDto[];
 }
 
 export interface ContractorPassesDto {

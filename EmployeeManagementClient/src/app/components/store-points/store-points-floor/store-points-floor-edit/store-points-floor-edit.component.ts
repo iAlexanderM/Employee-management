@@ -5,10 +5,29 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { StorePointsService } from '../../../../services/store-points.service';
 import { Floor } from '../../../../models/store-points.model';
 
+// Angular Material Imports
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 @Component({
 	selector: 'app-store-points-floor-edit',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatCardModule,
+		MatButtonModule,
+		MatInputModule,
+		MatFormFieldModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule
+	],
 	templateUrl: './store-points-floor-edit.component.html',
 	styleUrls: ['./store-points-floor-edit.component.css']
 })
@@ -67,5 +86,9 @@ export class StorePointsFloorEditComponent implements OnInit {
 		} else {
 			this.errorMessage = 'Пожалуйста, заполните все обязательные поля.';
 		}
+	}
+
+	cancel(): void {
+		this.router.navigate(['/floor']);
 	}
 }

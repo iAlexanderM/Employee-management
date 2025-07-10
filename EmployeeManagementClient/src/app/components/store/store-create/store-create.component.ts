@@ -9,10 +9,31 @@ import { Store } from '../../../models/store.model';
 import { StoreSelectOrAddModalComponent } from '../../modals/store-select-or-add-modal/store-select-or-add-modal.component';
 import { Subscription } from 'rxjs';
 
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
+
 @Component({
 	selector: 'app-store-create',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule, StoreSelectOrAddModalComponent],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		StoreSelectOrAddModalComponent,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule,
+		CdkTextareaAutosize
+	],
 	templateUrl: './store-create.component.html',
 	styleUrls: ['./store-create.component.css']
 })
@@ -32,10 +53,10 @@ export class StoreCreateComponent implements OnInit, OnDestroy {
 		private router: Router
 	) {
 		this.storeForm = this.fb.group({
-			building: [{ value: '', disabled: true }, [Validators.required, Validators.maxLength(50)]],
-			floor: [{ value: '', disabled: true }, [Validators.required, Validators.maxLength(10)]],
-			line: [{ value: '', disabled: true }, [Validators.required, Validators.maxLength(10)]],
-			storeNumber: [{ value: '', disabled: true }, [Validators.required, Validators.maxLength(20)]],
+			building: ['', [Validators.required, Validators.maxLength(50)]],
+			floor: ['', [Validators.required, Validators.maxLength(10)]],
+			line: ['', [Validators.required, Validators.maxLength(10)]],
+			storeNumber: ['', [Validators.required, Validators.maxLength(20)]],
 			sortOrder: [0, [Validators.required, Validators.min(0)]],
 			note: ['', [Validators.maxLength(500)]]
 		});

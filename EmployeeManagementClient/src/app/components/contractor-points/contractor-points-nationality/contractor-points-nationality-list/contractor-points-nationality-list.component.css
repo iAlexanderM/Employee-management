@@ -8,43 +8,35 @@
 	display: flex;
 	flex-direction: column;
 }
-
 .search-form {
 	padding: 8px 0;
 	margin-bottom: 16px;
 }
-
 mat-grid-list {
 	width: 40%;
 }
-
 mat-grid-tile {
 	align-items: flex-start;
 	padding-top: 6px;
 }
-
 .form-group {
 	margin-bottom: 16px;
 }
-
 .form-group label {
 	font-weight: 600;
 	color: #6b7280;
 	margin-bottom: 4px;
 	display: block;
 }
-
 .pagination-container {
 	display: flex;
 	justify-content: flex-end;
 	margin-top: 16px;
 }
-
 .pagination-squares {
 	display: flex;
 	gap: 8px;
 }
-
 .square {
 	padding: 8px 12px;
 	border: 1px solid #e5e7eb;
@@ -56,20 +48,17 @@ mat-grid-tile {
 	background-color: #ffffff;
 	transition: all 0.2s ease;
 }
-
 .square.active {
 	background-color: #3786f3;
 	color: #ffffff;
 	border-color: #3786f3;
 }
-
 .square.disabled {
 	cursor: default;
 	color: #6b7280;
 	background-color: #f3f4f6;
 	border-color: #e5e7eb;
 }
-
 /* Contractor Image */
 .contractor-img {
 	width: 80px;
@@ -78,19 +67,10 @@ mat-grid-tile {
 	border-radius: 4px;
 	border: 1px solid #e5e7eb;
 }
-
-.page-size-container {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	justify-content: flex-end;
-}
-
 .page-size-container span {
 	font-size: 14px;
 	color: #111827;
 }
-
 .page-size-container mat-select {
 	width: 80px;
 	border: 1px solid #e5e7eb;
@@ -99,13 +79,8 @@ mat-grid-tile {
 	font-size: 14px;
 	background-color: #ffffff;
 }
-
 @media (max-width: 768px) {
 	.main-content {
 		padding: 1rem;
-	}
-
-	.page-size-container {
-		justify-content: flex-start;
 	}
 }

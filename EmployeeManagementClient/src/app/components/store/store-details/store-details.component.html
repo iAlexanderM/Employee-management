@@ -1,104 +1,128 @@
-<div class="container mt-4" *ngIf="store" @fadeIn>
-	<h2>Детали торговой точки</h2>
-	<div class="card">
-		<div class="card-body">
-			<div class="row">
-				<div class="col-md-6">
-					<p><strong>ID:</strong> {{ store.id }}</p>
-					<p><strong>Здание:</strong> {{ store.building }}</p>
-					<p><strong>Этаж:</strong> {{ store.floor }}</p>
-					<p><strong>Линия:</strong> {{ store.line }}</p>
-				</div>
-				<div class="col-md-6">
-					<p><strong>Торговая точка:</strong> {{ store.storeNumber }}</p>
-					<p><strong>Статус:</strong> {{ store.isArchived ? 'Архивировано' : 'Активно' }}</p>
-					<p><strong>Создано:</strong> {{ store.createdAt | date: 'dd.MM.yyyy' }}</p>
-					<p><strong>Порядок сортировки:</strong> {{ store.sortOrder }}</p>
-				</div>
-			</div>
-
-			<div class="mt-3">
-				<form [formGroup]="noteForm">
-					<div class="form-group">
-						<label for="note">Заметка:</label>
-						<textarea id="note" formControlName="note" class="form-control" rows="4"
-							placeholder="Введите заметку"></textarea>
-						<div *ngIf="noteForm.get('note')?.hasError('maxlength')" class="text-danger">
-							Заметка не должна превышать 500 символов.
+<div class="main-content">
+	<div class="content-grid" *ngIf="store">
+		<div class="column-personal">
+			<mat-card class="section-card">
+				<mat-card-header>
+					<mat-card-title class="section-title">Информация о торговой точке</mat-card-title>
+				</mat-card-header>
+				<mat-card-content>
+					<dl class="info-list">
+						<div class="info-item">
+							<dt class="info-label">Здание</dt>
+							<dd class="info-value">{{ store.building || 'Не указано' }}</dd>
 						</div>
-					</div>
-					<div class="mt-2">
-						<button class="btn btn-primary btn-equal" (click)="saveNote()"
-							[disabled]="!noteForm.valid || noteForm.pristine">
-							Сохранить заметку
-						</button>
-					</div>
-				</form>
-			</div>
+						<div class="info-item">
+							<dt class="info-label">Этаж</dt>
+							<dd class="info-value">{{ store.floor || 'Не указано' }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Линия</dt>
+							<dd class="info-value">{{ store.line || 'Не указано' }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Торговая точка</dt>
+							<dd class="info-value">{{ store.storeNumber || 'Не указано' }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Порядок сортировки</dt>
+							<dd class="info-value">{{ store.sortOrder || 'Не указано' }}</dd>
+						</div>
+					</dl>
+				</mat-card-content>
+			</mat-card>
+			<mat-card class="section-card">
+				<mat-card-header>
+					<mat-card-title class="section-title">Дополнительная информация</mat-card-title></mat-card-header>
+				<mat-card-content>
+					<dl class="info-list">
+						<div class="info-item">
+							<dt class="info-label">Статус</dt>
+							<dd class="info-value">{{ store.isArchived ? 'Архивировано' : 'Активно' }}</dd>
+						</div>
+						<div class="info-item">
+							<dt class="info-label">Дата создания</dt>
+							<dd class="info-value">{{ store.createdAt | date: 'dd.MM.yyyy' }}</dd>
+						</div>
+					</dl>
+				</mat-card-content>
+			</mat-card>
+		</div>
 
-			<div *ngIf="errorMessage" class="alert alert-danger mt-3">
-				{{ errorMessage }}
-			</div>
+		<div class="column-secondary">
+			<mat-card class="section-card"><mat-card-header>
+					<mat-card-title class="section-title">Заметка</mat-card-title></mat-card-header>
+				<mat-card-content>
+					<form [formGroup]="noteForm" (ngSubmit)="saveNote()" class="note-form">
+						<mat-form-field appearance="outline" class="full-width-expand">
+							<textarea matInput #noteTextarea formControlName="note" maxlength="500"
+								placeholder="Введите заметку" aria-label="Заметка торговой точки" cdkTextareaAutosize
+								cdkAutosizeMinRows="3" cdkAutosizeMaxRows="10"></textarea>
+							<mat-error *ngIf="noteForm.get('note')?.hasError('maxlength')">Заметка не должна превышать
+								500 символов</mat-error>
+						</mat-form-field>
+						<div class="action-controls">
+							<button mat-raised-button color="primary" type="submit"
+								[disabled]="!noteForm.valid || noteForm.pristine" aria-label="Сохранить заметку">
+								Сохранить
+							</button>
+							<button mat-raised-button color="accent" type="button"
+								(click)="noteForm.reset({ note: store.note })" [disabled]="noteForm.pristine"
+								aria-label="Отменить изменения заметки">
+								Отменить
+							</button>
+						</div>
+					</form>
+				</mat-card-content>
+			</mat-card>
+		</div>
+
+		<div class="column-full">
+			<mat-card class="section-card">
+				<mat-card-content>
+					<button mat-raised-button color="primary" class="action-btn" (click)="toggleHistory()"
+						[attr.aria-label]="showHistory ? 'Скрыть историю изменений' : 'Показать историю изменений'">
+						{{ showHistory ? 'Скрыть историю' : 'Показать историю' }}
+					</button>
+					<div *ngIf="showHistory" class="history-content">
+						<mat-card-title class="section-title">История изменений</mat-card-title>
+						<mat-spinner *ngIf="isLoadingHistory" diameter="40" aria-label="Загрузка..."></mat-spinner>
+						<table mat-table class="history-table" [dataSource]="historyEntries"
+							*ngIf="!isLoadingHistory && historyEntries.length > 0" role="grid"
+							aria-label="Таблица истории изменений торговой точки">
+							<ng-container matColumnDef="timestamp">
+								<th mat-header-cell *matHeaderCellDef>Дата и время</th>
+								<td mat-cell *matCellDef="let entry">{{ entry.timestamp | date:'dd.MM.yyyy HH:mm' }}
+								</td>
+							</ng-container>
+							<ng-container matColumnDef="action">
+								<th mat-header-cell *matHeaderCellDef>Действие</th>
+								<td mat-cell *matCellDef="let entry">{{ formatHistoryAction(entry.action) }}</td>
+							</ng-container>
+							<ng-container matColumnDef="user">
+								<th mat-header-cell *matHeaderCellDef>Пользователь</th>
+								<td mat-cell *matCellDef="let entry">{{ userMap[entry.user] || 'Неизвестно' }}</td>
+							</ng-container>
+							<ng-container matColumnDef="details">
+								<th mat-header-cell *matHeaderCellDef>Детали</th>
+								<td mat-cell *matCellDef="let entry">{{ entry.details || 'Нет подробностей' }}</td>
+							</ng-container>
+							<ng-container matColumnDef="changes">
+								<th mat-header-cell *matHeaderCellDef>Изменения</th>
+								<td mat-cell *matCellDef="let entry">{{ formatHistoryChanges(entry.changes) }}</td>
+							</ng-container>
+							<tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
+							<tr mat-row *matRowDef="let row; columns: historyColumns;"></tr>
+						</table>
+						<mat-card *ngIf="!isLoadingHistory && historyEntries.length === 0" class="error-message">
+							История изменений не найдена.
+						</mat-card>
+					</div>
+				</mat-card-content>
+			</mat-card>
 		</div>
 	</div>
 
-	<div class="mt-4">
-		<button class="btn btn-info btn-equal" (click)="toggleHistory()">
-			{{ showHistory ? 'Скрыть историю' : 'Показать историю' }}
-		</button>
-		<div *ngIf="showHistory" class="mt-3">
-			<h4>История изменений</h4>
-			<div *ngIf="isLoadingHistory" class="text-center">
-				<div class="spinner-border" role="status">
-					<span class="visually-hidden">Загрузка...</span>
-				</div>
-			</div>
-			<table class="table table-bordered" *ngIf="historyEntries.length > 0 && !isLoadingHistory">
-				<thead>
-					<tr>
-						<th>Дата</th>
-						<th>Действие</th>
-						<th>Детали</th>
-						<th>Пользователь</th>
-						<th>Изменения</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr *ngFor="let entry of historyEntries">
-						<td>{{ entry.timestamp | date: 'dd.MM.yyyy HH:mm' }}</td>
-						<td>{{ formatHistoryAction(entry.action) }}</td>
-						<td>{{ entry.details }}</td>
-						<td>{{ userMap[entry.user] || 'Неизвестно' }}</td>
-						<td>{{ formatHistoryChanges(entry.changes) }}</td>
-						<td>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-			<p *ngIf="historyEntries.length === 0 && !isLoadingHistory" class="text-muted">
-				Нет записей в истории.
-			</p>
-		</div>
+	<div *ngIf="!store && !errorMessage" class="text-center mt-4">
+		<mat-spinner diameter="40" aria-label="Загрузка..."></mat-spinner>
 	</div>
-
-	<div class="mt-4">
-		<button class="btn btn-secondary btn-equal" (click)="navigateBack()">Назад</button>
-		<button class="btn btn-primary btn-equal" (click)="editStore()">Редактировать</button>
-		<button *ngIf="!store.isArchived" class="btn btn-danger btn-equal" (click)="archiveStore()">
-			Архивировать
-		</button>
-		<button *ngIf="store.isArchived" class="btn btn-success btn-equal" (click)="unarchiveStore()">
-			Разархивировать
-		</button>
-	</div>
-</div>
-
-<div *ngIf="!store && !errorMessage" class="text-center mt-4">
-	<div class="spinner-border" role="status">
-		<span class="visually-hidden">Загрузка...</span>
-	</div>
-</div>
-
-<div *ngIf="errorMessage && !store" class="alert alert-danger mt-4">
-	{{ errorMessage }}
 </div>

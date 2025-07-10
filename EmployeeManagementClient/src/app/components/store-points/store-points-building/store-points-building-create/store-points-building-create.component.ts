@@ -4,10 +4,28 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { StorePointsService } from '../../../../services/store-points.service';
 import { Router } from '@angular/router';
 
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 @Component({
 	selector: 'app-store-points-building-create',
 	standalone: true,
-	imports: [CommonModule, ReactiveFormsModule],
+	imports: [
+		CommonModule,
+		ReactiveFormsModule,
+		MatCardModule,
+		MatFormFieldModule,
+		MatInputModule,
+		MatButtonModule,
+		MatIconModule,
+		MatGridListModule,
+		MatTooltipModule
+	],
 	templateUrl: './store-points-building-create.component.html',
 	styleUrls: ['./store-points-building-create.component.css']
 })
@@ -20,14 +38,13 @@ export class StorePointsBuildingCreateComponent {
 		private storePointsService: StorePointsService,
 		private router: Router
 	) {
-		// Инициализация формы с контролом и валидаторами
 		this.buildingForm = this.fb.group({
 			buildingName: ['', Validators.required],
 		});
 	}
 
 	addBuilding(): void {
-		this.errorMessage = ''; // Сброс ошибки перед началом
+		this.errorMessage = '';
 
 		if (this.buildingForm.valid) {
 			const buildingName = this.buildingForm.get('buildingName')?.value.trim();
@@ -51,5 +68,9 @@ export class StorePointsBuildingCreateComponent {
 		} else {
 			this.errorMessage = 'Пожалуйста, заполните обязательные поля.';
 		}
+	}
+
+	cancel(): void {
+		this.router.navigate(['/building']);
 	}
 }
