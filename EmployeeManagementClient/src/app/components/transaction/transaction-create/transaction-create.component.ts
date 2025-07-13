@@ -37,7 +37,6 @@ import { ContractorModalComponent } from '../../modals/contractor-modal/contract
 import { StoreModalComponent } from '../../modals/store-modal/store-modal.component';
 import { PassTypeModalComponent } from '../../modals/pass-type-modal/pass-type-modal.component';
 import { PositionModalComponent } from '../../modals/position-modal/position-modal.component';
-import { ActiveTokenComponent } from '../../modals/active-token/active-token-floating.component';
 
 interface TransactionFormData {
 	contractor: ContractorDto | null;
@@ -103,8 +102,7 @@ const MY_DATE_FORMATS = {
 		ContractorModalComponent,
 		StoreModalComponent,
 		PassTypeModalComponent,
-		PositionModalComponent,
-		ActiveTokenComponent,
+		PositionModalComponent
 	],
 	providers: [
 		{ provide: DateAdapter, useClass: AppDateAdapter, deps: [MAT_DATE_LOCALE] },

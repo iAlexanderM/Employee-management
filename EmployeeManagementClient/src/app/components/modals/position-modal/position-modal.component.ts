@@ -1,9 +1,10 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges, Renderer2, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Position } from '../../../models/position.model';
 import { PositionService } from '../../../services/position.service';
-import { Observable } from 'rxjs';
+import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -31,7 +32,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 	templateUrl: './position-modal.component.html',
 	styleUrls: ['./position-modal.component.css']
 })
-export class PositionModalComponent implements OnInit, OnChanges {
+export class PositionModalComponent implements OnInit, OnChanges, OnDestroy {
 	@Input() isVisible: boolean = false;
 	@Input() mode: 'select' | 'add' = 'select';
 	@Output() modalClose = new EventEmitter<void>();
@@ -42,7 +43,6 @@ export class PositionModalComponent implements OnInit, OnChanges {
 	paginationForm: FormGroup;
 	addForm: FormGroup;
 	errorMessage: string = '';
-
 	currentPage = 1;
 	pageSize = 25;
 	pageSizeOptions: number[] = [25, 50, 100];
@@ -53,7 +53,18 @@ export class PositionModalComponent implements OnInit, OnChanges {
 	isSearchMode: boolean = false;
 	visiblePages: Array<number | string> = [];
 
-	constructor(private fb: FormBuilder, private positionService: PositionService) {
+	private loadSubscription: Subscription | null = null;
+	private searchSubscription: Subscription | null = null;
+	private addSubscription: Subscription | null = null;
+	private pageSizeSubscription: Subscription | null = null;
+
+	constructor(
+		private fb: FormBuilder,
+		private positionService: PositionService,
+		private renderer: Renderer2,
+		private el: ElementRef,
+		private snackBar: MatSnackBar
+	) {
 		this.searchForm = this.fb.group({
 			Id: [''],
 			Name: ['']
@@ -69,8 +80,9 @@ export class PositionModalComponent implements OnInit, OnChanges {
 	}
 
 	ngOnInit(): void {
+		this.renderer.appendChild(document.body, this.el.nativeElement);
 		this.isSearchMode = false;
-		this.paginationForm.get('pageSize')?.valueChanges.subscribe(value => {
+		this.pageSizeSubscription = this.paginationForm.get('pageSize')!.valueChanges.subscribe(value => {
 			this.pageSize = Number(value);
 			this.onPageSizeChange();
 		});
@@ -82,6 +94,14 @@ export class PositionModalComponent implements OnInit, OnChanges {
 		}
 	}
 
+	ngOnDestroy(): void {
+		if (this.loadSubscription) this.loadSubscription.unsubscribe();
+		if (this.searchSubscription) this.searchSubscription.unsubscribe();
+		if (this.addSubscription) this.addSubscription.unsubscribe();
+		if (this.pageSizeSubscription) this.pageSizeSubscription.unsubscribe();
+		this.renderer.removeChild(document.body, this.el.nativeElement);
+	}
+
 	closeModal(): void {
 		this.modalClose.emit();
 	}
@@ -91,66 +111,77 @@ export class PositionModalComponent implements OnInit, OnChanges {
 	}
 
 	loadItems(): void {
-		this.positionService.getPositions(this.currentPage, this.pageSize).subscribe(
-			(data: any) => {
-				this.items = data.positions || [];
-				this.filteredItems = this.items;
-				this.totalItems = data.total || this.items.length;
-				this.calculateTotalPages();
-				this.updateVisiblePages();
-			},
-			(error: any) => {
-				this.errorMessage = 'Ошибка при загрузке данных: ' + error.message;
-				console.error(error);
-			}
-		);
+		this.loadSubscription = this.positionService.getPositions(this.currentPage, this.pageSize)
+			.pipe(take(1))
+			.subscribe({
+				next: (data: any) => {
+					this.items = data.positions || [];
+					this.filteredItems = this.items;
+					this.totalItems = data.total || this.items.length;
+					this.calculateTotalPages();
+					this.updateVisiblePages();
+				},
+				error: (error: any) => {
+					this.errorMessage = 'Ошибка при загрузке данных: ' + error.message;
+					this.snackBar.open('Ошибка при загрузке данных', 'Закрыть', { duration: 3000 });
+					console.error(error);
+				}
+			});
 	}
 
 	searchItems(): void {
 		this.isSearchMode = true;
 		this.currentPage = 1;
 		const criteria = this.prepareSearchCriteria();
-		this.positionService.searchPositions(criteria).subscribe(
-			(data: any) => {
-				this.items = data.positions || [];
-				this.totalItems = this.items.length;
-				this.calculateTotalPages();
-				this.updateVisiblePages();
-				this.updateDisplayedItems();
-			},
-			(error: any) => {
-				this.errorMessage = 'Ошибка при выполнении поиска: ' + error.message;
-				console.error(error);
-			}
-		);
+		this.searchSubscription = this.positionService.searchPositions(criteria)
+			.pipe(take(1))
+			.subscribe({
+				next: (data: any) => {
+					this.items = data.positions || [];
+					this.totalItems = this.items.length;
+					this.calculateTotalPages();
+					this.updateVisiblePages();
+					this.updateDisplayedItems();
+				},
+				error: (error: any) => {
+					this.errorMessage = 'Ошибка при выполнении поиска: ' + error.message;
+					this.snackBar.open('Ошибка при поиске', 'Закрыть', { duration: 3000 });
+					console.error(error);
+				}
+			});
 	}
 
 	addItem(): void {
 		if (this.addForm.invalid) {
 			this.errorMessage = 'Пожалуйста, введите название.';
+			this.snackBar.open('Пожалуйста, введите название', 'Закрыть', { duration: 3000 });
 			return;
 		}
 
-		const trimmedName = this.addForm.get('newItemName')?.value.trim();
+		const trimmedName = this.addForm.get('newItemName')!.value.trim();
 		if (!trimmedName) {
 			this.errorMessage = 'Название не может быть пустым.';
+			this.snackBar.open('Название не может быть пустым', 'Закрыть', { duration: 3000 });
 			return;
 		}
 
-		this.positionService.addPosition(trimmedName).subscribe(
-			(data: any) => {
-				this.itemAdded.emit(data);
-				this.addForm.reset();
-				if (this.mode === 'select') this.loadItems(); // Обновляем список после добавления
-				this.closeModal();
-			},
-			(error: any) => {
-				this.errorMessage = error.status === 409
-					? 'Запись с таким именем уже существует.'
-					: 'Ошибка при добавлении: ' + error.message;
-				console.error(error);
-			}
-		);
+		this.addSubscription = this.positionService.addPosition(trimmedName)
+			.pipe(take(1))
+			.subscribe({
+				next: (data: any) => {
+					this.itemAdded.emit(data);
+					this.addForm.reset();
+					if (this.mode === 'select') this.loadItems();
+					this.closeModal();
+				},
+				error: (error: any) => {
+					this.errorMessage = error.status === 409
+						? 'Запись с таким именем уже существует.'
+						: 'Ошибка при добавлении: ' + error.message;
+					this.snackBar.open(this.errorMessage, 'Закрыть', { duration: 3000 });
+					console.error(error);
+				}
+			});
 	}
 
 	prepareSearchCriteria(): { [key: string]: any } {
@@ -164,6 +195,7 @@ export class PositionModalComponent implements OnInit, OnChanges {
 	selectItem(item: Position): void {
 		if (!item.name) {
 			this.errorMessage = 'Ошибка: у элемента отсутствует название.';
+			this.snackBar.open('Ошибка: у элемента отсутствует название', 'Закрыть', { duration: 3000 });
 			return;
 		}
 		this.itemSelected.emit(item.name);

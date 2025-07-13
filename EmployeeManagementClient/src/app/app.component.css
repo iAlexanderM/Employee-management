@@ -1,16 +1,20 @@
 .app-layout {
 	display: flex;
 	flex-direction: column;
-	height: 100vh;
+	height: 98vh;
 }
 
 .sidebar-container-wrapper {
 	width: 300px;
 	background-color: #fefaf6;
+	z-index: 1000;
 }
 
 .content-container {
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1;
+	scrollbar-gutter: stable;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(107, 114, 128, 0.5) #f1f1f1;
 }

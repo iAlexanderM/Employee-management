@@ -1,5 +1,5 @@
 <div class="modal-overlay" (click)="closeModal()">
-	<mat-card class="modal-content" (click)="stopPropagation($event)">
+	<mat-card class="modal-content modal-content--select" (click)="stopPropagation($event)">
 		<mat-card-header>
 			<mat-card-title class="section-title">Выбрать Контрагента</mat-card-title>
 		</mat-card-header>
@@ -52,95 +52,100 @@
 						</div>
 					</form>
 				</div>
-			</div>
 
-			<!-- Пагинация сверху -->
-			<div *ngIf="totalPages > 1" class="pagination-section">
-				<div class="pagination-container">
-					<div class="pagination-squares">
-						<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-							[class.disabled]="page === '...'" (click)="onPageClick(page)">
-							{{ page }}
-						</span>
+				<div class="page-size-section">
+					<div class="page-size-container">
+						<span>Элементов на странице:</span>
+						<mat-select [(value)]="pageSize"
+							(selectionChange)="paginationForm.get('pageSize')!.setValue($event.value); onPageSizeChange()">
+							<mat-option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</mat-option>
+						</mat-select>
 					</div>
 				</div>
-			</div>
 
-			<!-- Таблица -->
-			<div class="table-section">
-				<mat-table [dataSource]="displayedContractors" class="data-table">
-					<ng-container matColumnDef="id">
-						<mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
-						<mat-cell *matCellDef="let contractor">{{ contractor.id }}</mat-cell>
-					</ng-container>
-					<ng-container matColumnDef="sortOrder">
-						<mat-header-cell *matHeaderCellDef>Сортировка</mat-header-cell>
-						<mat-cell *matCellDef="let contractor">{{ contractor.sortOrder }}</mat-cell>
-					</ng-container>
-					<ng-container matColumnDef="photo">
-						<mat-header-cell *matHeaderCellDef>Фото</mat-header-cell>
-						<mat-cell *matCellDef="let contractor">
-							<img *ngIf="getFirstPhoto(contractor)" [src]="getFirstPhoto(contractor)"
-								alt="Фото контрагента" class="contractor-img" loading="lazy" />
-							<span *ngIf="!getFirstPhoto(contractor)" class="text-muted">Нет фото</span>
-						</mat-cell>
-					</ng-container>
-					<ng-container matColumnDef="lastName">
-						<mat-header-cell *matHeaderCellDef>Фамилия</mat-header-cell>
-						<mat-cell *matCellDef="let contractor">{{ contractor.lastName }}</mat-cell>
-					</ng-container>
-					<ng-container matColumnDef="firstName">
-						<mat-header-cell *matHeaderCellDef>Имя</mat-header-cell>
-						<mat-cell *matCellDef="let contractor">{{ contractor.firstName }}</mat-cell>
-					</ng-container>
-					<ng-container matColumnDef="middleName">
-						<mat-header-cell *matHeaderCellDef>Отчество</mat-header-cell>
-						<mat-cell *matCellDef="let contractor">{{ contractor.middleName }}</mat-cell>
-					</ng-container>
-					<ng-container matColumnDef="birthDate">
-						<mat-header-cell *matHeaderCellDef>Дата рождения</mat-header-cell>
-						<mat-cell *matCellDef="let contractor">{{ contractor.birthDate | date: 'dd.MM.yyyy'
-							}}</mat-cell>
-					</ng-container>
-					<ng-container matColumnDef="passportSerialNumber">
-						<mat-header-cell *matHeaderCellDef>Серия и номер паспорта</mat-header-cell>
-						<mat-cell *matCellDef="let contractor">{{ contractor.passportSerialNumber }}</mat-cell>
-					</ng-container>
-					<ng-container matColumnDef="actions">
-						<mat-header-cell *matHeaderCellDef>Действия</mat-header-cell>
-						<mat-cell *matCellDef="let contractor">
-							<button mat-icon-button color="primary" class="action-btn"
-								(click)="navigateToDetails(contractor.id)" matTooltip="Просмотреть">
-								<mat-icon>visibility</mat-icon>
-							</button>
-							<button mat-icon-button color="accent" class="action-btn"
-								(click)="navigateToEdit(contractor.id)" matTooltip="Редактировать">
-								<mat-icon>edit</mat-icon>
-							</button>
-						</mat-cell>
-					</ng-container>
-					<mat-header-row
-						*matHeaderRowDef="['id', 'sortOrder', 'photo', 'lastName', 'firstName', 'middleName', 'birthDate', 'passportSerialNumber', 'actions']"></mat-header-row>
-					<mat-row
-						*matRowDef="let row; columns: ['id', 'sortOrder', 'photo', 'lastName', 'firstName', 'middleName', 'birthDate', 'passportSerialNumber', 'actions']"
-						(click)="selectContractor(row)"></mat-row>
-				</mat-table>
-				<div *ngIf="displayedContractors.length === 0 && !errorMessage" class="text-center mt-4">
-					<p class="text-muted">Нет контрагентов для отображения.</p>
+				<div *ngIf="totalPages > 1" class="pagination-section">
+					<div class="pagination-container">
+						<div class="pagination-squares">
+							<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+								[class.disabled]="page === '...'" (click)="onPageClick(page)">
+								{{ page }}
+							</span>
+						</div>
+					</div>
 				</div>
-				<div *ngIf="errorMessage" class="text-danger">
-					{{ errorMessage }}
-				</div>
-			</div>
 
-			<!-- Пагинация снизу -->
-			<div *ngIf="totalPages > 1" class="pagination-section">
-				<div class="pagination-container">
-					<div class="pagination-squares">
-						<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
-							[class.disabled]="page === '...'" (click)="onPageClick(page)">
-							{{ page }}
-						</span>
+				<div class="table-section">
+					<mat-table [dataSource]="displayedContractors" class="data-table">
+						<ng-container matColumnDef="id">
+							<mat-header-cell *matHeaderCellDef>ID</mat-header-cell>
+							<mat-cell *matCellDef="let contractor">{{ contractor.id }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="sortOrder">
+							<mat-header-cell *matHeaderCellDef>Сортировка</mat-header-cell>
+							<mat-cell *matCellDef="let contractor">{{ contractor.sortOrder }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="photo">
+							<mat-header-cell *matHeaderCellDef>Фото</mat-header-cell>
+							<mat-cell *matCellDef="let contractor">
+								<img *ngIf="getFirstPhoto(contractor)" [src]="getFirstPhoto(contractor)"
+									alt="Фото контрагента" class="contractor-img" loading="lazy" />
+								<span *ngIf="!getFirstPhoto(contractor)" class="text-muted">Нет фото</span>
+							</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="lastName">
+							<mat-header-cell *matHeaderCellDef>Фамилия</mat-header-cell>
+							<mat-cell *matCellDef="let contractor">{{ contractor.lastName }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="firstName">
+							<mat-header-cell *matHeaderCellDef>Имя</mat-header-cell>
+							<mat-cell *matCellDef="let contractor">{{ contractor.firstName }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="middleName">
+							<mat-header-cell *matHeaderCellDef>Отчество</mat-header-cell>
+							<mat-cell *matCellDef="let contractor">{{ contractor.middleName }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="birthDate">
+							<mat-header-cell *matHeaderCellDef>Дата рождения</mat-header-cell>
+							<mat-cell *matCellDef="let contractor">{{ contractor.birthDate | date: 'dd.MM.yyyy'
+								}}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="passportSerialNumber">
+							<mat-header-cell *matHeaderCellDef>Серия и номер паспорта</mat-header-cell>
+							<mat-cell *matCellDef="let contractor">{{ contractor.passportSerialNumber }}</mat-cell>
+						</ng-container>
+						<ng-container matColumnDef="actions">
+							<mat-header-cell *matHeaderCellDef>Действия</mat-header-cell>
+							<mat-cell *matCellDef="let contractor">
+								<button mat-icon-button color="primary" class="action-btn"
+									(click)="navigateToDetails(contractor.id)" matTooltip="Просмотреть">
+									<mat-icon>visibility</mat-icon>
+								</button>
+								<button mat-icon-button color="accent" class="action-btn"
+									(click)="navigateToEdit(contractor.id)" matTooltip="Редактировать">
+									<mat-icon>edit</mat-icon>
+								</button>
+							</mat-cell>
+						</ng-container>
+						<mat-header-row
+							*matHeaderRowDef="['id', 'sortOrder', 'photo', 'lastName', 'firstName', 'middleName', 'birthDate', 'passportSerialNumber', 'actions']"></mat-header-row>
+						<mat-row
+							*matRowDef="let row; columns: ['id', 'sortOrder', 'photo', 'lastName', 'firstName', 'middleName', 'birthDate', 'passportSerialNumber', 'actions']"
+							(click)="selectContractor(row)"></mat-row>
+					</mat-table>
+					<div *ngIf="displayedContractors.length === 0 && !errorMessage" class="text-center mt-4">
+						<p class="text-muted">Нет контрагентов для отображения.</p>
+					</div>
+					<p *ngIf="errorMessage" class="error-message text-danger">{{ errorMessage }}</p>
+				</div>
+
+				<div *ngIf="totalPages > 1" class="pagination-section">
+					<div class="pagination-container">
+						<div class="pagination-squares">
+							<span *ngFor="let page of visiblePages" class="square" [class.active]="page === currentPage"
+								[class.disabled]="page === '...'" (click)="onPageClick(page)">
+								{{ page }}
+							</span>
+						</div>
 					</div>
 				</div>
 			</div>

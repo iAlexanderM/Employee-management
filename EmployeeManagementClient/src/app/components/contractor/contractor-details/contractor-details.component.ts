@@ -23,6 +23,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PassPrintQueueItem } from '../../../models/pass-print-queue.model';
 import { Photo } from '../../../models/contractor.model';
+import { environment } from '../../../../environments/environment';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
 	selector: 'app-contractor-details',
@@ -37,7 +39,8 @@ import { Photo } from '../../../models/contractor.model';
 		MatCardModule,
 		MatTableModule,
 		MatIconModule,
-		MatProgressSpinnerModule
+		MatProgressSpinnerModule,
+		MatTooltipModule
 	],
 	templateUrl: './contractor-details.component.html',
 	styleUrls: ['./contractor-details.component.css'],
@@ -71,7 +74,7 @@ export class ContractorDetailsComponent implements OnInit, OnDestroy, AfterViewI
 	errorMessage: string | null = null;
 	showHistory = false;
 	userMap: { [key: string]: string } = {};
-	private readonly apiBaseUrl = 'http://localhost:8080';
+	private readonly apiBaseUrl = environment.apiBaseUrl;
 	private subscriptions: Subscription[] = [];
 	issuedPasses: PassPrintQueueItem[] = [];
 	totalPasses: number = 0;

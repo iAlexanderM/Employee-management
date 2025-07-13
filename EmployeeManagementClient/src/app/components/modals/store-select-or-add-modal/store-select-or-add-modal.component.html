@@ -1,12 +1,12 @@
 <div class="modal-overlay" (click)="closeModal()">
-	<mat-card class="modal-content" (click)="stopPropagation($event)">
+	<mat-card [class.modal-content--select]="mode === 'select'" [class.modal-content--add]="mode === 'add'"
+		class="modal-content" (click)="stopPropagation($event)">
 		<mat-card-header>
 			<mat-card-title class="section-title">
 				{{ mode === 'select' ? 'Выбрать' : 'Добавить' }} {{ fieldNameTranslated }}
 			</mat-card-title>
 		</mat-card-header>
 		<mat-card-content>
-			<!-- Режим добавления -->
 			<div *ngIf="mode === 'add'" class="add-form">
 				<form [formGroup]="addForm">
 					<mat-form-field appearance="fill" class="form-field">
@@ -27,10 +27,12 @@
 				<p *ngIf="errorMessage" class="error-message text-danger">{{ errorMessage }}</p>
 			</div>
 
-			<!-- Режим выбора -->
 			<div *ngIf="mode === 'select'" class="search-section">
-				<div class="search-form">
-					<form [formGroup]="searchForm" (ngSubmit)="searchItems()">
+				<div class="search-form" [ngClass]="{'expanded': isExpanded}">
+					<button mat-icon-button (click)="toggleSearchForm()" class="toggle-button">
+						<mat-icon>{{ isExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+					</button>
+					<form [formGroup]="searchForm" (ngSubmit)="searchItems()" *ngIf="isExpanded">
 						<div class="search-form-container">
 							<mat-form-field appearance="fill" class="form-field">
 								<mat-label>ID</mat-label>
@@ -45,9 +47,6 @@
 								<mat-label>Название</mat-label>
 								<input matInput formControlName="Name" type="text" placeholder="Введите название">
 								<mat-icon matSuffix>description</mat-icon>
-								<mat-error *ngIf="searchForm.get('Name')?.invalid && searchForm.get('Name')?.touched">
-									Название должно содержать текст.
-								</mat-error>
 							</mat-form-field>
 							<div class="actions mt-2">
 								<button mat-raised-button color="primary" class="action-btn"
@@ -59,7 +58,6 @@
 					</form>
 				</div>
 
-				<!-- Выбор размера страницы -->
 				<div class="page-size-section">
 					<div class="page-size-container">
 						<span>Элементов на странице:</span>
@@ -69,7 +67,6 @@
 					</div>
 				</div>
 
-				<!-- Пагинация сверху -->
 				<div *ngIf="totalPages > 1" class="pagination-section">
 					<div class="pagination-container">
 						<div class="pagination-squares">
@@ -81,7 +78,6 @@
 					</div>
 				</div>
 
-				<!-- Таблица -->
 				<div class="table-section">
 					<mat-table [dataSource]="filteredItems" class="data-table">
 						<ng-container matColumnDef="sortOrder">
@@ -100,12 +96,14 @@
 						<mat-row *matRowDef="let row; columns: ['sortOrder', 'id', 'name']"
 							(click)="selectItem(row)"></mat-row>
 					</mat-table>
-					<div *ngIf="filteredItems.length === 0" class="text-center mt-4">
+					<div *ngIf="filteredItems.length === 0 && !errorMessage" class="text-center mt-4">
 						<p class="text-muted">Нет элементов для отображения.</p>
+					</div>
+					<div *ngIf="errorMessage" class="text-danger">
+						{{ errorMessage }}
 					</div>
 				</div>
 
-				<!-- Пагинация снизу -->
 				<div *ngIf="totalPages > 1" class="pagination-section">
 					<div class="pagination-container">
 						<div class="pagination-squares">

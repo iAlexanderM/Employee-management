@@ -3,7 +3,6 @@
 		<mat-sidenav mode="side" opened class="sidebar-container-wrapper">
 			<app-sidebar></app-sidebar>
 		</mat-sidenav>
-
 		<mat-sidenav-content class="content-container">
 			<app-header></app-header>
 			<router-outlet></router-outlet>
@@ -15,8 +14,7 @@
 	<router-outlet></router-outlet>
 </div>
 
-<app-active-token-floating *ngIf="showActivePanel" [tokenData]="activeToken"
-	(close)="onCloseTokenPanel()"></app-active-token-floating>
+<app-active-token-floating *ngIf="showActivePanel" [tokenData]="activeToken" (close)="onCloseTokenPanel()">
+</app-active-token-floating>
 
-<div class="local-overlay-root">
-</div>
+<div class="local-overlay-root"></div>

@@ -1,22 +1,20 @@
-<mat-card class="floating-token-content">
-	<mat-card-header>
-		<mat-card-title class="section-title">Активный талон {{ tokenData?.token }}</mat-card-title>
-		<button mat-icon-button class="close-btn" (click)="onCloseClick()" matTooltip="Закрыть окно">
-			<mat-icon>close</mat-icon>
-		</button>
+<mat-card class="floating-token-content" cdkDrag>
+	<mat-card-header cdkDragHandle> <mat-card-title class="section-title">{{ tokenData?.token }}</mat-card-title>
 	</mat-card-header>
-	<mat-card-content>
-		<ng-container *ngIf="tokenData; else noData">
-			<div class="actions">
+	<mat-card-content cdkDragHandle>
+		<ng-container *ngIf="tokenData">
+			<div class="additional-actions">
+				<button mat-button color="primary" (click)="navigateToSearch()">
+					Вернуться в поиск
+				</button>
+				<button mat-button color="primary" (click)="navigateToCreateTransaction()">
+					Вернуться в транзакцию
+				</button>
 				<button mat-raised-button color="warn" class="action-btn" (click)="onCloseTokenOnServer()"
 					matTooltip="Закрыть талон">
 					Закрыть талон
 				</button>
 			</div>
 		</ng-container>
-		<ng-template #noData>
-			<p class="text-muted">Нет данных о талоне.</p>
-		</ng-template>
-		<p *ngIf="errorMessage" class="error-message text-danger">{{ errorMessage }}</p>
 	</mat-card-content>
 </mat-card>

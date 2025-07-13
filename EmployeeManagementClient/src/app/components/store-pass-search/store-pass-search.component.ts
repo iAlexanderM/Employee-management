@@ -28,6 +28,7 @@ import { Store } from '../../models/store.model';
 import { StoreService } from '../../services/store.service';
 import { MatTableModule } from '@angular/material/table';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 const PAGE_SIZE = 500;
 const DEBOUNCE_TIME_MS = 300;
@@ -94,7 +95,8 @@ const LOG_EXTEND_DATA = 'Подготовлены данные для перед
 		MatCheckboxModule,
 		MatTableModule,
 		MatCardModule,
-		MatDividerModule
+		MatDividerModule,
+		MatTooltipModule
 	],
 	templateUrl: './store-pass-search.component.html',
 	styleUrls: ['./store-pass-search.component.css'],

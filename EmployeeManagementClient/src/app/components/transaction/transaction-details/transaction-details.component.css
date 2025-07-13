@@ -1,29 +1,4 @@
-.main-content {
-	max-width: 1920px;
-	width: 100%;
-	margin: 0 auto;
-	padding: 2rem;
-	background-color: #fefaf6;
-	font-family: 'Poppins', 'Roboto', sans-serif;
-	min-height: 100vh;
-	display: flex;
-	flex-direction: column;
-}
-.content-grid {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 12px;
-	align-items: stretch;
-}
 @media (min-width: 768px) {
-	.content-grid {
-		grid-template-columns: 1fr;
-		grid-template-areas:
-			"main"
-			"full";
-	}
-}
-@media (min-width: 1200px) {
 	.content-grid {
 		grid-template-columns: 1fr;
 		grid-template-areas:
@@ -38,26 +13,6 @@
 	grid-area: main;
 	max-width: 50%;
 	align-self: flex-start;
-}
-.column-full {
-	grid-area: full;
-	width: 100%;
-	margin: 24px 0;
-}
-.section-card {
-	border-radius: 8px;
-	box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
-	padding: 10px;
-	flex-grow: 1;
-	display: flex;
-	flex-direction: column;
-	border: 1px solid #e5e7eb;
-	width: 100%;
-}
-.section-card .mat-mdc-card-content {
-	padding: 12px;
-	border: 1px solid #d6d3d1;
-	flex-grow: 1;
 }
 .section-card .mat-mdc-card-title {
 	font-family: 'Poppins', 'Roboto', sans-serif;
@@ -84,80 +39,6 @@
 	justify-content: flex-start;
 	/* Ensure buttons align to the left */
 }
-.action-btn {
-	font-family: 'Poppins', 'Roboto', sans-serif;
-	font-weight: 500;
-	font-size: 14px;
-	height: 40px;
-	border-radius: 4px;
-	min-width: 40px;
-}
-.action-btn.mat-mdc-raised-button[color="primary"] {
-	background-color: #3b82f6;
-	color: #ffffff;
-	border-color: #2563eb;
-}
-.action-btn.mat-mdc-raised-button[color="primary"]:hover:not(.mdc-button--disabled) {
-	background-color: #2563eb;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-	transform: translateY(-1px);
-}
-.action-btn.mat-mdc-raised-button[color="accent"] {
-	background-color: #f43f5e;
-	color: #ffffff;
-	border-color: #e11d48;
-}
-.action-btn.mat-mdc-raised-button[color="accent"]:hover:not(.mdc-button--disabled) {
-	background-color: #e11d48;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-	transform: translateY(-1px);
-}
-.action-btn.mat-mdc-raised-button.mdc-button--disabled {
-	background-color: #f3f4f6;
-	color: #6b7280;
-	border-color: transparent;
-	cursor: not-allowed;
-}
-.error-message {
-	background-color: #fef2f2;
-	color: #ef4444;
-	padding: 12px 16px;
-	border-radius: 8px;
-	margin-bottom: 20px;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	border: 1px solid #fca5a5;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-.error-message mat-icon {
-	color: #ef4444;
-}
-.info-list {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	margin-top: 24px;
-}
-.info-item {
-	display: flex;
-	gap: 10px;
-	font-size: 12px;
-	border-bottom: 1px dashed #e5e7eb;
-	padding-bottom: 4px;
-}
-.info-item:last-child {
-	border-bottom: none;
-	padding-bottom: 0;
-}
-.info-value {
-	color: #111827;
-	flex-grow: 1;
-}
-.table-wrapper {
-	overflow-x: auto;
-	margin-top: 16px;
-}
 .transaction-table {
 	width: 100%;
 	border-collapse: separate;
@@ -183,13 +64,6 @@
 .transaction-table td {
 	white-space: normal;
 }
-.mat-icon,
-i.material-icons {
-	color: #1f2937;
-	font-size: 20px;
-	width: 20px;
-	height: 20px;
-}
 @media (max-width: 768px) {
 	.transaction-details {
 		padding: 1rem;
@@ -197,11 +71,5 @@ i.material-icons {
 	.action-buttons-row {
 		flex-direction: column;
 		gap: 12px;
-	}
-}
-@media (max-width: 480px) {
-	.info-item {
-		flex-direction: column;
-		gap: 8px;
 	}
 }

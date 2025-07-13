@@ -6,70 +6,70 @@
 	padding: 20px;
 	background-color: #f5f5f5;
 	font-family: 'Poppins', 'Roboto', sans-serif;
-  }
-  
-  .login-card {
+}
+
+.login-card {
 	width: 100%;
 	max-width: 400px;
 	padding: 20px;
 	font-family: 'Poppins', 'Roboto', sans-serif !important;
-  }
-  
-  .login-card ::ng-deep .mat-card-title {
+}
+
+.login-card ::ng-deep .mat-card-title {
 	font-family: 'Poppins', 'Roboto', sans-serif !important;
 	font-weight: 600 !important;
 	font-size: 24px !important;
-  }
-  
-  .login-form {
+}
+
+.login-form {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
 	margin-top: 20px;
-  }
-  
-  .full-width {
+}
+
+.full-width {
 	width: 100%;
-  }
-  
-  /* Принудительно устанавливаем Poppins для всех элементов формы */
-  ::ng-deep .mat-form-field {
+}
+
+/* Принудительно устанавливаем Poppins для всех элементов формы */
+::ng-deep .mat-form-field {
 	font-family: 'Poppins', 'Roboto', sans-serif !important;
-  }
-  
-  ::ng-deep .mat-form-field-label {
+}
+
+::ng-deep .mat-form-field-label {
 	font-family: 'Poppins', 'Roboto', sans-serif !important;
 	font-weight: 400 !important;
-  }
-  
-  ::ng-deep .mat-input-element {
+}
+
+::ng-deep .mat-input-element {
 	font-family: 'Poppins', 'Roboto', sans-serif !important;
 	font-size: 14px !important;
-  }
-  
-  ::ng-deep .mat-form-field-placeholder {
+}
+
+::ng-deep .mat-form-field-placeholder {
 	font-family: 'Poppins', 'Roboto', sans-serif !important;
-  }
-  
-  ::ng-deep .mat-error {
+}
+
+::ng-deep .mat-error {
 	font-family: 'Poppins', 'Roboto', sans-serif !important;
 	font-size: 12px !important;
-  }
-  
-  .login-button {
+}
+
+.login-button {
 	height: 48px;
 	font-size: 16px;
 	margin-top: 16px;
 	font-family: 'Poppins', 'Roboto', sans-serif !important;
 	font-weight: 500 !important;
-  }
-  
-  ::ng-deep .login-button {
+}
+
+::ng-deep .login-button {
 	font-family: 'Poppins', 'Roboto', sans-serif !important;
 	font-weight: 500 !important;
-  }
-  
-  .error-message {
+}
+
+.error-message {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -79,20 +79,20 @@
 	border-radius: 4px;
 	margin-bottom: 16px;
 	font-family: 'Poppins', 'Roboto', sans-serif !important;
-  }
-  
-  .error-message mat-icon {
+}
+
+.error-message mat-icon {
 	font-size: 20px;
 	height: 20px;
 	width: 20px;
-  }
-  
-  @media (max-width: 480px) {
+}
+
+@media (max-width: 480px) {
 	.login-container {
-	  padding: 10px;
+		padding: 10px;
 	}
-	
+
 	.login-card {
-	  padding: 16px;
+		padding: 16px;
 	}
-  }
+}

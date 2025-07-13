@@ -1,7 +1,10 @@
 <div class="modal-overlay" (click)="closeModal()" *ngIf="isVisible">
-	<mat-card class="modal-content" (click)="stopPropagation($event)">
+	<mat-card [class.modal-content--select]="mode === 'select'" [class.modal-content--add]="mode === 'add'"
+		class="modal-content" (click)="stopPropagation($event)">
 		<mat-card-header>
-			<h2>{{ mode === 'select' ? 'Выбрать' : 'Добавить' }} Должность</h2>
+			<mat-card-title class="section-title">
+				<h2>{{ mode === 'select' ? 'Выбрать' : 'Добавить' }} Должность</h2>
+			</mat-card-title>
 		</mat-card-header>
 		<mat-card-content>
 			<div *ngIf="mode === 'add'" class="add-form">
@@ -24,7 +27,6 @@
 				<p *ngIf="errorMessage" class="error-message text-danger">{{ errorMessage }}</p>
 			</div>
 
-			<!-- Режим выбора -->
 			<div *ngIf="mode === 'select'" class="search-section">
 				<div class="search-form">
 					<form [formGroup]="searchForm" (ngSubmit)="searchItems()">
@@ -39,9 +41,9 @@
 								</mat-error>
 							</mat-form-field>
 							<mat-form-field appearance="fill" class="form-field">
-								<mat-label>Здание</mat-label>
-								<input matInput formControlName="Name" type="text" placeholder="Введите здание">
-								<mat-icon matSuffix></mat-icon>
+								<mat-label>Название</mat-label>
+								<input matInput formControlName="Name" type="text" placeholder="Введите название">
+								<mat-icon matSuffix>description</mat-icon>
 							</mat-form-field>
 							<div class="actions mt-2">
 								<button mat-raised-button color="primary" class="action-btn"
@@ -57,7 +59,7 @@
 					<div class="page-size-container">
 						<span>Элементов на странице:</span>
 						<mat-select [(value)]="pageSize"
-							(selectionChange)="paginationForm.get('pageSize')?.setValue($event.value); onPageSizeChange()">
+							(selectionChange)="paginationForm.get('pageSize')!.setValue($event.value); onPageSizeChange()">
 							<mat-option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</mat-option>
 						</mat-select>
 					</div>

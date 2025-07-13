@@ -7,10 +7,6 @@
 			<mat-card *ngIf="errorMessage" class="error-message mt-4" role="alert">
 				<mat-icon>error_outline</mat-icon> {{ errorMessage }}
 			</mat-card>
-
-			<app-active-token-floating *ngIf="activeTokenData" [tokenData]="activeTokenData"
-				(close)="activeTokenData = null"></app-active-token-floating>
-
 			<div *ngFor="let formData of transactionForms; let i = index"
 				class="mb-4 p-3 border rounded transaction-form-section">
 				<h3>Документ {{ i + 1 }}</h3>
@@ -23,7 +19,7 @@
 						<mat-grid-tile>
 							<button mat-raised-button color="primary" class="full-width" type="button"
 								(click)="openStoreModal(i)">
-								<mat-icon>store</mat-icon> Выбрать Здание
+								<mat-icon>store</mat-icon> Выбрать торговую точку
 							</button>
 						</mat-grid-tile>
 						<mat-grid-tile>
@@ -65,7 +61,7 @@
 						<mat-grid-tile>
 							<button mat-raised-button color="primary" class="full-width" type="button"
 								(click)="openContractorModal(i)">
-								<mat-icon>person_search</mat-icon> Выбрать Контрагента
+								<mat-icon>person_search</mat-icon> Выбрать контрагента
 							</button>
 						</mat-grid-tile>
 						<mat-grid-tile>
@@ -152,7 +148,7 @@
 						<mat-grid-tile>
 							<button mat-raised-button color="primary" class="full-width" type="button"
 								(click)="openPassTypeModal(i)">
-								<mat-icon>vpn_key</mat-icon> Выбрать Тип пропуска
+								<mat-icon>vpn_key</mat-icon> Выбрать тип пропуска
 							</button>
 						</mat-grid-tile>
 						<mat-grid-tile>

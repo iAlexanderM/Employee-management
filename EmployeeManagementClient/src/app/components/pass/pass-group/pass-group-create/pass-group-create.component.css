@@ -1,36 +1,8 @@
-.main-content {
-	max-width: 1920px;
-	width: 100%;
-	margin: 0 auto;
-	padding: 2rem;
-	background-color: #fefaf6;
-	min-height: 100vh;
-	display: flex;
-	flex-direction: column;
-}
-
-.section-card {
-	background-color: #fafafa;
-	border: 1px solid #e5e7eb;
-	border-radius: 8px;
-	padding: 16px;
-}
-
 .section-title {
 	font-size: 1.5rem;
 	font-weight: 600;
 	color: #111827;
 }
-
-.create-form {
-	padding: 8px 0;
-	margin-bottom: 16px;
-}
-
-mat-grid-list {
-	width: 100%;
-}
-
 mat-grid-tile {
 	display: flex;
 	flex-direction: column;
@@ -41,36 +13,6 @@ mat-grid-tile {
 	background-color: #f3f4f6;
 	/* Grayer grid tiles */
 }
-
-.full-width {
-	width: 100%;
-}
-
-.d-flex {
-	display: flex;
-}
-
-.gap-2 {
-	gap: 8px;
-}
-
-.mt-4 {
-	margin-top: 16px;
-}
-
-.align-items-center {
-	align-items: center;
-}
-
-.justify-content-start {
-	justify-content: flex-start;
-}
-
-.form-group {
-	margin-bottom: 16px;
-	margin-top: 8px;
-}
-
 .form-group label {
 	font-weight: 600;
 	color: #6b7280;
@@ -79,48 +21,20 @@ mat-grid-tile {
 	font-size: 14px;
 	/* Smaller font */
 }
-
 mat-form-field {
 	font-size: 14px;
 	/* Smaller font for inputs */
 }
-
 mat-form-field .mat-input-element {
 	font-size: 14px;
 	/* Smaller input text */
 }
-
-.color-input {
-	width: 40px;
-	height: 40px;
-	padding: 0;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-}
-
 .action-btn {
 	font-size: 12px;
 	/* Smaller buttons */
 }
-
-.selected-group {
-	margin: 0;
-	font-size: 14px;
-	color: #111827;
-}
-
 @media (max-width: 768px) {
 	.main-content {
 		padding: 1rem;
-	}
-
-	mat-grid-list {
-		display: flex;
-		flex-direction: column;
-	}
-
-	mat-grid-tile {
-		width: 100%;
 	}
 }

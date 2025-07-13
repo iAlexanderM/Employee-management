@@ -9,22 +9,20 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { authInterceptor } from './interceptor/auth.interceptor';
 
-// Добавляем импорт OverlayModule и OverlayContainer
 import { OverlayModule, OverlayContainer } from '@angular/cdk/overlay';
-import { CustomOverlayContainer } from './shared/custom-overlay-container'; // путь к вашему файлу
+import { CustomOverlayContainer } from './shared/custom-overlay-container';
 
 export const appConfig: ApplicationConfig = {
 	providers: [
 		// Роутинг
 		provideRouter(appRoutes),
 
-		// HttpClient + ваш интерсептор
 		provideHttpClient(withInterceptors([authInterceptor])),
 
 		importProvidersFrom(
 			ReactiveFormsModule,
 			BrowserAnimationsModule,
-			OverlayModule // <-- важно
+			OverlayModule
 		),
 
 		{

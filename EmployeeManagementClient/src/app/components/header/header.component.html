@@ -8,16 +8,16 @@
             contractorsListLink,
             newContractorLink,
             storesListLink,
-            reportsLink
-          ]">
-			<button mat-icon-button [routerLink]="link.routerLink" [matTooltip]="link.name" matTooltipPosition="below">
-				<ng-container [ngSwitch]="link.iconType">
+            reportsLink,
+            logoutLink
+        ]">
+			<button mat-icon-button [routerLink]="link.routerLink ? link.routerLink : null"
+				(click)="!link.routerLink ? handleLogout() : null" [matTooltip]="link.name" matTooltipPosition="below"
+				[disableRipple]="true"> <ng-container [ngSwitch]="link.iconType">
 					<mat-icon *ngSwitchCase="'material'">{{ link.iconValue }}</mat-icon>
 					<span *ngSwitchCase="'customHtml'" [innerHTML]="getSafeHtml(link.iconValue)"
 						class="custom-icon-wrapper"></span>
-
 					<mat-icon *ngSwitchCase="'svgPath'" [svgIcon]="link.iconValue"></mat-icon>
-
 					<mat-icon *ngSwitchDefault>help_outline</mat-icon>
 				</ng-container>
 			</button>

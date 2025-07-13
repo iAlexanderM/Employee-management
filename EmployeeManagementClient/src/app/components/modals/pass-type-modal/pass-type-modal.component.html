@@ -3,14 +3,11 @@
 		<mat-card-header>
 			<mat-card-title class="section-title">Выбрать Тип Пропуска</mat-card-title>
 			<button mat-icon-button class="close-button" (click)="closeModal()" aria-label="Закрыть">
-				<mat-icon>close</mat-icon>
 			</button>
 		</mat-card-header>
 		<mat-card-content>
-			<!-- Индикатор загрузки -->
 			<mat-spinner *ngIf="isLoading" diameter="40" class="spinner"></mat-spinner>
 
-			<!-- Поисковая форма для типов (только если выбрана группа) -->
 			<div *ngIf="selectedGroup" class="search-section">
 				<div class="search-form">
 					<form [formGroup]="searchForm" (ngSubmit)="searchPassTypes()">
@@ -52,9 +49,7 @@
 				</div>
 			</div>
 
-			<!-- Таблица групп или типов -->
 			<div class="table-section">
-				<!-- Таблица групп -->
 				<div *ngIf="!selectedGroup">
 					<mat-table [dataSource]="passGroups" class="data-table">
 						<ng-container matColumnDef="id">
@@ -79,7 +74,6 @@
 					</div>
 				</div>
 
-				<!-- Таблица типов -->
 				<div *ngIf="selectedGroup">
 					<div class="back-button-section">
 						<button mat-stroked-button color="primary" (click)="goBackToGroups()">Назад к группам</button>
@@ -123,7 +117,6 @@
 				</div>
 			</div>
 
-			<!-- Пагинация снизу -->
 			<div *ngIf="totalPages > 1" class="pagination-section">
 				<div class="pagination-container">
 					<div class="pagination-squares">

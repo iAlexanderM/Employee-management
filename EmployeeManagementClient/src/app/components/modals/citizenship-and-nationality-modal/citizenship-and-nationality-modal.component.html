@@ -1,9 +1,11 @@
 <div class="modal-overlay" (click)="closeModal()">
-	<mat-card class="modal-content" (click)="stopPropagation($event)">
+	<mat-card class="modal-content"
+		[ngClass]="{'modal-content--select': mode === 'select', 'modal-content--add': mode === 'add'}"
+		(click)="stopPropagation($event)">
 		<mat-card-header>
 			<mat-card-title class="section-title">
-				{{ mode === 'select' ? 'Выбрать' : 'Добавить' }} {{ type === 'citizenship' ? 'Гражданство' :
-				'Национальность' }}
+				<h2>{{ mode === 'select' ? 'Выбрать' : 'Добавить' }} {{ type === 'citizenship' ? 'Гражданство' :
+					'Национальность' }}</h2>
 			</mat-card-title>
 		</mat-card-header>
 		<mat-card-content>
@@ -27,7 +29,6 @@
 				<p *ngIf="errorMessage" class="error-message text-danger">{{ errorMessage }}</p>
 			</div>
 
-			<!-- Режим выбора -->
 			<div *ngIf="mode === 'select'" class="search-section">
 				<div class="search-form">
 					<form [formGroup]="searchForm" (ngSubmit)="searchItems()">
@@ -59,18 +60,16 @@
 					</form>
 				</div>
 
-				<!-- Выбор размера страницы -->
 				<div class="page-size-section">
 					<div class="page-size-container">
 						<span>Элементов на странице:</span>
 						<mat-select [(value)]="pageSize"
-							(selectionChange)="paginationForm.get('pageSize')?.setValue($event.value); onPageSizeChange()">
+							(selectionChange)="paginationForm.get('pageSize')!.setValue($event.value); onPageSizeChange()">
 							<mat-option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</mat-option>
 						</mat-select>
 					</div>
 				</div>
 
-				<!-- Пагинация сверху -->
 				<div *ngIf="totalPages > 1" class="pagination-section">
 					<div class="pagination-container">
 						<div class="pagination-squares">
@@ -82,7 +81,6 @@
 					</div>
 				</div>
 
-				<!-- Таблица -->
 				<div class="table-section">
 					<mat-table [dataSource]="filteredItems" class="data-table">
 						<ng-container matColumnDef="sortOrder">
@@ -106,7 +104,6 @@
 					</div>
 				</div>
 
-				<!-- Пагинация снизу -->
 				<div *ngIf="totalPages > 1" class="pagination-section">
 					<div class="pagination-container">
 						<div class="pagination-squares">

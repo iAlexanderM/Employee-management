@@ -174,7 +174,7 @@
 				<table class="data-table contractor-table">
 					<thead>
 						<tr>
-							<th>ID / Магазин</th>
+							<th>ID контрагента / <br>Торговая точка</th>
 							<th>Фото</th>
 							<th>ФИО</th>
 							<th>Должность</th>
@@ -188,7 +188,7 @@
 					</thead>
 					<tbody>
 						<tr>
-							<td>{{ item.contractor.contractorId }} {{ formatStore(item.store) }}</td>
+							<td><b>{{ item.contractor.contractorId }}</b><br> {{ formatStore(item.store) }}</td>
 							<td>
 								<img *ngIf="item.contractor?.contractorPhotoPath"
 									[src]="getAbsolutePhotoUrl(item.contractor.contractorPhotoPath)"

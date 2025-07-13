@@ -1,109 +1,37 @@
-.main-content {
-	max-width: 1920px;
-	width: 100%;
-	margin: 0 auto;
-	padding: 2rem;
-	background-color: #fefaf6;
-	min-height: 100vh;
-	display: flex;
-	flex-direction: column;
-}
-
 .print-pass-container {
 	display: flex;
 	flex-direction: column;
 	gap: 40px;
 	margin-bottom: 40px;
 }
-
 .print-pass-item {
 	display: flex;
 	flex-direction: column;
 	gap: 20px;
 }
-
-.print-preview {
-	position: relative;
-	height: 550px;
-	border: 1px solid #e5e7eb;
-	border-radius: 4px;
-	padding: 12px;
-	overflow: hidden;
-}
-
-.action-btn.mat-mdc-raised-button[color="primary"] {
-	background-color: #6c757d;
-	color: #ffffff;
-	border: 1px solid transparent;
-}
-
-.action-btn.mat-mdc-raised-button[color="primary"]:hover:not(.mdc-button--disabled) {
-	background-color: #5c636a;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-	transform: translateY(-1px);
-}
-
 .action-btn.mat-mdc-raised-button[color="print"] {
 	background-color: #3b82f6;
 	color: #ffffff;
 	border: 1px solid transparent;
 }
-
 .action-btn.mat-mdc-raised-button[color="print"]:hover:not(.mdc-button--disabled) {
 	background-color: #3b82f6;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 	transform: translateY(-1px);
 }
-
 .issued-status {
 	color: #3cb371;
 	font-weight: bold;
 	font-size: 14px;
 }
-
-.error-message {
-	background-color: #fee2e2;
-	color: #dc2626;
-	padding: 12px;
-	border-radius: 4px;
-	margin-bottom: 16px;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
-.error-message mat-icon {
-	color: #dc2626;
-}
-
-.actions {
-	margin-top: 20px;
-	padding-top: 20px;
-	display: flex;
-	justify-content: flex-start;
-}
-
 @media (max-width: 768px) {
 	.main-content {
 		padding: 1rem;
 	}
-
 	.print-pass-container {
 		margin-bottom: 20px;
 	}
-
 	.print-pass-item {
 		gap: 15px;
-	}
-
-	.action-buttons {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 8px;
-	}
-
-	.action-btn {
-		width: 100%;
-		min-width: 0;
 	}
 }

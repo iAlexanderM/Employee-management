@@ -1,5 +1,6 @@
 <div class="modal-overlay" (click)="closeModal()">
-	<mat-card class="modal-content" (click)="stopPropagation($event)">
+	<mat-card [class.modal-content--select]="mode === 'select'" [class.modal-content--add]="mode === 'add'"
+		class="modal-content" (click)="stopPropagation($event)">
 		<mat-card-header>
 			<mat-card-title class="section-title">
 				{{ mode === 'select' ? 'Выбрать' : 'Добавить' }} {{ fieldNameTranslated }}
@@ -33,23 +34,19 @@
 							<mat-form-field appearance="fill" class="form-field">
 								<mat-label>Здание</mat-label>
 								<input matInput formControlName="Building" type="text" placeholder="Введите здание">
-								<mat-icon matSuffix></mat-icon>
 							</mat-form-field>
 							<mat-form-field appearance="fill" class="form-field">
 								<mat-label>Этаж</mat-label>
 								<input matInput formControlName="Floor" type="text" placeholder="Введите этаж">
-								<mat-icon matSuffix></mat-icon>
 							</mat-form-field>
 							<mat-form-field appearance="fill" class="form-field">
 								<mat-label>Линия</mat-label>
 								<input matInput formControlName="Line" type="text" placeholder="Введите линию">
-								<mat-icon matSuffix></mat-icon>
 							</mat-form-field>
 							<mat-form-field appearance="fill" class="form-field">
 								<mat-label>Торговая точка</mat-label>
 								<input matInput formControlName="StoreNumber" type="text"
 									placeholder="Введите номер торговой точки">
-								<mat-icon matSuffix></mat-icon>
 							</mat-form-field>
 							<div class="actions mt-2">
 								<button mat-raised-button color="primary" class="action-btn"

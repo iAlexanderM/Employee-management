@@ -1,35 +1,27 @@
-<div class="header">
+<div class="sidebar">
 	<div class="brand">Бюро пропусков v0.01</div>
-	<mat-nav-list>
-		<ng-container *ngFor="let item of data; let i = index">
-			<div class="nav-item" [class.active]="item.isActive">
-				<button class="nav-button-header w-100" [routerLink]="!item.childProperties ? item.routerLink : null"
-					(click)="item.childProperties ? toggleAccordionState(i) : null">
-					{{ item.parentName }}
-					<span *ngIf="item.childProperties" [class.rotate-icon]="item.isActive">▼</span>
-				</button>
-				<div *ngIf="item.childProperties && hasAccessToChild(item.childProperties)" class="accordion-sub-menu">
-					<li *ngFor="let child of item.childProperties">
-						<ng-container *ngIf="hasRole(getRequiredRole(child.propertyName))">
-							<a class="sub-menu-link" [routerLink]="getRouterLink(child.propertyName)" matRipple>
-								{{ child.propertyName }}
-							</a>
-						</ng-container>
-					</li>
+	<div class="nav-list-wrapper">
+		<mat-nav-list>
+			<ng-container *ngFor="let item of data; let i = index">
+				<div class="nav-item" [class.active]="item.isActive">
+					<button class="nav-button-header" [routerLink]="!item.childProperties ? item.routerLink : null"
+						(click)="item.childProperties ? toggleAccordionState(i) : null">
+						<span>{{ item.parentName }}</span>
+						<mat-icon *ngIf="item.childProperties" class="rotate-icon"
+							[ngClass]="{'active': item.isActive}">arrow_drop_down</mat-icon>
+					</button>
+					<ul *ngIf="item.childProperties && hasAccessToChild(item.childProperties)"
+						class="accordion-sub-menu" [ngClass]="{'active': item.isActive}">
+						<li *ngFor="let child of item.childProperties">
+							<ng-container *ngIf="hasRole(getRequiredRole(child.propertyName))">
+								<a class="sub-menu-link" [routerLink]="getRouterLink(child.propertyName)" matRipple>
+									{{ child.propertyName }}
+								</a>
+							</ng-container>
+						</li>
+					</ul>
 				</div>
-			</div>
-		</ng-container>
-	</mat-nav-list>
-</div>
-<div class="footer">
-	<div *ngIf="isAuthenticated()">
-		<button mat-raised-button color="primary" class="w-100" (click)="logout()" matRipple>
-			Выход
-		</button>
-	</div>
-	<div *ngIf="!isAuthenticated()">
-		<a mat-raised-button color="primary" class="w-100" routerLink="/login" matRipple>
-			Вход
-		</a>
+			</ng-container>
+		</mat-nav-list>
 	</div>
 </div>

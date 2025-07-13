@@ -1,9 +1,10 @@
-import { Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, Renderer2, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PassGroupTypeService } from '../../../services/pass-group-type.service';
 import { PassType } from '../../../models/pass-type.model';
 import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -55,15 +56,18 @@ export class PassTypeModalComponent implements OnInit, OnDestroy {
 	totalPages = 0;
 	visiblePages: (number | string)[] = [];
 	errorMessage: string = '';
-
 	isLoading = false;
 
-	private subscriptions: Subscription[] = [];
+	private loadGroupsSubscription: Subscription | null = null;
+	private loadTypesSubscription: Subscription | null = null;
+	private searchTypesSubscription: Subscription | null = null;
 
 	constructor(
 		private fb: FormBuilder,
 		private service: PassGroupTypeService,
-		private snackBar: MatSnackBar
+		private snackBar: MatSnackBar,
+		private renderer: Renderer2,
+		private el: ElementRef
 	) {
 		this.searchForm = this.fb.group({
 			id: ['', [Validators.pattern(/^[0-9]*$/)]],
@@ -72,11 +76,21 @@ export class PassTypeModalComponent implements OnInit, OnDestroy {
 	}
 
 	ngOnInit(): void {
+		this.renderer.appendChild(document.body, this.el.nativeElement);
 		this.loadPassGroups();
 	}
 
 	ngOnDestroy(): void {
-		this.subscriptions.forEach((sub) => sub.unsubscribe());
+		if (this.loadGroupsSubscription) {
+			this.loadGroupsSubscription.unsubscribe();
+		}
+		if (this.loadTypesSubscription) {
+			this.loadTypesSubscription.unsubscribe();
+		}
+		if (this.searchTypesSubscription) {
+			this.searchTypesSubscription.unsubscribe();
+		}
+		this.renderer.removeChild(document.body, this.el.nativeElement);
 	}
 
 	closeModal(): void {
@@ -100,42 +114,44 @@ export class PassTypeModalComponent implements OnInit, OnDestroy {
 
 	loadPassGroups(): void {
 		this.isLoading = true;
-		const sub = this.service.getGroups().subscribe({
-			next: (response) => {
-				this.isLoading = false;
-				this.passGroups = Array.isArray(response) ? response : [];
-				this.totalItems = this.passGroups.length;
-				this.totalPages = Math.ceil(this.totalItems / this.pageSize);
-				this.updateVisiblePages();
-			},
-			error: (err) => {
-				this.isLoading = false;
-				this.resetPagination();
-				this.snackBar.open('Ошибка загрузки групп пропусков', 'Закрыть', { duration: 3000 });
-			},
-		});
-		this.subscriptions.push(sub);
+		this.loadGroupsSubscription = this.service.getGroups()
+			.pipe(take(1))
+			.subscribe({
+				next: (response) => {
+					this.isLoading = false;
+					this.passGroups = Array.isArray(response) ? response : [];
+					this.totalItems = this.passGroups.length;
+					this.totalPages = Math.ceil(this.totalItems / this.pageSize);
+					this.updateVisiblePages();
+				},
+				error: (err) => {
+					this.isLoading = false;
+					this.resetPagination();
+					this.snackBar.open('Ошибка загрузки групп пропусков', 'Закрыть', { duration: 3000 });
+				},
+			});
 	}
 
 	loadPassTypes(): void {
 		const groupId = this.selectedGroup!.id;
 		this.isLoading = true;
-		const sub = this.service.getTypes(groupId).subscribe({
-			next: (response) => {
-				this.isLoading = false;
-				this.passTypes = response;
-				this.totalItems = this.passTypes.length;
-				this.totalPages = Math.ceil(this.totalItems / this.pageSize);
-				this.updateVisiblePages();
-				this.setDisplayedPassTypes();
-			},
-			error: (err) => {
-				this.isLoading = false;
-				this.resetPagination();
-				this.snackBar.open('Ошибка загрузки типов пропусков', 'Закрыть', { duration: 3000 });
-			},
-		});
-		this.subscriptions.push(sub);
+		this.loadTypesSubscription = this.service.getTypes(groupId)
+			.pipe(take(1))
+			.subscribe({
+				next: (response) => {
+					this.isLoading = false;
+					this.passTypes = response;
+					this.totalItems = this.passTypes.length;
+					this.totalPages = Math.ceil(this.totalItems / this.pageSize);
+					this.updateVisiblePages();
+					this.setDisplayedPassTypes();
+				},
+				error: (err) => {
+					this.isLoading = false;
+					this.resetPagination();
+					this.snackBar.open('Ошибка загрузки типов пропусков', 'Закрыть', { duration: 3000 });
+				},
+			});
 	}
 
 	searchPassTypes(): void {
@@ -149,27 +165,28 @@ export class PassTypeModalComponent implements OnInit, OnDestroy {
 		}
 
 		this.isLoading = true;
-		const sub = this.service.getTypes(this.selectedGroup.id).subscribe({
-			next: (data) => {
-				this.isLoading = false;
-				this.passTypes = data.filter((passType: PassType) => {
-					const matchesId = id ? passType.id.toString() === id : true;
-					const matchesName = name ? passType.name.toLowerCase().includes(name.toLowerCase()) : true;
-					return matchesId && matchesName;
-				});
-				this.totalItems = this.passTypes.length;
-				this.totalPages = Math.ceil(this.totalItems / this.pageSize);
-				this.currentPage = 1;
-				this.updateVisiblePages();
-				this.setDisplayedPassTypes();
-			},
-			error: (err) => {
-				this.isLoading = false;
-				console.error('Ошибка при поиске типов пропусков:', err);
-				this.snackBar.open('Ошибка при поиске типов пропусков', 'Закрыть', { duration: 3000 });
-			},
-		});
-		this.subscriptions.push(sub);
+		this.searchTypesSubscription = this.service.getTypes(this.selectedGroup.id)
+			.pipe(take(1))
+			.subscribe({
+				next: (data) => {
+					this.isLoading = false;
+					this.passTypes = data.filter((passType: PassType) => {
+						const matchesId = id ? passType.id.toString() === id : true;
+						const matchesName = name ? passType.name.toLowerCase().includes(name.toLowerCase()) : true;
+						return matchesId && matchesName;
+					});
+					this.totalItems = this.passTypes.length;
+					this.totalPages = Math.ceil(this.totalItems / this.pageSize);
+					this.currentPage = 1;
+					this.updateVisiblePages();
+					this.setDisplayedPassTypes();
+				},
+				error: (err) => {
+					this.isLoading = false;
+					console.error('Ошибка при поиске типов пропусков:', err);
+					this.snackBar.open('Ошибка при поиске типов пропусков', 'Закрыть', { duration: 3000 });
+				},
+			});
 	}
 
 	resetFilters(): void {

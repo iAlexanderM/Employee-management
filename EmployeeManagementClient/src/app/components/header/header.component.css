@@ -50,8 +50,6 @@
 	justify-content: center !important;
 }
 
-/* Стили для кастомных HTML-иконок внутри MDC-кнопки */
-/* Если iconType='customHtml' и вы вставляете <i> тег, то этот селектор также очень важен */
 .app-header .header-nav-icons .mat-mdc-icon-button ::ng-deep .custom-icon-wrapper {
 	display: flex;
 	align-items: center;

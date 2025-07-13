@@ -14,12 +14,12 @@
 					"builder": "@angular/build:application",
 					"options": {
 						"outputPath": {
-              "base": "dist/employee-management-client"
-            },
-            "index": "src/index.html",
+							"base": "dist/employee-management-client"
+						},
+						"index": "src/index.html",
 						"polyfills": [
-              "src/polyfills.ts"
-            ],
+							"src/polyfills.ts"
+						],
 						"tsConfig": "tsconfig.app.json",
 						"aot": true,
 						"assets": [
@@ -31,8 +31,8 @@
 							"node_modules/material-design-icons-iconfont/dist/material-design-icons.css",
 							"@angular/material/prebuilt-themes/azure-blue.css"
 						],
-            "scripts": [],
-            "browser": "src/main.ts"
+						"scripts": [],
+						"browser": "src/main.ts"
 					},
 					"configurations": {
 						"production": {
@@ -50,8 +50,8 @@
 							],
 							"outputHashing": "all"
 						},
-            "development": {
-              "optimization": false,
+						"development": {
+							"optimization": false,
 							"extractLicenses": false,
 							"sourceMap": true,
 							"namedChunks": true
@@ -65,19 +65,19 @@
 						"proxyConfig": "proxy.conf.json"
 					},
 					"configurations": {
-            "production": {
-              "buildTarget": "EmployeeManagementClient:build:production"
+						"production": {
+							"buildTarget": "EmployeeManagementClient:build:production"
 						},
-            "development": {
-              "buildTarget": "EmployeeManagementClient:build:development"
+						"development": {
+							"buildTarget": "EmployeeManagementClient:build:development"
 						}
 					},
 					"defaultConfiguration": "development"
 				},
 				"extract-i18n": {
 					"builder": "@angular/build:extract-i18n",
-          "options": {
-            "buildTarget": "EmployeeManagementClient:build"
+					"options": {
+						"buildTarget": "EmployeeManagementClient:build"
 					}
 				},
 				"test": {
@@ -105,31 +105,31 @@
 	"defaultProject": "EmployeeManagementClient",
 	"cli": {
 		"analytics": false
-  },
-  "schematics": {
-    "@schematics/angular:component": {
-      "type": "component"
-    },
-    "@schematics/angular:directive": {
-      "type": "directive"
-    },
-    "@schematics/angular:service": {
-      "type": "service"
-    },
-    "@schematics/angular:guard": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:interceptor": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:module": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:pipe": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:resolver": {
-      "typeSeparator": "."
-    }
-  }
+	},
+	"schematics": {
+		"@schematics/angular:component": {
+			"type": "component"
+		},
+		"@schematics/angular:directive": {
+			"type": "directive"
+		},
+		"@schematics/angular:service": {
+			"type": "service"
+		},
+		"@schematics/angular:guard": {
+			"typeSeparator": "."
+		},
+		"@schematics/angular:interceptor": {
+			"typeSeparator": "."
+		},
+		"@schematics/angular:module": {
+			"typeSeparator": "."
+		},
+		"@schematics/angular:pipe": {
+			"typeSeparator": "."
+		},
+		"@schematics/angular:resolver": {
+			"typeSeparator": "."
+		}
+	}
 }

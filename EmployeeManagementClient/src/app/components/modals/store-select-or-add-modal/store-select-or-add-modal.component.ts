@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, Renderer2, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { StorePointsService } from '../../../services/store-points.service';
 import { Observable, Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -10,6 +11,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
 	selector: 'app-store-select-or-add-modal',
@@ -24,7 +26,8 @@ import { MatIconModule } from '@angular/material/icon';
 		MatCardModule,
 		MatTableModule,
 		MatSelectModule,
-		MatIconModule
+		MatIconModule,
+		MatSnackBarModule
 	],
 	templateUrl: './store-select-or-add-modal.component.html',
 	styleUrls: ['./store-select-or-add-modal.component.css']
@@ -49,13 +52,19 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 	visiblePages: (number | string)[] = [];
 	isSearchMode = false;
 	pageSizeOptions = [25, 50, 100];
-	pageSizeControl!: FormControl;
+	pageSizeControl: FormControl;
 
-	private subscriptions: Subscription[] = [];
+	private loadSubscription: Subscription | null = null;
+	private searchSubscription: Subscription | null = null;
+	private addSubscription: Subscription | null = null;
+	private pageSizeSubscription: Subscription | null = null;
 
 	constructor(
 		private storePointsService: StorePointsService,
-		private fb: FormBuilder
+		private fb: FormBuilder,
+		private renderer: Renderer2,
+		private el: ElementRef,
+		private snackBar: MatSnackBar
 	) {
 		this.searchForm = this.fb.group({
 			Id: [''],
@@ -79,18 +88,16 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	ngOnInit() {
+	ngOnInit(): void {
+		this.renderer.appendChild(document.body, this.el.nativeElement);
 		this.isSearchMode = false;
-
-		this.subscriptions.push(
-			this.pageSizeControl.valueChanges.subscribe(value => {
-				const newSize = Number(value);
-				if (!isNaN(newSize) && newSize > 0) {
-					this.pageSize = newSize;
-					this.onPageSizeChange();
-				}
-			})
-		);
+		this.pageSizeSubscription = this.pageSizeControl.valueChanges.subscribe(value => {
+			const newSize = Number(value);
+			if (!isNaN(newSize) && newSize > 0) {
+				this.pageSize = newSize;
+				this.onPageSizeChange();
+			}
+		});
 
 		if (this.mode === 'select') {
 			this.loadItems();
@@ -98,10 +105,14 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 	}
 
 	ngOnDestroy(): void {
-		this.subscriptions.forEach(s => s.unsubscribe());
+		if (this.loadSubscription) this.loadSubscription.unsubscribe();
+		if (this.searchSubscription) this.searchSubscription.unsubscribe();
+		if (this.addSubscription) this.addSubscription.unsubscribe();
+		if (this.pageSizeSubscription) this.pageSizeSubscription.unsubscribe();
+		this.renderer.removeChild(document.body, this.el.nativeElement);
 	}
 
-	closeModal() {
+	closeModal(): void {
 		this.modalClose.emit();
 	}
 
@@ -109,7 +120,7 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 		event.stopPropagation();
 	}
 
-	onPageClick(page: number | string) {
+	onPageClick(page: number | string): void {
 		if (page !== '...') {
 			this.goToPage(page as number);
 		}
@@ -119,23 +130,25 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 		this.isExpanded = !this.isExpanded;
 	}
 
-	loadItems() {
+	loadItems(): void {
 		const loadMethod = this.getLoadMethod();
 		const fieldKey = this.getFieldKey();
-		// Pass isArchived=false to fetch only non-archived items
-		loadMethod(this.currentPage, this.pageSize, {}, false).subscribe({
-			next: (data: any) => {
-				this.items = data[fieldKey] || [];
-				this.filteredItems = this.items;
-				this.totalItems = data.total || this.items.length;
-				this.calculateTotalPages();
-				this.updateVisiblePages();
-			},
-			error: (error: any) => {
-				this.errorMessage = 'Ошибка загрузки данных';
-				console.error(error);
-			}
-		});
+		this.loadSubscription = loadMethod(this.currentPage, this.pageSize, {}, false)
+			.pipe(take(1))
+			.subscribe({
+				next: (data: any) => {
+					this.items = data[fieldKey] || [];
+					this.filteredItems = this.items;
+					this.totalItems = data.total || this.items.length;
+					this.calculateTotalPages();
+					this.updateVisiblePages();
+				},
+				error: (error: any) => {
+					this.errorMessage = 'Ошибка загрузки данных';
+					this.snackBar.open('Ошибка загрузки данных', 'Закрыть', { duration: 3000 });
+					console.error(error);
+				}
+			});
 	}
 
 	getLoadMethod(): (page: number, pageSize: number, filters: { [key: string]: any }, isArchived: boolean) => Observable<any> {
@@ -178,11 +191,11 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	calculateTotalPages() {
+	calculateTotalPages(): void {
 		this.totalPages = Math.ceil(this.totalItems / this.pageSize);
 	}
 
-	updateVisiblePages() {
+	updateVisiblePages(): void {
 		const pages: (number | string)[] = [];
 		if (this.totalPages <= 7) {
 			for (let i = 1; i <= this.totalPages; i++) {
@@ -214,7 +227,7 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 		this.visiblePages = pages;
 	}
 
-	goToPage(page: number) {
+	goToPage(page: number): void {
 		if (page >= 1 && page <= this.totalPages) {
 			this.currentPage = page;
 			if (this.isSearchMode) {
@@ -241,20 +254,22 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 		const criteria = this.prepareSearchCriteria();
 		const fieldKey = this.getFieldKey();
 
-		// Pass isArchived=false for search
-		searchMethod(criteria, false).subscribe({
-			next: (data: any) => {
-				this.items = data[fieldKey] || [];
-				this.totalItems = data.total || this.items.length;
-				this.calculateTotalPages();
-				this.updateVisiblePages();
-				this.updateDisplayedItems();
-			},
-			error: (error: any) => {
-				this.errorMessage = 'Ошибка выполнения поиска';
-				console.error(error);
-			}
-		});
+		this.searchSubscription = searchMethod(criteria, false)
+			.pipe(take(1))
+			.subscribe({
+				next: (data: any) => {
+					this.items = data[fieldKey] || [];
+					this.totalItems = data.total || this.items.length;
+					this.calculateTotalPages();
+					this.updateVisiblePages();
+					this.updateDisplayedItems();
+				},
+				error: (error: any) => {
+					this.errorMessage = 'Ошибка выполнения поиска';
+					this.snackBar.open('Ошибка выполнения поиска', 'Закрыть', { duration: 3000 });
+					console.error(error);
+				}
+			});
 	}
 
 	resetFilters(): void {
@@ -264,7 +279,7 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 		this.loadItems();
 	}
 
-	selectItem(item: any) {
+	selectItem(item: any): void {
 		this.itemSelected.emit(item);
 		this.closeModal();
 	}
@@ -272,20 +287,25 @@ export class StoreSelectOrAddModalComponent implements OnInit, OnDestroy {
 	addItem(): void {
 		if (this.addForm.invalid) {
 			this.errorMessage = 'Название не может быть пустым';
+			this.snackBar.open('Название не может быть пустым', 'Закрыть', { duration: 3000 });
 			return;
 		}
 
-		const newItemName = this.addForm.get('newItemName')?.value.trim();
+		const newItemName = this.addForm.get('newItemName')!.value.trim();
 		const addMethod = this.getAddMethod();
-		addMethod(newItemName).subscribe({
-			next: (response: any) => {
-				this.itemAdded.emit(response.name);
-				this.closeModal();
-			},
-			error: (error: any) => {
-				this.errorMessage = error.message || 'Произошла ошибка. Пожалуйста, попробуйте еще раз.';
-			}
-		});
+		this.addSubscription = addMethod(newItemName)
+			.pipe(take(1))
+			.subscribe({
+				next: (response: any) => {
+					this.itemAdded.emit(response.name);
+					this.closeModal();
+				},
+				error: (error: any) => {
+					this.errorMessage = error.message || 'Произошла ошибка. Пожалуйста, попробуйте еще раз.';
+					this.snackBar.open(this.errorMessage, 'Закрыть', { duration: 3000 });
+					console.error(error);
+				}
+			});
 	}
 
 	onPageSizeChange(): void {
